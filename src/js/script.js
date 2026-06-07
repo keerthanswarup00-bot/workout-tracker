@@ -374,7 +374,7 @@ function renderExerciseCard(exercise, session) {
                   </label>
                   <label>
                     Weight
-                    <input type="number" min="0" step="0.5" value="${set.weight ?? ""}" placeholder="Add" data-field="weight" data-exercise="${exercise.name}" data-set="${setIndex}" />
+                    <input type="number" min="0" max="999" step="0.5" value="${set.weight ?? ""}" placeholder="0" data-field="weight" data-exercise="${exercise.name}" data-set="${setIndex}" />
                   </label>
                   ${set.done ? renderRPESelector(exercise.name, setIndex, set.rpe) : ""}
                 </div>
