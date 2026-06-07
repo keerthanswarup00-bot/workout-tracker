@@ -1699,6 +1699,16 @@ function initNewFeatures() {
     const card = e.target.closest("[data-exercise-detail]");
     if (card) showExerciseDetailModal(card.dataset.exerciseDetail);
   });
+
+  document.getElementById("logWorkoutButton")?.addEventListener("click", () => {
+    document.getElementById("todayPreview").classList.add("is-hidden");
+    document.getElementById("workoutLogger").classList.remove("is-hidden");
+  });
+
+  document.getElementById("backToTodayButton")?.addEventListener("click", () => {
+    document.getElementById("workoutLogger").classList.add("is-hidden");
+    document.getElementById("todayPreview").classList.remove("is-hidden");
+  });
 }
 
 initNewFeatures();

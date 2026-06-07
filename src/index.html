@@ -81,13 +81,13 @@
           </article>
         </div>
 
-        <section class="panel">
+        <section class="panel" id="todayPreview">
           <div class="panel-header">
             <div>
               <h2>Session Focus</h2>
               <p id="sessionFocus"></p>
             </div>
-            <button class="secondary-button" type="button" data-jump="train">
+            <button class="secondary-button" type="button" id="logWorkoutButton">
               Log workout
             </button>
           </div>
@@ -97,15 +97,18 @@
       </section>
 
       <section class="tab-panel" id="tab-workout">
-        <section class="panel">
+        <section class="panel is-hidden" id="workoutLogger">
           <div class="panel-header">
             <div>
               <h2 id="workoutTitle">Workout</h2>
               <p>Tick each set, then adjust reps and weight for what actually happened.</p>
             </div>
-            <button id="finishSessionButton" class="primary-button" type="button">
-              Finish session
-            </button>
+            <div style="display:flex;gap:0.5rem;align-items:center">
+              <button class="secondary-button" type="button" id="backToTodayButton">← Back to Today</button>
+              <button id="finishSessionButton" class="primary-button" type="button">
+                Finish session
+              </button>
+            </div>
           </div>
           <div class="quick-log-bar">
             <div>
