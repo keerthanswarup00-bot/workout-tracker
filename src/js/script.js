@@ -305,6 +305,7 @@ function renderToday() {
 
 function renderWorkout() {
   const workout = getCurrentWorkout();
+  console.log('workout data:', workout);
   const session = getTodaySession();
   els.workoutTitle.textContent = workout.name;
 

@@ -140,6 +140,8 @@ p {
 .tab-panel.is-active {
   display: grid;
   gap: 1rem;
+  max-width: 100%;
+  overflow-x: hidden;
 }
 
 .metric-strip {
@@ -333,6 +335,9 @@ p {
   border: 1px solid var(--line);
   border-radius: 8px;
   background: #fbfdfc;
+  max-width: 100%;
+  box-sizing: border-box;
+  overflow: hidden;
 }
 
 .set-grid {
@@ -1369,4 +1374,31 @@ p {
   display: flex;
   align-items: center;
   gap: 0.25rem;
+}
+
+/* Mobile layout fixes */
+@media (max-width: 768px) {
+  .exercise-card,
+  .set-row,
+  .exercise-list,
+  .panel {
+    max-width: 100%;
+    width: 100%;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+
+  .set-row {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .rpe-selector {
+    flex-wrap: wrap;
+    gap: 0.35rem;
+  }
+
+  body {
+    overflow-x: hidden;
+  }
 }
