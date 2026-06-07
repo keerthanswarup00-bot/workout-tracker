@@ -392,10 +392,25 @@ p {
   color: var(--text);
 }
 
+.set-row input[type="number"]::-webkit-inner-spin-button,
+.set-row input[type="number"]::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.set-row input[type="number"] {
+  -moz-appearance: textfield;
+}
+
 .nutrition-layout {
   display: grid;
-  grid-template-columns: 1.2fr 0.8fr;
+  grid-template-columns: 1fr;
   gap: 1rem;
+}
+
+@media (min-width: 768px) {
+  .nutrition-layout {
+    grid-template-columns: 1fr;
+  }
 }
 
 .plan-notes {
@@ -580,7 +595,6 @@ p {
 
   .metric-strip,
   .today-grid,
-  .nutrition-layout,
   .plan-notes,
   .plan-grid,
   .history-grid {
@@ -1325,6 +1339,31 @@ p {
 }
 .meal-log-item .meal-delete:hover {
   color: #ef4444;
+}
+
+/* Workout picker */
+.workout-picker {
+  display: flex;
+  gap: 0.4rem;
+  margin-bottom: 1rem;
+  flex-wrap: wrap;
+}
+.workout-pick {
+  padding: 0.5rem 1.2rem;
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 700;
+  font-size: 0.9rem;
+  cursor: pointer;
+  color: var(--muted);
+  flex: 1;
+  text-align: center;
+}
+.workout-pick.is-active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
 }
 
 /* Mobile bottom nav */

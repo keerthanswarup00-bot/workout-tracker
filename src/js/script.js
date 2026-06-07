@@ -252,9 +252,6 @@ els.exerciseList.addEventListener("change", (event) => {
   if (!checkbox) return;
   const set = getSet(checkbox.dataset.exercise, Number(checkbox.dataset.set));
   set.done = checkbox.checked;
-  if (checkbox.checked) {
-    startSessionClock();
-  }
   saveAndRender();
 });
 
@@ -352,9 +349,16 @@ function renderToday() {
 
 function renderWorkout() {
   const workout = getCurrentWorkout();
-  console.log('workout data:', workout);
   const session = getTodaySession();
   els.workoutTitle.textContent = workout.name;
+
+  const picker = document.getElementById("workoutPicker");
+  if (picker) {
+    picker.querySelectorAll(".workout-pick").forEach(btn => {
+      const type = btn.dataset.workoutType;
+      btn.classList.toggle("is-active", workout.name.toLowerCase().startsWith(type.toLowerCase()));
+    });
+  }
 
   let output = "";
   let i = 0;
@@ -417,11 +421,11 @@ function renderExerciseCard(exercise, session) {
                   </label>
                   <label>
                     Reps
-                    <input type="number" min="0" step="1" value="${set.reps}" data-field="reps" data-exercise="${exercise.name}" data-set="${setIndex}" />
+                    <input type="number" min="0" max="999" step="1" value="${set.reps}" data-field="reps" data-exercise="${exercise.name}" data-set="${setIndex}" inputmode="numeric" />
                   </label>
                   <label>
                     Weight
-                    <input type="number" min="0" max="999" step="0.5" value="${set.weight ?? ""}" placeholder="0" data-field="weight" data-exercise="${exercise.name}" data-set="${setIndex}" />
+                    <input type="number" min="0" max="999" step="0.5" value="${set.weight ?? ""}" placeholder="0" data-field="weight" data-exercise="${exercise.name}" data-set="${setIndex}" inputmode="decimal" />
                   </label>
                   ${set.done ? renderRPESelector(exercise.name, setIndex, set.rpe) : ""}
                 </div>
@@ -680,6 +684,11 @@ function getCurrentWorkout() {
 
 function getPlannedWorkout() {
   const activePlan = loadCustomProgram() || plan;
+  const selected = state.selectedWorkoutType;
+  if (selected) {
+    const match = activePlan.find(w => w.name.toLowerCase().startsWith(selected.toLowerCase()));
+    if (match) return match;
+  }
   return activePlan[state.planOffset % activePlan.length];
 }
 
@@ -1032,12 +1041,17 @@ function updateSessionDisplay() {
 
 function renderSessionClock() {
   const clock = document.getElementById("sessionClock");
+  const startBtn = document.getElementById("sessionClockStart");
   const session = getTodaySession();
   const anyDone = session.exercises.some(ex => ex.sets.some(s => s.done));
-  if (anyDone && !sessionInterval) {
-    startSessionClock();
-  }
-  if (!anyDone) {
+  if (anyDone) {
+    clock.classList.remove("is-hidden");
+    stopSessionClock();
+    sessionRemaining = 3600;
+    updateSessionDisplay();
+    document.getElementById("sessionClockDisplay").classList.remove("is-red");
+    startBtn.textContent = "▶ Start";
+  } else {
     stopSessionClock();
     clock.classList.add("is-hidden");
   }
@@ -1639,6 +1653,16 @@ function initNewFeatures() {
     sessionPaused = !sessionPaused;
   });
 
+  document.getElementById("sessionClockStart")?.addEventListener("click", () => {
+    if (sessionInterval) {
+      sessionPaused = !sessionPaused;
+      document.getElementById("sessionClockStart").textContent = sessionPaused ? "▶ Resume" : "⏸ Pause";
+    } else {
+      startSessionClock();
+      document.getElementById("sessionClockStart").textContent = "⏸ Pause";
+    }
+  });
+
   document.getElementById("sessionClockDismiss")?.addEventListener("click", () => {
     stopSessionClock();
     document.getElementById("sessionClock").classList.add("is-hidden");
@@ -1683,6 +1707,22 @@ function initNewFeatures() {
   document.getElementById("historyCharts")?.addEventListener("click", (e) => {
     const card = e.target.closest("[data-exercise-detail]");
     if (card) showExerciseDetailModal(card.dataset.exerciseDetail);
+  });
+
+  document.getElementById("workoutPicker")?.addEventListener("click", (e) => {
+    const btn = e.target.closest(".workout-pick");
+    if (!btn) return;
+    const type = btn.dataset.workoutType;
+    state.selectedWorkoutType = type;
+    const workout = getPlannedWorkout();
+    const session = getTodaySession();
+    session.workoutId = workout.id;
+    session.workoutName = workout.name;
+    session.exercises = workout.exercises.map(ex => ({
+      name: ex.name,
+      sets: Array.from({ length: ex.sets }, () => ({ reps: 10, weight: "", done: false })),
+    }));
+    saveAndRender();
   });
 
   document.getElementById("logWorkoutButton")?.addEventListener("click", () => {
