@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Workout Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
+    <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
+    <link rel="stylesheet" href="css/styles.css" />
+  </head>
+  <body>
+    <main class="app-shell">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Workout Log</p>
+          <h1>Track the work. Keep the streak honest.</h1>
+        </div>
+        <div class="date-pill" id="todayLabel"></div>
+      </header>
+
+      <nav class="tabs" aria-label="Workout tracker tabs">
+        <button class="tab-button is-active" type="button" data-tab="train">
+          🏋️ Train
+        </button>
+        <button class="tab-button" type="button" data-tab="body">
+          📊 Body
+        </button>
+        <button class="tab-button" type="button" data-tab="fuel">
+          🥗 Fuel
+        </button>
+        <button class="tab-button" type="button" data-tab="progress">
+          📈 Progress
+        </button>
+      </nav>
+
+      <section class="tab-panel is-active" id="tab-today">
+        <div id="fatigueCard" class="panel fatigue-card is-hidden">
+          <div class="fatigue-header">
+            <strong>Fatigue Check-In</strong>
+            <button class="icon-button fatigue-toggle" type="button" aria-label="Toggle fatigue">−</button>
+          </div>
+          <div class="fatigue-body">
+            <div class="fatigue-sliders">
+              <label>Sleep Quality (1-5) <input type="range" min="1" max="5" value="3" class="fatigue-slider" data-fatigue="sleep" /><span class="fatigue-value">3</span></label>
+              <label>Energy Level (1-5) <input type="range" min="1" max="5" value="3" class="fatigue-slider" data-fatigue="energy" /><span class="fatigue-value">3</span></label>
+              <label>Soreness (1-5) <input type="range" min="1" max="5" value="3" class="fatigue-slider" data-fatigue="soreness" /><span class="fatigue-value">3</span></label>
+            </div>
+            <button class="primary-button" id="saveFatigueButton">Save check-in</button>
+            <div class="fatigue-pill" id="fatiguePill"></div>
+          </div>
+        </div>
+        <div id="fatigueResultPill" class="fatigue-result-pill is-hidden"></div>
+        <div class="metric-strip">
+          <article class="metric-card protein-card">
+            <span>Protein</span>
+            <strong><span id="todayProtein">0</span>g</strong>
+            <div class="progress-track">
+              <span id="proteinProgress"></span>
+            </div>
+            <small>Goal 146g</small>
+          </article>
+          <article class="metric-card">
+            <span>Calories</span>
+            <strong><span id="todayCalories">0</span></strong>
+            <small>Goal 2200</small>
+          </article>
+          <article class="metric-card">
+            <span>Workout</span>
+            <strong id="todayWorkoutName">Push (Heavy)</strong>
+            <small id="todayWorkoutStatus">Ready to log</small>
+          </article>
+          <article class="metric-card">
+            <span>Completion</span>
+            <strong id="todayCompletion">0%</strong>
+            <small id="todaySetCount">0 sets logged</small>
+          </article>
+        </div>
+
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Session Focus</h2>
+              <p id="sessionFocus"></p>
+            </div>
+            <button class="secondary-button" type="button" data-jump="train">
+              Log workout
+            </button>
+          </div>
+          <div class="notice" id="missedNotice"></div>
+          <div class="today-grid" id="todayExercisePreview"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="tab-workout">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2 id="workoutTitle">Workout</h2>
+              <p>Tick each set, then adjust reps and weight for what actually happened.</p>
+            </div>
+            <button id="finishSessionButton" class="primary-button" type="button">
+              Finish session
+            </button>
+          </div>
+          <div class="quick-log-bar">
+            <div>
+              <strong>Quick log mode</strong>
+              <span>Use last session values when today matches the previous lift.</span>
+            </div>
+            <button id="quickLogAllButton" class="secondary-button" type="button">
+              Quick log all
+            </button>
+          </div>
+          <div class="exercise-list" id="exerciseList"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="tab-nutrition">
+        <div class="nutrition-layout">
+          <section class="panel">
+            <div class="panel-header">
+              <div>
+                <h2>Daily Intake</h2>
+                <p>Protein stays up front because recomposition lives or dies there.</p>
+              </div>
+            </div>
+            <form class="nutrition-form" id="nutritionForm">
+              <label>
+                Protein grams
+                <input id="proteinInput" type="number" min="0" step="1" />
+              </label>
+              <label>
+                Calories
+                <input id="calorieInput" type="number" min="0" step="10" />
+              </label>
+              <label>
+                Carbs grams
+                <input id="carbInput" type="number" min="0" step="1" />
+              </label>
+              <label>
+                Fat grams
+                <input id="fatInput" type="number" min="0" step="1" />
+              </label>
+              <button class="primary-button" type="submit">Save nutrition</button>
+            </form>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Macro Breakdown</h2>
+                <p>Today's progress vs targets.</p>
+              </div>
+            </div>
+            <div class="chart-container donut-container">
+              <canvas id="macroChart"></canvas>
+            </div>
+            <div class="macro-progress" id="macroProgress"></div>
+          </section>
+
+          <section class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Water Intake</h2>
+                <p>Target: 3000ml daily.</p>
+              </div>
+            </div>
+            <div id="waterTracker"></div>
+          </section>
+          <section class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Calorie Burn Sync</h2>
+                <p>Workout calories connected to nutrition.</p>
+              </div>
+            </div>
+            <div id="calorieBurnCard"></div>
+          </section>
+        </div>
+      </section>
+
+      <section class="tab-panel" id="tab-body">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Daily Weigh-In</h2>
+              <p>Track weight and body fat daily.</p>
+            </div>
+          </div>
+          <div id="weighInCard"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Weight Trend</h2>
+              <p>Last 30 days with weekly average.</p>
+            </div>
+          </div>
+          <div class="chart-container" id="weightChartContainer">
+            <canvas id="weightChart"></canvas>
+          </div>
+        </section>
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Body Measurements</h2>
+              <p>Monthly tracking — proof that recomp works.</p>
+            </div>
+          </div>
+          <div id="measurementsCard"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Training Adherence</h2>
+              <p>12-week calendar.</p>
+            </div>
+          </div>
+          <div id="adherenceCard"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Gym Cost</h2>
+              <p>Per-session cost breakdown.</p>
+            </div>
+          </div>
+          <div id="gymCostCard"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="tab-plan">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Weekly Split</h2>
+              <p>Your six lifting days plus the rest and review day.</p>
+            </div>
+            <button class="secondary-button" type="button" id="loadProgramButton">Load Program</button>
+          </div>
+          <div class="plan-grid" id="planGrid"></div>
+        </section>
+        <section class="plan-notes">
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Warm-Up Protocol</h2>
+                <p>Use this before each session.</p>
+              </div>
+            </div>
+            <ul class="rules-list" id="warmupList"></ul>
+          </article>
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Progression Plan</h2>
+                <p>How to decide when the load goes up.</p>
+              </div>
+            </div>
+            <ul class="rules-list" id="progressionList"></ul>
+          </article>
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Training Rules</h2>
+                <p>Keep these visible while you log.</p>
+              </div>
+            </div>
+            <ul class="rules-list" id="trainingRulesList"></ul>
+          </article>
+          <article class="panel">
+            <div class="panel-header compact">
+              <div>
+                <h2>Injury Guardrails</h2>
+                <p>Knee and shoulder constraints from the plan.</p>
+              </div>
+            </div>
+            <ul class="rules-list" id="injuryList"></ul>
+          </article>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="tab-recovery">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Missed Session Recovery</h2>
+              <p>When life gets in the way, keep the plan coherent instead of skipping silently.</p>
+            </div>
+          </div>
+          <div class="recovery-card" id="recoveryCard"></div>
+          <div id="skipLogCard" class="skip-log-card is-hidden"></div>
+        </section>
+      </section>
+
+      <section class="tab-panel" id="tab-history">
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Personal Records</h2>
+              <p>Best lifts across all exercises.</p>
+            </div>
+          </div>
+          <div class="pr-grid" id="prGrid"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Strength Standards</h2>
+              <p>Estimated 1RM vs bodyweight standards.</p>
+            </div>
+          </div>
+          <div id="strengthStandards"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Weekly Review</h2>
+              <p id="weeklyReviewLabel">Week in Review</p>
+            </div>
+          </div>
+          <div id="weeklyReview"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header">
+            <div>
+              <h2>Exercise History</h2>
+              <p>Per-exercise weight progression and session logs live here.</p>
+            </div>
+          </div>
+          <div class="history-grid" id="historyCharts"></div>
+        </section>
+        <section class="panel">
+          <div class="panel-header compact">
+            <div>
+              <h2>Session Log</h2>
+              <p>Recent finished and quick-logged workouts.</p>
+            </div>
+          </div>
+          <div class="session-log" id="sessionLog"></div>
+        </section>
+      </section>
+    </main>
+
+    <div id="restTimer" class="rest-timer is-hidden">
+      <div class="rest-timer-inner">
+        <div class="rest-timer-presets">
+          <button class="rest-preset" data-seconds="60">60s</button>
+          <button class="rest-preset is-active" data-seconds="90">90s</button>
+          <button class="rest-preset" data-seconds="120">120s</button>
+        </div>
+        <div class="rest-timer-display" id="restTimerDisplay">1:30</div>
+        <button class="rest-timer-dismiss" id="restTimerDismiss" aria-label="Dismiss timer">✕</button>
+      </div>
+    </div>
+
+    <div class="modal-overlay is-hidden" id="notesModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>How did that go?</h2>
+          <button class="modal-close" id="notesModalClose" aria-label="Close">✕</button>
+        </div>
+        <textarea id="sessionNotesInput" maxlength="200" placeholder="Notes about this session..." class="modal-textarea"></textarea>
+        <div class="modal-actions">
+          <button class="primary-button" id="saveNotesButton">Save session</button>
+          <button class="secondary-button" id="skipNotesButton">Skip</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay is-hidden" id="exerciseDetailModal">
+      <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+          <h2 id="exerciseDetailTitle">Exercise History</h2>
+          <button class="modal-close" id="exerciseDetailClose" aria-label="Close">✕</button>
+        </div>
+        <div class="chart-container" id="exerciseDetailChartContainer">
+          <canvas id="exerciseDetailChart"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay is-hidden" id="loadProgramModal">
+      <div class="modal-card modal-card-wide">
+        <div class="modal-header">
+          <h2>Load Custom Program</h2>
+          <button class="modal-close" id="loadProgramClose" aria-label="Close">✕</button>
+        </div>
+        <p class="modal-hint">Format: DayName | Exercise Name | sets | reps</p>
+        <textarea id="programInput" class="modal-textarea" placeholder="Push Heavy | Flat Barbell Bench Press | 4 | 4-6"></textarea>
+        <div id="programPreview" class="program-preview is-hidden"></div>
+        <div class="modal-actions">
+          <button class="primary-button" id="loadProgramConfirm" disabled>Preview</button>
+          <button class="secondary-button" id="loadProgramCancel">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="modal-overlay is-hidden" id="confirmProgramModal">
+      <div class="modal-card">
+        <div class="modal-header">
+          <h2>Confirm Program</h2>
+          <button class="modal-close" id="confirmProgramClose" aria-label="Close">✕</button>
+        </div>
+        <p id="confirmProgramText">This will replace existing exercises. Continue?</p>
+        <div class="modal-actions">
+          <button class="primary-button" id="confirmProgramYes">Confirm</button>
+          <button class="secondary-button" id="confirmProgramNo">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="js/script.js"></script>
+  </body>
+</html>
