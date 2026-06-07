@@ -1,6 +1,63 @@
 const STORAGE_KEY = "workout-tracker-v3";
 const PROTEIN_GOAL = 146;
-const CALORIE_GOAL = 2200;
+const CARBS_GOAL = 240;
+
+const southIndianFoods = [
+  { name: "Chicken Biryani (1 plate)", protein: 28, carbs: 65 },
+  { name: "Mutton Biryani (1 plate)", protein: 32, carbs: 62 },
+  { name: "Egg Biryani (1 plate)", protein: 22, carbs: 64 },
+  { name: "Prawn Biryani (1 plate)", protein: 26, carbs: 60 },
+  { name: "Curd Rice (1 bowl)", protein: 6, carbs: 42 },
+  { name: "Sambar Rice (1 plate)", protein: 8, carbs: 55 },
+  { name: "Steamed Rice (1 cup)", protein: 4, carbs: 45 },
+  { name: "Chicken Curry (1 bowl)", protein: 30, carbs: 8 },
+  { name: "Mutton Curry (1 bowl)", protein: 34, carbs: 6 },
+  { name: "Fish Curry (1 bowl)", protein: 28, carbs: 5 },
+  { name: "Prawn Curry (1 bowl)", protein: 24, carbs: 7 },
+  { name: "Egg Curry (2 eggs)", protein: 14, carbs: 6 },
+  { name: "Chicken Keema (1 bowl)", protein: 32, carbs: 8 },
+  { name: "Mutton Keema (1 bowl)", protein: 36, carbs: 7 },
+  { name: "Chicken Fry (3 pieces)", protein: 35, carbs: 5 },
+  { name: "Chicken 65 (6 pieces)", protein: 28, carbs: 12 },
+  { name: "Chicken Tikka (4 pieces)", protein: 32, carbs: 4 },
+  { name: "Fish Fry (2 pieces)", protein: 26, carbs: 8 },
+  { name: "Prawn Fry (6 pieces)", protein: 22, carbs: 6 },
+  { name: "Mutton Chops (2 pieces)", protein: 30, carbs: 3 },
+  { name: "Egg Roast (2 eggs)", protein: 12, carbs: 4 },
+  { name: "Boiled Eggs (2)", protein: 12, carbs: 1 },
+  { name: "Idli (3 pieces)", protein: 6, carbs: 42 },
+  { name: "Dosa (1 plain)", protein: 4, carbs: 38 },
+  { name: "Egg Dosa (1)", protein: 10, carbs: 38 },
+  { name: "Chicken Dosa (1)", protein: 18, carbs: 40 },
+  { name: "Vada (2 pieces)", protein: 5, carbs: 24 },
+  { name: "Upma (1 bowl)", protein: 5, carbs: 32 },
+  { name: "Pongal (1 bowl)", protein: 6, carbs: 40 },
+  { name: "Appam (2 pieces)", protein: 4, carbs: 36 },
+  { name: "Puttu (1 serving)", protein: 5, carbs: 38 },
+  { name: "Egg Bhurji (2 eggs)", protein: 13, carbs: 3 },
+  { name: "Omelette (2 eggs)", protein: 12, carbs: 2 },
+  { name: "Parotta (2 pieces)", protein: 6, carbs: 52 },
+  { name: "Chapati (2 pieces)", protein: 6, carbs: 30 },
+  { name: "Chicken Kothu Parotta", protein: 24, carbs: 58 },
+  { name: "Egg Kothu Parotta", protein: 18, carbs: 56 },
+  { name: "Mutton Kothu Parotta", protein: 28, carbs: 55 },
+  { name: "Chicken Soup (1 bowl)", protein: 18, carbs: 4 },
+  { name: "Rasam (1 bowl)", protein: 2, carbs: 8 },
+  { name: "Sambar (1 bowl)", protein: 5, carbs: 14 },
+  { name: "Coconut Chutney", protein: 2, carbs: 6 },
+  { name: "Chicken Sandwich", protein: 20, carbs: 28 },
+  { name: "Egg Sandwich", protein: 14, carbs: 26 },
+  { name: "Chicken Roll", protein: 22, carbs: 32 },
+  { name: "Shawarma (chicken)", protein: 24, carbs: 35 },
+  { name: "Egg Puff (1)", protein: 8, carbs: 22 },
+  { name: "Chicken Puff (1)", protein: 12, carbs: 24 },
+  { name: "Buttermilk (1 glass)", protein: 3, carbs: 5 },
+  { name: "Lassi (1 glass)", protein: 5, carbs: 18 },
+  { name: "Milk (1 glass 250ml)", protein: 8, carbs: 12 },
+  { name: "Whey Protein Shake", protein: 25, carbs: 5 },
+  { name: "Banana (1 medium)", protein: 1, carbs: 27 },
+  { name: "Custom Entry", protein: 0, carbs: 0 },
+];
 
 let weightChartInstance = null;
 let macroChartInstance = null;
@@ -149,7 +206,8 @@ const els = {
   todayLabel: document.getElementById("todayLabel"),
   todayProtein: document.getElementById("todayProtein"),
   proteinProgress: document.getElementById("proteinProgress"),
-  todayCalories: document.getElementById("todayCalories"),
+  todayCarbs: document.getElementById("todayCarbs"),
+  carbsProgress: document.getElementById("carbsProgress"),
   todayWorkoutName: document.getElementById("todayWorkoutName"),
   todayWorkoutStatus: document.getElementById("todayWorkoutStatus"),
   todayCompletion: document.getElementById("todayCompletion"),
@@ -161,11 +219,6 @@ const els = {
   exerciseList: document.getElementById("exerciseList"),
   finishSessionButton: document.getElementById("finishSessionButton"),
   quickLogAllButton: document.getElementById("quickLogAllButton"),
-  nutritionForm: document.getElementById("nutritionForm"),
-  proteinInput: document.getElementById("proteinInput"),
-  calorieInput: document.getElementById("calorieInput"),
-  carbInput: document.getElementById("carbInput"),
-  fatInput: document.getElementById("fatInput"),
   planGrid: document.getElementById("planGrid"),
   warmupList: document.getElementById("warmupList"),
   progressionList: document.getElementById("progressionList"),
@@ -200,7 +253,7 @@ els.exerciseList.addEventListener("change", (event) => {
   const set = getSet(checkbox.dataset.exercise, Number(checkbox.dataset.set));
   set.done = checkbox.checked;
   if (checkbox.checked) {
-    startRestTimer();
+    startSessionClock();
   }
   saveAndRender();
 });
@@ -230,17 +283,7 @@ els.finishSessionButton.addEventListener("click", () => {
   showNotesModal();
 });
 
-els.nutritionForm.addEventListener("submit", (event) => {
-  event.preventDefault();
-  const today = getDateKey();
-  state.nutrition[today] = {
-    protein: Number(els.proteinInput.value) || 0,
-    calories: Number(els.calorieInput.value) || 0,
-    carbs: Number(els.carbInput.value) || 0,
-    fat: Number(els.fatInput.value) || 0,
-  };
-  saveAndRender();
-});
+// Meal logging will be initialised by initNewFeatures()
 
 document.addEventListener("DOMContentLoaded", () => {
   render();
@@ -251,7 +294,7 @@ function render() {
   ensureTodaySession();
   renderToday();
   renderWorkout();
-  renderNutrition();
+  renderMealLog();
   renderPlan();
   renderRecovery();
   renderHistory();
@@ -259,7 +302,7 @@ function render() {
   renderFuelExtra();
   renderProgressExtra();
   renderFatigueUI();
-  renderRestTimerUI();
+  renderSessionClock();
   renderSkipLog();
 }
 
@@ -275,7 +318,11 @@ function renderToday() {
     (nutrition.protein / PROTEIN_GOAL) * 100,
     100
   )}%`;
-  els.todayCalories.textContent = String(nutrition.calories);
+  els.todayCarbs.textContent = String(nutrition.carbs);
+  els.carbsProgress.style.width = `${Math.min(
+    (nutrition.carbs / CARBS_GOAL) * 100,
+    100
+  )}%`;
   els.todayWorkoutName.textContent = workout.name;
   els.todayWorkoutStatus.textContent = session.finishedAt
     ? "Finished"
@@ -402,12 +449,51 @@ function getRPEColor(rpe) {
   return "red";
 }
 
-function renderNutrition() {
-  const nutrition = getTodayNutrition();
-  els.proteinInput.value = nutrition.protein;
-  els.calorieInput.value = nutrition.calories;
-  els.carbInput.value = nutrition.carbs;
-  els.fatInput.value = nutrition.fat;
+function renderMealLog() {
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const totals = getMealTotals(meals);
+  const container = document.getElementById("mealLogContainer");
+  if (!container) return;
+
+  const foodSelect = document.getElementById("foodSelect");
+  const activeType = document.querySelector(".meal-pill.is-active")?.dataset.mealType || "Breakfast";
+
+  document.getElementById("mealTotals").innerHTML = `
+    <div class="meal-total-row">
+      <span>Protein</span>
+      <div class="progress-track"><span class="protein-fill" style="width:${Math.min((totals.protein / PROTEIN_GOAL) * 100, 100)}%"></span></div>
+      <span>${totals.protein}g / ${PROTEIN_GOAL}g (${Math.round((totals.protein / PROTEIN_GOAL) * 100)}%)</span>
+    </div>
+    <div class="meal-total-row">
+      <span>Carbs</span>
+      <div class="progress-track"><span style="width:${Math.min((totals.carbs / CARBS_GOAL) * 100, 100)}%"></span></div>
+      <span>${totals.carbs}g / ${CARBS_GOAL}g (${Math.round((totals.carbs / CARBS_GOAL) * 100)}%)</span>
+    </div>
+  `;
+
+  document.getElementById("mealLog").innerHTML = meals.length
+    ? meals.map((meal, i) => `
+        <div class="meal-log-item">
+          <div>
+            <span class="meal-tag">${meal.type}</span>
+            <strong>${meal.food}</strong>
+            <span class="meal-macros"> — ${meal.protein}g protein · ${meal.carbs}g carbs</span>
+          </div>
+          <button class="meal-delete" data-meal-index="${i}">✕</button>
+        </div>
+      `).join("")
+    : `<p style="color:var(--muted);font-size:0.88rem;font-weight:600">No meals logged today. Add one above.</p>`;
+
+  document.querySelectorAll(".meal-delete").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.mealIndex);
+      const meals = loadMeals(today);
+      meals.splice(idx, 1);
+      saveMeals(today, meals);
+      renderMealLog();
+    });
+  });
 }
 
 function renderPlan() {
@@ -564,8 +650,8 @@ function ensureTodaySession(forceCurrentWorkout = false) {
       exercises: workout.exercises.map((exercise) => ({
         name: exercise.name,
         sets: Array.from({ length: exercise.sets }, () => ({
-          reps: exercise.reps,
-          weight: exercise.weight ?? "",
+          reps: 10,
+          weight: "",
           done: false,
         })),
       })),
@@ -687,7 +773,25 @@ function getMissedSession() {
 
 function getTodayNutrition() {
   const today = getDateKey();
-  return state.nutrition[today] || { protein: 0, calories: 0, carbs: 0, fat: 0 };
+  const meals = loadMeals(today);
+  return getMealTotals(meals);
+}
+
+function loadMeals(dateKey) {
+  try {
+    const data = localStorage.getItem(`wl_meals_${dateKey}`);
+    return data ? JSON.parse(data) : [];
+  } catch { return []; }
+}
+
+function saveMeals(dateKey, meals) {
+  localStorage.setItem(`wl_meals_${dateKey}`, JSON.stringify(meals));
+}
+
+function getMealTotals(meals) {
+  const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const carbs = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
+  return { protein, carbs };
 }
 
 function renderSparkline(points) {
@@ -853,18 +957,6 @@ function saveBodyLogEntry(entry) {
   localStorage.setItem("wl_bodylog", JSON.stringify(log));
 }
 
-function loadMeasurements() {
-  try { return JSON.parse(localStorage.getItem("wl_measurements")) || []; } catch { return []; }
-}
-
-function saveMeasurementsEntry(entry) {
-  const log = loadMeasurements();
-  const existing = log.findIndex(e => e.date === entry.date);
-  if (existing >= 0) log[existing] = entry;
-  else log.push(entry);
-  localStorage.setItem("wl_measurements", JSON.stringify(log));
-}
-
 function loadSkips() {
   try { return JSON.parse(localStorage.getItem("wl_skips")) || []; } catch { return []; }
 }
@@ -889,14 +981,6 @@ function saveFatigue(dateKey, data) {
   localStorage.setItem(`wl_fatigue_${dateKey}`, JSON.stringify(data));
 }
 
-function loadGymFee() {
-  try { return Number(localStorage.getItem("wl_gymfee")) || 0; } catch { return 0; }
-}
-
-function saveGymFee(fee) {
-  localStorage.setItem("wl_gymfee", String(fee));
-}
-
 function loadCustomProgram() {
   try { return JSON.parse(localStorage.getItem("wl_custom_program")); } catch { return null; }
 }
@@ -905,57 +989,58 @@ function saveCustomProgram(program) {
   localStorage.setItem("wl_custom_program", JSON.stringify(program));
 }
 
-let restInterval = null;
-let restRemaining = 90;
-let restPaused = false;
+let sessionInterval = null;
+let sessionRemaining = 3600;
+let sessionPaused = false;
 
-function startRestTimer() {
-  const timer = document.getElementById("restTimer");
-  if (timer.classList.contains("is-hidden")) return;
-  stopRestTimer();
-  restPaused = false;
-  restRemaining = Number(document.querySelector(".rest-preset.is-active")?.dataset.seconds) || 90;
-  updateRestDisplay();
-  restInterval = setInterval(() => {
-    if (restPaused) return;
-    restRemaining--;
-    updateRestDisplay();
-    if (restRemaining <= 0) {
-      stopRestTimer();
+function startSessionClock() {
+  const clock = document.getElementById("sessionClock");
+  if (!clock.classList.contains("is-hidden") || sessionInterval) return;
+  stopSessionClock();
+  sessionPaused = false;
+  sessionRemaining = 3600;
+  updateSessionDisplay();
+  clock.classList.remove("is-hidden");
+  sessionInterval = setInterval(() => {
+    if (sessionPaused) return;
+    sessionRemaining--;
+    updateSessionDisplay();
+    if (sessionRemaining <= 0) {
+      stopSessionClock();
       if (navigator.vibrate) navigator.vibrate(500);
-      document.getElementById("restTimerDisplay").classList.add("is-red");
+      document.getElementById("sessionClockDisplay").classList.add("is-red");
       setTimeout(() => {
-        document.getElementById("restTimerDisplay").classList.remove("is-red");
-        resetRestTimer();
+        document.getElementById("sessionClockDisplay").classList.remove("is-red");
       }, 2000);
     }
   }, 1000);
 }
 
-function stopRestTimer() {
-  if (restInterval) {
-    clearInterval(restInterval);
-    restInterval = null;
+function stopSessionClock() {
+  if (sessionInterval) {
+    clearInterval(sessionInterval);
+    sessionInterval = null;
   }
 }
 
-function resetRestTimer() {
-  restPaused = false;
-  restRemaining = Number(document.querySelector(".rest-preset.is-active")?.dataset.seconds) || 90;
-  updateRestDisplay();
+function updateSessionDisplay() {
+  const h = Math.floor(sessionRemaining / 3600);
+  const m = Math.floor((sessionRemaining % 3600) / 60);
+  const s = sessionRemaining % 60;
+  document.getElementById("sessionClockDisplay").textContent = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
-function updateRestDisplay() {
-  const m = Math.floor(restRemaining / 60);
-  const s = restRemaining % 60;
-  document.getElementById("restTimerDisplay").textContent = `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function renderRestTimerUI() {
-  const timer = document.getElementById("restTimer");
+function renderSessionClock() {
+  const clock = document.getElementById("sessionClock");
   const session = getTodaySession();
   const anyDone = session.exercises.some(ex => ex.sets.some(s => s.done));
-  timer.classList.toggle("is-hidden", !anyDone);
+  if (anyDone && !sessionInterval) {
+    startSessionClock();
+  }
+  if (!anyDone) {
+    stopSessionClock();
+    clock.classList.add("is-hidden");
+  }
 }
 
 function renderFatigueUI() {
@@ -1036,9 +1121,7 @@ function getSkipPattern(skips) {
 function renderBodyTab() {
   renderWeighIn();
   renderWeightChart();
-  renderMeasurements();
   renderAdherenceGrid();
-  renderGymCost();
 }
 
 function renderWeighIn() {
@@ -1159,41 +1242,6 @@ function renderWeightChart() {
   });
 }
 
-function renderMeasurements() {
-  const container = document.getElementById("measurementsCard");
-  const log = loadMeasurements();
-  const mostRecent = log.length ? log[log.length - 1] : null;
-  const first = log.length ? log[0] : null;
-
-  const fields = ["Chest", "Waist", "Hips", "Left Arm", "Right Arm", "Left Thigh", "Right Thigh"];
-
-  let refHtml = "";
-  if (mostRecent) {
-    refHtml = `<div class="measurements-ref">${fields.map(f => {
-      const val = mostRecent.measurements[f];
-      const change = first && first.measurements[f] ? (val - first.measurements[f]).toFixed(1) : null;
-      return `<div class="measurements-ref-item"><strong>${val}cm</strong><span>${f}${change ? ` (${change > 0 ? "+" : ""}${change})` : ""}</span></div>`;
-    }).join("")}</div>`;
-  }
-
-  container.innerHTML = `
-    ${refHtml}
-    <div class="measurements-form">
-      ${fields.map(f => `<label>${f} <input type="number" step="0.1" class="meas-input" data-meas="${f}" value="${mostRecent?.measurements?.[f] || ""}" /></label>`).join("")}
-    </div>
-    <button class="primary-button" id="saveMeasurementsButton">Save measurements</button>
-  `;
-
-  document.getElementById("saveMeasurementsButton")?.addEventListener("click", () => {
-    const measurements = {};
-    document.querySelectorAll(".meas-input").forEach(inp => {
-      measurements[inp.dataset.meas] = Number(inp.value);
-    });
-    saveMeasurementsEntry({ date: getDateKey(), measurements });
-    renderMeasurements();
-  });
-}
-
 function renderAdherenceGrid() {
   const container = document.getElementById("adherenceCard");
   const sessions = state.sessions.filter(s => s.finishedAt);
@@ -1241,36 +1289,9 @@ function renderAdherenceGrid() {
   container.innerHTML = html;
 }
 
-function renderGymCost() {
-  const container = document.getElementById("gymCostCard");
-  const fee = loadGymFee();
-  const today = getDateKey();
-  const monthStart = today.slice(0, 7);
-  const sessionsThisMonth = state.sessions.filter(s => s.finishedAt && s.dateKey.startsWith(monthStart));
-  const sessionCount = sessionsThisMonth.length;
-  const costPerSession = fee && sessionCount ? Math.round(fee / sessionCount) : 0;
-  const todaySession = getTodaySession();
-  const skipCount = loadSkips().filter(s => s.date.startsWith(monthStart)).length;
-
-  container.innerHTML = `
-    <div class="gym-cost-card">
-      <label>Monthly gym fee (₹) <input type="number" id="gymFeeInput" value="${fee || ""}" /></label>
-      ${costPerSession ? `<p>This session cost you ₹${costPerSession}</p>` : ""}
-      ${skipCount ? `<p>You've saved ₹${Math.round((fee / (sessionCount + skipCount)) * skipCount)} this month by skipping ${skipCount} sessions</p>` : ""}
-      ${!sessionCount && !skipCount ? `<p>Log sessions to see cost breakdown.</p>` : ""}
-    </div>
-  `;
-
-  document.getElementById("gymFeeInput")?.addEventListener("change", () => {
-    saveGymFee(Number(document.getElementById("gymFeeInput").value) || 0);
-    renderGymCost();
-  });
-}
-
 function renderFuelExtra() {
   renderMacroChart();
   renderWaterTracker();
-  renderCalorieBurn();
 }
 
 function renderMacroChart() {
@@ -1280,8 +1301,7 @@ function renderMacroChart() {
   const ctx = canvas.getContext("2d");
   const nutrition = getTodayNutrition();
 
-  const targets = { protein: 146, carbs: 240, fat: 70 };
-  const logged = [nutrition.protein, nutrition.carbs, nutrition.fat];
+  const logged = [nutrition.protein, nutrition.carbs];
   const hasData = logged.some(v => v > 0);
 
   if (!hasData) {
@@ -1291,10 +1311,10 @@ function renderMacroChart() {
   macroChartInstance = new Chart(ctx, {
     type: "doughnut",
     data: {
-      labels: ["Protein", "Carbs", "Fat"],
+      labels: ["Protein", "Carbs"],
       datasets: [{
         data: logged,
-        backgroundColor: ["#c2410c", "#17756b", "#b45309"],
+        backgroundColor: ["#c2410c", "#17756b"],
         borderWidth: 0,
       }],
     },
@@ -1305,14 +1325,16 @@ function renderMacroChart() {
   });
 
   const progressContainer = document.getElementById("macroProgress");
-  progressContainer.innerHTML = ["protein", "carbs", "fat"].map(key => {
+  progressContainer.innerHTML = [
+    { key: "protein", color: "#c2410c", target: PROTEIN_GOAL },
+    { key: "carbs", color: "#17756b", target: CARBS_GOAL },
+  ].map(({ key, color, target }) => {
     const loggedVal = nutrition[key] || 0;
-    const target = targets[key];
     const pct = Math.min((loggedVal / target) * 100, 100);
     return `
       <div class="macro-progress-item">
         <div class="macro-label"><span>${key.charAt(0).toUpperCase() + key.slice(1)}</span><span>${loggedVal}g / ${target}g</span></div>
-        <div class="progress-track"><span style="width:${pct}%;background:${key === "protein" ? "#c2410c" : key === "carbs" ? "#17756b" : "#b45309"}"></span></div>
+        <div class="progress-track"><span style="width:${pct}%;background:${color}"></span></div>
       </div>
     `;
   }).join("");
@@ -1353,30 +1375,6 @@ function renderWaterTracker() {
       renderWaterTracker();
     });
   });
-}
-
-function renderCalorieBurn() {
-  const container = document.getElementById("calorieBurnCard");
-  const today = getDateKey();
-  const session = state.sessions.find(s => s.dateKey === today && s.finishedAt);
-  const nutrition = getTodayNutrition();
-
-  if (!session) {
-    container.innerHTML = `<p class="calorie-burn-text">Finish a session to see calorie sync.</p>`;
-    return;
-  }
-
-  const bodyLog = loadBodyLog();
-  const bw = bodyLog.length ? bodyLog[bodyLog.length - 1].weight : 66.7;
-
-  const totalSets = session.exercises.reduce((sum, ex) => sum + ex.sets.filter(s => s.done).length, 0);
-  const duration = Math.max(totalSets * 2, 30);
-  const burned = Math.round(bw * duration * 0.1);
-  const adjustedRemaining = Math.max(2200 - nutrition.calories + burned, 0);
-
-  container.innerHTML = `
-    <p class="calorie-burn-text">Today's session burned ~${burned} kcal. Adjusted remaining: ${adjustedRemaining} kcal</p>
-  `;
 }
 
 function renderProgressExtra() {
@@ -1456,14 +1454,11 @@ function renderWeeklyReview() {
 
   const weekSessions = state.sessions.filter(s => s.finishedAt && s.dateKey >= mondayKey && s.dateKey <= sundayKey);
   const weekBodyLog = loadBodyLog().filter(e => e.date >= mondayKey && e.date <= sundayKey);
-  const weekNutrition = Object.entries(state.nutrition).filter(([key]) => key >= mondayKey && key <= sundayKey);
 
   const sessionCount = weekSessions.length;
   const planCount = 6;
   const totalSets = weekSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.filter(set => set.done).length, 0), 0);
   const totalKg = weekSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.filter(set => set.done && set.weight).reduce((s3, set) => s3 + (Number(set.weight) || 0) * (set.reps || 0), 0), 0), 0);
-  const avgProtein = weekNutrition.length ? Math.round(weekNutrition.reduce((s, [, n]) => s + (n.protein || 0), 0) / weekNutrition.length) : 0;
-  const avgCalories = weekNutrition.length ? Math.round(weekNutrition.reduce((s, [, n]) => s + (n.calories || 0), 0) / weekNutrition.length) : 0;
 
   const prs = loadPRs();
   const prCount = Object.keys(prs).length;
@@ -1475,8 +1470,6 @@ function renderWeeklyReview() {
         <div class="weekly-review-item"><strong>${sessionCount}/${planCount}</strong><span>Sessions</span></div>
         <div class="weekly-review-item"><strong>${totalSets}</strong><span>Sets logged</span></div>
         <div class="weekly-review-item"><strong>${Math.round(totalKg / 1000)}k</strong><span>kg lifted</span></div>
-        <div class="weekly-review-item"><strong>${avgProtein}g</strong><span>Avg protein</span></div>
-        <div class="weekly-review-item"><strong>${avgCalories}</strong><span>Avg calories</span></div>
         <div class="weekly-review-item"><strong>${prCount}</strong><span>PRs</span></div>
         ${bwChange ? `<div class="weekly-review-item"><strong>${bwChange}kg</strong><span>Weight change</span></div>` : ""}
       </div>`
@@ -1642,21 +1635,13 @@ function initNewFeatures() {
     btn.textContent = document.querySelector(".fatigue-body").classList.contains("is-collapsed") ? "+" : "−";
   });
 
-  document.querySelectorAll(".rest-preset").forEach(btn => {
-    btn.addEventListener("click", () => {
-      document.querySelectorAll(".rest-preset").forEach(b => b.classList.remove("is-active"));
-      btn.classList.add("is-active");
-      resetRestTimer();
-    });
+  document.getElementById("sessionClockDisplay")?.addEventListener("click", () => {
+    sessionPaused = !sessionPaused;
   });
 
-  document.getElementById("restTimerDisplay")?.addEventListener("click", () => {
-    restPaused = !restPaused;
-  });
-
-  document.getElementById("restTimerDismiss")?.addEventListener("click", () => {
-    stopRestTimer();
-    document.getElementById("restTimer").classList.add("is-hidden");
+  document.getElementById("sessionClockDismiss")?.addEventListener("click", () => {
+    stopSessionClock();
+    document.getElementById("sessionClock").classList.add("is-hidden");
   });
 
   document.getElementById("saveNotesButton")?.addEventListener("click", () => {
@@ -1708,6 +1693,65 @@ function initNewFeatures() {
   document.getElementById("backToTodayButton")?.addEventListener("click", () => {
     document.getElementById("workoutLogger").classList.add("is-hidden");
     document.getElementById("todayPreview").classList.remove("is-hidden");
+  });
+
+  /* Meal logging init */
+  const foodSelect = document.getElementById("foodSelect");
+  if (foodSelect) {
+    southIndianFoods.forEach((food, i) => {
+      const opt = document.createElement("option");
+      opt.value = i;
+      opt.textContent = food.name;
+      foodSelect.appendChild(opt);
+    });
+    foodSelect.addEventListener("change", () => {
+      const idx = Number(foodSelect.value);
+      const food = southIndianFoods[idx];
+      if (food) {
+        document.getElementById("mealProtein").value = food.protein;
+        document.getElementById("mealCarbs").value = food.carbs;
+        if (food.name === "Custom Entry") {
+          document.getElementById("mealProtein").value = "";
+          document.getElementById("mealCarbs").value = "";
+        }
+      }
+    });
+  }
+
+  const foodSearch = document.getElementById("foodSearch");
+  if (foodSearch) {
+    foodSearch.addEventListener("input", () => {
+      const q = foodSearch.value.toLowerCase();
+      const opts = foodSelect.options;
+      for (let i = 0; i < opts.length; i++) {
+        opts[i].style.display = southIndianFoods[i].name.toLowerCase().includes(q) ? "" : "none";
+      }
+      if (opts.length > 0) foodSelect.selectedIndex = -1;
+    });
+  }
+
+  document.querySelectorAll(".meal-pill").forEach(pill => {
+    pill.addEventListener("click", () => {
+      document.querySelectorAll(".meal-pill").forEach(p => p.classList.remove("is-active"));
+      pill.classList.add("is-active");
+    });
+  });
+
+  document.getElementById("addMealButton")?.addEventListener("click", () => {
+    const today = getDateKey();
+    const type = document.querySelector(".meal-pill.is-active")?.dataset.mealType || "Snack";
+    const foodName = foodSelect.options[foodSelect.selectedIndex]?.textContent || "Custom";
+    const protein = Number(document.getElementById("mealProtein").value) || 0;
+    const carbs = Number(document.getElementById("mealCarbs").value) || 0;
+    if (!protein && !carbs) return;
+    const meals = loadMeals(today);
+    meals.push({ type, food: foodName, protein, carbs });
+    saveMeals(today, meals);
+    document.getElementById("foodSearch").value = "";
+    foodSelect.selectedIndex = -1;
+    document.getElementById("mealProtein").value = "";
+    document.getElementById("mealCarbs").value = "";
+    renderMealLog();
   });
 }
 

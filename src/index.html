@@ -25,16 +25,16 @@
 
       <nav class="tabs" aria-label="Workout tracker tabs">
         <button class="tab-button is-active" type="button" data-tab="train">
-          🏋️ Train
+          Train
         </button>
         <button class="tab-button" type="button" data-tab="body">
-          📊 Body
+          Body
         </button>
         <button class="tab-button" type="button" data-tab="fuel">
-          🥗 Fuel
+          Fuel
         </button>
         <button class="tab-button" type="button" data-tab="progress">
-          📈 Progress
+          Progress
         </button>
       </nav>
 
@@ -65,9 +65,12 @@
             <small>Goal 146g</small>
           </article>
           <article class="metric-card">
-            <span>Calories</span>
-            <strong><span id="todayCalories">0</span></strong>
-            <small>Goal 2200</small>
+            <span>Carbs</span>
+            <strong><span id="todayCarbs">0</span>g</strong>
+            <div class="progress-track">
+              <span id="carbsProgress"></span>
+            </div>
+            <small>Goal 240g</small>
           </article>
           <article class="metric-card">
             <span>Workout</span>
@@ -132,25 +135,23 @@
                 <p>Protein stays up front because recomposition lives or dies there.</p>
               </div>
             </div>
-            <form class="nutrition-form" id="nutritionForm">
-              <label>
-                Protein grams
-                <input id="proteinInput" type="number" min="0" step="1" />
-              </label>
-              <label>
-                Calories
-                <input id="calorieInput" type="number" min="0" step="10" />
-              </label>
-              <label>
-                Carbs grams
-                <input id="carbInput" type="number" min="0" step="1" />
-              </label>
-              <label>
-                Fat grams
-                <input id="fatInput" type="number" min="0" step="1" />
-              </label>
-              <button class="primary-button" type="submit">Save nutrition</button>
-            </form>
+            <div id="mealLogContainer">
+              <div class="meal-totals" id="mealTotals"></div>
+              <div class="meal-pills" id="mealTypePills">
+                <button class="meal-pill is-active" data-meal-type="Breakfast">Breakfast</button>
+                <button class="meal-pill" data-meal-type="Lunch">Lunch</button>
+                <button class="meal-pill" data-meal-type="Dinner">Dinner</button>
+                <button class="meal-pill" data-meal-type="Snack">Snack</button>
+              </div>
+              <input type="text" id="foodSearch" placeholder="Search food..." />
+              <select id="foodSelect" size="5"></select>
+              <div class="meal-inputs">
+                <label>Protein (g) <input type="number" id="mealProtein" min="0" step="1" value="0" /></label>
+                <label>Carbs (g) <input type="number" id="mealCarbs" min="0" step="1" value="0" /></label>
+              </div>
+              <button class="primary-button" id="addMealButton">Add Meal</button>
+              <div id="mealLog"></div>
+            </div>
           </section>
 
           <section class="panel">
@@ -174,15 +175,6 @@
               </div>
             </div>
             <div id="waterTracker"></div>
-          </section>
-          <section class="panel">
-            <div class="panel-header compact">
-              <div>
-                <h2>Calorie Burn Sync</h2>
-                <p>Workout calories connected to nutrition.</p>
-              </div>
-            </div>
-            <div id="calorieBurnCard"></div>
           </section>
         </div>
       </section>
@@ -211,29 +203,11 @@
         <section class="panel">
           <div class="panel-header compact">
             <div>
-              <h2>Body Measurements</h2>
-              <p>Monthly tracking — proof that recomp works.</p>
-            </div>
-          </div>
-          <div id="measurementsCard"></div>
-        </section>
-        <section class="panel">
-          <div class="panel-header compact">
-            <div>
               <h2>Training Adherence</h2>
               <p>12-week calendar.</p>
             </div>
           </div>
           <div id="adherenceCard"></div>
-        </section>
-        <section class="panel">
-          <div class="panel-header compact">
-            <div>
-              <h2>Gym Cost</h2>
-              <p>Per-session cost breakdown.</p>
-            </div>
-          </div>
-          <div id="gymCostCard"></div>
         </section>
       </section>
 
@@ -350,15 +324,11 @@
       </section>
     </main>
 
-    <div id="restTimer" class="rest-timer is-hidden">
-      <div class="rest-timer-inner">
-        <div class="rest-timer-presets">
-          <button class="rest-preset" data-seconds="60">60s</button>
-          <button class="rest-preset is-active" data-seconds="90">90s</button>
-          <button class="rest-preset" data-seconds="120">120s</button>
-        </div>
-        <div class="rest-timer-display" id="restTimerDisplay">1:30</div>
-        <button class="rest-timer-dismiss" id="restTimerDismiss" aria-label="Dismiss timer">✕</button>
+    <div id="sessionClock" class="session-clock is-hidden">
+      <div class="session-clock-inner">
+        <span class="session-clock-label">Session</span>
+        <div class="session-clock-display" id="sessionClockDisplay">1:00:00</div>
+        <button class="session-clock-dismiss" id="sessionClockDismiss" aria-label="Dismiss clock">✕</button>
       </div>
     </div>
 
