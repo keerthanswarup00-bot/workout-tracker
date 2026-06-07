@@ -258,8 +258,9 @@ function render() {
   renderBodyTab();
   renderFuelExtra();
   renderProgressExtra();
+  renderSessionDuration();
   renderFatigueUI();
-  renderSessionClock();
+  renderStopwatch();
   renderSkipLog();
 }
 
@@ -569,13 +570,14 @@ function renderHistory() {
     ? logs
         .map((session) => {
           const completion = getCompletion(session);
+          const duration = session.duration ? formatStopwatch(session.duration) : "";
           return `
             <article class="log-item">
               <div>
                 <strong>${session.workoutName}</strong>
                 <span>${formatReadableDate(parseDateKey(session.dateKey))}</span>
               </div>
-              <span>${completion.done}/${completion.total} sets</span>
+              <span>${duration ? duration + " · " : ""}${completion.done}/${completion.total} sets</span>
             </article>
           `;
         })
@@ -958,63 +960,95 @@ function saveCustomProgram(program) {
   localStorage.setItem("wl_custom_program", JSON.stringify(program));
 }
 
-let sessionInterval = null;
-let sessionRemaining = 3600;
-let sessionPaused = false;
+let stopwatchInterval = null;
+let stopwatchElapsed = 0;
+let stopwatchRunning = false;
 
-function startSessionClock() {
-  const clock = document.getElementById("sessionClock");
-  if (!clock.classList.contains("is-hidden") || sessionInterval) return;
-  stopSessionClock();
-  sessionPaused = false;
-  sessionRemaining = 3600;
-  updateSessionDisplay();
-  clock.classList.remove("is-hidden");
-  sessionInterval = setInterval(() => {
-    if (sessionPaused) return;
-    sessionRemaining--;
-    updateSessionDisplay();
-    if (sessionRemaining <= 0) {
-      stopSessionClock();
-      if (navigator.vibrate) navigator.vibrate(500);
-      document.getElementById("sessionClockDisplay").classList.add("is-red");
-      setTimeout(() => {
-        document.getElementById("sessionClockDisplay").classList.remove("is-red");
-      }, 2000);
-    }
+function formatStopwatch(seconds) {
+  const h = Math.floor(seconds / 3600);
+  const m = Math.floor((seconds % 3600) / 60);
+  const s = Math.floor(seconds % 60);
+  return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+}
+
+function startStopwatch() {
+  if (stopwatchInterval) return;
+  stopwatchRunning = true;
+  stopwatchInterval = setInterval(() => {
+    stopwatchElapsed++;
+    const display = document.getElementById("stopwatchDisplay");
+    if (display) display.textContent = formatStopwatch(stopwatchElapsed);
   }, 1000);
 }
 
-function stopSessionClock() {
-  if (sessionInterval) {
-    clearInterval(sessionInterval);
-    sessionInterval = null;
+function pauseStopwatch() {
+  stopwatchRunning = false;
+  if (stopwatchInterval) {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
   }
 }
 
-function updateSessionDisplay() {
-  const h = Math.floor(sessionRemaining / 3600);
-  const m = Math.floor((sessionRemaining % 3600) / 60);
-  const s = sessionRemaining % 60;
-  document.getElementById("sessionClockDisplay").textContent = `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function renderSessionClock() {
-  const clock = document.getElementById("sessionClock");
-  const startBtn = document.getElementById("sessionClockStart");
+function stopStopwatch() {
+  pauseStopwatch();
   const session = getTodaySession();
-  const anyDone = session.exercises.some(ex => ex.sets.some(s => s.done));
-  if (anyDone) {
-    clock.classList.remove("is-hidden");
-    stopSessionClock();
-    sessionRemaining = 3600;
-    updateSessionDisplay();
-    document.getElementById("sessionClockDisplay").classList.remove("is-red");
-    startBtn.textContent = "▶ Start";
-  } else {
-    stopSessionClock();
-    clock.classList.add("is-hidden");
+  session.duration = stopwatchElapsed;
+  saveState();
+  stopwatchElapsed = 0;
+  const display = document.getElementById("stopwatchDisplay");
+  if (display) display.textContent = "0:00:00";
+  renderStopwatch();
+  renderHistory();
+  renderSessionDuration();
+}
+
+function renderSessionDuration() {
+  const container = document.getElementById("sessionDurationDisplay");
+  if (!container) return;
+  const sessions = state.sessions.filter(s => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  const last = sessions[0];
+  if (!last || !last.duration) {
+    container.innerHTML = `<p style="color:var(--muted);font-weight:600;font-size:0.9rem">Finish a session to see duration.</p>`;
+    return;
   }
+  container.innerHTML = `
+    <div class="stopwatch" style="background:var(--surface-soft)">
+      <div class="stopwatch-display" style="font-size:2.2rem">${formatStopwatch(last.duration)}</div>
+      <div style="font-size:0.85rem;color:var(--muted);font-weight:600">
+        ${last.workoutName}<br>
+        ${formatReadableDate(parseDateKey(last.dateKey))}
+      </div>
+    </div>
+  `;
+}
+
+function renderStopwatch() {
+  const container = document.getElementById("stopwatchContainer");
+  if (!container) return;
+  const session = getTodaySession();
+  const isRunning = stopwatchRunning || stopwatchInterval;
+  container.innerHTML = `
+    <div class="stopwatch">
+      <div class="stopwatch-display" id="stopwatchDisplay">${formatStopwatch(stopwatchElapsed)}</div>
+      <div class="stopwatch-actions">
+        ${!isRunning
+          ? `<button class="stopwatch-btn is-start" id="stopwatchStartBtn">${stopwatchElapsed > 0 ? "Resume" : "Start"}</button>`
+          : `<button class="stopwatch-btn" id="stopwatchPauseBtn">Pause</button>`
+        }
+        ${stopwatchElapsed > 0 || isRunning
+          ? `<button class="stopwatch-btn is-stop" id="stopwatchStopBtn">Stop</button>`
+          : ""
+        }
+      </div>
+    </div>
+  `;
+
+  document.getElementById("stopwatchStartBtn")?.addEventListener("click", startStopwatch);
+  document.getElementById("stopwatchPauseBtn")?.addEventListener("click", () => {
+    pauseStopwatch();
+    renderStopwatch();
+  });
+  document.getElementById("stopwatchStopBtn")?.addEventListener("click", stopStopwatch);
 }
 
 function renderFatigueUI() {
@@ -1607,25 +1641,6 @@ function initNewFeatures() {
     document.querySelector(".fatigue-body").classList.toggle("is-collapsed");
     const btn = document.querySelector(".fatigue-toggle");
     btn.textContent = document.querySelector(".fatigue-body").classList.contains("is-collapsed") ? "+" : "−";
-  });
-
-  document.getElementById("sessionClockDisplay")?.addEventListener("click", () => {
-    sessionPaused = !sessionPaused;
-  });
-
-  document.getElementById("sessionClockStart")?.addEventListener("click", () => {
-    if (sessionInterval) {
-      sessionPaused = !sessionPaused;
-      document.getElementById("sessionClockStart").textContent = sessionPaused ? "▶ Resume" : "⏸ Pause";
-    } else {
-      startSessionClock();
-      document.getElementById("sessionClockStart").textContent = "⏸ Pause";
-    }
-  });
-
-  document.getElementById("sessionClockDismiss")?.addEventListener("click", () => {
-    stopSessionClock();
-    document.getElementById("sessionClock").classList.add("is-hidden");
   });
 
   document.getElementById("saveNotesButton")?.addEventListener("click", () => {
