@@ -2,61 +2,21 @@ const STORAGE_KEY = "workout-tracker-v3";
 const PROTEIN_GOAL = 146;
 const CARBS_GOAL = 240;
 
-const southIndianFoods = [
-  { name: "Chicken Biryani (1 plate)", protein: 28, carbs: 65 },
-  { name: "Mutton Biryani (1 plate)", protein: 32, carbs: 62 },
-  { name: "Egg Biryani (1 plate)", protein: 22, carbs: 64 },
-  { name: "Prawn Biryani (1 plate)", protein: 26, carbs: 60 },
-  { name: "Curd Rice (1 bowl)", protein: 6, carbs: 42 },
-  { name: "Sambar Rice (1 plate)", protein: 8, carbs: 55 },
-  { name: "Steamed Rice (1 cup)", protein: 4, carbs: 45 },
-  { name: "Chicken Curry (1 bowl)", protein: 30, carbs: 8 },
-  { name: "Mutton Curry (1 bowl)", protein: 34, carbs: 6 },
-  { name: "Fish Curry (1 bowl)", protein: 28, carbs: 5 },
-  { name: "Prawn Curry (1 bowl)", protein: 24, carbs: 7 },
-  { name: "Egg Curry (2 eggs)", protein: 14, carbs: 6 },
-  { name: "Chicken Keema (1 bowl)", protein: 32, carbs: 8 },
-  { name: "Mutton Keema (1 bowl)", protein: 36, carbs: 7 },
-  { name: "Chicken Fry (3 pieces)", protein: 35, carbs: 5 },
-  { name: "Chicken 65 (6 pieces)", protein: 28, carbs: 12 },
-  { name: "Chicken Tikka (4 pieces)", protein: 32, carbs: 4 },
-  { name: "Fish Fry (2 pieces)", protein: 26, carbs: 8 },
-  { name: "Prawn Fry (6 pieces)", protein: 22, carbs: 6 },
-  { name: "Mutton Chops (2 pieces)", protein: 30, carbs: 3 },
-  { name: "Egg Roast (2 eggs)", protein: 12, carbs: 4 },
-  { name: "Boiled Eggs (2)", protein: 12, carbs: 1 },
-  { name: "Idli (3 pieces)", protein: 6, carbs: 42 },
-  { name: "Dosa (1 plain)", protein: 4, carbs: 38 },
-  { name: "Egg Dosa (1)", protein: 10, carbs: 38 },
-  { name: "Chicken Dosa (1)", protein: 18, carbs: 40 },
-  { name: "Vada (2 pieces)", protein: 5, carbs: 24 },
-  { name: "Upma (1 bowl)", protein: 5, carbs: 32 },
-  { name: "Pongal (1 bowl)", protein: 6, carbs: 40 },
-  { name: "Appam (2 pieces)", protein: 4, carbs: 36 },
-  { name: "Puttu (1 serving)", protein: 5, carbs: 38 },
-  { name: "Egg Bhurji (2 eggs)", protein: 13, carbs: 3 },
-  { name: "Omelette (2 eggs)", protein: 12, carbs: 2 },
-  { name: "Parotta (2 pieces)", protein: 6, carbs: 52 },
-  { name: "Chapati (2 pieces)", protein: 6, carbs: 30 },
-  { name: "Chicken Kothu Parotta", protein: 24, carbs: 58 },
-  { name: "Egg Kothu Parotta", protein: 18, carbs: 56 },
-  { name: "Mutton Kothu Parotta", protein: 28, carbs: 55 },
-  { name: "Chicken Soup (1 bowl)", protein: 18, carbs: 4 },
-  { name: "Rasam (1 bowl)", protein: 2, carbs: 8 },
-  { name: "Sambar (1 bowl)", protein: 5, carbs: 14 },
-  { name: "Coconut Chutney", protein: 2, carbs: 6 },
-  { name: "Chicken Sandwich", protein: 20, carbs: 28 },
-  { name: "Egg Sandwich", protein: 14, carbs: 26 },
-  { name: "Chicken Roll", protein: 22, carbs: 32 },
-  { name: "Shawarma (chicken)", protein: 24, carbs: 35 },
-  { name: "Egg Puff (1)", protein: 8, carbs: 22 },
-  { name: "Chicken Puff (1)", protein: 12, carbs: 24 },
-  { name: "Buttermilk (1 glass)", protein: 3, carbs: 5 },
-  { name: "Lassi (1 glass)", protein: 5, carbs: 18 },
-  { name: "Milk (1 glass 250ml)", protein: 8, carbs: 12 },
-  { name: "Whey Protein Shake", protein: 25, carbs: 5 },
-  { name: "Banana (1 medium)", protein: 1, carbs: 27 },
-  { name: "Custom Entry", protein: 0, carbs: 0 },
+const curatedFoods = [
+  { name: "Eggs", protein: 6, carbs: 0.5, unit: "egg", qtyLabel: "eggs", qty: 1, step: 1, min: 1, max: 8 },
+  { name: "Chapathi", protein: 3, carbs: 15, unit: "piece", qtyLabel: "pieces", qty: 2, step: 1, min: 1, max: 4 },
+  { name: "Rice", protein: 4, carbs: 45, unit: "100g", qtyLabel: "g", qty: 100, step: 50, min: 50, max: 500 },
+  { name: "Chicken Biryani", protein: 28, carbs: 65, unit: "plate", qtyLabel: "plates", qty: 1, step: 0.5, min: 0.5, max: 3 },
+  { name: "Chicken Fry", protein: 12, carbs: 2, unit: "piece", qtyLabel: "pieces", qty: 3, step: 1, min: 1, max: 6 },
+  { name: "Kebab", protein: 10, carbs: 2, unit: "piece", qtyLabel: "pieces", qty: 3, step: 1, min: 1, max: 6 },
+  { name: "Grill (Chicken)", protein: 25, carbs: 3, unit: "serving", qtyLabel: "servings", qty: 1, step: 0.5, min: 0.5, max: 3 },
+  { name: "Dal", protein: 6, carbs: 18, unit: "100g", qtyLabel: "g", qty: 100, step: 50, min: 50, max: 400 },
+  { name: "Shawarma", protein: 24, carbs: 35, unit: "roll", qtyLabel: "rolls", qty: 1, step: 0.5, min: 0.5, max: 3 },
+  { name: "Bread", protein: 2, carbs: 12, unit: "slice", qtyLabel: "slices", qty: 2, step: 1, min: 1, max: 4 },
+  { name: "Coffee", protein: 2, carbs: 5, unit: "cup", qtyLabel: "cups", qty: 1, step: 1, min: 1, max: 3 },
+  { name: "Parotta", protein: 3, carbs: 26, unit: "piece", qtyLabel: "pieces", qty: 2, step: 1, min: 1, max: 4 },
+  { name: "Chicken Curry", protein: 30, carbs: 8, unit: "bowl", qtyLabel: "bowls", qty: 1, step: 0.5, min: 0.5, max: 3 },
+  { name: "Custom Entry", protein: 0, carbs: 0, unit: "", qtyLabel: "", qty: 1, step: 1, min: 1, max: 1 },
 ];
 
 let weightChartInstance = null;
@@ -481,7 +441,7 @@ function renderMealLog() {
         <div class="meal-log-item">
           <div>
             <span class="meal-tag">${meal.type}</span>
-            <strong>${meal.food}</strong>
+            <strong>${meal.food}</strong>${meal.qty ? ` <span class="meal-macros">×${meal.qty}</span>` : ""}
             <span class="meal-macros"> — ${meal.protein}g protein · ${meal.carbs}g carbs</span>
           </div>
           <button class="meal-delete" data-meal-index="${i}">✕</button>
@@ -1737,8 +1697,17 @@ function initNewFeatures() {
 
   /* Meal logging init */
   const foodSelect = document.getElementById("foodSelect");
+  const qtyInput = document.getElementById("mealQty");
+  const qtyLabel = document.getElementById("mealQtyLabel");
+
+  function updateFoodMacros(food) {
+    const qty = Number(qtyInput.value) || 1;
+    document.getElementById("mealProtein").value = food.protein * qty;
+    document.getElementById("mealCarbs").value = food.carbs * qty;
+  }
+
   if (foodSelect) {
-    southIndianFoods.forEach((food, i) => {
+    curatedFoods.forEach((food, i) => {
       const opt = document.createElement("option");
       opt.value = i;
       opt.textContent = food.name;
@@ -1746,17 +1715,25 @@ function initNewFeatures() {
     });
     foodSelect.addEventListener("change", () => {
       const idx = Number(foodSelect.value);
-      const food = southIndianFoods[idx];
+      const food = curatedFoods[idx];
       if (food) {
-        document.getElementById("mealProtein").value = food.protein;
-        document.getElementById("mealCarbs").value = food.carbs;
-        if (food.name === "Custom Entry") {
-          document.getElementById("mealProtein").value = "";
-          document.getElementById("mealCarbs").value = "";
-        }
+        qtyInput.step = food.step;
+        qtyInput.min = food.min;
+        qtyInput.max = food.max;
+        qtyInput.value = food.qty;
+        qtyLabel.textContent = food.name === "Custom Entry" ? "" : `(${food.unit})`;
+        updateFoodMacros(food);
       }
     });
   }
+
+  qtyInput?.addEventListener("input", () => {
+    const idx = Number(foodSelect?.value);
+    const food = curatedFoods[idx];
+    if (food && food.name !== "Custom Entry") {
+      updateFoodMacros(food);
+    }
+  });
 
   const foodSearch = document.getElementById("foodSearch");
   if (foodSearch) {
@@ -1764,7 +1741,7 @@ function initNewFeatures() {
       const q = foodSearch.value.toLowerCase();
       const opts = foodSelect.options;
       for (let i = 0; i < opts.length; i++) {
-        opts[i].style.display = southIndianFoods[i].name.toLowerCase().includes(q) ? "" : "none";
+        opts[i].style.display = curatedFoods[i].name.toLowerCase().includes(q) ? "" : "none";
       }
       if (opts.length > 0) foodSelect.selectedIndex = -1;
     });
@@ -1781,14 +1758,17 @@ function initNewFeatures() {
     const today = getDateKey();
     const type = document.querySelector(".meal-pill.is-active")?.dataset.mealType || "Snack";
     const foodName = foodSelect.options[foodSelect.selectedIndex]?.textContent || "Custom";
+    const qty = Number(qtyInput.value) || 1;
     const protein = Number(document.getElementById("mealProtein").value) || 0;
     const carbs = Number(document.getElementById("mealCarbs").value) || 0;
     if (!protein && !carbs) return;
     const meals = loadMeals(today);
-    meals.push({ type, food: foodName, protein, carbs });
+    meals.push({ type, food: foodName, qty, protein, carbs });
     saveMeals(today, meals);
     document.getElementById("foodSearch").value = "";
     foodSelect.selectedIndex = -1;
+    qtyInput.value = 1;
+    qtyLabel.textContent = "";
     document.getElementById("mealProtein").value = "";
     document.getElementById("mealCarbs").value = "";
     renderMealLog();

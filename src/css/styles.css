@@ -1264,6 +1264,35 @@ p {
 #foodSelect option {
   padding: 0.4rem 0.5rem;
 }
+.meal-qty {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.5rem;
+}
+.meal-qty label {
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+}
+.meal-qty input {
+  width: 5rem;
+  min-height: 2.5rem;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  padding: 0 0.65rem;
+  font: inherit;
+  font-weight: 700;
+  text-align: center;
+}
+.meal-qty span {
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--muted);
+}
 .meal-inputs {
   display: grid;
   grid-template-columns: 1fr 1fr;
