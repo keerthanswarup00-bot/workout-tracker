@@ -2,6 +2,10 @@ const STORAGE_KEY = "workout-tracker-v3";
 const PROTEIN_GOAL = 146;
 const CALORIE_GOAL = 2200;
 
+let weightChartInstance = null;
+let macroChartInstance = null;
+let exerciseDetailChartInstance = null;
+
 const plan = [
   {
     id: "push-heavy",
@@ -238,8 +242,10 @@ els.nutritionForm.addEventListener("submit", (event) => {
   saveAndRender();
 });
 
-render();
-activateTab("train");
+document.addEventListener("DOMContentLoaded", () => {
+  render();
+  activateTab("train");
+});
 
 function render() {
   ensureTodaySession();
@@ -765,10 +771,6 @@ function daysBetween(start, end) {
 }
 
 /* === NEW FEATURES === */
-
-let weightChartInstance = null;
-let macroChartInstance = null;
-let exerciseDetailChartInstance = null;
 
 function getLastSessionData(exerciseName) {
   const sessions = state.sessions.filter(s => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
