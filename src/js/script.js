@@ -88,9 +88,364 @@ const plan = [
 
 const state = loadState();
 
+// ===== MUSCLE MAP SYSTEM =====
+const MUSCLE_GROUPS = [
+  { id: "neck", label: "Neck", view: "front" },
+  { id: "upperChest", label: "Upper Chest", view: "front" },
+  { id: "middleChest", label: "Middle Chest", view: "front" },
+  { id: "lowerChest", label: "Lower Chest", view: "front" },
+  { id: "frontDelts", label: "Front Delts", view: "front" },
+  { id: "sideDelts", label: "Side Delts", view: "front" },
+  { id: "biceps", label: "Biceps", view: "front" },
+  { id: "forearms", label: "Forearms", view: "front" },
+  { id: "upperAbs", label: "Upper Abs", view: "front" },
+  { id: "lowerAbs", label: "Lower Abs", view: "front" },
+  { id: "obliques", label: "Obliques", view: "front" },
+  { id: "hipFlexors", label: "Hip Flexors", view: "front" },
+  { id: "quads", label: "Quads", view: "front" },
+  { id: "innerThighs", label: "Inner Thighs", view: "front" },
+  { id: "calves", label: "Calves", view: "front" },
+  { id: "tibialis", label: "Tibialis", view: "front" },
+  { id: "upperTraps", label: "Upper Traps", view: "back" },
+  { id: "middleTraps", label: "Middle Traps", view: "back" },
+  { id: "lowerTraps", label: "Lower Traps", view: "back" },
+  { id: "rearDelts", label: "Rear Delts", view: "back" },
+  { id: "lats", label: "Lats", view: "back" },
+  { id: "midBack", label: "Mid Back", view: "back" },
+  { id: "lowerBack", label: "Lower Back", view: "back" },
+  { id: "triceps", label: "Triceps", view: "back" },
+  { id: "forearmsBack", label: "Forearms", view: "back" },
+  { id: "glutes", label: "Glutes", view: "back" },
+  { id: "hamstrings", label: "Hamstrings", view: "back" },
+  { id: "calvesBack", label: "Calves", view: "back" },
+];
+
+const MUSCLE_GROUP_MAP = {
+  "sternocleidomastoid-left":"neck","sternocleidomastoid-right":"neck",
+  "anterior-deltoid-left":"frontDelts","anterior-deltoid-right":"frontDelts",
+  "lateral-deltoid-left":"sideDelts","lateral-deltoid-right":"sideDelts",
+  "pectoralis-major-upper-left":"upperChest","pectoralis-major-upper-right":"upperChest",
+  "pectoralis-major-lower-left":"lowerChest","pectoralis-major-lower-right":"lowerChest",
+  "serratus-left":"obliques","serratus-right":"obliques",
+  "external-oblique-left":"obliques","external-oblique-right":"obliques",
+  "rectus-abdominis-upper-left":"upperAbs","rectus-abdominis-upper-right":"upperAbs",
+  "rectus-abdominis-middle-left":"upperAbs","rectus-abdominis-middle-right":"upperAbs",
+  "rectus-abdominis-lower-left":"lowerAbs","rectus-abdominis-lower-right":"lowerAbs",
+  "biceps-left":"biceps","biceps-right":"biceps",
+  "brachialis-left":"biceps","brachialis-right":"biceps",
+  "forearm-flexors-left":"forearms","forearm-flexors-right":"forearms",
+  "adductors-left":"innerThighs","adductors-right":"innerThighs",
+  "quadriceps-outer-left":"quads","quadriceps-outer-right":"quads",
+  "quadriceps-inner-left":"quads","quadriceps-inner-right":"quads",
+  "tibialis-anterior-left":"tibialis","tibialis-anterior-right":"tibialis",
+  "upper-trapezius-left":"upperTraps","upper-trapezius-right":"upperTraps",
+  "middle-trapezius-left":"middleTraps","middle-trapezius-right":"middleTraps",
+  "lower-trapezius-left":"lowerTraps","lower-trapezius-right":"lowerTraps",
+  "rear-deltoid-left":"rearDelts","rear-deltoid-right":"rearDelts",
+  "teres-major-left":"lats","teres-major-right":"lats",
+  "rhomboid-left":"midBack","rhomboid-right":"midBack",
+  "latissimus-left":"lats","latissimus-right":"lats",
+  "triceps-long-head-left":"triceps","triceps-long-head-right":"triceps",
+  "triceps-lateral-head-left":"triceps","triceps-lateral-head-right":"triceps",
+  "erector-spinae-left":"lowerBack","erector-spinae-right":"lowerBack",
+  "glute-max-left":"glutes","glute-max-right":"glutes",
+  "glute-med-left":"glutes","glute-med-right":"glutes",
+  "hamstring-inner-left":"hamstrings","hamstring-inner-right":"hamstrings",
+  "hamstring-outer-left":"hamstrings","hamstring-outer-right":"hamstrings",
+  "gastrocnemius-inner-left":"calvesBack","gastrocnemius-inner-right":"calvesBack",
+  "gastrocnemius-outer-left":"calvesBack","gastrocnemius-outer-right":"calvesBack",
+  "soleus-left":"calvesBack","soleus-right":"calvesBack",
+};
+
+const MUSCLE_LABEL_MAP = {
+  "sternocleidomastoid-left":"Sternocleidomastoid (L)","sternocleidomastoid-right":"Sternocleidomastoid (R)",
+  "anterior-deltoid-left":"Front Delt (L)","anterior-deltoid-right":"Front Delt (R)",
+  "lateral-deltoid-left":"Side Delt (L)","lateral-deltoid-right":"Side Delt (R)",
+  "pectoralis-major-upper-left":"Upper Pec (L)","pectoralis-major-upper-right":"Upper Pec (R)",
+  "pectoralis-major-lower-left":"Lower Pec (L)","pectoralis-major-lower-right":"Lower Pec (R)",
+  "serratus-left":"Serratus (L)","serratus-right":"Serratus (R)",
+  "external-oblique-left":"Oblique (L)","external-oblique-right":"Oblique (R)",
+  "rectus-abdominis-upper-left":"Upper Ab (L)","rectus-abdominis-upper-right":"Upper Ab (R)",
+  "rectus-abdominis-middle-left":"Mid Ab (L)","rectus-abdominis-middle-right":"Mid Ab (R)",
+  "rectus-abdominis-lower-left":"Lower Ab (L)","rectus-abdominis-lower-right":"Lower Ab (R)",
+  "biceps-left":"Biceps (L)","biceps-right":"Biceps (R)",
+  "brachialis-left":"Brachialis (L)","brachialis-right":"Brachialis (R)",
+  "forearm-flexors-left":"Forearm Flexors (L)","forearm-flexors-right":"Forearm Flexors (R)",
+  "adductors-left":"Adductor (L)","adductors-right":"Adductor (R)",
+  "quadriceps-outer-left":"Outer Quad (L)","quadriceps-outer-right":"Outer Quad (R)",
+  "quadriceps-inner-left":"Inner Quad (L)","quadriceps-inner-right":"Inner Quad (R)",
+  "tibialis-anterior-left":"Tibialis (L)","tibialis-anterior-right":"Tibialis (R)",
+  "upper-trapezius-left":"Upper Trap (L)","upper-trapezius-right":"Upper Trap (R)",
+  "middle-trapezius-left":"Mid Trap (L)","middle-trapezius-right":"Mid Trap (R)",
+  "lower-trapezius-left":"Lower Trap (L)","lower-trapezius-right":"Lower Trap (R)",
+  "rear-deltoid-left":"Rear Delt (L)","rear-deltoid-right":"Rear Delt (R)",
+  "teres-major-left":"Teres Major (L)","teres-major-right":"Teres Major (R)",
+  "rhomboid-left":"Rhomboid (L)","rhomboid-right":"Rhomboid (R)",
+  "latissimus-left":"Lat (L)","latissimus-right":"Lat (R)",
+  "triceps-long-head-left":"Triceps Long (L)","triceps-long-head-right":"Triceps Long (R)",
+  "triceps-lateral-head-left":"Triceps Lateral (L)","triceps-lateral-head-right":"Triceps Lateral (R)",
+  "erector-spinae-left":"Erector Spinae (L)","erector-spinae-right":"Erector Spinae (R)",
+  "glute-max-left":"Glute Max (L)","glute-max-right":"Glute Max (R)",
+  "glute-med-left":"Glute Med (L)","glute-med-right":"Glute Med (R)",
+  "hamstring-inner-left":"Inner Hamstring (L)","hamstring-inner-right":"Inner Hamstring (R)",
+  "hamstring-outer-left":"Outer Hamstring (L)","hamstring-outer-right":"Outer Hamstring (R)",
+  "gastrocnemius-inner-left":"Inner Calf (L)","gastrocnemius-inner-right":"Inner Calf (R)",
+  "gastrocnemius-outer-left":"Outer Calf (L)","gastrocnemius-outer-right":"Outer Calf (R)",
+  "soleus-left":"Soleus (L)","soleus-right":"Soleus (R)",
+  "neck":"Neck","upperChest":"Upper Chest","middleChest":"Middle Chest","lowerChest":"Lower Chest",
+  "frontDelts":"Front Delts","sideDelts":"Side Delts",
+  "biceps":"Biceps","forearms":"Forearms",
+  "upperAbs":"Upper Abs","lowerAbs":"Lower Abs",
+  "obliques":"Obliques","hipFlexors":"Hip Flexors",
+  "quads":"Quads","innerThighs":"Inner Thighs","calves":"Calves","tibialis":"Tibialis",
+  "upperTraps":"Upper Traps","middleTraps":"Mid Traps","lowerTraps":"Lower Traps",
+  "rearDelts":"Rear Delts","lats":"Lats","midBack":"Mid Back","lowerBack":"Lower Back",
+  "triceps":"Triceps","forearmsBack":"Forearms","glutes":"Glutes","hamstrings":"Hamstrings","calvesBack":"Calves",
+};
+
+const EXERCISE_MUSCLE_CONTRIBUTION = {
+  "Flat Barbell Bench Press": [
+    { id: "upperChest", pct: 0.25 }, { id: "middleChest", pct: 0.30 },
+    { id: "lowerChest", pct: 0.15 }, { id: "frontDelts", pct: 0.20 },
+    { id: "triceps", pct: 0.10 },
+  ],
+  "Incline Dumbbell Press": [
+    { id: "upperChest", pct: 0.40 }, { id: "middleChest", pct: 0.20 },
+    { id: "frontDelts", pct: 0.25 }, { id: "triceps", pct: 0.15 },
+  ],
+  "Landmine Press": [
+    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.20 },
+    { id: "triceps", pct: 0.25 }, { id: "upperChest", pct: 0.20 },
+  ],
+  "Cable Lateral Raise": [
+    { id: "sideDelts", pct: 0.80 }, { id: "frontDelts", pct: 0.20 },
+  ],
+  "Cable Overhead Tricep Extension": [{ id: "triceps", pct: 1.0 }],
+  "Tricep Rope Pushdown": [{ id: "triceps", pct: 1.0 }],
+  "Conventional Deadlift": [
+    { id: "hamstrings", pct: 0.25 }, { id: "glutes", pct: 0.20 },
+    { id: "lowerBack", pct: 0.15 }, { id: "midBack", pct: 0.10 },
+    { id: "lats", pct: 0.10 }, { id: "forearmsBack", pct: 0.10 },
+    { id: "quads", pct: 0.10 },
+  ],
+  "Weighted Pull-Up / Lat Pulldown": [
+    { id: "lats", pct: 0.40 }, { id: "midBack", pct: 0.15 },
+    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "rearDelts", pct: 0.15 },
+  ],
+  "Chest-Supported Dumbbell Row": [
+    { id: "midBack", pct: 0.30 }, { id: "lats", pct: 0.20 },
+    { id: "lowerTraps", pct: 0.15 }, { id: "biceps", pct: 0.15 },
+    { id: "rearDelts", pct: 0.20 },
+  ],
+  "Face Pulls": [
+    { id: "rearDelts", pct: 0.50 }, { id: "upperTraps", pct: 0.20 },
+    { id: "sideDelts", pct: 0.30 },
+  ],
+  "Incline Dumbbell Curl": [{ id: "biceps", pct: 1.0 }],
+  "Farmer's Carry": [
+    { id: "forearms", pct: 0.40 }, { id: "upperTraps", pct: 0.20 },
+    { id: "quads", pct: 0.20 }, { id: "upperAbs", pct: 0.10 },
+    { id: "lowerAbs", pct: 0.10 },
+  ],
+  "Box Squat to Parallel": [
+    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.10 }, { id: "lowerBack", pct: 0.10 },
+    { id: "upperAbs", pct: 0.10 },
+  ],
+  "Romanian Deadlift": [
+    { id: "hamstrings", pct: 0.45 }, { id: "glutes", pct: 0.25 },
+    { id: "lowerBack", pct: 0.20 }, { id: "midBack", pct: 0.10 },
+  ],
+  "Leg Press (Feet High)": [
+    { id: "quads", pct: 0.50 }, { id: "glutes", pct: 0.30 },
+    { id: "hamstrings", pct: 0.20 },
+  ],
+  "Seated Leg Curl": [{ id: "hamstrings", pct: 1.0 }],
+  "Standing Calf Raise": [{ id: "calves", pct: 1.0 }],
+  "Lat Pulldown / Pull-Up": [
+    { id: "lats", pct: 0.40 }, { id: "midBack", pct: 0.15 },
+    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "rearDelts", pct: 0.15 },
+  ],
+  "Seated Cable Row": [
+    { id: "midBack", pct: 0.35 }, { id: "lats", pct: 0.20 },
+    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "rearDelts", pct: 0.15 },
+  ],
+  "Barbell Shrug": [
+    { id: "upperTraps", pct: 0.80 }, { id: "middleTraps", pct: 0.20 },
+  ],
+  "Hammer Curl": [
+    { id: "biceps", pct: 0.60 }, { id: "forearms", pct: 0.40 },
+  ],
+  "Reverse Curl": [
+    { id: "forearms", pct: 0.80 }, { id: "biceps", pct: 0.20 },
+  ],
+  "Romanian Deadlift (Heavy)": [
+    { id: "hamstrings", pct: 0.45 }, { id: "glutes", pct: 0.25 },
+    { id: "lowerBack", pct: 0.20 }, { id: "midBack", pct: 0.10 },
+  ],
+  "Seated Dumbbell Shoulder Press": [
+    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.20 }, { id: "upperChest", pct: 0.20 },
+  ],
+  "Box Squat (Light)": [
+    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.10 }, { id: "lowerBack", pct: 0.10 },
+    { id: "upperAbs", pct: 0.10 },
+  ],
+  "Dips": [
+    { id: "lowerChest", pct: 0.35 }, { id: "triceps", pct: 0.35 },
+    { id: "frontDelts", pct: 0.30 },
+  ],
+  "Push-Ups": [
+    { id: "middleChest", pct: 0.35 }, { id: "triceps", pct: 0.25 },
+    { id: "frontDelts", pct: 0.20 }, { id: "upperAbs", pct: 0.20 },
+  ],
+  "Dumbbell Bench Press": [
+    { id: "middleChest", pct: 0.35 }, { id: "frontDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.20 }, { id: "upperAbs", pct: 0.20 },
+  ],
+  "Close-Grip Bench Press": [
+    { id: "triceps", pct: 0.50 }, { id: "middleChest", pct: 0.25 },
+    { id: "frontDelts", pct: 0.25 },
+  ],
+  "Dumbbell Pullover": [
+    { id: "lats", pct: 0.50 }, { id: "lowerChest", pct: 0.30 },
+    { id: "triceps", pct: 0.20 },
+  ],
+  "Standing Overhead Press": [
+    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.25 }, { id: "upperChest", pct: 0.15 },
+  ],
+  "Front Raise": [
+    { id: "frontDelts", pct: 0.60 }, { id: "upperChest", pct: 0.20 },
+    { id: "sideDelts", pct: 0.20 },
+  ],
+  "Reverse Fly": [
+    { id: "rearDelts", pct: 0.60 }, { id: "upperTraps", pct: 0.20 },
+    { id: "middleTraps", pct: 0.20 },
+  ],
+  "Arnold Press": [
+    { id: "frontDelts", pct: 0.30 }, { id: "sideDelts", pct: 0.30 },
+    { id: "triceps", pct: 0.20 }, { id: "upperChest", pct: 0.20 },
+  ],
+  "Skull Crushers": [{ id: "triceps", pct: 1.0 }],
+  "Preacher Curl": [{ id: "biceps", pct: 1.0 }],
+  "Concentration Curl": [{ id: "biceps", pct: 1.0 }],
+  "Tricep Kickback": [{ id: "triceps", pct: 1.0 }],
+  "Barbell Row": [
+    { id: "midBack", pct: 0.30 }, { id: "lats", pct: 0.25 },
+    { id: "lowerTraps", pct: 0.15 }, { id: "biceps", pct: 0.15 },
+    { id: "rearDelts", pct: 0.15 },
+  ],
+  "Chin-Ups": [
+    { id: "lats", pct: 0.30 }, { id: "midBack", pct: 0.15 },
+    { id: "biceps", pct: 0.35 }, { id: "lowerTraps", pct: 0.10 },
+    { id: "rearDelts", pct: 0.10 },
+  ],
+  "Good Mornings": [
+    { id: "hamstrings", pct: 0.35 }, { id: "lowerBack", pct: 0.35 },
+    { id: "glutes", pct: 0.30 },
+  ],
+  "Back Extension": [
+    { id: "lowerBack", pct: 0.50 }, { id: "glutes", pct: 0.25 },
+    { id: "hamstrings", pct: 0.25 },
+  ],
+  "Front Squat": [
+    { id: "quads", pct: 0.50 }, { id: "glutes", pct: 0.20 },
+    { id: "upperAbs", pct: 0.15 }, { id: "lowerBack", pct: 0.15 },
+  ],
+  "Hip Thrust": [
+    { id: "glutes", pct: 0.70 }, { id: "hamstrings", pct: 0.30 },
+  ],
+  "Bulgarian Split Squat": [
+    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.35 },
+    { id: "hamstrings", pct: 0.10 }, { id: "innerThighs", pct: 0.10 },
+  ],
+  "Lunges": [
+    { id: "quads", pct: 0.40 }, { id: "glutes", pct: 0.25 },
+    { id: "hamstrings", pct: 0.20 }, { id: "calves", pct: 0.15 },
+  ],
+  "Glute Bridge": [
+    { id: "glutes", pct: 0.65 }, { id: "hamstrings", pct: 0.25 },
+    { id: "lowerBack", pct: 0.10 },
+  ],
+  "Planks": [
+    { id: "upperAbs", pct: 0.40 }, { id: "lowerAbs", pct: 0.30 },
+    { id: "obliques", pct: 0.20 }, { id: "hipFlexors", pct: 0.10 },
+  ],
+  "Hanging Leg Raise": [
+    { id: "lowerAbs", pct: 0.45 }, { id: "upperAbs", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.20 }, { id: "obliques", pct: 0.10 },
+  ],
+  "Cable Crunch": [
+    { id: "upperAbs", pct: 0.60 }, { id: "lowerAbs", pct: 0.40 },
+  ],
+  "Pallof Press": [
+    { id: "obliques", pct: 0.70 }, { id: "upperAbs", pct: 0.30 },
+  ],
+};
+
+// Legacy mapping for exercises not in EXERCISE_MUSCLE_CONTRIBUTION
+const MUSCLE_MAP = {
+  "Flat Barbell Bench Press": ["upperChest", "middleChest", "lowerChest", "frontDelts", "triceps"],
+  "Incline Dumbbell Press": ["upperChest", "middleChest", "frontDelts", "triceps"],
+  "Landmine Press": ["frontDelts", "sideDelts", "triceps", "upperChest"],
+  "Cable Lateral Raise": ["sideDelts", "frontDelts"],
+  "Cable Overhead Tricep Extension": ["triceps"],
+  "Tricep Rope Pushdown": ["triceps"],
+  "Conventional Deadlift": ["hamstrings", "glutes", "lowerBack", "midBack", "lats", "forearmsBack", "quads"],
+  "Weighted Pull-Up / Lat Pulldown": ["lats", "midBack", "lowerTraps", "biceps", "rearDelts"],
+  "Chest-Supported Dumbbell Row": ["midBack", "lats", "lowerTraps", "biceps", "rearDelts"],
+  "Face Pulls": ["rearDelts", "upperTraps", "sideDelts"],
+  "Incline Dumbbell Curl": ["biceps"],
+  "Farmer's Carry": ["forearms", "upperTraps", "quads", "upperAbs", "lowerAbs"],
+  "Box Squat to Parallel": ["quads", "glutes", "hipFlexors", "lowerBack", "upperAbs"],
+  "Romanian Deadlift": ["hamstrings", "glutes", "lowerBack", "midBack"],
+  "Leg Press (Feet High)": ["quads", "glutes", "hamstrings"],
+  "Seated Leg Curl": ["hamstrings"],
+  "Standing Calf Raise": ["calves"],
+  "Lat Pulldown / Pull-Up": ["lats", "midBack", "lowerTraps", "biceps", "rearDelts"],
+  "Seated Cable Row": ["midBack", "lats", "lowerTraps", "biceps", "rearDelts"],
+  "Barbell Shrug": ["upperTraps", "middleTraps"],
+  "Hammer Curl": ["biceps", "forearms"],
+  "Reverse Curl": ["forearms", "biceps"],
+  "Romanian Deadlift (Heavy)": ["hamstrings", "glutes", "lowerBack", "midBack"],
+  "Seated Dumbbell Shoulder Press": ["frontDelts", "sideDelts", "triceps", "upperChest"],
+  "Box Squat (Light)": ["quads", "glutes", "hipFlexors", "lowerBack", "upperAbs"],
+  "Dips": ["lowerChest", "triceps", "frontDelts"],
+  "Push-Ups": ["middleChest", "triceps", "frontDelts", "upperAbs"],
+  "Dumbbell Bench Press": ["middleChest", "frontDelts", "triceps", "upperAbs"],
+  "Close-Grip Bench Press": ["triceps", "middleChest", "frontDelts"],
+  "Dumbbell Pullover": ["lats", "lowerChest", "triceps"],
+  "Standing Overhead Press": ["frontDelts", "sideDelts", "triceps", "upperChest"],
+  "Front Raise": ["frontDelts", "upperChest", "sideDelts"],
+  "Reverse Fly": ["rearDelts", "upperTraps", "middleTraps"],
+  "Arnold Press": ["frontDelts", "sideDelts", "triceps", "upperChest"],
+  "Skull Crushers": ["triceps"],
+  "Preacher Curl": ["biceps"],
+  "Concentration Curl": ["biceps"],
+  "Tricep Kickback": ["triceps"],
+  "Barbell Row": ["midBack", "lats", "lowerTraps", "biceps", "rearDelts"],
+  "Chin-Ups": ["lats", "midBack", "biceps", "lowerTraps", "rearDelts"],
+  "Good Mornings": ["hamstrings", "lowerBack", "glutes"],
+  "Back Extension": ["lowerBack", "glutes", "hamstrings"],
+  "Front Squat": ["quads", "glutes", "upperAbs", "lowerBack"],
+  "Hip Thrust": ["glutes", "hamstrings"],
+  "Bulgarian Split Squat": ["quads", "glutes", "hamstrings", "innerThighs"],
+  "Lunges": ["quads", "glutes", "hamstrings", "calves"],
+  "Glute Bridge": ["glutes", "hamstrings", "lowerBack"],
+  "Planks": ["upperAbs", "lowerAbs", "obliques", "hipFlexors"],
+  "Hanging Leg Raise": ["lowerAbs", "upperAbs", "hipFlexors", "obliques"],
+  "Cable Crunch": ["upperAbs", "lowerAbs"],
+  "Pallof Press": ["obliques", "upperAbs"],
+};
+
 // ===== STATE =====
 function loadState() {
-  const fallback = { sessions: [], nutrition: {}, planOffset: 0, recoveryLog: [], bodyGoal: "recomp", calorieTarget: CAL_GOAL, fatTarget: FAT_GOAL };
+  const fallback = { sessions: [], nutrition: {}, planOffset: 0, recoveryLog: [], bodyGoal: "recomp", calorieTarget: CAL_GOAL, fatTarget: FAT_GOAL, user: null, plan: null };
   try { return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) }; } catch { return fallback; }
 }
 
@@ -164,6 +519,10 @@ function getLastSessionData(exerciseName) {
   return null;
 }
 
+function getNextUndoneSet(exSession) {
+  return exSession.sets.findIndex((s) => !s.done);
+}
+
 // ===== PR SYSTEM =====
 function loadPRs() {
   try { return JSON.parse(localStorage.getItem("wl_prs")) || {}; } catch { return {}; }
@@ -173,6 +532,7 @@ function savePRs(prs) { try { localStorage.setItem("wl_prs", JSON.stringify(prs)
 function checkPRs(session) {
   const prs = loadPRs();
   let updated = false;
+  const newPRs = [];
   for (const ex of session.exercises) {
     for (const set of ex.sets) {
       if (set.done && set.weight && Number(set.weight) > 0) {
@@ -181,11 +541,17 @@ function checkPRs(session) {
         if (!current || w > current.weight) {
           prs[ex.name] = { weight: w, reps: set.reps, date: session.dateKey };
           updated = true;
+          newPRs.push({ name: ex.name, weight: w, reps: set.reps });
+        } else if (current && w === current.weight && set.reps > current.reps) {
+          prs[ex.name] = { weight: w, reps: set.reps, date: session.dateKey };
+          updated = true;
+          newPRs.push({ name: ex.name, weight: w, reps: set.reps, repPr: true });
         }
       }
     }
   }
   if (updated) savePRs(prs);
+  return newPRs;
 }
 
 function showPRToast(msg) {
@@ -334,7 +700,10 @@ function saveBodyLogEntry(entry) {
   try { localStorage.setItem("wl_bodylog", JSON.stringify(log)); } catch {}
 }
 
-function loadCustomProgram() { try { return JSON.parse(localStorage.getItem("wl_custom_program")); } catch { return null; } }
+function loadCustomProgram() {
+  if (state.plan) return state.plan;
+  try { return JSON.parse(localStorage.getItem("wl_custom_program")); } catch { return null; }
+}
 
 function loadFavoriteMeals() { try { return JSON.parse(localStorage.getItem("wl_fav_meals")) || []; } catch { return []; } }
 function saveFavoriteMeals(meals) { try { localStorage.setItem("wl_fav_meals", JSON.stringify(meals)); } catch {} }
@@ -353,6 +722,337 @@ function getTodayMealsSnapshot() {
   const today = getDateKey();
   return loadMeals(today).map((m) => ({ food: m.food, qty: m.qty, protein: m.protein, carbs: m.carbs, fat: m.fat, cal: m.cal }));
 }
+
+// ===== MUSCLE COMPUTATION =====
+// ===== MUSCLE COMPUTATION =====
+let bodyMapCache = null;
+
+function computeMuscleSummary() {
+  const summary = {};
+  MUSCLE_GROUPS.forEach((mg) => {
+    summary[mg.id] = { weeklySets: 0, weeklyVolume: 0, weeklyStimulus: 0, lastTrained: null, exercises: [], doneToday: false };
+  });
+  const todayKey = getDateKey();
+  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
+
+  for (const session of weekSessions) {
+    for (const ex of session.exercises) {
+      const contributions = EXERCISE_MUSCLE_CONTRIBUTION[ex.name];
+      if (!contributions) continue;
+      const doneSets = ex.sets.filter((s) => s.done);
+      if (doneSets.length === 0) continue;
+      const setCount = doneSets.length;
+      const totalStimulus = doneSets.reduce((sum, s) => sum + (Number(s.weight) || 0) * Math.max(s.reps || 1, 1), 0);
+      for (const contrib of contributions) {
+        const m = summary[contrib.id];
+        if (!m) continue;
+        m.weeklySets += setCount;
+        m.weeklyVolume += totalStimulus * contrib.pct;
+        m.weeklyStimulus += setCount * contrib.pct;
+        if (!m.exercises.includes(ex.name)) m.exercises.push(ex.name);
+        if (!m.lastTrained || session.dateKey > m.lastTrained) m.lastTrained = session.dateKey;
+        if (session.dateKey === todayKey) m.doneToday = true;
+      }
+    }
+  }
+  bodyMapCache = { summary, computedAt: Date.now() };
+  return summary;
+}
+
+function getMuscleCoverageScore(summary) {
+  const active = Object.values(summary).filter((m) => m.weeklySets > 0).length;
+  return Math.round((active / Object.keys(summary).length) * 100);
+}
+
+function getMuscleStatus(weeklySets) {
+  if (weeklySets === 0) return "untrained";
+  if (weeklySets < 6) return "undertrained";
+  if (weeklySets <= 12) return "optimal";
+  if (weeklySets <= 18) return "high";
+  return "overtrained";
+}
+
+function getRecoveryDays(lastTrained) {
+  if (!lastTrained) return 99;
+  const today = new Date();
+  const trained = parseDateKey(lastTrained);
+  return Math.floor((today - trained) / 86400000);
+}
+
+function getRecoveryStatus(daysAgo) {
+  if (daysAgo === 0) return "trained";
+  if (daysAgo <= 1) return "low";
+  if (daysAgo <= 3) return "recovering";
+  return "recovered";
+}
+
+function getStrengthTrend(muscleId) {
+  // Look at exercises targeting this muscle across last 2 session pairs
+  const exercises = MUSCLE_GROUPS.filter((m) => m.id === muscleId).flatMap((m) =>
+    Object.entries(EXERCISE_MUSCLE_CONTRIBUTION).filter(([, c]) => c.some((x) => x.id === m.id)).map(([name]) => name)
+  );
+  const allSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  const recentSessions = allSessions.slice(0, 6);
+  const weights = [];
+  for (const exName of [...new Set(exercises)]) {
+    for (const s of recentSessions) {
+      const ex = s.exercises.find((e) => e.name === exName);
+      if (!ex) continue;
+      const done = ex.sets.filter((x) => x.done && Number(x.weight) > 0);
+      if (done.length === 0) continue;
+      const avgWeight = done.reduce((sum, x) => sum + Number(x.weight), 0) / done.length;
+      weights.push({ weight: avgWeight, reps: done[0].reps || 0, date: s.dateKey });
+    }
+  }
+  if (weights.length < 4) return null;
+  const half = Math.floor(weights.length / 2);
+  const recentAvg = weights.slice(0, half).reduce((s, w) => s + w.weight, 0) / half;
+  const earlierAvg = weights.slice(half).reduce((s, w) => s + w.weight, 0) / (weights.length - half);
+  if (earlierAvg === 0) return null;
+  return ((recentAvg - earlierAvg) / earlierAvg) * 100;
+}
+
+function getMuscleColor(muscleId, mode, summary) {
+  const data = summary[muscleId];
+  const sets = data ? data.weeklySets : 0;
+  if (mode === "today") {
+    if (data && data.doneToday) return "#00d26a";
+    return "#3a3a3a";
+  }
+  if (mode === "weekly") {
+    return getMuscleStatus(sets) === "untrained" ? "#3a3a3a"
+      : getMuscleStatus(sets) === "undertrained" ? "#3b82f6"
+      : getMuscleStatus(sets) === "optimal" ? "#00d26a"
+      : getMuscleStatus(sets) === "high" ? "#ff9f0a"
+      : "#ef4444";
+  }
+  if (mode === "recovery") {
+    const days = data ? getRecoveryDays(data.lastTrained) : 99;
+    if (days === 0) return "#ef4444";
+    if (days <= 1) return "#ff9f0a";
+    if (days <= 3) return "#ffd60a";
+    return "#00d26a";
+  }
+  if (mode === "strength") {
+    const trend = getStrengthTrend(muscleId);
+    if (trend === null) return "#3a3a3a";
+    if (trend > 2) return "#00d26a";
+    if (trend > -2) return "#ffd60a";
+    return "#ef4444";
+  }
+  return "#3a3a3a";
+}
+
+function getBodyMapColor(muscleId, mode, summary) {
+  return getMuscleColor(muscleId, mode, summary);
+}
+
+let bodyMapMode = "weekly";
+
+// ===== SVG BODY MAP RENDERER =====
+function renderBodyMuscleMap(container, summary) {
+  container.innerHTML = `<div class="body-map-layout"><div class="body-view">${BODY_MAP_SVG}</div></div>`;
+
+  container.querySelectorAll("[data-muscle]").forEach((path) => {
+    const detailedId = path.dataset.muscle;
+    const groupId = MUSCLE_GROUP_MAP[detailedId] || detailedId;
+    const data = summary[groupId];
+    const sets = data ? data.weeklySets : 0;
+    const color = getBodyMapColor(groupId, bodyMapMode, summary);
+    const opacity = sets > 0 ? "0.85" : "0.3";
+    path.setAttribute("fill", color);
+    path.setAttribute("fill-opacity", opacity);
+    path.style.cursor = "pointer";
+
+    path.addEventListener("mouseenter", (e) => {
+      path.style.filter = "brightness(1.3)";
+      showMuscleTooltip(e, detailedId, groupId, summary);
+    });
+    path.addEventListener("mousemove", (e) => moveMuscleTooltip(e));
+    path.addEventListener("mouseleave", () => {
+      path.style.filter = "";
+      hideMuscleTooltip();
+    });
+    path.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showMuscleSheet(detailedId, summary);
+    });
+  });
+}
+
+// ===== MUSCLE TOOLTIP =====
+function showMuscleTooltip(e, detailedId, groupId, summary) {
+  const tip = document.getElementById("muscleTooltip");
+  if (!tip) return;
+  const label = MUSCLE_LABEL_MAP[detailedId] || detailedId;
+  const group = MUSCLE_GROUPS.find((g) => g.id === groupId);
+  const data = summary[groupId] || {};
+  const days = getRecoveryDays(data.lastTrained);
+  const sets = data.weeklySets || 0;
+  document.getElementById("mtName").textContent = label;
+  document.getElementById("mtGroup").textContent = group ? group.label : groupId;
+  document.getElementById("mtSets").textContent = sets;
+  document.getElementById("mtVolume").textContent = `${Math.round((data.weeklyVolume || 0) / 100) / 10 || 0}k kg`;
+  document.getElementById("mtLast").textContent = data.lastTrained
+    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
+    : "Not trained";
+  document.getElementById("mtRecovery").textContent = days === 0 ? "Just trained"
+    : days <= 1 ? "Low"
+    : days <= 3 ? "Recovering"
+    : "Recovered";
+  tip.classList.remove("is-hidden");
+  moveMuscleTooltip(e);
+}
+
+function moveMuscleTooltip(e) {
+  const tip = document.getElementById("muscleTooltip");
+  if (!tip) return;
+  let x = e.clientX + 12, y = e.clientY - 10;
+  if (x + 200 > window.innerWidth) x = e.clientX - 210;
+  if (y < 0) y = 10;
+  tip.style.left = x + "px";
+  tip.style.top = y + "px";
+}
+
+function hideMuscleTooltip() {
+  const tip = document.getElementById("muscleTooltip");
+  if (tip) tip.classList.add("is-hidden");
+}
+
+// ===== BOTTOM SHEET =====
+function showMuscleSheet(muscleId, summary) {
+  const groupId = MUSCLE_GROUP_MAP[muscleId] || muscleId;
+  const mg = MUSCLE_GROUPS.find((m) => m.id === groupId);
+  if (!mg) return;
+  const label = MUSCLE_LABEL_MAP[muscleId] || mg.label;
+  const data = summary[groupId] || { weeklySets: 0, weeklyVolume: 0, lastTrained: null, exercises: [] };
+  const days = getRecoveryDays(data.lastTrained);
+  const trend = getStrengthTrend(groupId);
+  const trendStr = trend === null ? "—" : `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%`;
+  const trendColor = trend === null ? "#737373" : trend > 2 ? "#00d26a" : trend > -2 ? "#ffd60a" : "#ef4444";
+  const lastTrainedStr = data.lastTrained
+    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
+    : "Not trained";
+  const recColor = days === 0 ? "#ef4444" : days <= 1 ? "#ff9f0a" : days <= 3 ? "#ffd60a" : "#00d26a";
+
+  const sheet = document.getElementById("muscleSheet");
+  const body = document.getElementById("muscleSheetBody");
+  body.innerHTML = `
+    <div class="ms-header">${label}</div>
+    <div class="ms-sub">${mg.label}</div>
+    <div class="ms-grid">
+      <div class="ms-item"><span class="ms-label">Weekly Sets</span><span class="ms-value">${data.weeklySets}</span></div>
+      <div class="ms-item"><span class="ms-label">Volume</span><span class="ms-value">${Math.round(data.weeklyVolume / 100) / 10 || 0}k kg</span></div>
+      <div class="ms-item"><span class="ms-label">Last Trained</span><span class="ms-value">${lastTrainedStr}</span></div>
+      <div class="ms-item"><span class="ms-label">Recovery</span><span class="ms-value" style="color:${recColor}">${days === 0 ? "Just trained" : days <= 1 ? "Low" : days <= 3 ? "Recovering" : "Recovered"}</span></div>
+      <div class="ms-item"><span class="ms-label">Strength Trend</span><span class="ms-value" style="color:${trendColor}">${trendStr}</span></div>
+    </div>
+    ${data.exercises.length > 0 ? `
+    <div class="ms-exercises-label">Exercises</div>
+    <div class="ms-exercises">${data.exercises.map((ex) =>
+      `<span class="ms-ex-chip">${ex.replace(/([A-Z])/g, " $1").trim()}</span>`
+    ).join("")}</div>` : ""}`;
+  sheet.classList.remove("is-hidden");
+}
+
+// ===== COACH INSIGHTS HELPER =====
+function generateMuscleInsights(summary) {
+  const insights = [];
+  const coverage = getMuscleCoverageScore(summary);
+
+  // Undertrained detection
+  const undertrained = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets > 0 && data.weeklySets < 5;
+  }).slice(0, 3);
+  if (undertrained.length > 0) {
+    insights.push({
+      icon: "⚠️", severity: "yellow",
+      text: `${undertrained.map((m) => m.label).join(", ")} ${undertrained.length === 1 ? "is" : "are"} undertrained. Currently getting <5 weekly sets. Add targeted work.`,
+    });
+  }
+
+  // Overtrained detection
+  const overtrained = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets > 18;
+  }).slice(0, 3);
+  if (overtrained.length > 0) {
+    insights.push({
+      icon: "⚠️", severity: "red",
+      text: `${overtrained.map((m) => m.label).join(", ")} ${overtrained.length === 1 ? "has" : "have"} unusually high volume (>18 weekly sets). Monitor recovery.`,
+    });
+  }
+
+  // Neglected (no training)
+  const neglected = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return !data || data.weeklySets === 0;
+  });
+  if (neglected.length > 0 && coverage < 90) {
+    const topNeglected = neglected.slice(0, 3);
+    insights.push({
+      icon: "🎯", severity: "yellow",
+      text: `${topNeglected.map((m) => m.label).join(", ")} ${topNeglected.length === 1 ? "has" : "have"} received no direct training. Coverage: <strong>${coverage}%</strong>.`,
+    });
+  }
+
+  // Positive insight
+  const optimal = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets >= 5 && data.weeklySets <= 14;
+  }).length;
+  if (optimal >= 8) {
+    insights.push({
+      icon: "✅", severity: "green",
+      text: `${optimal} muscle groups are in the optimal training range (5-14 weekly sets). Excellent balance.`,
+    });
+  }
+
+  // Recovery insight
+  const todayTrained = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.doneToday;
+  });
+  if (todayTrained.length > 0) {
+    insights.push({
+      icon: "🔄", severity: "blue",
+      text: `${todayTrained.map((m) => m.label).join(", ")} trained today. Prioritize sleep and nutrition for recovery.`,
+    });
+  }
+
+  // Quad/ham imbalance
+  const quadData = summary["quads"];
+  const hamData = summary["hamstrings"];
+  if (quadData && hamData && quadData.weeklySets > 0 && hamData.weeklySets > 0) {
+    const ratio = quadData.weeklySets / (hamData.weeklySets || 1);
+    if (ratio > 2) {
+      insights.push({
+        icon: "⚠️", severity: "yellow",
+        text: `Quad/Ham imbalance: Quads receiving ${ratio.toFixed(1)}× more sets. Add hamstring work like RDLs and leg curls.`,
+      });
+    }
+  }
+
+  // Strength trend insight
+  const improving = MUSCLE_GROUPS.filter((mg) => {
+    const trend = getStrengthTrend(mg.id);
+    return trend !== null && trend > 5;
+  }).slice(0, 3);
+  if (improving.length > 0) {
+    insights.push({
+      icon: "📈", severity: "green",
+      text: `${improving.map((m) => m.label).join(", ")} ${improving.length === 1 ? "is" : "are"} showing strong strength progression (>5% increase).`,
+    });
+  }
+
+  return insights;
+}
+
+// ===== CALENDAR STATE =====
+let calendarYear = new Date().getFullYear();
+let calendarMonth = new Date().getMonth();
 
 // ===== REST TIMER =====
 let restTimerInterval = null;
@@ -437,7 +1137,7 @@ function updateStreak() {
   document.getElementById("streakBadge").textContent = streak > 0 ? `${streak} day streak` : "";
 }
 
-// ===== PILL NAV TAB SYSTEM =====
+// ===== TAB SYSTEM =====
 let currentTab = "sets";
 
 function activateTab(tabName) {
@@ -450,8 +1150,8 @@ function activateTab(tabName) {
   positionNavIndicator();
 
   if (tabName === "sessions") renderSessionsTab();
+  if (tabName === "coach") renderCoachTab();
   if (tabName === "body") renderBodyTab();
-  if (tabName === "today") renderTodayTab();
   if (tabName === "sets") renderSetsPanel();
 }
 
@@ -471,58 +1171,15 @@ function render() {
   updateStreak();
   renderSetsPanel();
   if (currentTab === "sessions") renderSessionsTab();
+  if (currentTab === "coach") renderCoachTab();
   if (currentTab === "body") renderBodyTab();
-  if (currentTab === "today") renderTodayTab();
   updateTopbarTimer();
 }
 
-// ===== DRILL-DOWN NAVIGATION =====
-let drillStack = [];
-
-function showDrillLevel(level) {
-  document.querySelectorAll(".sets-level").forEach((el) => el.classList.add("is-hidden"));
-  document.getElementById(level).classList.remove("is-hidden");
-  const fab = document.getElementById("openLogSheetBtn");
-  fab.classList.toggle("is-hidden", level !== "setsL3");
-}
-
-function openL1() {
-  drillStack = [];
-  showDrillLevel("setsL1");
-}
-
-function openL2(planId) {
-  drillStack = [planId];
-  showDrillLevel("setsL2");
-  renderL2(planId);
-}
-
-function openL3(planId, exerciseName) {
-  drillStack = [planId, exerciseName];
-  showDrillLevel("setsL3");
-  renderL3(planId, exerciseName);
-}
-
-function openL4() {
-  document.getElementById("logSheet").classList.remove("is-hidden");
-}
-
-function closeL4() {
-  document.getElementById("logSheet").classList.add("is-hidden");
-}
-
-function goBack() {
-  if (drillStack.length === 0) return;
-  if (!document.getElementById("logSheet").classList.contains("is-hidden")) {
-    closeL4();
-    return;
-  }
-  drillStack.pop();
-  if (drillStack.length === 0) openL1();
-  else if (drillStack.length === 1) openL2(drillStack[0]);
-}
-
 // ===== SETS PANEL =====
+let currentPlanId = "";
+let openExerciseName = "";
+
 function renderSetsPanel() {
   renderL1();
   const session = getTodaySession();
@@ -530,620 +1187,584 @@ function renderSetsPanel() {
   const isRunning = stopwatchInterval;
 
   if (session.finishedAt) {
-    openL1();
+    showDrillLevel("setsL1");
   } else if (hasWork || isRunning || stopwatchElapsed > 0) {
-    if (drillStack.length === 0) openL1();
+    if (currentPlanId) showDrillLevel("setsL2");
+    else showDrillLevel("setsL1");
   } else {
-    openL1();
+    showDrillLevel("setsL1");
   }
 }
 
+function showDrillLevel(level) {
+  document.querySelectorAll(".sets-level").forEach((el) => el.classList.add("is-hidden"));
+  document.getElementById(level).classList.remove("is-hidden");
+}
+
 // ===== L1: MY WORKOUTS =====
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h >= 5 && h < 12) return "Good morning";
+  if (h >= 12 && h < 17) return "Good afternoon";
+  if (h >= 17 && h < 21) return "Good evening";
+  return "Good night! Sleep early helps recovery.";
+}
+
 function renderL1() {
   const container = document.getElementById("l1PlanList");
-  const activePlan = loadCustomProgram() || plan;
+  const greetingEl = document.getElementById("l1Greeting");
+  const name = state.user ? state.user.name : "";
+  greetingEl.textContent = name ? `${getGreeting()}, ${name}!` : `${getGreeting()}!`;
+
+  const hasSessions = state.sessions.length > 0;
+  const activePlan = loadCustomProgram();
+  const hasPlan = !!activePlan;
+
+  if (!hasSessions && !hasPlan) {
+    container.innerHTML = `
+      <div class="l1-empty">
+        <div class="l1-empty-icon">💪</div>
+        <div class="l1-empty-title">Welcome to iron log</div>
+        <div class="l1-empty-desc">Build your first workout to get started.</div>
+        <button class="l1-empty-btn" id="welcomeCreateBtn">Create New Workout</button>
+        <button class="l1-empty-btn l1-empty-btn-secondary" id="welcomeSampleBtn">Load Sample Program</button>
+      </div>`;
+    document.getElementById("welcomeCreateBtn").addEventListener("click", () => {
+      showNewWorkoutCreator();
+    });
+    document.getElementById("welcomeSampleBtn").addEventListener("click", () => {
+      state.plan = plan;
+      saveState();
+      renderSetsPanel();
+    });
+    document.getElementById("exerciseCount").textContent = "0";
+    return;
+  }
+
+  const todaySession = state.sessions.find((s) => s.dateKey === getDateKey());
   container.innerHTML = activePlan.map((w, i) => {
     const dayLabel = w.day || "";
-    const isCurrent = i === state.planOffset && !getTodaySession().finishedAt;
-    return `<button class="l1-plan-row" data-plan-idx="${i}" data-plan-id="${w.id}">
+    const isCurrent = i === state.planOffset && todaySession && !todaySession.finishedAt;
+    const isCompleted = todaySession && todaySession.workoutId === w.id && todaySession.finishedAt;
+    const isActiveSession = todaySession && todaySession.workoutId === w.id;
+    let badge = "";
+    if (isCurrent) badge = ' <span style="color:var(--accent);font-size:0.7rem">· Today</span>';
+    else if (isCompleted) badge = ' <span style="color:var(--orange);font-size:0.7rem">· Completed</span>';
+    const exShort = w.exercises.map((e) => e.name.replace(/([A-Z])/g, " $1").trim()).slice(0, 3).join(", ");
+    const exMore = w.exercises.length > 3 ? ` +${w.exercises.length - 3}` : "";
+    return `<div class="l1-plan-row" data-plan-id="${w.id}">
       <div class="l1-plan-icon">
         <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
       </div>
       <div class="l1-plan-info">
-        <div class="l1-plan-name">${w.name}${isCurrent ? ' <span style="color:var(--green);font-size:0.7rem">· Today</span>' : ""}</div>
+        <div class="l1-plan-name">${w.name}${badge}</div>
         <div class="l1-plan-desc">${dayLabel} · ${w.duration || ""}${w.focus ? " · " + w.focus : ""}</div>
+        <div class="l1-plan-exercises">${exShort}${exMore}</div>
       </div>
-      <div class="l1-plan-meta">${w.exercises.length} exercises</div>
-    </button>`;
+      <button class="l1-start-btn" data-start-id="${w.id}">${isCompleted ? "View" : isActiveSession && !isCompleted ? "Open" : "Start"}</button>
+    </div>`;
   }).join("");
 
-  container.querySelectorAll("[data-plan-id]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const planId = btn.dataset.planId;
-      openL2(planId);
+  container.querySelectorAll("[data-plan-id]").forEach((row) => {
+    row.addEventListener("click", (e) => {
+      if (e.target.closest("[data-start-id]")) return;
+      openL2(row.dataset.planId);
+    });
+  });
+
+  container.querySelectorAll("[data-start-id]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const planId = btn.dataset.startId;
+      startWorkout(planId);
     });
   });
 
   document.getElementById("exerciseCount").textContent = activePlan.reduce((s, w) => s + w.exercises.length, 0);
 }
 
-// ===== L2: PLAN DETAIL =====
-function renderL2(planId) {
+function startWorkout(planId) {
   const activePlan = loadCustomProgram() || plan;
   const workout = activePlan.find((w) => w.id === planId);
-  if (!workout) { openL1(); return; }
+  if (!workout) return;
 
-  document.getElementById("l2PlanName").textContent = workout.name;
-  const descEl = document.getElementById("l2PlanDesc");
-  descEl.textContent = workout.focus || "";
-  descEl.classList.add("is-hidden");
+  const session = getTodaySession();
+
+  if (session.workoutId !== planId && !session.finishedAt) {
+    session.workoutId = workout.id;
+    session.workoutName = workout.name;
+    session.exercises = workout.exercises.map((exercise) => ({
+      name: exercise.name,
+      sets: Array.from({ length: exercise.sets }, () => ({ reps: exercise.reps || 8, weight: "", done: false })),
+    }));
+    saveState();
+  }
+
+  openL2(planId);
+}
+
+// ===== NEW WORKOUT CREATOR =====
+let selectedExerciseNames = new Set();
+
+function getAllExercises() {
+  const activePlan = loadCustomProgram() || plan;
+  const seen = new Set();
+  const result = [];
+  for (const w of activePlan) {
+    for (const e of w.exercises) {
+      if (!seen.has(e.name)) {
+        seen.add(e.name);
+        result.push(e);
+      }
+    }
+  }
+  return result;
+}
+
+function showNewWorkoutCreator() {
+  selectedExerciseNames = new Set();
+  document.getElementById("l3NameInput").value = "";
+  showDrillLevel("setsL3");
+  renderExerciseSelectList();
+}
+
+function renderExerciseSelectList() {
+  const container = document.getElementById("l3ExerciseList");
+  const allExercises = getAllExercises();
+  container.innerHTML = allExercises.map((ex) => {
+    const name = ex.name.replace(/([A-Z])/g, " $1").trim();
+    const muscles = MUSCLE_MAP[ex.name] || [];
+    const muscleLabels = muscles.map((m) => {
+      const mg = MUSCLE_GROUPS.find((g) => g.id === m);
+      return mg ? mg.label : m;
+    }).join(", ");
+    const isSelected = selectedExerciseNames.has(ex.name);
+    return `<div class="exercise-card${isSelected ? " is-selected" : ""}" data-ex="${ex.name}">
+      <div class="exercise-card-check">${isSelected ? "✓" : ""}</div>
+      <div class="exercise-card-info">
+        <div class="exercise-card-name">${name}</div>
+        ${muscleLabels ? `<div class="exercise-card-muscles">${muscleLabels}</div>` : ""}
+      </div>
+    </div>`;
+  }).join("");
+
+  container.querySelectorAll(".exercise-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      const exName = card.dataset.ex;
+      if (selectedExerciseNames.has(exName)) selectedExerciseNames.delete(exName);
+      else selectedExerciseNames.add(exName);
+      renderExerciseSelectList();
+    });
+  });
+
+  updateCreateBtn();
+}
+
+function updateCreateBtn() {
+  const btn = document.getElementById("l3CreateBtn");
+  const count = selectedExerciseNames.size;
+  btn.textContent = `Create & Start (${count})`;
+  btn.disabled = count === 0;
+}
+
+function createWorkout() {
+  const name = document.getElementById("l3NameInput").value.trim() || "Custom Workout";
+  const exNames = Array.from(selectedExerciseNames);
+  if (exNames.length === 0) return;
+  const allExercises = getAllExercises();
+
+  const session = getTodaySession();
+  session.workoutId = "custom-" + Date.now();
+  session.workoutName = name;
+  session.finishedAt = null;
+  session.exercises = exNames.map((exName) => {
+    const def = allExercises.find((e) => e.name === exName);
+    return {
+      name: exName,
+      sets: Array.from({ length: def ? def.sets : 3 }, () => ({ reps: def ? def.reps : 8, weight: "", done: false })),
+    };
+  });
+
+  if (!state.plan) state.plan = [];
+  const existing = state.plan.findIndex((w) => w.id === session.workoutId);
+  const planEntry = { id: session.workoutId, name, exercises: exNames.map((n) => ({ name: n, sets: 3, reps: 8 })) };
+  if (existing >= 0) state.plan[existing] = planEntry;
+  else state.plan.push(planEntry);
+  saveState();
+
+  openL2(session.workoutId);
+}
+
+// ===== L2: PLAN DETAIL WITH ACCORDION =====
+let accordionWeightInputs = {};
+
+function openL2(planId) {
+  currentPlanId = planId;
+  openExerciseName = "";
+  accordionWeightInputs = {};
+  showDrillLevel("setsL2");
+  renderL2(planId);
+}
+
+function renderL2(planId) {
+  const activePlan = loadCustomProgram() || plan;
+  let workout = activePlan.find((w) => w.id === planId);
+  const session = getTodaySession();
+
+  if (!workout) {
+    // Build from session data for custom workouts
+    workout = {
+      id: planId,
+      name: session.workoutName || "Workout",
+      exercises: session.exercises.map((ex) => ({
+        name: ex.name,
+        sets: ex.sets.length,
+        reps: ex.sets[0]?.reps || 8,
+        weight: "",
+        tip: "",
+      })),
+    };
+  }
+  const completion = getCompletion(session);
+  const exIdx = workout.exercises.findIndex((e) => e.name === openExerciseName);
+  const currentExNum = exIdx >= 0 ? exIdx + 1 : Math.min(completion.done + 1, workout.exercises.length);
+
+  document.getElementById("woHeaderName").textContent = workout.name;
+  document.getElementById("woHeaderMeta").textContent = `Exercise ${currentExNum} of ${workout.exercises.length}`;
+  document.getElementById("woHeaderPct").textContent = `${completion.percent}%`;
 
   const container = document.getElementById("l2ExerciseList");
-  container.innerHTML = workout.exercises.map((ex) => {
-    const session = getTodaySession();
+  container.innerHTML = workout.exercises.map((ex, i) => {
     const exSession = getExerciseSession(session, ex);
     const doneSets = exSession.sets.filter((s) => s.done).length;
     const totalSets = exSession.sets.length;
     const lastData = getLastSessionData(ex.name);
-    const isActive = doneSets > 0 && doneSets < totalSets;
+    const isExpanded = openExerciseName === ex.name;
 
-    return `<button class="l2-ex-row${isActive ? " is-active" : ""}" data-ex-name="${ex.name}">
-      <div class="l2-ex-info">
-        <div class="l2-ex-name">${ex.name.replace(/([A-Z])/g, " $1").trim()}</div>
-        ${lastData ? `<div class="l2-ex-last">Last · ${formatWeight(lastData.weight)}×${lastData.reps}</div>` : ""}
-      </div>
-      <div class="l2-ex-progress">
-        <span class="l2-ex-sets">${doneSets}/${totalSets}</span>
-        <span class="l2-ex-arrow">→</span>
-      </div>
-    </button>`;
+    return renderAccordionItem(ex, exSession, i, isExpanded, lastData, doneSets, totalSets);
   }).join("");
 
-  container.querySelectorAll("[data-ex-name]").forEach((btn) => {
+  // Bind accordion triggers
+  container.querySelectorAll(".accordion-trigger").forEach((btn) => {
     btn.addEventListener("click", () => {
       const exName = btn.dataset.exName;
-      openL3(planId, exName);
+      toggleExercise(exName);
     });
   });
-}
 
-// ===== L3: EXERCISE DETAIL =====
-let l3CurrentPlanId = "";
-let l3CurrentExName = "";
-let l3ActiveTab = "sets";
-
-function renderL3(planId, exerciseName) {
-  l3CurrentPlanId = planId;
-  l3CurrentExName = exerciseName;
-
-  const activePlan = loadCustomProgram() || plan;
-  const workout = activePlan.find((w) => w.id === planId);
-  const exDef = workout ? workout.exercises.find((e) => e.name === exerciseName) : null;
-  const exDisplayName = exDef ? exerciseName.replace(/([A-Z])/g, " $1").trim() : exerciseName;
-
-  document.getElementById("l3ExName").textContent = exDisplayName;
-  const session = getTodaySession();
-  const exSession = exDef ? getExerciseSession(session, exDef) : session.exercises.find((e) => e.name === exerciseName);
-
-  l3ActiveTab = "sets";
-  document.querySelectorAll(".l3-pill").forEach((p) => p.classList.toggle("is-active", p.dataset.l3tab === "sets"));
-  document.querySelectorAll(".l3-tab-content").forEach((tc) => tc.classList.add("is-hidden"));
-  document.getElementById("l3SetsTab").classList.remove("is-hidden");
-
-  renderL3SetsTab(exDef, exSession);
-  renderL3AnalyzeTab(exerciseName);
-  renderL3RmTab(exerciseName, exSession);
-  updateFabVisibility();
-}
-
-function updateFabVisibility() {
-  const fab = document.getElementById("openLogSheetBtn");
-  fab.classList.remove("is-hidden");
-}
-
-function renderL3SetsTab(exDef, exSession) {
-  const container = document.getElementById("l3SetList");
-  const repeatBtn = document.getElementById("l3RepeatBtn");
-
-  if (!exDef || !exSession) {
-    container.innerHTML = `<p class="empty-state">No exercise data.</p>`;
-    repeatBtn.classList.add("is-hidden");
-    return;
-  }
-
-  const doneSets = exSession.sets.filter((s) => s.done);
-  const allDone = doneSets.length === exSession.sets.length;
-
-  const prevSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  let prevExData = null;
-  for (const ps of prevSessions) {
-    const pe = ps.exercises.find((e) => e.name === exDef.name);
-    if (pe) {
-      const pdone = pe.sets.filter((s) => s.done && s.weight && Number(s.weight) > 0);
-      if (pdone.length > 0) {
-        prevExData = pdone;
-        break;
-      }
+  // Bind weight inputs
+  container.querySelectorAll(".ex-weight-input").forEach((input) => {
+    const exName = input.dataset.exName;
+    if (accordionWeightInputs[exName] !== undefined) {
+      input.value = accordionWeightInputs[exName];
     }
-  }
-
-  if (prevExData && prevExData.length > 0) {
-    repeatBtn.classList.remove("is-hidden");
-  } else {
-    repeatBtn.classList.add("is-hidden");
-  }
-
-  if (exSession.sets.length === 0) {
-    container.innerHTML = `<p class="empty-state">No sets logged. Tap + to add.</p>`;
-    return;
-  }
-
-  container.innerHTML = exSession.sets.map((set, i) => {
-    const logged = set.done && set.weight && Number(set.weight) > 0;
-    const timeStr = set.loggedAt ? getTimeAgo(set.loggedAt) : "";
-    return `<div class="l3-set-row${logged ? "" : " is-empty"}" data-set-idx="${i}">
-      <span class="l3-set-num">${i + 1}</span>
-      ${logged ? `
-      <div class="l3-set-data">
-        <span class="l3-set-weight">${formatWeight(set.weight)}</span>
-        <span class="l3-set-reps">×${set.reps}</span>
-      </div>
-      <span class="l3-set-meta">${timeStr}</span>` : `<div class="l3-set-data"><span class="l3-set-empty">—</span></div>`}
-      <div class="l3-set-actions">
-        ${logged ? `<button class="set-edit-btn" data-edit-idx="${i}" aria-label="Edit">✎</button>` : ""}
-        <button class="set-del-btn" data-del-idx="${i}" aria-label="Delete">✕</button>
-      </div>
-    </div>`;
-  }).join("");
-
-  container.querySelectorAll("[data-edit-idx]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(btn.dataset.editIdx);
-      openL4ForEdit(exDef, exSession, idx);
+    input.addEventListener("input", () => {
+      accordionWeightInputs[exName] = input.value;
     });
   });
 
-  container.querySelectorAll("[data-del-idx]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(btn.dataset.delIdx);
-      deleteSet(exDef, exSession, idx);
-    });
-  });
-
-  container.querySelectorAll(".l3-set-row").forEach((row) => {
-    let touchStartX = 0;
-    row.addEventListener("touchstart", (e) => {
-      touchStartX = e.touches[0].clientX;
-    }, { passive: true });
-    row.addEventListener("touchend", (e) => {
-      const diff = e.changedTouches[0].clientX - touchStartX;
-      if (diff < -60) {
-        row.classList.toggle("swiping");
-      } else {
-        row.classList.remove("swiping");
+  // Bind rep steppers
+  container.querySelectorAll(".ex-rep-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const exName = btn.dataset.exName;
+      const delta = Number(btn.dataset.delta);
+      const valueEl = container.querySelector(`.ex-rep-value[data-ex-name="${exName}"]`);
+      if (!valueEl) return;
+      let val = Number(valueEl.textContent) + delta;
+      val = Math.max(1, Math.min(50, val));
+      valueEl.textContent = val;
+      // Store rep value
+      const workout = (loadCustomProgram() || plan).find((w) => w.id === currentPlanId);
+      const exDef = workout ? workout.exercises.find((e) => e.name === exName) : null;
+      if (exDef) {
+        const session = getTodaySession();
+        const exSession = getExerciseSession(session, exDef);
+        const pendingIdx = getNextUndoneSet(exSession);
+        if (!exSession._pendingReps) exSession._pendingReps = {};
+        exSession._pendingReps[pendingIdx] = val;
       }
-    }, { passive: true });
-  });
-}
-
-function getTimeAgo(loggedAt) {
-  const diff = Date.now() - new Date(loggedAt).getTime();
-  const minutes = Math.floor(diff / 60000);
-  if (minutes < 1) return "now";
-  if (minutes < 60) return `${minutes}m ago`;
-  const hours = Math.floor(minutes / 60);
-  if (hours < 24) return `${hours}h ago`;
-  const days = Math.floor(hours / 24);
-  return `${days}d ago`;
-}
-
-// ===== DELETE SET =====
-function deleteSet(exDef, exSession, idx) {
-  const set = exSession.sets[idx];
-  if (!set) return;
-  const backup = { ...set, done: set.done, weight: set.weight, reps: set.reps };
-
-  exSession.sets.splice(idx, 1);
-  saveState();
-
-  const toast = document.createElement("div");
-  toast.className = "undo-toast";
-  toast.innerHTML = `<span>Set deleted</span><button class="undo-btn">Undo</button>`;
-  document.body.appendChild(toast);
-
-  toast.querySelector(".undo-btn").addEventListener("click", () => {
-    exSession.sets.splice(idx, 0, backup);
-    saveState();
-    toast.remove();
-    const activePlan = loadCustomProgram() || plan;
-    const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-    const exDefFresh = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-    renderL3SetsTab(exDefFresh, exSession);
+    });
   });
 
-  setTimeout(() => { if (toast.parentNode) toast.remove(); }, 4000);
+  // Bind rep chips
+  container.querySelectorAll(".ex-rep-chip").forEach((chip) => {
+    chip.addEventListener("click", () => {
+      const exName = chip.dataset.exName;
+      const val = Number(chip.dataset.rep);
+      const valueEl = container.querySelector(`.ex-rep-value[data-ex-name="${exName}"]`);
+      if (!valueEl) return;
+      valueEl.textContent = val;
+      const workout = (loadCustomProgram() || plan).find((w) => w.id === currentPlanId);
+      const exDef = workout ? workout.exercises.find((e) => e.name === exName) : null;
+      if (exDef) {
+        const session = getTodaySession();
+        const exSession = getExerciseSession(session, exDef);
+        const pendingIdx = getNextUndoneSet(exSession);
+        if (!exSession._pendingReps) exSession._pendingReps = {};
+        exSession._pendingReps[pendingIdx] = val;
+      }
+    });
+  });
 
-  const activePlan = loadCustomProgram() || plan;
-  const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-  const exDefFresh = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-  renderL3SetsTab(exDefFresh, exSession);
-  renderL3RmTab(l3CurrentExName, exSession);
+  // Bind complete set buttons
+  container.querySelectorAll(".ex-complete").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const exName = btn.dataset.exName;
+      completeSet(exName);
+    });
+  });
+
+  // Bind repeat last set buttons
+  container.querySelectorAll(".ex-repeat").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const exName = btn.dataset.exName;
+      repeatLastSet(exName);
+    });
+  });
+
+  // Bind finish workout button
+  const finishBtn = document.getElementById("woFinishBtn");
+  const isFinished = session.finishedAt;
+  finishBtn.textContent = isFinished ? "Update Workout" : "Complete Workout";
+  finishBtn.onclick = finishWorkout;
 }
 
-// ===== REPEAT BUTTON =====
-document.getElementById("l3RepeatBtn").addEventListener("click", () => {
+function toggleExercise(exName) {
+  if (openExerciseName === exName) {
+    openExerciseName = "";
+  } else {
+    openExerciseName = exName;
+  }
+  renderL2(currentPlanId);
+}
+
+function renderAccordionItem(ex, exSession, i, isExpanded, lastData, doneSets, totalSets) {
+  const pendingIdx = getNextUndoneSet(exSession);
+  const currentSetNum = pendingIdx >= 0 ? pendingIdx + 1 : totalSets;
+  const lastWeight = lastData ? lastData.weight : "";
+  const lastReps = lastData ? lastData.reps : "";
+  const storedWeight = accordionWeightInputs[ex.name] !== undefined ? accordionWeightInputs[ex.name] : (lastWeight || "");
+
+  // Progress dots
+  let dotsHtml = "";
+  for (let s = 0; s < totalSets; s++) {
+    const isDone = exSession.sets[s] && exSession.sets[s].done;
+    const isCurrent = s === pendingIdx;
+    let cls = "ex-progress-dot";
+    if (isDone) cls += " is-done";
+    else if (isCurrent) cls += " is-current";
+    dotsHtml += `<div class="${cls}">${isDone ? "✓" : s + 1}</div>`;
+  }
+
+  // Store pending reps
+  const pendingReps = exSession._pendingReps && exSession._pendingReps[pendingIdx] !== undefined
+    ? exSession._pendingReps[pendingIdx]
+    : (lastReps || ex.reps || 8);
+
+  return `<div class="accordion-item${isExpanded ? " is-active" : ""}">
+    <button class="accordion-trigger" data-ex-name="${ex.name}">
+      <div class="accordion-info">
+        <div class="accordion-name">${ex.name.replace(/([A-Z])/g, " $1").trim()}</div>
+        ${lastData ? `<div class="accordion-last">Last · ${formatWeight(lastData.weight)}×${lastData.reps}</div>` : ""}
+      </div>
+      <div class="accordion-stats">
+        <span class="accordion-sets">${doneSets}/${totalSets}</span>
+        <span class="accordion-chevron">▼</span>
+      </div>
+    </button>
+
+    <div class="accordion-body">
+      <div class="ex-progress">${dotsHtml}</div>
+
+      ${lastData ? `<div class="ex-last-perf">Last: ${formatWeight(lastData.weight)} × ${lastData.reps}</div>` : ""}
+
+      <div class="ex-current-set">
+        <span class="ex-current-label">Set</span>
+        <span class="ex-current-number">${currentSetNum}/${totalSets}</span>
+      </div>
+
+      <div class="ex-weight-wrap">
+        <div class="ex-weight-label">Weight (kg)</div>
+        <input class="ex-weight-input" type="text" inputmode="decimal" data-ex-name="${ex.name}" value="${storedWeight}" placeholder="0" autocomplete="off" />
+      </div>
+
+      <div class="ex-rep-wrap">
+        <div class="ex-rep-label">Reps</div>
+        <div class="ex-rep-stepper">
+          <button class="ex-rep-btn" data-ex-name="${ex.name}" data-delta="-1">−</button>
+          <span class="ex-rep-value" data-ex-name="${ex.name}">${pendingReps}</span>
+          <button class="ex-rep-btn" data-ex-name="${ex.name}" data-delta="1">+</button>
+        </div>
+        <div class="ex-rep-chips">
+          <button class="ex-rep-chip" data-ex-name="${ex.name}" data-rep="6">6</button>
+          <button class="ex-rep-chip" data-ex-name="${ex.name}" data-rep="8">8</button>
+          <button class="ex-rep-chip" data-ex-name="${ex.name}" data-rep="10">10</button>
+          <button class="ex-rep-chip" data-ex-name="${ex.name}" data-rep="12">12</button>
+          <button class="ex-rep-chip" data-ex-name="${ex.name}" data-rep="15">15</button>
+        </div>
+      </div>
+
+      <button class="ex-complete" data-ex-name="${ex.name}">${doneSets === totalSets ? "Log Extra Set" : "Complete Set"}</button>
+
+      ${lastData && doneSets < totalSets ? `<button class="ex-repeat" data-ex-name="${ex.name}">↻ Repeat Last</button>` : ""}
+    </div>
+  </div>`;
+}
+
+// ===== COMPLETE SET =====
+function completeSet(exName) {
   const activePlan = loadCustomProgram() || plan;
-  const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-  const exDef = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
+  const workout = activePlan.find((w) => w.id === currentPlanId);
+  const exDef = workout ? workout.exercises.find((e) => e.name === exName) : null;
   if (!exDef) return;
 
   const session = getTodaySession();
   const exSession = getExerciseSession(session, exDef);
-
-  const prevSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  let prevExData = null;
-  for (const ps of prevSessions) {
-    const pe = ps.exercises.find((e) => e.name === exDef.name);
-    if (pe) {
-      const pdone = pe.sets.filter((s) => s.done && s.weight && Number(s.weight) > 0);
-      if (pdone.length > 0) {
-        prevExData = pdone;
-        break;
-      }
-    }
-  }
-
-  if (!prevExData) return;
-
-  prevExData.forEach((pset) => {
+  let pendingIdx = getNextUndoneSet(exSession);
+  if (pendingIdx < 0) {
+    // All sets done — add an extra set
+    const lastSet = exSession.sets[exSession.sets.length - 1];
     exSession.sets.push({
-      reps: pset.reps,
-      weight: pset.weight,
-      done: true,
-      loggedAt: new Date().toISOString(),
+      reps: lastSet ? lastSet.reps : (exDef.reps || 8),
+      weight: lastSet && lastSet.weight ? lastSet.weight : "",
+      done: false,
     });
-  });
-
-  startStopwatch();
-  saveState();
-  renderL3SetsTab(exDef, exSession);
-  renderL3RmTab(l3CurrentExName, exSession);
-  showPRToast(`Repeated ${prevExData.length} sets from previous session`);
-});
-
-// ===== L3: ANALYZE TAB =====
-let analyzeChartInstance = null;
-
-function renderL3AnalyzeTab(exerciseName) {
-  const sessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
-
-  const dataPoints = [];
-  for (const s of sessions) {
-    const ex = s.exercises.find((e) => e.name === exerciseName);
-    if (ex) {
-      const doneSets = ex.sets.filter((st) => st.done && st.weight && Number(st.weight) > 0);
-      if (doneSets.length > 0) {
-        const avgWeight = doneSets.reduce((sum, st) => sum + Number(st.weight), 0) / doneSets.length;
-        const totalReps = doneSets.reduce((sum, st) => sum + (st.reps || 0), 0);
-        const totalSets = doneSets.length;
-        const totalVolume = doneSets.reduce((sum, st) => sum + Number(st.weight) * (st.reps || 0), 0);
-        dataPoints.push({ date: s.dateKey, avgWeight, totalReps, totalSets, totalVolume });
-      }
-    }
+    pendingIdx = exSession.sets.length - 1;
   }
 
-  if (dataPoints.length < 2) {
-    const container = document.getElementById("analyzeDelta");
-    container.innerHTML = `<p class="empty-state">Complete at least 2 sessions to see analysis.</p>`;
-    if (analyzeChartInstance) { analyzeChartInstance.destroy(); analyzeChartInstance = null; }
-    return;
-  }
+  const weightStr = accordionWeightInputs[exName] !== undefined ? accordionWeightInputs[exName] : "";
+  const pendingReps = exSession._pendingReps && exSession._pendingReps[pendingIdx] !== undefined
+    ? exSession._pendingReps[pendingIdx]
+    : (exSession.sets[pendingIdx].reps || exDef.reps || 8);
 
-  const canvas = document.getElementById("analyzeChart");
-  if (canvas) {
-    if (analyzeChartInstance) { analyzeChartInstance.destroy(); }
-    const ctx = canvas.getContext("2d");
-    const labels = dataPoints.map((dp) => formatReadableDate(parseDateKey(dp.date)));
-    const avgWeights = dataPoints.map((dp) => dp.avgWeight);
-    const volumes = dataPoints.map((dp) => dp.totalVolume);
+  const weightNum = weightStr === "" ? 0 : Number(weightStr);
+  if (weightStr !== "" && isNaN(weightNum)) return;
 
-    analyzeChartInstance = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels,
-        datasets: [
-          { data: avgWeights, borderColor: "#00d26a", tension: 0.4, pointRadius: 3, fill: false, label: "Avg Weight" },
-          { data: volumes, borderColor: "#f97316", tension: 0.4, pointRadius: 2, fill: false, label: "Volume", yAxisID: "y1" },
-        ],
-      },
-      options: {
-        plugins: { legend: { labels: { color: "#737373", font: { size: 10 } } } },
-        scales: { y: { grid: { color: "#1a1a1a" }, ticks: { color: "#737373" } }, y1: { position: "right", grid: { display: false }, ticks: { color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 9 } } } },
-      },
-    });
-  }
-
-  const current = dataPoints[dataPoints.length - 1];
-  const previous = dataPoints.length >= 2 ? dataPoints[dataPoints.length - 2] : null;
-  const container = document.getElementById("analyzeDelta");
-
-  if (!previous) {
-    container.innerHTML = `<p class="empty-state">Need more data for comparison.</p>`;
-    return;
-  }
-
-  const calcDelta = (cur, prev) => {
-    if (prev === 0) return { pct: null, abs: cur };
-    return { pct: ((cur - prev) / prev) * 100, abs: cur - prev };
+  exSession.sets[pendingIdx] = {
+    reps: pendingReps,
+    weight: weightNum,
+    done: true,
+    loggedAt: new Date().toISOString(),
   };
 
-  const deltas = [
-    { label: "Sets", cur: current.totalSets, prev: previous.totalSets, unit: "" },
-    { label: "Reps", cur: current.totalReps, prev: previous.totalReps, unit: "" },
-    { label: "Volume", cur: current.totalVolume, prev: previous.totalVolume, unit: "kg" },
-    { label: "Avg Rep", cur: current.totalReps / current.totalSets, prev: previous.totalReps / previous.totalSets, unit: "" },
-  ];
-
-  container.innerHTML = deltas.map((d) => {
-    const delta = calcDelta(d.cur, d.prev);
-    const sign = delta.abs > 0 ? "+" : "";
-    const cls = delta.abs > 0 ? "is-green" : delta.abs < 0 ? "is-red" : "is-muted";
-    return `<div class="ad-item">
-      <div class="ad-label">${d.label}</div>
-      <div class="ad-current">${typeof d.cur === "number" ? (d.cur % 1 === 0 ? d.cur : d.cur.toFixed(1)) : d.cur}${d.unit}</div>
-      <div class="ad-delta ${cls}">${sign}${delta.abs % 1 === 0 ? delta.abs : delta.abs.toFixed(1)}${d.unit} ${delta.pct !== null ? `(${sign}${delta.pct.toFixed(0)}%)` : ""}</div>
-    </div>`;
-  }).join("");
-}
-
-// ===== L3: 1RM TAB =====
-let rmChartInstance = null;
-
-function renderL3RmTab(exerciseName, exSession) {
-  const container = document.getElementById("rmHero");
-  const rmTable = document.getElementById("rmTopSets");
-  const canvas = document.getElementById("rmChart");
-
-  const sessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  let bestRm = 0;
-  const rmHistory = [];
-
-  for (const s of sessions) {
-    const ex = s.exercises.find((e) => e.name === exerciseName);
-    if (ex) {
-      const doneSets = ex.sets.filter((st) => st.done && st.weight && Number(st.weight) > 0);
-      for (const st of doneSets) {
-        const w = Number(st.weight);
-        const r = st.reps || 1;
-        const rm = w * (1 + r / 30);
-        if (rm > bestRm) bestRm = rm;
-        rmHistory.push({ date: s.dateKey, rm });
-      }
-    }
-  }
-
-  if (exSession) {
-    for (const st of exSession.sets) {
-      if (st.done && st.weight && Number(st.weight) > 0) {
-        const w = Number(st.weight);
-        const r = st.reps || 1;
-        const rm = w * (1 + r / 30);
-        if (rm > bestRm) bestRm = rm;
-      }
-    }
-  }
-
-  container.innerHTML = `
-    <div class="rm-number">${bestRm > 0 ? bestRm.toFixed(1) : "--"}</div>
-    <div class="rm-label">Estimated 1RM (Epley)</div>
-  `;
-
-  const allSets = [];
-  for (const s of sessions) {
-    const ex = s.exercises.find((e) => e.name === exerciseName);
-    if (ex) {
-      for (const st of ex.sets) {
-        if (st.done && st.weight && Number(st.weight) > 0) {
-          const w = Number(st.weight);
-          const r = st.reps || 1;
-          allSets.push({ weight: w, reps: r, rm: w * (1 + r / 30), date: s.dateKey });
-        }
-      }
-    }
-  }
-
-  if (exSession) {
-    for (const st of exSession.sets) {
-      if (st.done && st.weight && Number(st.weight) > 0) {
-        const w = Number(st.weight);
-        const r = st.reps || 1;
-        allSets.push({ weight: w, reps: r, rm: w * (1 + r / 30), date: getDateKey() });
-      }
-    }
-  }
-
-  allSets.sort((a, b) => b.rm - a.rm);
-  const topSets = allSets.slice(0, 5);
-
-  if (topSets.length === 0) {
-    rmTable.innerHTML = `<p class="empty-state">Log sets with weight to see 1RM estimates.</p>`;
-  } else {
-    rmTable.innerHTML = topSets.map((s) =>
-      `<div class="rm-row"><span>${formatWeight(s.weight)} × ${s.reps} · ${formatReadableDate(parseDateKey(s.date))}</span><span>${s.rm.toFixed(1)} kg</span></div>`
-    ).join("");
-  }
-
-  if (canvas && rmHistory.length >= 2) {
-    if (rmChartInstance) { rmChartInstance.destroy(); }
-    const ctx = canvas.getContext("2d");
-    const grouped = {};
-    rmHistory.forEach((h) => {
-      if (!grouped[h.date]) grouped[h.date] = 0;
-      if (h.rm > grouped[h.date]) grouped[h.date] = h.rm;
-    });
-    const dates = Object.keys(grouped).sort();
-    const rms = dates.map((d) => grouped[d]);
-
-    rmChartInstance = new Chart(ctx, {
-      type: "line",
-      data: {
-        labels: dates.map((d) => formatReadableDate(parseDateKey(d))),
-        datasets: [{ data: rms, borderColor: "#f97316", tension: 0.3, pointRadius: 3, fill: false }],
-      },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: { y: { grid: { color: "#1a1a1a" }, ticks: { color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 9 } } } },
-      },
-    });
-  } else if (canvas && rmHistory.length < 2) {
-    if (rmChartInstance) { rmChartInstance.destroy(); rmChartInstance = null; }
-  }
-}
-
-// ===== L3: PILL TABS =====
-document.querySelectorAll(".l3-pill").forEach((pill) => {
-  pill.addEventListener("click", () => {
-    const tab = pill.dataset.l3tab;
-    l3ActiveTab = tab;
-    document.querySelectorAll(".l3-pill").forEach((p) => p.classList.toggle("is-active", p.dataset.l3tab === tab));
-    document.querySelectorAll(".l3-tab-content").forEach((tc) => tc.classList.add("is-hidden"));
-    document.getElementById("l3" + tab.charAt(0).toUpperCase() + tab.slice(1) + "Tab").classList.remove("is-hidden");
-
-    if (tab === "analyze") renderL3AnalyzeTab(l3CurrentExName);
-    if (tab === "rm") {
-      const activePlan = loadCustomProgram() || plan;
-      const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-      const exDef = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-      const session = getTodaySession();
-      const exSession = exDef ? getExerciseSession(session, exDef) : null;
-      renderL3RmTab(l3CurrentExName, exSession);
-    }
-  });
-});
-
-// ===== BACK BUTTONS =====
-document.getElementById("planInfoBtn").addEventListener("click", () => {
-  document.getElementById("l2PlanDesc").classList.toggle("is-hidden");
-});
-document.getElementById("l2BackBtn").addEventListener("click", goBack);
-document.getElementById("l3BackBtn").addEventListener("click", goBack);
-
-// ===== BOTTOM SHEET (L4) =====
-let lsReps = 10;
-let lsWeight = 0;
-let lsEditIdx = -1;
-let lsExDef = null;
-let lsExSession = null;
-
-function openL4ForEdit(exDef, exSession, editIdx) {
-  lsExDef = exDef;
-  lsExSession = exSession;
-  lsEditIdx = editIdx;
-
-  if (editIdx >= 0 && exSession.sets[editIdx]) {
-    const set = exSession.sets[editIdx];
-    lsReps = set.reps || 10;
-    lsWeight = Number(set.weight) || 0;
-  } else {
-    lsReps = getTargetReps(exDef);
-    lsWeight = 0;
-  }
-
-  document.getElementById("lsRepValue").textContent = lsReps;
-  document.getElementById("lsWtValue").textContent = lsWeight;
-  document.getElementById("lsNote").value = "";
-  openL4();
-}
-
-document.getElementById("openLogSheetBtn").addEventListener("click", () => {
-  const activePlan = loadCustomProgram() || plan;
-  const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-  const exDef = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-  if (!exDef) return;
-  const session = getTodaySession();
-  const exSession = getExerciseSession(session, exDef);
-
-  const doneSets = exSession.sets.filter((s) => s.done);
-  if (doneSets.length > 0) {
-    lsWeight = Number(doneSets[doneSets.length - 1].weight) || 0;
-    lsReps = doneSets[doneSets.length - 1].reps || getTargetReps(exDef);
-  } else {
-    const lastData = getLastSessionData(exDef.name);
-    if (lastData) {
-      lsWeight = lastData.weight;
-      lsReps = lastData.reps || getTargetReps(exDef);
-    } else {
-      lsWeight = Number(exDef.weight) || 0;
-      lsReps = getTargetReps(exDef);
-    }
-  }
-
-  lsEditIdx = -1;
-  lsExDef = exDef;
-  lsExSession = exSession;
-  document.getElementById("lsRepValue").textContent = lsReps;
-  document.getElementById("lsWtValue").textContent = lsWeight;
-  document.getElementById("lsNote").value = "";
-  openL4();
-});
-
-document.getElementById("lsRepDec").addEventListener("click", () => { lsReps = Math.max(1, lsReps - 1); document.getElementById("lsRepValue").textContent = lsReps; });
-document.getElementById("lsRepInc").addEventListener("click", () => { lsReps = Math.min(50, lsReps + 1); document.getElementById("lsRepValue").textContent = lsReps; });
-document.getElementById("lsWtDec").addEventListener("click", () => { lsWeight = Math.round(Math.max(0, lsWeight - 2.5) * 10) / 10; document.getElementById("lsWtValue").textContent = lsWeight; });
-document.getElementById("lsWtInc").addEventListener("click", () => { lsWeight = Math.round((lsWeight + 2.5) * 10) / 10; document.getElementById("lsWtValue").textContent = lsWeight; });
-
-document.querySelectorAll("[data-ls-wt]").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    const delta = Number(chip.dataset.lsWt);
-    lsWeight = Math.max(0, lsWeight + delta);
-    document.getElementById("lsWtValue").textContent = lsWeight;
-  });
-});
-
-document.getElementById("lsConfirmBtn").addEventListener("click", () => {
-  if (!lsExDef || !lsExSession) return;
-
-  if (lsEditIdx >= 0 && lsExSession.sets[lsEditIdx]) {
-    const set = lsExSession.sets[lsEditIdx];
-    set.reps = lsReps;
-    set.weight = lsWeight;
-    set.done = true;
-    set.loggedAt = new Date().toISOString();
-  } else {
-    const setData = { reps: lsReps, weight: lsWeight, done: true, loggedAt: new Date().toISOString() };
-    lsExSession.sets.push(setData);
-  }
+  // Clear pending for this index
+  if (exSession._pendingReps) delete exSession._pendingReps[pendingIdx];
 
   startStopwatch();
   saveState();
 
-  const prs = loadPRs();
-  const current = prs[lsExDef.name];
-  if (lsWeight > 0 && (!current || lsWeight > current.weight)) {
-    prs[lsExDef.name] = { weight: lsWeight, reps: lsReps, date: getDateKey() };
-    savePRs(prs);
-    showPRToast(`${lsExDef.name}: ${formatWeight(lsWeight)} × ${lsReps}`);
-  } else if (lsWeight > 0 && current && lsWeight === current.weight && lsReps > current.reps) {
-    prs[lsExDef.name] = { weight: lsWeight, reps: lsReps, date: getDateKey() };
-    savePRs(prs);
-    showPRToast(`${lsExDef.name}: ${formatWeight(lsWeight)} × ${lsReps} (rep PR)`);
+  // Check PR
+  if (weightNum > 0) {
+    const prs = loadPRs();
+    const current = prs[exName];
+    if (!current || weightNum > current.weight) {
+      prs[exName] = { weight: weightNum, reps: pendingReps, date: getDateKey() };
+      savePRs(prs);
+      showPRToast(`${exName}: ${formatWeight(weightNum)} × ${pendingReps}`);
+    } else if (current && weightNum === current.weight && pendingReps > current.reps) {
+      prs[exName] = { weight: weightNum, reps: pendingReps, date: getDateKey() };
+      savePRs(prs);
+      showPRToast(`${exName}: ${formatWeight(weightNum)} × ${pendingReps} (rep PR)`);
+    }
   }
 
-  closeL4();
+  // Start rest timer
   startRestTimer();
 
-  const activePlan = loadCustomProgram() || plan;
-  const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-  const exDefFresh = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-  const session = getTodaySession();
-  const exSessionFresh = exDefFresh ? getExerciseSession(session, exDefFresh) : null;
-  renderL3SetsTab(exDefFresh, exSessionFresh);
-  renderL3RmTab(l3CurrentExName, exSessionFresh);
-});
+  // Check if current exercise still has undone sets
+  const currentStillHasSets = exSession.sets.some((s) => !s.done);
 
-document.getElementById("lsOverlay").addEventListener("click", closeL4);
+  if (currentStillHasSets) {
+    // Stay on same exercise for next set
+    renderL2(currentPlanId);
+  } else {
+    // All sets done for this exercise — advance to next exercise with undone sets
+    const nextEx = workout.exercises.find((e, idx) => {
+      if (idx <= workout.exercises.findIndex((ex) => ex.name === exName)) return false;
+      const es = getExerciseSession(session, e);
+      return es.sets.some((s) => !s.done);
+    });
+    if (nextEx) {
+      openExerciseName = nextEx.name;
+    }
+    renderL2(currentPlanId);
+  }
+}
+
+// ===== REPEAT LAST SET =====
+function repeatLastSet(exName) {
+  const activePlan = loadCustomProgram() || plan;
+  const workout = activePlan.find((w) => w.id === currentPlanId);
+  const exDef = workout ? workout.exercises.find((e) => e.name === exName) : null;
+  if (!exDef) return;
+
+  const lastData = getLastSessionData(exName);
+  if (!lastData) return;
+
+  const session = getTodaySession();
+  const exSession = getExerciseSession(session, exDef);
+  let pendingIdx = getNextUndoneSet(exSession);
+  if (pendingIdx < 0) {
+    const lastSet = exSession.sets[exSession.sets.length - 1];
+    exSession.sets.push({
+      reps: lastSet ? lastSet.reps : (exDef.reps || 8),
+      weight: lastSet && lastSet.weight ? lastSet.weight : "",
+      done: false,
+    });
+    pendingIdx = exSession.sets.length - 1;
+  }
+
+  exSession.sets[pendingIdx] = {
+    reps: lastData.reps,
+    weight: lastData.weight,
+    done: true,
+    loggedAt: new Date().toISOString(),
+  };
+
+  startStopwatch();
+  saveState();
+
+  if (lastData.weight > 0) {
+    const prs = loadPRs();
+    const current = prs[exName];
+    if (!current || lastData.weight > current.weight) {
+      prs[exName] = { weight: lastData.weight, reps: lastData.reps, date: getDateKey() };
+      savePRs(prs);
+      showPRToast(`${exName}: ${formatWeight(lastData.weight)} × ${lastData.reps}`);
+    } else if (current && lastData.weight === current.weight && lastData.reps > current.reps) {
+      prs[exName] = { weight: lastData.weight, reps: lastData.reps, date: getDateKey() };
+      savePRs(prs);
+      showPRToast(`${exName}: ${formatWeight(lastData.weight)} × ${lastData.reps} (rep PR)`);
+    }
+  }
+
+  startRestTimer();
+
+  const currentStillHasSets = exSession.sets.some((s) => !s.done);
+
+  if (currentStillHasSets) {
+    renderL2(currentPlanId);
+  } else {
+    const nextEx = workout.exercises.find((e, idx) => {
+      if (idx <= workout.exercises.findIndex((ex) => ex.name === exName)) return false;
+      const es = getExerciseSession(session, e);
+      return es.sets.some((s) => !s.done);
+    });
+    if (nextEx) {
+      openExerciseName = nextEx.name;
+    }
+    renderL2(currentPlanId);
+  }
+}
+
+// ===== FINISH WORKOUT =====
+function finishWorkout() {
+  const session = getTodaySession();
+  const completion = getCompletion(session);
+  if (completion.done === 0) return;
+
+  showNotesModal();
+}
 
 // ===== SESSION COMPLETE =====
 function buildSessionRecap() {
@@ -1182,7 +1803,8 @@ function buildSessionRecap() {
 
 function showNotesModal() {
   document.getElementById("sessionRecap").innerHTML = buildSessionRecap();
-  document.getElementById("sessionNotesInput").value = "";
+  const session = getTodaySession();
+  document.getElementById("sessionNotesInput").value = session.notes || "";
   document.getElementById("notesModal").classList.remove("is-hidden");
 }
 
@@ -1190,12 +1812,17 @@ function hideNotesModal() { document.getElementById("notesModal").classList.add(
 
 function completeSession(notes) {
   const session = getTodaySession();
+  const wasFinished = !!session.finishedAt;
   session.finishedAt = new Date().toISOString();
   session.notes = notes || "";
   checkPRs(session);
-  state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  if (!wasFinished) {
+    state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  }
   hideNotesModal();
   stopStopwatch();
+  currentPlanId = "";
+  openExerciseName = "";
   saveAndRender();
   activateTab("sessions");
 }
@@ -1207,6 +1834,34 @@ document.getElementById("skipNotesButton").addEventListener("click", () => compl
 document.getElementById("notesModalClose").addEventListener("click", hideNotesModal);
 document.getElementById("notesModal").addEventListener("click", (e) => { if (e.target === e.currentTarget) hideNotesModal(); });
 
+// ===== BACK BUTTON =====
+document.getElementById("l2BackBtn").addEventListener("click", () => {
+  currentPlanId = "";
+  openExerciseName = "";
+  showDrillLevel("setsL1");
+  // Reset to workout list in case session was interrupted
+  renderSetsPanel();
+});
+
+// ===== NEW WORKOUT CREATOR =====
+document.getElementById("newWorkoutBtn")?.addEventListener("click", showNewWorkoutCreator);
+
+document.getElementById("l3BackBtn").addEventListener("click", () => {
+  showDrillLevel("setsL1");
+  renderSetsPanel();
+});
+
+document.getElementById("l3CreateBtn").addEventListener("click", createWorkout);
+
+// ===== MUSCLE SHEET =====
+document.getElementById("muscleSheetOverlay")?.addEventListener("click", () => {
+  document.getElementById("muscleSheet").classList.add("is-hidden");
+});
+document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add("is-hidden");
+});
+
+// ===== REST TIMER CONTROLS =====
 document.getElementById("rtAdd30").addEventListener("click", () => { restTimerSeconds += 30; updateRestTimerDisplay(); });
 document.getElementById("rtReset").addEventListener("click", () => { restTimerSeconds = DEFAULT_REST; updateRestTimerDisplay(); });
 document.getElementById("rtSkip").addEventListener("click", () => { clearRestTimer(); });
@@ -1286,7 +1941,7 @@ function renderWeeklyReview() {
       <div class="wr-item"><strong>${Math.round(totalKg / (sessionsCount || 1) / 100) / 10 || "--"}</strong><small>Avg/Session</small></div>
     </div>
     <div class="wr-note">${getWeeklyNote(strengthPct, bwChange, sessionsCount, proteinPct)}</div>
-    ${(() => { const as = getGoalAlignmentScore(); return as !== null ? `<div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-align:center;padding-top:0.35rem;border-top:1px solid var(--border)">Goal Alignment: <span style="color:var(--green)">${as}/10</span></div>` : ""; })()}
+    ${(() => { const as = getGoalAlignmentScore(); return as !== null ? `<div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-align:center;padding-top:0.35rem;border-top:1px solid var(--border)">Goal Alignment: <span style="color:var(--accent)">${as}/10</span></div>` : ""; })()}
   `;
 }
 
@@ -1375,6 +2030,558 @@ function renderAdherenceGrid() {
   }
   html += `</div>`;
   container.innerHTML = html;
+}
+
+// ===== NUTRITION (moved from Today) =====
+function renderTodayStatus() {
+  const container = document.getElementById("todayStatusContent");
+  const goal = GOALS.find((g) => g.id === state.bodyGoal);
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
+
+  let weightOk = true;
+  let weightStatus = "On Track";
+  let weightCls = "is-green";
+  if (log.length >= 4 && goal) {
+    const now = new Date();
+    const wa = getDateKey(new Date(now.getTime() - 7 * 86400000));
+    const twa = getDateKey(new Date(now.getTime() - 14 * 86400000));
+    const r = log.filter((e) => e.date >= wa);
+    const p = log.filter((e) => e.date >= twa && e.date < wa);
+    if (r.length >= 2 && p.length >= 2) {
+      const avgR = r.reduce((s, e) => s + e.weight, 0) / r.length;
+      const avgP = p.reduce((s, e) => s + e.weight, 0) / p.length;
+      const change = avgR - avgP;
+      if (goal.id === "fat-loss" && change > 0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-red"; }
+      else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-yellow"; }
+      else if (goal.id === "recomp" && Math.abs(change) > 0.5) { weightOk = false; weightStatus = "⚠ Needs Attention"; weightCls = "is-yellow"; }
+    }
+  }
+
+  const strengthPct = getWeeklyStrengthChange();
+  let strengthStatus = "Improving";
+  let strengthCls = "is-green";
+  if (strengthPct === null) { strengthStatus = "Need data"; strengthCls = "is-yellow"; }
+  else if (strengthPct < -3) { strengthStatus = "Declining"; strengthCls = "is-red"; }
+  else if (strengthPct < 2) { strengthStatus = "Stable"; strengthCls = "is-yellow"; }
+
+  const today = getDateKey();
+  const todayMeals = loadMeals(today);
+  const todayProtein = todayMeals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const proteinPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
+  let proteinStatus = `${todayProtein}g / ${PROTEIN_GOAL}g`;
+  let proteinCls = proteinPct >= 80 ? "is-green" : proteinPct >= 50 ? "is-yellow" : "is-red";
+
+  const todayCal = todayMeals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
+  let calStatus = "On Target";
+  let calCls = "is-green";
+  if (goal && goal.id === "fat-loss" && todayCal > CAL_GOAL * 1.05) { calStatus = "Over Target"; calCls = "is-yellow"; }
+  else if (goal && goal.id !== "fat-loss" && todayCal < CAL_GOAL * 0.85) { calStatus = "Under Target"; calCls = "is-yellow"; }
+
+  let score = 0;
+  if (strengthPct !== null && strengthPct > 3) score += 3;
+  else if (strengthPct !== null && strengthPct > -3) score += 1.5;
+  if (proteinPct >= 80) score += 1.5;
+  else if (proteinPct >= 50) score += 0.5;
+  if (goal && ((goal.id === "fat-loss" && todayCal <= CAL_GOAL * 1.05) || (goal.id !== "fat-loss" && todayCal >= CAL_GOAL * 0.85))) score += 1.5;
+  else if (todayCal > 0) score += 0.5;
+  if (weightOk) score += 2;
+  if (weekSessions.length >= 5) score += 2;
+  else if (weekSessions.length >= 3) score += 1;
+  else if (weekSessions.length > 0) score += 0.5;
+  score = Math.round(score * 10) / 10;
+  const maxScore = 10;
+
+  let recTitle = "";
+  let recBody = "";
+  if (proteinPct < 80) {
+    const remaining = PROTEIN_GOAL - todayProtein;
+    recTitle = "Increase Protein";
+    recBody = `Add ${Math.ceil(remaining)}g protein — shake, eggs, or chicken before bed.`;
+  } else if (!weightOk && goal && goal.id === "fat-loss") {
+    recTitle = "Calories May Be Too High";
+    recBody = "Weight is trending up on a fat-loss goal. Track accurately, watch weekend intake.";
+  } else if (!weightOk && goal && (goal.id === "lean-bulk" || goal.id === "aggressive-bulk")) {
+    recTitle = "Increase Calories";
+    recBody = "Weight is dropping on a bulk goal. Add 150-250 calories daily.";
+  } else if (strengthPct !== null && strengthPct < -5) {
+    recTitle = "Check Recovery";
+    recBody = "Strength is declining. Prioritize sleep (7-9h), nutrition, and consider a deload.";
+  } else if (weekSessions.length < 4) {
+    recTitle = "Increase Training Frequency";
+    recBody = `Only ${weekSessions.length} sessions this week. Aim for 6 for consistent progress.`;
+  } else {
+    recTitle = "Continue Current Strategy";
+    recBody = "Everything is on track. Keep showing up and results will follow.";
+  }
+
+  container.innerHTML = `
+    <div class="status-row"><span class="status-label">Goal</span><span class="status-value">${goal ? goal.label : "Not set"}</span></div>
+    <div class="status-row"><span class="status-label">Weight Trend</span><span class="status-value ${weightCls}">${weightStatus}</span></div>
+    <div class="status-row"><span class="status-label">Strength Trend</span><span class="status-value ${strengthCls}">${strengthStatus}</span></div>
+    <div class="status-row"><span class="status-label">Protein</span><span class="status-value ${proteinCls}">${proteinStatus}</span></div>
+    <div class="status-row"><span class="status-label">Calories</span><span class="status-value ${calCls}">${calStatus}</span></div>
+    <div class="status-score">
+      <div class="status-score-num">${score}</div>
+      <div class="status-score-label">out of ${maxScore}</div>
+    </div>
+    <div class="status-rec"><strong>${recTitle}</strong>${recBody}</div>
+  `;
+}
+
+function renderMacroSummary() {
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
+  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
+  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
+  document.getElementById("macroSummary").innerHTML = `
+    <div class="macro-stat"><strong class="label-cal">${cal}</strong><small>Cal</small></div>
+    <div class="macro-stat"><strong class="label-protein">${p}g</strong><small>Protein</small></div>
+    <div class="macro-stat"><strong class="label-carbs">${c}g</strong><small>Carbs</small></div>
+    <div class="macro-stat"><strong class="label-fat">${f}g</strong><small>Fat</small></div>
+  `;
+  document.getElementById("macroProgress").innerHTML = `
+    <div class="macro-bar"><span class="bar-label">Protein</span><div class="bar-track"><span style="width:${Math.min((p / PROTEIN_GOAL) * 100, 100)}%;background:var(--accent)"></span></div><span class="bar-value">${p}/${PROTEIN_GOAL}g</span></div>
+    <div class="macro-bar"><span class="bar-label">Carbs</span><div class="bar-track"><span style="width:${Math.min((c / CARBS_GOAL) * 100, 100)}%;background:var(--blue)"></span></div><span class="bar-value">${c}/${CARBS_GOAL}g</span></div>
+    <div class="macro-bar"><span class="bar-label">Fat</span><div class="bar-track"><span style="width:${Math.min((f / FAT_GOAL) * 100, 100)}%;background:var(--orange)"></span></div><span class="bar-value">${f}/${FAT_GOAL}g</span></div>
+    <div class="macro-bar"><span class="bar-label">Calories</span><div class="bar-track"><span style="width:${Math.min((cal / CAL_GOAL) * 100, 100)}%;background:var(--text)"></span></div><span class="bar-value">${cal}/${CAL_GOAL}</span></div>
+  `;
+}
+
+function renderProteinScore() {
+  const container = document.getElementById("proteinScoreContent");
+  const badge = document.getElementById("proteinScoreBadge");
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const todayProtein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const weekly = getWeeklyMacroAvg();
+  const monthly = getMonthlyMacroAvg();
+  const todayPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
+  const weeklyPct = weekly ? Math.round((weekly.p / PROTEIN_GOAL) * 100) : null;
+  const monthlyPct = monthly ? Math.round((monthly.p / PROTEIN_GOAL) * 100) : null;
+  const score = todayPct;
+  badge.textContent = `${score}%`;
+  badge.className = `score-pill is-${score >= 90 ? "green" : score >= 70 ? "yellow" : "red"}`;
+  container.innerHTML = `
+    <div class="ns-row"><span>Today</span><span>${todayProtein}g / ${PROTEIN_GOAL}g (${todayPct}%)</span></div>
+    <div class="ns-row"><span>Weekly avg</span><span>${weeklyPct !== null ? weeklyPct + "%" : "--"}</span></div>
+    <div class="ns-row"><span>Monthly avg</span><span>${monthlyPct !== null ? monthlyPct + "%" : "--"}</span></div>
+  `;
+}
+
+function renderNutritionCompliance() {
+  const container = document.getElementById("nutritionComplianceContent");
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
+  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
+  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
+  const pPct = Math.min(Math.round((p / PROTEIN_GOAL) * 100), 100);
+  const cPct = Math.min(Math.round((c / CARBS_GOAL) * 100), 100);
+  const fPct = Math.min(Math.round((f / FAT_GOAL) * 100), 100);
+  const calPct = Math.min(Math.round((cal / CAL_GOAL) * 100), 100);
+  const goal = GOALS.find((g) => g.id === state.bodyGoal);
+  let resultText = "Nutrition looks good today.";
+  let resultCls = "is-green";
+  if (goal && goal.id === "fat-loss" && calPct > 100) {
+    resultText = "Calories exceed target — fat loss may slow.";
+    resultCls = "is-yellow";
+  }
+  if (pPct < 70) {
+    resultText = "Protein too low — prioritize protein at meals.";
+    resultCls = "is-yellow";
+  }
+  if (goal && goal.id !== "fat-loss" && calPct < 80) {
+    resultText = "Calories too low for growth phase — increase intake.";
+    resultCls = "is-yellow";
+  }
+  let html = `<div class="nc-grid">`;
+  html += `<div class="nc-row"><span class="nc-label">Protein</span><div class="nc-track"><span style="width:${pPct}%;background:var(--accent)"></span></div><span class="nc-pct">${pPct}%</span></div>`;
+  html += `<div class="nc-row"><span class="nc-label">Carbs</span><div class="nc-track"><span style="width:${cPct}%;background:var(--blue)"></span></div><span class="nc-pct">${cPct}%</span></div>`;
+  html += `<div class="nc-row"><span class="nc-label">Fat</span><div class="nc-track"><span style="width:${fPct}%;background:var(--orange)"></span></div><span class="nc-pct">${fPct}%</span></div>`;
+  html += `<div class="nc-row"><span class="nc-label">Calories</span><div class="nc-track"><span style="width:${calPct}%;background:var(--text)"></span></div><span class="nc-pct">${calPct}%</span></div>`;
+  html += `</div><div class="nc-result ${resultCls}">${resultText}</div>`;
+  container.innerHTML = html;
+}
+
+function renderSmartSuggestions() {
+  const container = document.getElementById("smartSuggestionsContent");
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const remaining = Math.max(0, PROTEIN_GOAL - protein);
+  if (remaining < 10) {
+    container.innerHTML = `<p class="empty-state">Protein target met. Great work.</p>`;
+    return;
+  }
+  const suggestions = curatedFoods
+    .filter((f) => f.name !== "Custom Entry" && f.protein > 5)
+    .sort((a, b) => b.protein / b.cal - a.protein / a.cal)
+    .slice(0, 5);
+  container.innerHTML = suggestions.map((f) => {
+    const needed = Math.ceil(remaining / f.protein);
+    return `<button class="suggestion-chip" data-food="${f.name}">${f.name} ×${needed}</button>`;
+  }).join("");
+  container.querySelectorAll("[data-food]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
+      if (!food) return;
+      const needed = Math.ceil(remaining / food.protein);
+      const meals = loadMeals(today);
+      meals.push({ type: "Quick", food: food.name, qty: needed, protein: food.protein * needed, carbs: food.carbs * needed, fat: food.fat * needed, cal: food.cal * needed });
+      saveMeals(today, meals);
+      saveRecentFoods(food.name);
+      renderSessionsTab();
+    });
+  });
+}
+
+function renderFavoriteMeals() {
+  const container = document.getElementById("favoriteMealsList");
+  const favorites = loadFavoriteMeals();
+  const today = getDateKey();
+  if (favorites.length === 0) {
+    container.innerHTML = `<p class="empty-state">Save meal combos you eat often for one-tap logging.</p>`;
+    return;
+  }
+  container.innerHTML = favorites.map((meal, i) => {
+    const totalP = meal.items.reduce((s, m) => s + (Number(m.protein) || 0) * (Number(m.qty) || 1), 0);
+    const totalCal = meal.items.reduce((s, m) => s + (Number(m.cal) || 0) * (Number(m.qty) || 1), 0);
+    return `<div class="fav-meal-row">
+      <button class="fav-btn" data-fav-idx="${i}">
+        <span class="fav-name">${meal.name}</span>
+        <span class="fav-macros">${Math.round(totalP)}g P · ${Math.round(totalCal)} cal</span>
+      </button>
+      <button class="fav-delete" data-del-idx="${i}">✕</button>
+    </div>`;
+  }).join("");
+  container.querySelectorAll("[data-fav-idx]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const meal = favorites[Number(btn.dataset.favIdx)];
+      if (!meal) return;
+      const meals = loadMeals(today);
+      for (const item of meal.items) {
+        meals.push({ type: "Fav", food: item.food, qty: item.qty, protein: Number(item.protein) * Number(item.qty), carbs: Number(item.carbs) * Number(item.qty), fat: Number(item.fat) * Number(item.qty), cal: Number(item.cal) * Number(item.qty) });
+      }
+      saveMeals(today, meals);
+      renderSessionsTab();
+    });
+  });
+  container.querySelectorAll("[data-del-idx]").forEach((btn) => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = Number(btn.dataset.delIdx);
+      const favs = loadFavoriteMeals();
+      favs.splice(idx, 1);
+      saveFavoriteMeals(favs);
+      renderFavoriteMeals();
+    });
+  });
+}
+
+document.getElementById("saveFavoriteMealBtn")?.addEventListener("click", () => {
+  const items = getTodayMealsSnapshot();
+  if (items.length === 0) return;
+  const name = prompt("Name this meal:", "Favorites");
+  if (!name) return;
+  const favorites = loadFavoriteMeals();
+  favorites.push({ name: name.trim(), items });
+  saveFavoriteMeals(favorites);
+  renderFavoriteMeals();
+});
+
+function renderQuickFoods() {
+  const container = document.getElementById("quickFoods");
+  const recent = loadRecentFoods();
+  const foods = [...new Set([...recent.filter((f) => f), ...curatedFoods.map((f) => f.name)])].slice(0, 10);
+  container.innerHTML = foods.map((name) => `<button class="food-btn" data-food="${name}">${name}</button>`).join("");
+  container.querySelectorAll("[data-food]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
+      if (!food) return;
+      const today = getDateKey();
+      const meals = loadMeals(today);
+      meals.push({ type: "Quick", food: food.name, qty: 1, protein: food.protein, carbs: food.carbs, fat: food.fat, cal: food.cal });
+      saveMeals(today, meals);
+      saveRecentFoods(food.name);
+      renderSessionsTab();
+    });
+  });
+}
+
+function renderMealLog() {
+  const container = document.getElementById("mealLog");
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  container.innerHTML = meals.length
+    ? meals.map((m, i) =>
+        `<div class="meal-item"><div><strong>${m.food}</strong>${m.qty ? ` ×${m.qty}` : ""} <span class="meal-macros">${m.protein || 0}g P · ${m.carbs || 0}g C · ${m.fat || 0}g F · ${m.cal || 0} cal</span></div><button class="meal-delete" data-idx="${i}">✕</button></div>`
+      ).join("")
+    : `<p class="empty-state">No meals logged. Tap a food above.</p>`;
+  container.querySelectorAll(".meal-delete").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const idx = Number(btn.dataset.idx);
+      const meals = loadMeals(today);
+      meals.splice(idx, 1);
+      saveMeals(today, meals);
+      renderSessionsTab();
+    });
+  });
+}
+
+function renderWaterTracker() {
+  const container = document.getElementById("waterTracker");
+  const today = getDateKey();
+  const current = loadWater(today);
+  const remaining = Math.max(0, WATER_TARGET - current);
+  const pct = Math.min(current / WATER_TARGET, 1);
+  const circumference = 198;
+  const offset = circumference * (1 - pct);
+  const hoursRemaining = Math.ceil(remaining / 200);
+  const now = new Date();
+  const endHour = now.getHours() + hoursRemaining;
+  const predText = hoursRemaining > 0 && endHour <= 23
+    ? `Drink 200ml every hour — done by ${endHour}:00`
+    : remaining > 0
+    ? `${Math.ceil(remaining / 300)} more glasses`
+    : "Hydration target met!";
+  container.innerHTML = `
+    <div class="water-ring">
+      <svg viewBox="0 0 72 72">
+        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--surface)" stroke-width="6"/>
+        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--blue)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 36 36)" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
+      </svg>
+      <div class="water-ring-text">${current}<br><small>ml</small></div>
+    </div>
+    <div style="flex:1">
+      <div class="water-controls">
+        <button class="water-btn" data-water="250">250ml</button>
+        <button class="water-btn" data-water="500">500ml</button>
+        <button class="water-btn" data-water="750">750ml</button>
+        <button class="water-btn" data-water="1000">1L</button>
+      </div>
+      <div class="water-prediction">Remaining: ${remaining}ml — ${predText}</div>
+    </div>
+  `;
+  container.querySelectorAll("[data-water]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const amount = Number(btn.dataset.water);
+      saveWater(today, loadWater(today) + amount);
+      renderWaterTracker();
+    });
+  });
+}
+
+function renderWeeklyNutritionReview() {
+  const container = document.getElementById("weeklyNutritionContent");
+  const weekly = getWeeklyMacroAvg();
+  if (!weekly) {
+    container.innerHTML = `<p class="empty-state">Log meals to see your weekly review.</p>`;
+    return;
+  }
+  const pPct = Math.round((weekly.p / PROTEIN_GOAL) * 100);
+  const calPct = Math.round((weekly.cal / CAL_GOAL) * 100);
+  const waterDays = 7;
+  let totalWaterPct = 0;
+  let waterDaysCount = 0;
+  for (let i = 0; i < waterDays; i++) {
+    const d = new Date(); d.setDate(d.getDate() - i);
+    const w = loadWater(getDateKey(d));
+    if (w > 0) { totalWaterPct += Math.min(w / WATER_TARGET, 1); waterDaysCount++; }
+  }
+  const waterPct = waterDaysCount > 0 ? Math.round((totalWaterPct / waterDaysCount) * 100) : 0;
+  const overall = Math.round((pPct + Math.min(calPct, 100) + waterPct) / 3);
+  container.innerHTML = `
+    <div class="wn-row"><span>Protein</span><span>${pPct}%</span></div>
+    <div class="wn-row"><span>Calories</span><span>${calPct}%</span></div>
+    <div class="wn-row"><span>Water</span><span>${waterPct}%</span></div>
+    <div class="wn-score"><div class="wn-score-num">${overall}%</div><div class="wn-score-label">Overall Nutrition Score</div></div>
+  `;
+}
+
+// ===== TRAINING CALENDAR =====
+function renderTrainingCalendar() {
+  const container = document.getElementById("trainingCalendar");
+  if (!container) return;
+
+  const sessions = state.sessions.filter((s) => s.finishedAt);
+  const trainedDays = new Set(sessions.map((s) => s.dateKey));
+
+  let streak = 0;
+  const today = new Date();
+  for (let i = 0; ; i++) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    if (trainedDays.has(getDateKey(d))) streak++;
+    else break;
+  }
+
+  const firstDay = new Date(calendarYear, calendarMonth, 1);
+  const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+  const startPad = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const todayKey = getDateKey(today);
+
+  let html = `<div class="cal-header">
+    <button class="cal-nav-btn" data-cal-dir="-1">←</button>
+    <span class="cal-title">${monthNames[calendarMonth]} ${calendarYear}</span>
+    <button class="cal-nav-btn" data-cal-dir="1">→</button>
+  </div>`;
+
+  html += `<div class="cal-weekdays">
+    ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<span>${d}</span>`).join("")}
+  </div>`;
+
+  html += `<div class="cal-grid">`;
+
+  for (let i = 0; i < startPad; i++) {
+    html += `<div class="cal-cell cal-other"></div>`;
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const date = new Date(calendarYear, calendarMonth, d);
+    const key = getDateKey(date);
+    const isToday = key === todayKey;
+    const isTrained = trainedDays.has(key);
+    const isFuture = date > today;
+
+    let cls = "cal-cell";
+    if (isFuture) cls += " cal-future";
+    else if (isTrained) cls += " cal-trained";
+    if (isToday) cls += " cal-today";
+
+    html += `<div class="${cls}">${d}</div>`;
+  }
+
+  html += `</div>`;
+
+  html += `<div class="cal-streak">
+    <span>Streak: <strong>${streak}</strong> days</span>
+    <span>Trained: <strong>${trainedDays.size}</strong> total</span>
+  </div>`;
+
+  container.innerHTML = html;
+
+  container.querySelectorAll("[data-cal-dir]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const dir = Number(btn.dataset.calDir);
+      calendarMonth += dir;
+      if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+      if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+      renderTrainingCalendar();
+    });
+  });
+}
+
+// ===== COACH TAB =====
+function renderCoachTab() {
+  renderTrainingCalendar();
+  renderCoachInsights();
+  renderRecovery();
+}
+
+function renderCoachInsights() {
+  const container = document.getElementById("coachInsights");
+  const insights = [];
+
+  // Insight 1: Weight trend vs goal
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const goal = GOALS.find((g) => g.id === state.bodyGoal);
+  if (log.length >= 4 && goal) {
+    const now = new Date();
+    const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
+    const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
+    const recent = log.filter((e) => e.date >= weekAgo);
+    const prev = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
+    if (recent.length >= 2 && prev.length >= 2) {
+      const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
+      const avgPrev = prev.reduce((s, e) => s + e.weight, 0) / prev.length;
+      const change = avgRecent - avgPrev;
+      const direction = change > 0 ? "increased" : "decreased";
+      const absChange = Math.abs(change).toFixed(1);
+      insights.push({
+        icon: "⚖️",
+        text: `Weight <strong>${direction} ${absChange}kg</strong> this week. ${goal.id === "fat-loss" && change < 0 ? "On track for fat loss." : goal.id === "lean-bulk" && change > 0 ? "Good progress on bulk." : goal.id === "recomp" && Math.abs(change) < 0.3 ? "Stable weight — recomp on target." : `Goal expects ${goal.expectedWeekly > 0 ? "+" : ""}${goal.expectedWeekly}kg/week.`}`,
+      });
+    }
+  }
+
+  // Insight 2: Strength change
+  const strengthPct = getWeeklyStrengthChange();
+  if (strengthPct !== null) {
+    const dir = strengthPct > 0 ? "increased" : "decreased";
+    insights.push({
+      icon: "💪",
+      text: `Overall strength <strong>${dir} ${Math.abs(strengthPct).toFixed(0)}%</strong> this week. ${strengthPct > 5 ? "Excellent progress." : strengthPct > 0 ? "Moderate improvement." : strengthPct < -5 ? "Consider a deload or rest week." : "Stable."}`,
+    });
+  }
+
+  // Insight 3: Protein adherence
+  const protPct = getWeeklyProteinAdherence();
+  if (protPct !== null) {
+    insights.push({
+      icon: "🥩",
+      text: `Protein target <strong>${Math.round(protPct)}%</strong> achieved this week. ${protPct >= 90 ? "Great consistency." : protPct >= 80 ? "Good, but room for improvement." : "Needs attention — try meal prepping."}`,
+    });
+  }
+
+  // Insight 4: Training consistency
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
+  insights.push({
+    icon: "📅",
+    text: `Trained <strong>${weekSessions.length}/6</strong> sessions this week. ${weekSessions.length >= 5 ? "Excellent consistency." : weekSessions.length >= 3 ? "Building momentum." : "Try to increase frequency."}`,
+  });
+
+  // Insight 5: Muscle coverage & insights
+  if (weekSessions.length > 0) {
+    const muscleSum = computeMuscleSummary();
+    const muscleInsights = generateMuscleInsights(muscleSum);
+    muscleInsights.slice(0, 3).forEach((ins) => {
+      insights.push({ icon: ins.icon, text: ins.text });
+    });
+  }
+
+  container.innerHTML = insights.slice(0, 5).map((insight) =>
+    `<div class="insight-item">${insight.icon} ${insight.text}</div>`
+  ).join("");
+
+  if (insights.length === 0) {
+    container.innerHTML = `<p class="empty-state">Log workouts and nutrition to get coaching insights.</p>`;
+  }
+}
+
+function renderRecovery() {
+  const container = document.getElementById("recoveryContent");
+  const dot = document.getElementById("recoveryDot");
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
+  if (weekSessions.length === 0) {
+    container.innerHTML = `<p class="empty-state">Complete sessions to assess recovery.</p>`;
+    dot.className = "recovery-dot";
+    return;
+  }
+  const strengthPct = getWeeklyStrengthChange();
+  const sessionCount = weekSessions.length;
+  const avgSetsPerSession = weekSessions.length > 0
+    ? Math.round(weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0) / weekSessions.length)
+    : 0;
+  const performanceScore = strengthPct !== null ? (strengthPct > 3 ? 90 : strengthPct > -3 ? 70 : 40) : 50;
+  const volumeScore = Math.min(sessionCount * 15, 100);
+  const recoveryScore = Math.round((performanceScore + volumeScore) / 2);
+  let status = "Good";
+  let cls = "is-green";
+  if (recoveryScore < 50) { status = "Poor"; cls = "is-red"; }
+  else if (recoveryScore < 70) { status = "Fair"; cls = "is-yellow"; }
+  dot.className = `recovery-dot ${cls}`;
+  container.innerHTML = `
+    <div class="rec-row"><span>Sessions</span><span>${sessionCount}/6</span></div>
+    <div class="rec-row"><span>Avg sets/session</span><span>${avgSetsPerSession}</span></div>
+    <div class="rec-row"><span>Performance</span><span>${performanceScore}%</span></div>
+    <div class="rec-row"><span>Recovery</span><span style="font-weight:800;color:var(--${recoveryScore >= 70 ? 'accent' : recoveryScore >= 50 ? 'yellow' : 'red'})">${recoveryScore}% — ${status}</span></div>
+  `;
 }
 
 // ===== BODY TAB =====
@@ -1535,6 +2742,83 @@ function renderGoalPrediction() {
   `;
 }
 
+function renderBodyAnalysis() {
+  const container = document.getElementById("bodyAnalysis");
+  computeMuscleSummary();
+  const summary = bodyMapCache ? bodyMapCache.summary : computeMuscleSummary();
+  const coverageScore = getMuscleCoverageScore(summary);
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
+
+  const statusLabels = { untrained: "Not trained", undertrained: "Undertrained", optimal: "Optimal", high: "High volume", overtrained: "Overtrained" };
+  const modeLabels = { today: "Trained Today", weekly: "Weekly Coverage", recovery: "Recovery", strength: "Strength Trend" };
+
+  // Mode selector
+  let html = `<div class="bm-mode-row">
+    ${Object.entries(modeLabels).map(([key, label]) =>
+      `<button class="bm-mode-btn${bodyMapMode === key ? " is-active" : ""}" data-mode="${key}">${label}</button>`
+    ).join("")}
+  </div>`;
+
+  // Body map container
+  html += `<div id="bmContainer" class="bm-container"></div>`;
+
+  // Coverage + insights
+  html += `<div class="bm-stats">
+    <div class="bm-coverage"><span class="bm-coverage-pct">${coverageScore}%</span> Coverage</div>
+    <div class="bm-trained">${Object.values(summary).filter((m) => m.weeklySets > 0).length}/${Object.keys(summary).length} trained</div>
+  </div>`;
+
+  const sorted = MUSCLE_GROUPS.map((mg) => ({
+    ...mg,
+    ...summary[mg.id],
+    sets: summary[mg.id] ? summary[mg.id].weeklySets : 0,
+  }));
+
+  // Muscle list
+  html += `<div class="bm-muscle-list">`;
+  sorted.forEach((mg) => {
+    const color = getBodyMapColor(mg.id, bodyMapMode, summary);
+    const sets = mg.sets || 0;
+    html += `<div class="bm-muscle-row" data-muscle="${mg.id}">
+      <span class="bm-muscle-dot" style="background:${color};opacity:${sets > 0 ? 1 : 0.3}"></span>
+      <span class="bm-muscle-name">${mg.label}</span>
+      <span class="bm-muscle-sets">${sets} sets</span>
+      <span class="bm-muscle-chevron">›</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  // Generate insights
+  const insights = generateMuscleInsights(summary);
+  if (insights.length > 0) {
+    html += `<div class="bm-insights">`;
+    insights.slice(0, 4).forEach((ins) => {
+      html += `<div class="alert-item is-${ins.severity}"><span class="alert-icon">${ins.icon}</span><div class="alert-body">${ins.text}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+
+  // Bind body map
+  renderBodyMuscleMap(document.getElementById("bmContainer"), summary);
+
+  // Bind mode buttons
+  container.querySelectorAll(".bm-mode-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      bodyMapMode = btn.dataset.mode;
+      renderBodyAnalysis();
+    });
+  });
+
+  // Bind muscle row clicks
+  container.querySelectorAll(".bm-muscle-row").forEach((row) => {
+    row.addEventListener("click", () => {
+      showMuscleSheet(row.dataset.muscle, summary);
+    });
+  });
+}
+
 function renderWeightHistoryChart() {
   if (weightHistoryChartInstance) { weightHistoryChartInstance.destroy(); weightHistoryChartInstance = null; }
   const canvas = document.getElementById("weightHistoryChart");
@@ -1565,632 +2849,6 @@ function renderWeightHistoryChart() {
     data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.3, pointRadius: 2, fill: false }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
   });
-}
-
-function renderBodyAnalysis() {
-  const container = document.getElementById("bodyAnalysis");
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-
-  if (log.length < 4) {
-    container.innerHTML = `<div class="alert-item is-blue"><span class="alert-icon">💡</span><div class="alert-body"><strong>Log at least 4 weigh-ins</strong>to see trend analysis.</div></div>`;
-    return;
-  }
-
-  const now = new Date();
-  const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-  const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
-  const recentWeek = log.filter((e) => e.date >= weekAgo);
-  const prevWeek = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-  const avgRecent = recentWeek.length >= 2 ? recentWeek.reduce((s, e) => s + e.weight, 0) / recentWeek.length : null;
-  const avgPrev = prevWeek.length >= 2 ? prevWeek.reduce((s, e) => s + e.weight, 0) / prevWeek.length : null;
-
-  let alerts = [];
-
-  if (avgRecent && avgPrev) {
-    const weeklyChange = avgRecent - avgPrev;
-    const expected = goal ? goal.expectedWeekly : 0;
-
-    if (goal && goal.id === "fat-loss" && weeklyChange > 0.3) {
-      alerts.push({ type: "red", icon: "⚠️", title: "Weight increasing on fat-loss goal", body: "Check tracking accuracy, hidden calories, water retention." });
-    } else if (goal && (goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && weeklyChange < -0.3) {
-      alerts.push({ type: "yellow", icon: "⚠️", title: "Weight decreasing on bulk goal", body: "Consider increasing calorie intake by 150-250." });
-    } else if (goal && goal.id === "recomp" && Math.abs(weeklyChange) > 0.5) {
-      alerts.push({ type: "yellow", icon: "⚠️", title: "Weight changing on recomp goal", body: "Recomp expects stable weight. Adjust calories slightly." });
-    } else if (Math.abs(weeklyChange) < 0.3) {
-      const latestStrength = getWeeklyStrengthChange();
-      if (latestStrength && latestStrength > 0) {
-        alerts.push({ type: "green", icon: "✅", title: "Recomposition detected", body: "Weight stable, strength increasing. Continue current approach." });
-      } else if (avgRecent <= avgPrev) {
-        alerts.push({ type: "green", icon: "✓", title: "Trend aligned with goal", body: "Weight is moving in the right direction. Stay consistent." });
-      } else {
-        alerts.push({ type: "green", icon: "✓", title: "Weight stable", body: `Current rate: ${weeklyChange > 0 ? "+" : ""}${weeklyChange.toFixed(2)}kg/week.` });
-      }
-    } else {
-      alerts.push({ type: "blue", icon: "ℹ️", title: "Trend detected", body: `Change: ${weeklyChange > 0 ? "+" : ""}${weeklyChange.toFixed(2)}kg/week. ${goal ? `Goal expects ${expected > 0 ? "+" : ""}${expected}kg/week.` : ""}` });
-    }
-  }
-
-  const proteinPct = getWeeklyProteinAdherence();
-  if (proteinPct !== null && proteinPct < 80) {
-    alerts.push({ type: "yellow", icon: "🥩", title: `Protein at ${Math.round(proteinPct)}% of target`, body: "Prioritize protein at every meal to support recovery." });
-  }
-
-  container.innerHTML = alerts.map((a) =>
-    `<div class="alert-item is-${a.type}"><span class="alert-icon">${a.icon}</span><div class="alert-body"><strong>${a.title}</strong><br>${a.body}</div></div>`
-  ).join("");
-}
-
-// ===== TODAY TAB (Fuel + Coach consolidated) =====
-function renderTodayTab() {
-  renderTodayStatus();
-  renderMacroSummary();
-  renderProteinScore();
-  renderNutritionCompliance();
-  renderSmartSuggestions();
-  renderFavoriteMeals();
-  renderQuickFoods();
-  renderMealLog();
-  renderWaterTracker();
-  renderWeeklyNutritionReview();
-  renderCoachAlerts();
-  renderRecovery();
-  renderStrengthAnalytics();
-}
-
-function renderTodayStatus() {
-  const container = document.getElementById("todayStatusContent");
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-
-  let weightOk = true;
-  let weightStatus = "On Track";
-  let weightCls = "is-green";
-  if (log.length >= 4 && goal) {
-    const now = new Date();
-    const wa = getDateKey(new Date(now.getTime() - 7 * 86400000));
-    const twa = getDateKey(new Date(now.getTime() - 14 * 86400000));
-    const r = log.filter((e) => e.date >= wa);
-    const p = log.filter((e) => e.date >= twa && e.date < wa);
-    if (r.length >= 2 && p.length >= 2) {
-      const avgR = r.reduce((s, e) => s + e.weight, 0) / r.length;
-      const avgP = p.reduce((s, e) => s + e.weight, 0) / p.length;
-      const change = avgR - avgP;
-      if (goal.id === "fat-loss" && change > 0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-red"; }
-      else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-yellow"; }
-      else if (goal.id === "recomp" && Math.abs(change) > 0.5) { weightOk = false; weightStatus = "⚠ Needs Attention"; weightCls = "is-yellow"; }
-    }
-  }
-
-  const strengthPct = getWeeklyStrengthChange();
-  let strengthStatus = "Improving";
-  let strengthCls = "is-green";
-  if (strengthPct === null) { strengthStatus = "Need data"; strengthCls = "is-yellow"; }
-  else if (strengthPct < -3) { strengthStatus = "Declining"; strengthCls = "is-red"; }
-  else if (strengthPct < 2) { strengthStatus = "Stable"; strengthCls = "is-yellow"; }
-
-  const today = getDateKey();
-  const todayMeals = loadMeals(today);
-  const todayProtein = todayMeals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const proteinPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
-  let proteinStatus = `${todayProtein}g / ${PROTEIN_GOAL}g`;
-  let proteinCls = proteinPct >= 80 ? "is-green" : proteinPct >= 50 ? "is-yellow" : "is-red";
-
-  const todayCal = todayMeals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  let calStatus = "On Target";
-  let calCls = "is-green";
-  if (goal && goal.id === "fat-loss" && todayCal > CAL_GOAL * 1.05) { calStatus = "Over Target"; calCls = "is-yellow"; }
-  else if (goal && goal.id !== "fat-loss" && todayCal < CAL_GOAL * 0.85) { calStatus = "Under Target"; calCls = "is-yellow"; }
-
-  let score = 0;
-  if (strengthPct !== null && strengthPct > 3) score += 3;
-  else if (strengthPct !== null && strengthPct > -3) score += 1.5;
-  if (proteinPct >= 80) score += 1.5;
-  else if (proteinPct >= 50) score += 0.5;
-  if (goal && ((goal.id === "fat-loss" && todayCal <= CAL_GOAL * 1.05) || (goal.id !== "fat-loss" && todayCal >= CAL_GOAL * 0.85))) score += 1.5;
-  else if (todayCal > 0) score += 0.5;
-  if (weightOk) score += 2;
-  if (weekSessions.length >= 5) score += 2;
-  else if (weekSessions.length >= 3) score += 1;
-  else if (weekSessions.length > 0) score += 0.5;
-  score = Math.round(score * 10) / 10;
-  const maxScore = 10;
-
-  let recTitle = "";
-  let recBody = "";
-  if (proteinPct < 80) {
-    const remaining = PROTEIN_GOAL - todayProtein;
-    recTitle = "Increase Protein";
-    recBody = `Add ${Math.ceil(remaining)}g protein — shake, eggs, or chicken before bed.`;
-  } else if (!weightOk && goal && goal.id === "fat-loss") {
-    recTitle = "Calories May Be Too High";
-    recBody = "Weight is trending up on a fat-loss goal. Track accurately, watch weekend intake.";
-  } else if (!weightOk && goal && (goal.id === "lean-bulk" || goal.id === "aggressive-bulk")) {
-    recTitle = "Increase Calories";
-    recBody = "Weight is dropping on a bulk goal. Add 150-250 calories daily.";
-  } else if (strengthPct !== null && strengthPct < -5) {
-    recTitle = "Check Recovery";
-    recBody = "Strength is declining. Prioritize sleep (7-9h), nutrition, and consider a deload.";
-  } else if (weekSessions.length < 4) {
-    recTitle = "Increase Training Frequency";
-    recBody = `Only ${weekSessions.length} sessions this week. Aim for 6 for consistent progress.`;
-  } else {
-    recTitle = "Continue Current Strategy";
-    recBody = "Everything is on track. Keep showing up and results will follow.";
-  }
-
-  container.innerHTML = `
-    <div class="status-row"><span class="status-label">Goal</span><span class="status-value">${goal ? goal.label : "Not set"}</span></div>
-    <div class="status-row"><span class="status-label">Weight Trend</span><span class="status-value ${weightCls}">${weightStatus}</span></div>
-    <div class="status-row"><span class="status-label">Strength Trend</span><span class="status-value ${strengthCls}">${strengthStatus}</span></div>
-    <div class="status-row"><span class="status-label">Protein</span><span class="status-value ${proteinCls}">${proteinStatus}</span></div>
-    <div class="status-row"><span class="status-label">Calories</span><span class="status-value ${calCls}">${calStatus}</span></div>
-    <div class="status-score">
-      <div class="status-score-num">${score}</div>
-      <div class="status-score-label">out of ${maxScore}</div>
-    </div>
-    <div class="status-rec"><strong>${recTitle}</strong>${recBody}</div>
-  `;
-}
-
-function renderMacroSummary() {
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  document.getElementById("macroSummary").innerHTML = `
-    <div class="macro-stat"><strong class="label-cal">${cal}</strong><small>Cal</small></div>
-    <div class="macro-stat"><strong class="label-protein">${p}g</strong><small>Protein</small></div>
-    <div class="macro-stat"><strong class="label-carbs">${c}g</strong><small>Carbs</small></div>
-    <div class="macro-stat"><strong class="label-fat">${f}g</strong><small>Fat</small></div>
-  `;
-  document.getElementById("macroProgress").innerHTML = `
-    <div class="macro-bar"><span class="bar-label">Protein</span><div class="bar-track"><span style="width:${Math.min((p / PROTEIN_GOAL) * 100, 100)}%;background:var(--green)"></span></div><span class="bar-value">${p}/${PROTEIN_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Carbs</span><div class="bar-track"><span style="width:${Math.min((c / CARBS_GOAL) * 100, 100)}%;background:var(--blue)"></span></div><span class="bar-value">${c}/${CARBS_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Fat</span><div class="bar-track"><span style="width:${Math.min((f / FAT_GOAL) * 100, 100)}%;background:var(--orange)"></span></div><span class="bar-value">${f}/${FAT_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Calories</span><div class="bar-track"><span style="width:${Math.min((cal / CAL_GOAL) * 100, 100)}%;background:var(--text)"></span></div><span class="bar-value">${cal}/${CAL_GOAL}</span></div>
-  `;
-}
-
-function renderProteinScore() {
-  const container = document.getElementById("proteinScoreContent");
-  const badge = document.getElementById("proteinScoreBadge");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const todayProtein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const weekly = getWeeklyMacroAvg();
-  const monthly = getMonthlyMacroAvg();
-  const todayPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
-  const weeklyPct = weekly ? Math.round((weekly.p / PROTEIN_GOAL) * 100) : null;
-  const monthlyPct = monthly ? Math.round((monthly.p / PROTEIN_GOAL) * 100) : null;
-  const score = todayPct;
-  badge.textContent = `${score}%`;
-  badge.className = `score-pill is-${score >= 90 ? "green" : score >= 70 ? "yellow" : "red"}`;
-  container.innerHTML = `
-    <div class="ns-row"><span>Today</span><span>${todayProtein}g / ${PROTEIN_GOAL}g (${todayPct}%)</span></div>
-    <div class="ns-row"><span>Weekly avg</span><span>${weeklyPct !== null ? weeklyPct + "%" : "--"}</span></div>
-    <div class="ns-row"><span>Monthly avg</span><span>${monthlyPct !== null ? monthlyPct + "%" : "--"}</span></div>
-  `;
-}
-
-function renderNutritionCompliance() {
-  const container = document.getElementById("nutritionComplianceContent");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  const pPct = Math.min(Math.round((p / PROTEIN_GOAL) * 100), 100);
-  const cPct = Math.min(Math.round((c / CARBS_GOAL) * 100), 100);
-  const fPct = Math.min(Math.round((f / FAT_GOAL) * 100), 100);
-  const calPct = Math.min(Math.round((cal / CAL_GOAL) * 100), 100);
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  let resultText = "Nutrition looks good today.";
-  let resultCls = "is-green";
-  if (goal && goal.id === "fat-loss" && calPct > 100) {
-    resultText = "Calories exceed target — fat loss may slow.";
-    resultCls = "is-yellow";
-  }
-  if (pPct < 70) {
-    resultText = "Protein too low — prioritize protein at meals.";
-    resultCls = "is-yellow";
-  }
-  if (goal && goal.id !== "fat-loss" && calPct < 80) {
-    resultText = "Calories too low for growth phase — increase intake.";
-    resultCls = "is-yellow";
-  }
-  let html = `<div class="nc-grid">`;
-  html += `<div class="nc-row"><span class="nc-label">Protein</span><div class="nc-track"><span style="width:${pPct}%;background:var(--green)"></span></div><span class="nc-pct">${pPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Carbs</span><div class="nc-track"><span style="width:${cPct}%;background:var(--blue)"></span></div><span class="nc-pct">${cPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Fat</span><div class="nc-track"><span style="width:${fPct}%;background:var(--orange)"></span></div><span class="nc-pct">${fPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Calories</span><div class="nc-track"><span style="width:${calPct}%;background:var(--text)"></span></div><span class="nc-pct">${calPct}%</span></div>`;
-  html += `</div><div class="nc-result ${resultCls}">${resultText}</div>`;
-  container.innerHTML = html;
-}
-
-function renderSmartSuggestions() {
-  const container = document.getElementById("smartSuggestionsContent");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const remaining = Math.max(0, PROTEIN_GOAL - protein);
-  if (remaining < 10) {
-    container.innerHTML = `<p class="empty-state">Protein target met. Great work.</p>`;
-    return;
-  }
-  const suggestions = curatedFoods
-    .filter((f) => f.name !== "Custom Entry" && f.protein > 5)
-    .sort((a, b) => b.protein / b.cal - a.protein / a.cal)
-    .slice(0, 5);
-  container.innerHTML = suggestions.map((f) => {
-    const needed = Math.ceil(remaining / f.protein);
-    return `<button class="suggestion-chip" data-food="${f.name}">${f.name} ×${needed}</button>`;
-  }).join("");
-  container.querySelectorAll("[data-food]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
-      if (!food) return;
-      const needed = Math.ceil(remaining / food.protein);
-      const meals = loadMeals(today);
-      meals.push({ type: "Quick", food: food.name, qty: needed, protein: food.protein * needed, carbs: food.carbs * needed, fat: food.fat * needed, cal: food.cal * needed });
-      saveMeals(today, meals);
-      saveRecentFoods(food.name);
-      renderTodayTab();
-    });
-  });
-}
-
-function renderFavoriteMeals() {
-  const container = document.getElementById("favoriteMealsList");
-  const favorites = loadFavoriteMeals();
-  const today = getDateKey();
-  if (favorites.length === 0) {
-    container.innerHTML = `<p class="empty-state">Save meal combos you eat often for one-tap logging.</p>`;
-    return;
-  }
-  container.innerHTML = favorites.map((meal, i) => {
-    const totalP = meal.items.reduce((s, m) => s + (Number(m.protein) || 0) * (Number(m.qty) || 1), 0);
-    const totalCal = meal.items.reduce((s, m) => s + (Number(m.cal) || 0) * (Number(m.qty) || 1), 0);
-    return `<div class="fav-meal-row">
-      <button class="fav-btn" data-fav-idx="${i}">
-        <span class="fav-name">${meal.name}</span>
-        <span class="fav-macros">${Math.round(totalP)}g P · ${Math.round(totalCal)} cal</span>
-      </button>
-      <button class="fav-delete" data-del-idx="${i}">✕</button>
-    </div>`;
-  }).join("");
-  container.querySelectorAll("[data-fav-idx]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const meal = favorites[Number(btn.dataset.favIdx)];
-      if (!meal) return;
-      const meals = loadMeals(today);
-      for (const item of meal.items) {
-        meals.push({ type: "Fav", food: item.food, qty: item.qty, protein: Number(item.protein) * Number(item.qty), carbs: Number(item.carbs) * Number(item.qty), fat: Number(item.fat) * Number(item.qty), cal: Number(item.cal) * Number(item.qty) });
-      }
-      saveMeals(today, meals);
-      renderTodayTab();
-    });
-  });
-  container.querySelectorAll("[data-del-idx]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(btn.dataset.delIdx);
-      const favs = loadFavoriteMeals();
-      favs.splice(idx, 1);
-      saveFavoriteMeals(favs);
-      renderFavoriteMeals();
-    });
-  });
-}
-
-document.getElementById("saveFavoriteMealBtn")?.addEventListener("click", () => {
-  const items = getTodayMealsSnapshot();
-  if (items.length === 0) return;
-  const name = prompt("Name this meal:", "Favorites");
-  if (!name) return;
-  const favorites = loadFavoriteMeals();
-  favorites.push({ name: name.trim(), items });
-  saveFavoriteMeals(favorites);
-  renderFavoriteMeals();
-});
-
-function renderQuickFoods() {
-  const container = document.getElementById("quickFoods");
-  const recent = loadRecentFoods();
-  const foods = [...new Set([...recent.filter((f) => f), ...curatedFoods.map((f) => f.name)])].slice(0, 10);
-  container.innerHTML = foods.map((name) => `<button class="food-btn" data-food="${name}">${name}</button>`).join("");
-  container.querySelectorAll("[data-food]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
-      if (!food) return;
-      const today = getDateKey();
-      const meals = loadMeals(today);
-      meals.push({ type: "Quick", food: food.name, qty: 1, protein: food.protein, carbs: food.carbs, fat: food.fat, cal: food.cal });
-      saveMeals(today, meals);
-      saveRecentFoods(food.name);
-      renderTodayTab();
-    });
-  });
-}
-
-function renderMealLog() {
-  const container = document.getElementById("mealLog");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  container.innerHTML = meals.length
-    ? meals.map((m, i) =>
-        `<div class="meal-item"><div><strong>${m.food}</strong>${m.qty ? ` ×${m.qty}` : ""} <span class="meal-macros">${m.protein || 0}g P · ${m.carbs || 0}g C · ${m.fat || 0}g F · ${m.cal || 0} cal</span></div><button class="meal-delete" data-idx="${i}">✕</button></div>`
-      ).join("")
-    : `<p class="empty-state">No meals logged. Tap a food above.</p>`;
-  container.querySelectorAll(".meal-delete").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.idx);
-      const meals = loadMeals(today);
-      meals.splice(idx, 1);
-      saveMeals(today, meals);
-      renderTodayTab();
-    });
-  });
-}
-
-function renderWaterTracker() {
-  const container = document.getElementById("waterTracker");
-  const today = getDateKey();
-  const current = loadWater(today);
-  const remaining = Math.max(0, WATER_TARGET - current);
-  const pct = Math.min(current / WATER_TARGET, 1);
-  const circumference = 198;
-  const offset = circumference * (1 - pct);
-  const hoursRemaining = Math.ceil(remaining / 200);
-  const now = new Date();
-  const endHour = now.getHours() + hoursRemaining;
-  const predText = hoursRemaining > 0 && endHour <= 23
-    ? `Drink 200ml every hour — done by ${endHour}:00`
-    : remaining > 0
-    ? `${Math.ceil(remaining / 300)} more glasses`
-    : "Hydration target met!";
-  container.innerHTML = `
-    <div class="water-ring">
-      <svg viewBox="0 0 72 72">
-        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--surface)" stroke-width="6"/>
-        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--blue)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 36 36)" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
-      </svg>
-      <div class="water-ring-text">${current}<br><small>ml</small></div>
-    </div>
-    <div style="flex:1">
-      <div class="water-controls">
-        <button class="water-btn" data-water="250">250ml</button>
-        <button class="water-btn" data-water="500">500ml</button>
-        <button class="water-btn" data-water="750">750ml</button>
-        <button class="water-btn" data-water="1000">1L</button>
-      </div>
-      <div class="water-prediction">Remaining: ${remaining}ml — ${predText}</div>
-    </div>
-  `;
-  container.querySelectorAll("[data-water]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const amount = Number(btn.dataset.water);
-      saveWater(today, loadWater(today) + amount);
-      renderWaterTracker();
-    });
-  });
-}
-
-function renderWeeklyNutritionReview() {
-  const container = document.getElementById("weeklyNutritionContent");
-  const weekly = getWeeklyMacroAvg();
-  if (!weekly) {
-    container.innerHTML = `<p class="empty-state">Log meals to see your weekly review.</p>`;
-    return;
-  }
-  const pPct = Math.round((weekly.p / PROTEIN_GOAL) * 100);
-  const calPct = Math.round((weekly.cal / CAL_GOAL) * 100);
-  const waterDays = 7;
-  let totalWaterPct = 0;
-  let waterDaysCount = 0;
-  for (let i = 0; i < waterDays; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
-    const w = loadWater(getDateKey(d));
-    if (w > 0) { totalWaterPct += Math.min(w / WATER_TARGET, 1); waterDaysCount++; }
-  }
-  const waterPct = waterDaysCount > 0 ? Math.round((totalWaterPct / waterDaysCount) * 100) : 0;
-  const overall = Math.round((pPct + Math.min(calPct, 100) + waterPct) / 3);
-  container.innerHTML = `
-    <div class="wn-row"><span>Protein</span><span>${pPct}%</span></div>
-    <div class="wn-row"><span>Calories</span><span>${calPct}%</span></div>
-    <div class="wn-row"><span>Water</span><span>${waterPct}%</span></div>
-    <div class="wn-score"><div class="wn-score-num">${overall}%</div><div class="wn-score-label">Overall Nutrition Score</div></div>
-  `;
-}
-
-function renderCoachAlerts() {
-  const container = document.getElementById("coachAlerts");
-  const alerts = [];
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-
-  if (log.length >= 4 && goal) {
-    const now = new Date();
-    const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-    const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
-    const recent = log.filter((e) => e.date >= weekAgo);
-    const prev = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-    if (recent.length >= 2 && prev.length >= 2) {
-      const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
-      const avgPrev = prev.reduce((s, e) => s + e.weight, 0) / prev.length;
-      const change = avgRecent - avgPrev;
-
-      if (goal.id === "fat-loss" && change > 0.3) {
-        alerts.push({ type: "red", icon: "⚠️", title: "Weight increasing despite fat-loss goal", body: "Possible causes: weekend overeating, hidden calories, water retention. Review tracking accuracy." });
-      }
-      if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) {
-        alerts.push({ type: "yellow", icon: "⚠️", title: "Weight decreasing on bulk goal", body: "Growth phase may be under-fueled. Consider increasing 150-250 calories daily." });
-      }
-      if (goal.id === "recomp" && change > 0.5) {
-        alerts.push({ type: "yellow", icon: "⚠️", title: "Weight increasing on recomp goal", body: "Reduce calories slightly to maintain stable weight while building strength." });
-      }
-    }
-  }
-
-  const strengthChg = getWeeklyStrengthChange();
-  if (log.length >= 4 && strengthChg !== null && strengthChg > 5) {
-    const now = new Date();
-    const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-    const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
-    const recent = log.filter((e) => e.date >= weekAgo);
-    const prev = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-    if (recent.length >= 2 && prev.length >= 2) {
-      const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
-      const avgPrev = prev.reduce((s, e) => s + e.weight, 0) / prev.length;
-      if (Math.abs(avgRecent - avgPrev) < 0.3) {
-        alerts.push({ type: "green", icon: "✅", title: "Successful recomposition detected", body: "Weight stable, strength increasing. Continue current nutrition and training strategy." });
-      }
-    }
-  }
-
-  const protPct = getWeeklyProteinAdherence();
-  if (protPct !== null && protPct < 80) {
-    alerts.push({ type: "yellow", icon: "🥩", title: `Protein: ${Math.round(protPct)}% of goal`, body: "Consistent protein intake is critical for recovery. Aim for protein at every meal." });
-  } else if (protPct !== null && protPct >= 90) {
-    alerts.push({ type: "green", icon: "✓", title: `Protein: ${Math.round(protPct)}% of goal`, body: "Great protein adherence. This supports recovery and muscle growth." });
-  }
-
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  if (weekSessions.length < 4) {
-    alerts.push({ type: "blue", icon: "💪", title: `Training: ${weekSessions.length}/6 sessions this week`, body: "Consistency drives results. Aim for all 6 training sessions." });
-  } else if (weekSessions.length >= 5) {
-    alerts.push({ type: "green", icon: "✓", title: `Training: ${weekSessions.length}/6 sessions this week`, body: "Excellent consistency. This is the foundation of progress." });
-  }
-
-  const todayEntry = log.find((e) => e.date === getDateKey());
-  if (!todayEntry && log.length > 0) {
-    alerts.push({ type: "blue", icon: "⚖️", title: "No weigh-in today", body: "Weigh in first thing in the morning for consistent tracking." });
-  } else if (log.length === 0) {
-    alerts.push({ type: "blue", icon: "⚖️", title: "Start tracking weight", body: "Log your first weigh-in to enable trend analysis and goal tracking." });
-  }
-
-  const as = getGoalAlignmentScore();
-  if (as !== null) {
-    const cls = as >= 7 ? "green" : as >= 5 ? "yellow" : "red";
-    alerts.push({ type: cls, icon: as >= 7 ? "✓" : "⚠️", title: `Alignment Score: ${as}/10`, body: as >= 7 ? "Your training, nutrition, and weight trends are aligned with your goal." : "Some metrics are off track. Check the Today Status card for details." });
-  }
-
-  container.innerHTML = alerts.length
-    ? alerts.map((a) =>
-        `<div class="alert-item is-${a.type}"><span class="alert-icon">${a.icon}</span><div class="alert-body"><strong>${a.title}</strong>${a.body}</div></div>`
-      ).join("")
-    : `<p class="empty-state">Log workouts and weigh-ins to get coaching insights.</p>`;
-}
-
-function renderRecovery() {
-  const container = document.getElementById("recoveryContent");
-  const dot = document.getElementById("recoveryDot");
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  if (weekSessions.length === 0) {
-    container.innerHTML = `<p class="empty-state">Complete sessions to assess recovery.</p>`;
-    dot.className = "recovery-dot";
-    return;
-  }
-  const strengthPct = getWeeklyStrengthChange();
-  const sessionCount = weekSessions.length;
-  const avgSetsPerSession = weekSessions.length > 0
-    ? Math.round(weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0) / weekSessions.length)
-    : 0;
-  const performanceScore = strengthPct !== null ? (strengthPct > 3 ? 90 : strengthPct > -3 ? 70 : 40) : 50;
-  const volumeScore = Math.min(sessionCount * 15, 100);
-  const recoveryScore = Math.round((performanceScore + volumeScore) / 2);
-  let status = "Good";
-  let cls = "is-green";
-  if (recoveryScore < 50) { status = "Poor"; cls = "is-red"; }
-  else if (recoveryScore < 70) { status = "Fair"; cls = "is-yellow"; }
-  dot.className = `recovery-dot ${cls}`;
-  container.innerHTML = `
-    <div class="rec-row"><span>Sessions</span><span>${sessionCount}/6</span></div>
-    <div class="rec-row"><span>Avg sets/session</span><span>${avgSetsPerSession}</span></div>
-    <div class="rec-row"><span>Performance</span><span>${performanceScore}%</span></div>
-    <div class="rec-row"><span>Recovery Score</span><span style="font-weight:800;color:var(--${recoveryScore >= 70 ? 'green' : recoveryScore >= 50 ? 'yellow' : 'red'})">${recoveryScore}% — ${status}</span></div>
-  `;
-}
-
-let strengthFilterDays = 30;
-
-function renderStrengthAnalytics() {
-  const container = document.getElementById("strengthAnalytics");
-  const filterChips = document.getElementById("strengthFilterChips");
-  filterChips.innerHTML = [30, 90, 180, 365].map((d) =>
-    `<button class="filter-chip ${strengthFilterDays === d ? "is-active" : ""}" data-sdays="${d}">${d === 365 ? "1y" : d + "d"}</button>`
-  ).join("");
-  filterChips.querySelectorAll("[data-sdays]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      strengthFilterDays = Number(btn.dataset.sdays);
-      renderStrengthAnalytics();
-    });
-  });
-
-  const exercises = {};
-  const cutoff = getDateKey(new Date(Date.now() - strengthFilterDays * 86400000));
-  const finishedSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= cutoff).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-
-  for (const session of finishedSessions) {
-    for (const ex of session.exercises) {
-      const doneSets = ex.sets.filter((s) => s.done && s.weight && Number(s.weight) > 0);
-      if (doneSets.length === 0) continue;
-      const maxWeight = Math.max(...doneSets.map((s) => Number(s.weight)));
-      if (!exercises[ex.name]) exercises[ex.name] = [];
-      exercises[ex.name].push({ weight: maxWeight, date: session.dateKey });
-    }
-  }
-
-  const entries = Object.entries(exercises)
-    .map(([name, data]) => {
-      const sorted = data.sort((a, b) => a.date.localeCompare(b.date));
-      if (sorted.length < 2) return null;
-      const first = sorted[0].weight;
-      const last = sorted[sorted.length - 1].weight;
-      const change = first > 0 ? ((last - first) / first) * 100 : 0;
-      const recent = sorted.slice(-4);
-      const isPlateau = recent.length >= 4 && recent.every((r) => r.weight === recent[0].weight);
-      return { name, first, last, change, isPlateau };
-    })
-    .filter(Boolean)
-    .sort((a, b) => Math.abs(b.change) - Math.abs(a.change))
-    .slice(0, 8);
-
-  let deloadAlerts = [];
-  for (const e of entries) {
-    if (e.change < -5) {
-      deloadAlerts.push(`${e.name}: ${e.first}kg → ${e.last}kg`);
-    }
-  }
-
-  let plateauAlerts = [];
-  for (const e of entries) {
-    if (e.isPlateau) {
-      plateauAlerts.push(e.name);
-    }
-  }
-
-  let html = entries.length
-    ? entries.map((e) =>
-        `<div class="sa-row">
-          <span>${e.name}${e.isPlateau ? ' <span style="color:var(--yellow)">⏸</span>' : ''}</span>
-          <span class="sa-change is-${e.change > 0 ? "up" : e.change < 0 ? "down" : "flat"}">${e.change > 0 ? "+" : ""}${e.change.toFixed(0)}%</span>
-        </div>`
-      ).join("")
-    : `<p class="empty-state">Complete multiple sessions to see strength trends.</p>`;
-
-  if (deloadAlerts.length > 0) {
-    html += `<div class="alert-item is-red" style="margin-top:0.5rem"><span class="alert-icon">⚠️</span><div class="alert-body"><strong>Progress stalled? Consider deload.</strong><br>${deloadAlerts.join(" · ")}</div></div>`;
-  }
-  if (plateauAlerts.length > 0) {
-    html += `<div class="alert-item is-yellow" style="margin-top:0.35rem"><span class="alert-icon">⏸</span><div class="alert-body"><strong>Plateau detected</strong><br>${plateauAlerts.join(", ")} — no progress in recent sessions. Consider deload week.</div></div>`;
-  }
-
-  container.innerHTML = html;
 }
 
 // ===== MODALS =====
@@ -2225,7 +2883,8 @@ document.getElementById("exerciseDetailClose")?.addEventListener("click", () => 
   if (exerciseDetailChartInstance) { exerciseDetailChartInstance.destroy(); exerciseDetailChartInstance = null; }
 });
 
-document.getElementById("loadProgramButton")?.addEventListener("click", () => {
+// ===== LOAD PROGRAM =====
+document.getElementById("newPlanBtn")?.addEventListener("click", () => {
   document.getElementById("loadProgramModal").classList.remove("is-hidden");
 });
 document.getElementById("loadProgramClose")?.addEventListener("click", () => {
@@ -2283,6 +2942,30 @@ document.getElementById("confirmProgramNo")?.addEventListener("click", () => {
   document.getElementById("confirmProgramModal").classList.add("is-hidden");
 });
 
+// ===== ONBOARDING =====
+document.getElementById("onboardName")?.addEventListener("input", validateOnboard);
+document.getElementById("onboardAge")?.addEventListener("input", validateOnboard);
+document.getElementById("onboardHeight")?.addEventListener("input", validateOnboard);
+document.getElementById("onboardWeight")?.addEventListener("input", validateOnboard);
+document.getElementById("onboardSaveBtn")?.addEventListener("click", () => {
+  state.user = {
+    name: document.getElementById("onboardName").value.trim(),
+    age: Number(document.getElementById("onboardAge").value),
+    height: Number(document.getElementById("onboardHeight").value),
+    weight: Number(document.getElementById("onboardWeight").value),
+  };
+  saveState();
+  document.getElementById("onboardingModal").classList.add("is-hidden");
+  render();
+});
+function validateOnboard() {
+  const name = document.getElementById("onboardName").value.trim();
+  const age = document.getElementById("onboardAge").value;
+  const height = document.getElementById("onboardHeight").value;
+  const weight = document.getElementById("onboardWeight").value;
+  document.getElementById("onboardSaveBtn").disabled = !(name && age > 0 && height > 0 && weight > 0);
+}
+
 // ===== INIT =====
 document.addEventListener("DOMContentLoaded", () => {
   document.querySelectorAll(".nav-tab").forEach((b) => {
@@ -2294,23 +2977,31 @@ document.addEventListener("DOMContentLoaded", () => {
 
   render();
 
+  if (!state.user) {
+    document.getElementById("onboardingModal").classList.remove("is-hidden");
+  }
+
   const todaySession = getTodaySession();
   if (todaySession && todaySession.exercises.some((e) => e.sets.some((s) => s.done))) {
     startStopwatch();
   }
 
   activateTab("sets");
+});
 
-  setInterval(() => {
-    if (currentTab === "sets" && drillStack.length >= 2) {
-      const activePlan = loadCustomProgram() || plan;
-      const workout = activePlan.find((w) => w.id === l3CurrentPlanId);
-      const exDef = workout ? workout.exercises.find((e) => e.name === l3CurrentExName) : null;
-      const session = getTodaySession();
-      const exSession = exDef ? getExerciseSession(session, exDef) : null;
-      if (exDef && exSession && document.getElementById("l3SetsTab") && !document.getElementById("l3SetsTab").classList.contains("is-hidden")) {
-        renderL3SetsTab(exDef, exSession);
-      }
-    }
-  }, 30000);
+// ===== MUSCLE SEARCH =====
+document.addEventListener("input", (e) => {
+  if (e.target.id !== "muscleSearch") return;
+  const q = e.target.value.toLowerCase().trim();
+  document.querySelectorAll(".bm-muscle-row").forEach((row) => {
+    const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
+    row.classList.toggle("is-highlighted", q && name.includes(q));
+  });
+  document.querySelectorAll("[data-muscle]").forEach((path) => {
+    const label = (MUSCLE_LABEL_MAP[path.dataset.muscle] || "").toLowerCase();
+    const group = (MUSCLE_GROUP_MAP[path.dataset.muscle] || "").toLowerCase();
+    const match = q && (label.includes(q) || group.includes(q));
+    path.style.filter = q ? (match ? "brightness(1.4)" : "brightness(0.4)") : "";
+    path.style.opacity = q ? (match ? "1" : "0.3") : "";
+  });
 });

@@ -22,8 +22,8 @@
       <nav class="sidebar-nav" id="sidebarNav">
         <button class="nav-btn is-active" data-tab="sets">Sets</button>
         <button class="nav-btn" data-tab="sessions">Sessions</button>
+        <button class="nav-btn" data-tab="coach">Coach</button>
         <button class="nav-btn" data-tab="body">Body</button>
-        <button class="nav-btn" data-tab="today">Today</button>
       </nav>
       <div class="sidebar-footer">
         <span class="streak-pill" id="streakBadge"></span>
@@ -47,6 +47,7 @@
 
         <!-- Level 1: My Workouts -->
         <div id="setsL1" class="sets-level">
+          <div class="l1-greeting" id="l1Greeting"></div>
           <div class="l1-header">
             <h1 class="l1-title">My Workouts</h1>
             <div class="l1-header-right">
@@ -80,116 +81,46 @@
           </div>
         </div>
 
-        <!-- Level 2: Plan Detail -->
+        <!-- Level 2: Plan Detail with inline accordion -->
         <div id="setsL2" class="sets-level is-hidden">
-          <div class="l2-header">
+          <!-- Sticky workout header -->
+          <div class="wo-header" id="woHeader">
             <button class="btn-back" id="l2BackBtn">←</button>
-            <h2 class="l2-title" id="l2PlanName"></h2>
-            <div class="l2-header-right">
-              <button class="btn-icon" id="planInfoBtn">ⓘ</button>
-              <button class="btn-icon" id="planMoreBtn">⋯</button>
+            <div class="wo-header-info">
+              <div class="wo-header-name" id="woHeaderName"></div>
+              <div class="wo-header-meta" id="woHeaderMeta"></div>
+            </div>
+            <div class="wo-header-progress" id="woHeaderProgress">
+              <span class="wo-header-pct" id="woHeaderPct">0%</span>
             </div>
           </div>
 
-          <p class="l2-desc is-hidden" id="l2PlanDesc"></p>
+          <!-- Accordion exercise list -->
+          <div id="l2ExerciseList" class="accordion-list"></div>
 
-          <div id="l2ExerciseList" class="l2-ex-list"></div>
+          <!-- Complete Workout button -->
+          <button class="wo-finish" id="woFinishBtn">Complete Workout</button>
         </div>
 
-        <!-- Level 3: Exercise Detail -->
+        <!-- Level 3: New Workout / Exercise Selector -->
         <div id="setsL3" class="sets-level is-hidden">
-          <div class="l3-header">
+          <div class="wo-header">
             <button class="btn-back" id="l3BackBtn">←</button>
-            <h2 class="l3-title" id="l3ExName"></h2>
-            <div class="l3-header-right">
-              <button class="btn-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="21" y2="18"/><line x1="3" y1="6" x2="3.01" y2="6"/><line x1="3" y1="12" x2="3.01" y2="12"/><line x1="3" y1="18" x2="3.01" y2="18"/></svg>
-              </button>
-              <button class="btn-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="1"/><circle cx="19" cy="12" r="1"/><circle cx="5" cy="12" r="1"/></svg>
-              </button>
+            <div class="wo-header-info">
+              <div class="wo-header-name">New Workout</div>
+              <div class="wo-header-meta" id="l3Meta">Select exercises</div>
             </div>
           </div>
-
-          <div class="l3-pills">
-            <button class="l3-pill is-active" data-l3tab="sets">Sets</button>
-            <button class="l3-pill" data-l3tab="analyze">Analyze</button>
-            <button class="l3-pill" data-l3tab="rm">1RM</button>
-          </div>
-
-          <!-- Sets tab -->
-          <div id="l3SetsTab" class="l3-tab-content">
-            <div class="l3-sets-header">
-              <button class="l3-repeat-btn is-hidden" id="l3RepeatBtn">⟳ Repeat</button>
-              <span class="l3-today-label">Today ›</span>
-            </div>
-            <div id="l3SetList" class="l3-set-list"></div>
-          </div>
-
-          <!-- Analyze tab -->
-          <div id="l3AnalyzeTab" class="l3-tab-content is-hidden">
-            <div class="chart-wrap"><canvas id="analyzeChart"></canvas></div>
-            <div id="analyzeDelta" class="ad-grid"></div>
-          </div>
-
-          <!-- 1RM tab -->
-          <div id="l3RmTab" class="l3-tab-content is-hidden">
-            <div class="rm-hero" id="rmHero"></div>
-            <div class="chart-wrap"><canvas id="rmChart"></canvas></div>
-            <div id="rmTopSets" class="rm-table"></div>
-          </div>
-
-          <!-- FAB: add set -->
-          <button class="l3-fab" id="openLogSheetBtn">+</button>
+          <input type="text" id="l3NameInput" class="l3-name-input" placeholder="Workout name..." maxlength="40" autocomplete="off" />
+          <div id="l3ExerciseList" class="exercise-grid"></div>
+          <button class="wo-finish" id="l3CreateBtn" disabled>Create & Start (0)</button>
         </div>
 
-        <!-- Level 4: Bottom Sheet (log set) -->
-        <div id="logSheet" class="log-sheet is-hidden">
-          <div class="ls-overlay" id="lsOverlay"></div>
-          <div class="ls-panel" id="lsPanel">
-            <div class="ls-handle"></div>
-
-            <div class="ls-inputs">
-              <div class="ls-input-group">
-                <button class="ls-stepper" id="lsRepDec">−</button>
-                <div class="ls-value-wrap">
-                  <div class="ls-value" id="lsRepValue">10</div>
-                  <div class="ls-label">rep</div>
-                </div>
-                <button class="ls-stepper" id="lsRepInc">+</button>
-              </div>
-              <div class="ls-input-group">
-                <button class="ls-stepper" id="lsWtDec">−</button>
-                <div class="ls-value-wrap">
-                  <div class="ls-value ls-value-orange" id="lsWtValue">0</div>
-                  <div class="ls-label">kg</div>
-                </div>
-                <button class="ls-stepper" id="lsWtInc">+</button>
-              </div>
-            </div>
-
-            <div class="ls-quick-row">
-              <button class="ls-chip" data-ls-wt="-1">−1</button>
-              <button class="ls-chip" data-ls-wt="-5">−5</button>
-              <button class="ls-chip" data-ls-wt="1">+1</button>
-              <button class="ls-chip" data-ls-wt="5">+5</button>
-            </div>
-
-            <div class="ls-accessory">
-              <button class="ls-chip muted" disabled>Label</button>
-              <button class="ls-chip muted" disabled>Plates</button>
-              <button class="ls-chip muted" disabled>KG</button>
-            </div>
-
-            <input class="ls-note" id="lsNote" placeholder="Add note (optional)" maxlength="100" />
-
-            <button class="ls-confirm" id="lsConfirmBtn">✓</button>
-          </div>
-        </div>
       </section>
 
       <!-- ===== SESSIONS PANEL ===== -->
       <section class="panel" id="panel-sessions">
+
         <div class="section-label">Session Log</div>
         <div class="session-log" id="sessionLog"></div>
         <div class="section-label" style="margin-top:1.25rem">Personal Records</div>
@@ -200,10 +131,27 @@
         <div id="monthlyReportContent" class="card-content"></div>
         <div class="section-label" style="margin-top:1.25rem">Adherence</div>
         <div id="adherenceCard" class="card-content"></div>
+
+      </section>
+
+      <!-- ===== COACH PANEL ===== -->
+      <section class="panel" id="panel-coach">
+
+        <div class="section-label">Training Calendar</div>
+        <div id="trainingCalendar" class="calendar-wrap"></div>
+
+        <div class="section-label" style="margin-top:1.25rem">Coach Insights</div>
+        <div id="coachInsights" class="insights-list"></div>
+
+        <div class="section-label" style="margin-top:1.25rem">Recovery</div>
+        <div class="recovery-header"><span class="recovery-dot" id="recoveryDot"></span></div>
+        <div id="recoveryContent" class="card-content"></div>
+
       </section>
 
       <!-- ===== BODY PANEL ===== -->
       <section class="panel" id="panel-body">
+
         <div class="section-label">Body Goal</div>
         <div id="goalSelector" class="goal-chips"></div>
         <div class="section-label" style="margin-top:1.25rem">Weigh-In</div>
@@ -214,59 +162,15 @@
         <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
         <div class="section-label" style="margin-top:1.25rem">Goal Prediction</div>
         <div id="goalPredictionContent" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Smart Analysis</div>
+        <div class="section-label" style="margin-top:1.25rem">Body Analysis</div>
+        <div class="bm-search-wrap">
+          <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
+        </div>
         <div id="bodyAnalysis" class="card-content"></div>
         <div class="section-label" style="margin-top:1.25rem">Bodyweight History</div>
         <div class="filter-row" id="historyFilterChips"></div>
         <div class="chart-wrap"><canvas id="weightHistoryChart"></canvas></div>
-      </section>
 
-      <!-- ===== TODAY PANEL (Fuel + Coach consolidated) ===== -->
-      <section class="panel" id="panel-today">
-        <div class="section-label">Today's Status</div>
-        <div id="todayStatusContent" class="status-card"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Today's Macros</div>
-        <div class="macro-summary" id="macroSummary"></div>
-        <div class="macro-bars" id="macroProgress"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Protein Score</div>
-        <div class="score-row"><span id="proteinScoreBadge" class="score-pill"></span></div>
-        <div id="proteinScoreContent" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Nutrition Compliance</div>
-        <div id="nutritionComplianceContent" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Smart Suggestions</div>
-        <div id="smartSuggestionsContent" class="food-chips"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Favorite Meals</div>
-        <div class="fav-header"><button class="btn-text" id="saveFavoriteMealBtn">Save Current</button></div>
-        <div id="favoriteMealsList" class="fav-list"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Quick Foods</div>
-        <div id="quickFoods" class="food-chips"></div>
-        <div id="mealLog"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Water</div>
-        <div id="waterTracker" class="water-card"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Weekly Nutrition Review</div>
-        <div id="weeklyNutritionContent" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Alerts</div>
-        <div id="coachAlerts" class="alert-list"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Recovery</div>
-        <div class="recovery-header"><span class="recovery-dot" id="recoveryDot"></span></div>
-        <div id="recoveryContent" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Strength Trends</div>
-        <div class="filter-row" id="strengthFilterChips"></div>
-        <div id="strengthAnalytics" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Program</div>
-        <button class="btn-text" id="loadProgramButton">Edit Program</button>
       </section>
 
     </main>
@@ -283,13 +187,13 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>Sessions</span>
     </button>
+    <button class="nav-tab" data-tab="coach">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
+      <span>Coach</span>
+    </button>
     <button class="nav-tab" data-tab="body">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
       <span>Body</span>
-    </button>
-    <button class="nav-tab" data-tab="today">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="9" y1="21" x2="9" y2="9"/></svg>
-      <span>Today</span>
     </button>
   </nav>
 
@@ -298,7 +202,7 @@
     <div class="rt-ring">
       <svg width="44" height="44" viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="4"/>
-        <circle id="rtRing" cx="22" cy="22" r="18" fill="none" stroke="var(--green)" stroke-width="4" stroke-linecap="round" transform="rotate(-90 22 22)" stroke-dasharray="113.1" stroke-dashoffset="0"/>
+        <circle id="rtRing" cx="22" cy="22" r="18" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" transform="rotate(-90 22 22)" stroke-dasharray="113.1" stroke-dashoffset="0"/>
       </svg>
       <span class="rt-time" id="rtTime">1:30</span>
     </div>
@@ -339,6 +243,34 @@
     </div>
   </div>
 
+  <!-- MUSCLE DETAIL BOTTOM SHEET -->
+  <div class="muscle-sheet is-hidden" id="muscleSheet">
+    <div class="muscle-sheet-overlay" id="muscleSheetOverlay"></div>
+    <div class="muscle-sheet-card">
+      <div class="muscle-sheet-handle"></div>
+      <div class="muscle-sheet-body" id="muscleSheetBody"></div>
+    </div>
+  </div>
+
+  <!-- ONBOARDING MODAL -->
+  <div class="modal-overlay is-hidden" id="onboardingModal">
+    <div class="modal-card" style="max-width:340px">
+      <div class="modal-header">
+        <h2>Welcome to iron log</h2>
+      </div>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1rem">Let's get to know you.</p>
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        <input type="text" id="onboardName" class="modal-input" placeholder="Your name" maxlength="30" autocomplete="off" />
+        <input type="number" id="onboardAge" class="modal-input" placeholder="Age" min="10" max="120" />
+        <input type="number" id="onboardHeight" class="modal-input" placeholder="Height (cm)" min="100" max="250" />
+        <input type="number" id="onboardWeight" class="modal-input" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+      </div>
+      <div class="modal-actions" style="margin-top:1rem">
+        <button class="btn-primary" id="onboardSaveBtn" disabled>Get Started</button>
+      </div>
+    </div>
+  </div>
+
   <!-- LOAD PROGRAM MODAL -->
   <div class="modal-overlay is-hidden" id="loadProgramModal">
     <div class="modal-card modal-wide">
@@ -371,7 +303,18 @@
     </div>
   </div>
 
+  <!-- MUSCLE TOOLTIP -->
+  <div id="muscleTooltip" class="muscle-tooltip is-hidden">
+    <div class="mt-name" id="mtName"></div>
+    <div class="mt-row"><span>Group</span><span id="mtGroup"></span></div>
+    <div class="mt-row"><span>Weekly Sets</span><span id="mtSets">0</span></div>
+    <div class="mt-row"><span>Volume</span><span id="mtVolume">0 kg</span></div>
+    <div class="mt-row"><span>Last Trained</span><span id="mtLast">—</span></div>
+    <div class="mt-row"><span>Recovery</span><span id="mtRecovery">100%</span></div>
+  </div>
+
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  <script src="js/body-map-svg.js"></script>
   <script src="js/script.js"></script>
 </body>
 </html>
