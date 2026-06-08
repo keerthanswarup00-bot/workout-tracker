@@ -574,7 +574,9 @@ function renderL2(planId) {
   if (!workout) { openL1(); return; }
 
   document.getElementById("l2PlanName").textContent = workout.name;
-  document.getElementById("l2PlanDesc").textContent = workout.focus || "";
+  const descEl = document.getElementById("l2PlanDesc");
+  descEl.textContent = workout.focus || "";
+  descEl.classList.add("is-hidden");
 
   const container = document.getElementById("l2ExerciseList");
   container.innerHTML = workout.exercises.map((ex) => {
@@ -583,25 +585,17 @@ function renderL2(planId) {
     const doneSets = exSession.sets.filter((s) => s.done).length;
     const totalSets = exSession.sets.length;
     const lastData = getLastSessionData(ex.name);
-    let timeAgo = "";
-    if (lastData) {
-      const loggedSessions = state.sessions.filter((s) => s.finishedAt);
-      const lastSession = loggedSessions.find((s) => {
-        const e = s.exercises.find((x) => x.name === ex.name && x.sets.some((st) => st.done && st.weight));
-        return e;
-      });
-      if (lastSession) {
-        const days = Math.round((Date.now() - parseDateKey(lastSession.dateKey).getTime()) / 86400000);
-        timeAgo = days === 0 ? "Today" : days === 1 ? "1d ago" : `${days}d ago`;
-      }
-    }
+    const isActive = doneSets > 0 && doneSets < totalSets;
 
-    return `<button class="l2-ex-row" data-ex-name="${ex.name}">
+    return `<button class="l2-ex-row${isActive ? " is-active" : ""}" data-ex-name="${ex.name}">
       <div class="l2-ex-info">
-        <div class="l2-ex-name">${ex.name}</div>
-        <div class="l2-ex-target">${ex.sets}×${ex.repTarget || ex.reps}${lastData ? ` · last ${formatWeight(lastData.weight)}×${lastData.reps}` : ""}</div>
+        <div class="l2-ex-name">${ex.name.replace(/([A-Z])/g, " $1").trim()}</div>
+        ${lastData ? `<div class="l2-ex-last">Last · ${formatWeight(lastData.weight)}×${lastData.reps}</div>` : ""}
       </div>
-      ${timeAgo ? `<span class="l2-ex-time">${doneSets}/${totalSets} sets · ${timeAgo}</span>` : `<span class="l2-ex-time">${doneSets}/${totalSets} sets</span>`}
+      <div class="l2-ex-progress">
+        <span class="l2-ex-sets">${doneSets}/${totalSets}</span>
+        <span class="l2-ex-arrow">→</span>
+      </div>
     </button>`;
   }).join("");
 
@@ -687,13 +681,17 @@ function renderL3SetsTab(exDef, exSession) {
   container.innerHTML = exSession.sets.map((set, i) => {
     const logged = set.done && set.weight && Number(set.weight) > 0;
     const timeStr = set.loggedAt ? getTimeAgo(set.loggedAt) : "";
-    return `<div class="l3-set-row" data-set-idx="${i}">
-      <span class="set-num">${i + 1}</span>
-      ${logged ? `<span class="set-reps">${set.reps}</span><span class="set-weight">${formatWeight(set.weight)}</span>` : `<span style="flex:1;font-size:0.72rem;color:var(--text-secondary)">Not logged</span>`}
-      <span class="set-time">${timeStr}</span>
-      <div class="set-actions">
-        ${logged ? `<button class="set-edit-btn" data-edit-idx="${i}">Edit</button>` : ""}
-        <button class="set-del-btn" data-del-idx="${i}">Del</button>
+    return `<div class="l3-set-row${logged ? "" : " is-empty"}" data-set-idx="${i}">
+      <span class="l3-set-num">${i + 1}</span>
+      ${logged ? `
+      <div class="l3-set-data">
+        <span class="l3-set-weight">${formatWeight(set.weight)}</span>
+        <span class="l3-set-reps">×${set.reps}</span>
+      </div>
+      <span class="l3-set-meta">${timeStr}</span>` : `<div class="l3-set-data"><span class="l3-set-empty">—</span></div>`}
+      <div class="l3-set-actions">
+        ${logged ? `<button class="set-edit-btn" data-edit-idx="${i}" aria-label="Edit">✎</button>` : ""}
+        <button class="set-del-btn" data-del-idx="${i}" aria-label="Delete">✕</button>
       </div>
     </div>`;
   }).join("");
@@ -856,7 +854,7 @@ function renderL3AnalyzeTab(exerciseName) {
       data: {
         labels,
         datasets: [
-          { data: avgWeights, borderColor: "#22c55e", tension: 0.4, pointRadius: 3, fill: false, label: "Avg Weight" },
+          { data: avgWeights, borderColor: "#00d26a", tension: 0.4, pointRadius: 3, fill: false, label: "Avg Weight" },
           { data: volumes, borderColor: "#f97316", tension: 0.4, pointRadius: 2, fill: false, label: "Volume", yAxisID: "y1" },
         ],
       },
@@ -1026,6 +1024,9 @@ document.querySelectorAll(".l3-pill").forEach((pill) => {
 });
 
 // ===== BACK BUTTONS =====
+document.getElementById("planInfoBtn").addEventListener("click", () => {
+  document.getElementById("l2PlanDesc").classList.toggle("is-hidden");
+});
 document.getElementById("l2BackBtn").addEventListener("click", goBack);
 document.getElementById("l3BackBtn").addEventListener("click", goBack);
 
@@ -1502,7 +1503,7 @@ function renderWeightChart() {
   const ctx = canvas.getContext("2d");
   weightChartInstance = new Chart(ctx, {
     type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#22c55e", tension: 0.4, pointRadius: 2, fill: false }] },
+    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.4, pointRadius: 2, fill: false }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
   });
 }
@@ -1561,7 +1562,7 @@ function renderWeightHistoryChart() {
   const ctx = canvas.getContext("2d");
   weightHistoryChartInstance = new Chart(ctx, {
     type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#22c55e", tension: 0.3, pointRadius: 2, fill: false }] },
+    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.3, pointRadius: 2, fill: false }] },
     options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
   });
 }
@@ -2211,7 +2212,7 @@ document.getElementById("myExercisesBtn")?.addEventListener("click", () => {
     const data = Object.values(counts);
     exerciseDetailChartInstance = new Chart(ctx, {
       type: "bar",
-      data: { labels, datasets: [{ data, backgroundColor: "#22c55e", borderRadius: 4 }] },
+      data: { labels, datasets: [{ data, backgroundColor: "#00d26a", borderRadius: 4 }] },
       options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1, color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 8 } } } } },
     });
   }
