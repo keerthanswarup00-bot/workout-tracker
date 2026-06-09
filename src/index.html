@@ -135,13 +135,17 @@
           </div>
 
           <div class="ed-content is-active" id="edTabSets">
+            <div id="edPerformanceCard"></div>
+            <div id="edTargetCard"></div>
+            <div id="edProgressTracker"></div>
             <div class="ed-set-list" id="edSetList"></div>
             <button class="skip-warmups-btn" id="skipWarmupsBtn" style="display:none">⏭ Skip Warm-Ups</button>
             <div class="qa-bar" id="qaBar">
               <button class="qa-btn" id="qaRepeatLast">↻ Repeat Last</button>
-              <button class="qa-btn" id="qaAddEmpty">+ Empty Set</button>
-              <button class="qa-btn" id="qaWarmup">🔥 Warmup</button>
+              <button class="qa-btn" id="qaAddEmpty">+ Add Set</button>
+              <button class="qa-btn" id="qaWarmup">🔥 Warm-Up</button>
             </div>
+            <div id="edNotesSection"></div>
           </div>
           <div class="ed-content" id="edTabAnalyze">
             <p class="ed-empty">Start logging sets to see analysis.</p>
@@ -195,7 +199,52 @@
           </div>
         </div>
 
-        <!-- Level 3B: Edit Set Screen -->
+        <!-- Level 3C: Edit Set Bottom Sheet -->
+        <div class="bottom-sheet is-hidden" id="bsEditSet">
+          <div class="bottom-sheet-overlay" id="bsEditOverlay"></div>
+          <div class="bottom-sheet-card">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-body">
+              <div class="as-title">Edit Set</div>
+              <div class="as-ex-name" id="esExName"></div>
+
+              <div class="as-field">
+                <div class="as-label">Repetitions</div>
+                <div class="as-number-wrap">
+                  <div class="as-number-input">
+                    <button class="as-btn" id="esRepsMinus">−</button>
+                    <span class="as-value" id="esRepsValue">10</span>
+                    <button class="as-btn" id="esRepsPlus">+</button>
+                  </div>
+                  <span class="as-unit">rep</span>
+                </div>
+              </div>
+
+              <div class="as-field">
+                <div class="as-label">Weight</div>
+                <div class="as-number-wrap">
+                  <div class="as-number-input">
+                    <button class="as-btn" id="esWeightMinus5">−5</button>
+                    <button class="as-btn" id="esWeightMinus2">−2.5</button>
+                    <button class="as-btn" id="esWeightMinus1">−1</button>
+                    <span class="as-value" id="esWeightValue">0</span>
+                    <button class="as-btn" id="esWeightPlus1">+1</button>
+                    <button class="as-btn" id="esWeightPlus2">+2.5</button>
+                    <button class="as-btn" id="esWeightPlus5">+5</button>
+                  </div>
+                  <span class="as-unit">kg</span>
+                </div>
+              </div>
+
+              <div class="es-edit-actions">
+                <button class="es-edit-del" id="esEditDeleteBtn">Delete</button>
+                <button class="as-save" id="esCompleteBtn">✓ Complete Set</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 3B: Edit Set Screen (deprecated, kept for compatibility) -->
         <div id="screen-es" class="screen is-hidden">
           <div class="es-header">
             <button class="btn-back" id="esBackBtn">←</button>
@@ -212,20 +261,20 @@
             <div class="es-field">
               <div class="es-field-label">Repetitions</div>
               <div class="es-number-input">
-                <button class="as-btn" id="esRepsMinus">−</button>
-                <span class="as-value" id="esRepsValue">10</span>
-                <button class="as-btn" id="esRepsPlus">+</button>
+                <button class="as-btn" id="esOldRepsMinus">−</button>
+                <span class="as-value" id="esOldRepsValue">10</span>
+                <button class="as-btn" id="esOldRepsPlus">+</button>
               </div>
             </div>
 
             <div class="es-field">
               <div class="es-field-label">Weight</div>
               <div class="es-number-input">
-                <button class="as-btn" id="esWeightMinus5">−5</button>
-                <button class="as-btn" id="esWeightMinus1">−1</button>
-                <span class="as-value" id="esWeightValue">20</span>
-                <button class="as-btn" id="esWeightPlus1">+1</button>
-                <button class="as-btn" id="esWeightPlus5">+5</button>
+                <button class="as-btn" id="esOldWeightMinus5">−5</button>
+                <button class="as-btn" id="esOldWeightMinus1">−1</button>
+                <span class="as-value" id="esOldWeightValue">20</span>
+                <button class="as-btn" id="esOldWeightPlus1">+1</button>
+                <button class="as-btn" id="esOldWeightPlus5">+5</button>
               </div>
             </div>
 
@@ -414,7 +463,7 @@
 
         <!-- Weight Log Modal -->
         <div class="modal-overlay is-hidden" id="weightLogModal">
-          <div class="modal-card">
+          <div class="modal-card" style="max-width:400px">
             <div class="modal-header">
               <h2>Log Weight</h2>
               <button class="modal-close" id="wlClose">✕</button>
@@ -426,7 +475,9 @@
             </div>
             <div class="modal-actions">
               <button class="btn-primary" id="wlSaveBtn">Save</button>
+              <button class="btn-secondary is-hidden" id="wlDeleteBtn" style="color:var(--error)">Delete</button>
             </div>
+            <div id="wlEntryList" style="margin-top:0.75rem;border-top:1px solid var(--border);padding-top:0.5rem;max-height:200px;overflow-y:auto;display:flex;flex-direction:column;gap:0.25rem"></div>
           </div>
         </div>
 
@@ -499,6 +550,14 @@
           <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
         </div>
         <div id="bodyAnalysis" class="card-content"></div>
+        <div class="section-label" style="margin-top:1.25rem">Nutrition Goals</div>
+        <div id="nutritionComplianceContent" class="card-content"></div>
+        <div id="nutritionTargetsCard" class="card-content" style="margin-top:0.5rem"></div>
+        <div class="section-label" style="margin-top:1.25rem">Smart Suggestions</div>
+        <div id="smartSuggestionsContent" class="card-content"></div>
+        <div class="section-label" style="margin-top:1.25rem">Favorite Meals</div>
+        <div id="favoriteMealsList" class="card-content"></div>
+
         <div class="section-label" style="margin-top:1.25rem">Bodyweight History</div>
         <div class="filter-row" id="historyFilterChips"></div>
         <div class="chart-wrap"><canvas id="weightHistoryChart"></canvas></div>
@@ -531,17 +590,20 @@
 
   <!-- FLOATING REST TIMER -->
   <div id="restTimer" class="rest-timer is-hidden">
-    <div class="rt-ring">
-      <svg width="44" height="44" viewBox="0 0 44 44">
-        <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="4"/>
-        <circle id="rtRing" cx="22" cy="22" r="18" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" transform="rotate(-90 22 22)" stroke-dasharray="113.1" stroke-dashoffset="0"/>
-      </svg>
-      <span class="rt-time" id="rtTime">1:30</span>
-    </div>
-    <div class="rt-controls">
-      <button class="rt-chip" id="rtAdd30">+30</button>
-      <button class="rt-chip" id="rtReset">Reset</button>
-      <button class="rt-chip" id="rtSkip">Skip</button>
+    <div class="rt-content">
+      <div class="rt-label">REST</div>
+      <div class="rt-ring">
+        <svg width="72" height="72" viewBox="0 0 72 72">
+          <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="5"/>
+          <circle id="rtRing" cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" transform="rotate(-90 36 36)" stroke-dasharray="188.5" stroke-dashoffset="0"/>
+        </svg>
+        <span class="rt-time" id="rtTime">1:30</span>
+      </div>
+      <div class="rt-controls">
+        <button class="rt-chip" id="rtAdd30">+30s</button>
+        <button class="rt-chip" id="rtReset">Reset</button>
+        <button class="rt-chip" id="rtSkip">Skip</button>
+      </div>
     </div>
   </div>
 

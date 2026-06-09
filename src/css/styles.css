@@ -3383,6 +3383,166 @@ input:focus, textarea:focus { outline: none; }
 .ed-setup-toggle input:checked + .ed-setup-toggle-track { background:var(--accent);border-color:var(--accent) }
 .ed-setup-toggle input:checked + .ed-setup-toggle-track::after { background:#000;left:18px }
 
+/* ===== FOCUS MODE ===== */
+.focus-mode .sidebar { display: none !important; }
+.focus-mode .bottom-nav { display: none !important; }
+.focus-mode .topbar { display: none !important; }
+.focus-mode .app-layout { padding-left: 0 !important; }
+.focus-mode .main-area { max-width: 100%; padding-top: 0.5rem; }
+/* Hide non-essential UI */
+.focus-mode .ws-desc,
+.focus-mode .ws-notes-btn,
+.focus-mode .ws-add-ex-btn,
+.focus-mode .ed-tabs { display: none !important; }
+
 /* ===== WARMUP / STRETCH MODALS ===== */
 #wrmRoutineList > div { border-bottom:1px solid var(--border);font-size:0.82rem }
 #wrmRoutineList > div:last-child { border-bottom:0 }
+
+/* ===== REST TIMER V2 ===== */
+.rest-timer {
+  position: fixed;
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px));
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 90;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 32px rgba(0,0,0,0.4);
+  min-width: 200px;
+}
+.rt-content { display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1rem 1.5rem }
+.rt-label { font-size:0.65rem;font-weight:800;letter-spacing:0.12em;color:var(--text-secondary);text-transform:uppercase }
+.rt-ring { position:relative;width:72px;height:72px }
+.rt-ring svg { width:100%;height:100% }
+.rt-time {
+  position:absolute;inset:0;display:grid;place-items:center;
+  font-family:"Plus Jakarta Sans",sans-serif;font-size:1.3rem;font-weight:800;font-variant-numeric:tabular-nums
+}
+.rt-controls { display:flex;gap:0.4rem }
+.rt-chip {
+  min-height:40px;padding:0 0.85rem;border-radius:var(--radius-sm);
+  background:var(--surface-2);border:1px solid var(--border);
+  font-weight:600;font-size:0.72rem;color:var(--text);cursor:pointer;font-family:inherit;
+  display:grid;place-items:center
+}
+.rt-chip:active { background:var(--surface-3) }
+
+/* ===== PREVIOUS PERFORMANCE CARD ===== */
+.ed-prev-perf { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.65rem 0.75rem;margin-bottom:0.5rem }
+.ed-prev-perf-header { font-size:0.65rem;font-weight:700;color:var(--text-secondary);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.35rem }
+.ed-prev-perf-sets { display:flex;flex-wrap:wrap;gap:0.3rem;margin-bottom:0.3rem }
+.ed-prev-perf-set { font-size:0.85rem;font-weight:700;color:var(--text);background:var(--surface-2);padding:0.15rem 0.5rem;border-radius:var(--radius-sm) }
+.ed-prev-perf-footer { font-size:0.7rem;color:var(--text-secondary);font-weight:500 }
+
+/* ===== TODAY'S TARGET CARD ===== */
+.ed-target { background:var(--surface);border:1px solid var(--accent);border-radius:var(--radius);padding:0.65rem 0.75rem;margin-bottom:0.5rem }
+.ed-target-header { font-size:0.65rem;font-weight:700;color:var(--accent);letter-spacing:0.06em;text-transform:uppercase;margin-bottom:0.15rem }
+.ed-target-value { font-size:1.1rem;font-weight:800;color:var(--text) }
+.ed-target-reason { font-size:0.7rem;color:var(--text-secondary);font-weight:500;margin-top:0.15rem }
+
+/* ===== SET PROGRESS TRACKER ===== */
+.ed-progress { display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.75rem;margin-bottom:0.5rem;background:var(--surface-2);border-radius:var(--radius-sm) }
+.ed-progress.is-complete { background:rgba(0,210,106,0.1);border:1px solid var(--accent) }
+.ed-progress-dots { font-size:0.9rem;letter-spacing:0.2em;color:var(--accent);font-weight:700 }
+.ed-progress-label { font-size:0.72rem;font-weight:600;color:var(--text-secondary);margin-left:auto }
+.ed-progress.is-complete .ed-progress-label { color:var(--accent) }
+
+/* ===== EXERCISE COMPLETION STATE ===== */
+.ed-ex-complete { display:flex;align-items:center;gap:0.5rem;padding:0.85rem;margin-bottom:0.5rem;background:rgba(0,210,106,0.08);border:1px solid var(--accent);border-radius:var(--radius);margin-top:0.5rem }
+.ed-ex-complete-icon { width:28px;height:28px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;font-size:0.85rem;font-weight:800;flex-shrink:0 }
+.ed-ex-complete-label { font-size:0.85rem;font-weight:700;color:var(--accent) }
+.ed-ex-complete-btn { margin-left:auto;min-height:40px;padding:0 1rem;border-radius:var(--radius-sm);background:var(--accent);color:#000;font-weight:700;font-size:0.78rem;border:none;cursor:pointer;font-family:inherit;white-space:nowrap }
+.ed-ex-complete-btn:active { opacity:0.85 }
+
+/* ===== WARM-UP STATUS ===== */
+.ed-wu-status { display:flex;align-items:center;gap:0.4rem;padding:0.5rem 0.75rem;margin-bottom:0.35rem;background:var(--surface-2);border-radius:var(--radius-sm);font-size:0.78rem;font-weight:600;cursor:default }
+.ed-wu-status.is-done { background:rgba(0,210,106,0.08);border:1px solid var(--accent) }
+.ed-wu-status-label { font-weight:400;font-size:0.7rem;color:var(--text-secondary);margin-left:0.25rem }
+.ed-wu-badge { margin-left:auto;width:20px;height:20px;border-radius:50%;background:var(--accent);color:#000;display:grid;place-items:center;font-size:0.65rem;font-weight:800;flex-shrink:0 }
+.ed-wu-status.is-done .ed-wu-badge { background:var(--accent) }
+
+/* ===== EXERCISE NOTES ===== */
+.ed-notes { margin-top:0.5rem;padding-bottom:0.5rem }
+.ed-notes-header { font-size:0.78rem;font-weight:600;color:var(--text-secondary);cursor:pointer;display:block;padding:0.5rem 0 }
+.ed-notes-header:active { color:var(--text) }
+.ed-notes-body { overflow:hidden;transition:max-height 0.2s }
+.ed-notes-body.is-hidden { display:none }
+.ed-notes-input { width:100%;background:var(--surface-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:0.6rem;font-size:0.82rem;color:var(--text);font-family:inherit;resize:vertical;min-height:60px }
+.ed-notes-input:focus { border-color:var(--accent);outline:none }
+
+/* ===== 1RM TAB ===== */
+.ed-1rm { text-align:center;padding:1rem }
+.ed-1rm-value { font-size:2.5rem;font-weight:800;color:var(--accent);line-height:1 }
+.ed-1rm-label { font-size:0.72rem;font-weight:600;color:var(--text-secondary);margin-bottom:1rem }
+.ed-1rm-table { max-width:280px;margin:0 auto }
+.ed-1rm-row { display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);font-size:0.82rem;font-weight:600 }
+.ed-1rm-header { font-size:0.65rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;border-bottom:2px solid var(--border) }
+.ed-1rm-note { font-size:0.7rem;color:var(--text-secondary);margin-top:0.75rem }
+
+/* ===== ED TAB CONTENT ===== */
+.ed-content { display:none }
+.ed-content.is-active { display:block }
+
+/* ===== ED TAB STYLING ===== */
+.ed-tabs { display:flex;gap:0;margin-bottom:0.5rem;border-bottom:1px solid var(--border) }
+.ed-tab { flex:1;padding:0.5rem 0;font-size:0.75rem;font-weight:600;color:var(--text-secondary);background:none;border:none;border-bottom:2px solid transparent;font-family:inherit;cursor:pointer;text-align:center }
+.ed-tab.is-active { color:var(--text);border-bottom-color:var(--accent) }
+
+/* ===== ED SET ROW REMOVE TIMESTAMP ===== */
+.ed-set-row .ed-set-time { display:none }
+
+/* ===== ANALYZE CARD WIDE ===== */
+.ea-card-wide { grid-column:1/-1 }
+
+/* ===== ED PERFORMANCE/TARGET CONTAINERS ===== */
+#edPerformanceCard:empty { display:none }
+#edTargetCard:empty { display:none }
+#edProgressTracker:empty { display:none }
+
+/* ===== SET COMPLETION CHECKMARK ===== */
+.ed-set-check { width:22px;height:22px;border-radius:50%;display:grid;place-items:center;font-size:0.7rem;font-weight:800;flex-shrink:0 }
+.ed-set-working-pending .ed-set-check { border:2px solid var(--border);color:transparent;background:transparent }
+.ed-set-row:not(.ed-set-working-pending) .ed-set-check { background:var(--accent);color:#000;border:2px solid var(--accent) }
+
+/* ===== EDIT SET BOTTOM SHEET ===== */
+.es-edit-actions { display:flex;gap:0.5rem;margin-top:0.5rem }
+.es-edit-actions .as-save { flex:1 }
+.es-edit-del { min-height:52px;padding:0 1rem;border-radius:var(--radius);background:rgba(239,68,68,0.1);border:1px solid var(--red);color:var(--red);font-weight:700;font-size:0.82rem;font-family:inherit;cursor:pointer;display:grid;place-items:center;white-space:nowrap }
+.es-edit-del:active { background:rgba(239,68,68,0.2) }
+
+/* ===== QUICK WEIGHT ±2.5 BUTTONS ===== */
+#esWeightMinus2, #esWeightPlus2 { font-size:0.8rem }
+
+/* ===== MOBILE TOUCH TARGETS ===== */
+@media (pointer:coarse) {
+  .qa-btn, .rt-chip, .ed-ex-complete-btn, .ed-setup-btn { min-height:48px }
+  .ed-set-row, .ed-set-working-pending { min-height:52px;padding:0.75rem }
+  .ed-set-num { width:32px;height:32px }
+  .ed-set-check { width:26px;height:26px;font-size:0.8rem }
+  .as-btn { width:52px;height:52px }
+  .ed-tab { padding:0.6rem 0 }
+}
+
+/* ===== WEIGHT LOG ENTRY LIST ===== */
+.wl-entry-row { display:flex;align-items:center;gap:0.4rem;padding:0.35rem 0.4rem;border-radius:var(--radius-sm);font-size:0.78rem;background:var(--surface-2) }
+.wl-entry-weight { font-weight:700;color:var(--accent);min-width:55px }
+.wl-entry-date { color:var(--text-secondary);flex:1 }
+.wl-entry-notes { color:var(--text-secondary);font-size:0.72rem;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap }
+.wl-entry-edit,.wl-entry-del { background:none;border:none;color:var(--text-secondary);cursor:pointer;font-size:0.82rem;padding:0.2rem;border-radius:4px }
+.wl-entry-edit:hover,.wl-entry-del:hover { background:var(--surface-3);color:var(--text) }
+.wl-entry-del { color:var(--red) }
+
+/* ===== NUTRITION TARGETS ===== */
+.nut-targets { display:flex;flex-direction:column;gap:0.35rem }
+.nut-target-row { display:flex;justify-content:space-between;align-items:center;font-size:0.78rem;padding:0.3rem 0 }
+.nut-target-label { color:var(--text-secondary) }
+.nut-target-value { font-weight:600 }
+.nut-target-value.is-met { color:var(--accent) }
+.nut-target-value.is-partial { color:var(--yellow) }
+.nut-target-value.is-miss { color:var(--red) }
+
+/* ===== HOME SCREEN COACH CARDS ===== */
+.home-weekly-review { background:var(--surface-2);border-radius:var(--radius-sm);padding:0.25rem 0.5rem;margin-top:0.35rem;font-size:0.75rem }
+.home-goal-analysis { margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem }

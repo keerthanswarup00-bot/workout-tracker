@@ -16,34 +16,49 @@ function autoGenerateWarmups(exercise, workingWeight) {
   if (exercise.warmupGenerated) return;
   const w = Number(workingWeight);
   if (!w || w <= 0) return;
-  const config = state.warmupConfig || "default";
   let warmups = [];
-  if (w <= 20) {
-    warmups = [
-      { bar: Math.round(w * 0.5 / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
-      { bar: Math.round(w * 0.75 / 2.5) * 2.5 || 10, reps: 10, pct: "75%" },
-    ];
-  } else if (w <= 60) {
-    warmups = [
-      { bar: 20, reps: 10, pct: "Bar" },
-      { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 8, pct: "75%" },
-    ];
-  } else if (w <= 100) {
-    warmups = [
-      { bar: Math.round(w * 0.5 / 2.5) * 2.5, reps: 10, pct: "50%" },
-      { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 5, pct: "75%" },
-      { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
-    ];
+  if (state.warmupStyle === "advanced") {
+    if (w <= 20) {
+      warmups = [
+        { bar: Math.round(w * 0.5 / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
+        { bar: Math.round(w * 0.75 / 2.5) * 2.5 || 10, reps: 10, pct: "75%" },
+      ];
+    } else if (w <= 60) {
+      warmups = [
+        { bar: 20, reps: 10, pct: "Bar" },
+        { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 8, pct: "75%" },
+      ];
+    } else if (w <= 100) {
+      warmups = [
+        { bar: Math.round(w * 0.5 / 2.5) * 2.5, reps: 10, pct: "50%" },
+        { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 5, pct: "75%" },
+        { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
+      ];
+    } else {
+      warmups = [
+        { bar: Math.round(w * 0.4 / 2.5) * 2.5, reps: 10, pct: "40%" },
+        { bar: Math.round(w * 0.6 / 2.5) * 2.5, reps: 8, pct: "60%" },
+        { bar: Math.round(w * 0.8 / 2.5) * 2.5, reps: 5, pct: "80%" },
+        { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
+      ];
+    }
   } else {
-    warmups = [
-      { bar: Math.round(w * 0.4 / 2.5) * 2.5, reps: 10, pct: "40%" },
-      { bar: Math.round(w * 0.6 / 2.5) * 2.5, reps: 8, pct: "60%" },
-      { bar: Math.round(w * 0.8 / 2.5) * 2.5, reps: 5, pct: "80%" },
-      { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
-    ];
+    // Simple: 1-2 light warmup sets
+    if (w <= 20) {
+      warmups = [
+        { bar: Math.round(w * 0.5 / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
+      ];
+    } else if (w <= 60) {
+      warmups = [
+        { bar: 20, reps: 10, pct: "Light" },
+      ];
+    } else {
+      warmups = [
+        { bar: Math.round(w * 0.5 / 2.5) * 2.5, reps: 8, pct: "50%" },
+      ];
+    }
   }
   warmups = warmups.filter((s) => s.bar > 0 && s.bar < w);
-  // Filter out duplicates with same bar weight
   const seen = new Set();
   warmups = warmups.filter((s) => { const k = s.bar; if (seen.has(k)) return false; seen.add(k); return true; });
   warmups.forEach((wu) => {
@@ -279,6 +294,26 @@ function isCompoundExercise(exName) {
 }
 
 const state = loadState();
+
+function displayWeight(kg) {
+  const n = Number(kg) || 0;
+  if (state.weightUnit === "lb") return Math.round(n * 2.20462 * 10) / 10 + " lb";
+  return n + " kg";
+}
+function parseWeight(val) {
+  if (state.weightUnit === "lb") return Math.round((Number(val) || 0) / 2.20462 * 10) / 10;
+  return Number(val) || 0;
+}
+function displayHeight(cm) {
+  const n = Number(cm) || 0;
+  if (state.heightUnit === "ft/in") {
+    const totalIn = n / 2.54;
+    const ft = Math.floor(totalIn / 12);
+    const inc = Math.round(totalIn % 12);
+    return ft + "'" + inc + '"';
+  }
+  return n + " cm";
+}
 
 // ===== MUSCLE MAP SYSTEM =====
 const MUSCLE_GROUPS = [
@@ -1331,7 +1366,7 @@ let restTimerSeconds = 0;
 
 function startRestTimer() {
   clearInterval(restTimerInterval);
-  restTimerSeconds = DEFAULT_REST;
+  restTimerSeconds = state.restTimer || DEFAULT_REST;
   const el = document.getElementById("restTimer");
   el.classList.remove("is-hidden");
   updateRestTimerDisplay();
@@ -1356,9 +1391,9 @@ function updateRestTimerDisplay() {
   const m = Math.floor(restTimerSeconds / 60);
   const s = restTimerSeconds % 60;
   document.getElementById("rtTime").textContent = `${m}:${String(s).padStart(2, "0")}`;
-  const total = DEFAULT_REST;
+  const total = state.restTimer || DEFAULT_REST;
   const pct = restTimerSeconds / total;
-  const circumference = 113.1;
+  const circumference = 188.5;
   const offset = circumference * (1 - pct);
   document.getElementById("rtRing").setAttribute("stroke-dashoffset", offset);
 }
@@ -1431,14 +1466,14 @@ function renderSettings() {
       <div class="sg-avatar" style="background:var(--accent);color:#000;font-weight:800">${initials}</div>
       <div class="sg-card-body">
         <div class="sg-card-name">${u.name || "Tap to set up"}</div>
-        <div class="sg-card-meta">${[u.age ? u.age+" yrs":"", u.height ? u.height+" cm":"", u.weight ? u.weight+" kg":"", u.goal ? goalLabels[u.goal]||"":""].filter(Boolean).join(" · ") || "No profile yet"}</div>
+        <div class="sg-card-meta">${[u.age ? u.age+" yrs":"", u.height ? u.height+" cm":"", u.weight ? displayWeight(u.weight):"", u.goal ? goalLabels[u.goal]||"":""].filter(Boolean).join(" · ") || "No profile yet"}</div>
       </div>
       <span class="sg-chevron">›</span>
     </button>
     <div class="sg-stats">
       <div class="sg-stat"><span class="sg-stat-val">${u.age || "—"}</span><span class="sg-stat-lbl">Age</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.height ? u.height+" cm" : "—"}</span><span class="sg-stat-lbl">Height</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.weight ? u.weight+" kg" : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
+      <div class="sg-stat"><span class="sg-stat-val">${u.height ? displayHeight(u.height) : "—"}</span><span class="sg-stat-lbl">Height</span></div>
+      <div class="sg-stat"><span class="sg-stat-val">${u.weight ? displayWeight(u.weight) : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.goal ? (u.goal==="fat-loss"?"Fat Loss":u.goal==="build-muscle"?"Build Muscle":u.goal==="recomp"?"Recomp":u.goal==="strength"?"Strength":u.goal==="athletic"?"Athletic":"General") : "—"}</span><span class="sg-stat-lbl">Goal</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${bmi || "—"}</span><span class="sg-stat-lbl">BMI</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${mCals}</span><span class="sg-stat-lbl">Calories</span></div>
@@ -1467,7 +1502,7 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Auto-Start Rest Timer</span><input type="checkbox" ${state.autoRest ? "checked" : ""} data-setting="auto-rest" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Auto-Open Next Exercise</span><input type="checkbox" ${state.autoNext ? "checked" : ""} data-setting="auto-next" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
-    <div class="sg-row" data-setting="weight-inc"><span>Weight Increment</span><span class="sg-row-val">${state.weightInc || "1"} kg</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="weight-inc"><span>Weight Increment</span><span class="sg-row-val">${displayWeight(state.weightInc || 1)}</span><span class="sg-chevron">›</span></div>
     <div class="sg-row" data-setting="rep-inc"><span>Rep Increment</span><span class="sg-row-val">${state.repInc || "1"}</span><span class="sg-chevron">›</span></div>
     <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Auto-Generate Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
@@ -1622,12 +1657,48 @@ function renderHome() {
   const weight = latestLog ? latestLog.weight : (user ? user.weight : null);
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  document.getElementById("homeInsights").innerHTML = `
-    <div class="hi-item"><span class="hi-label">Weight</span><span class="hi-value">${weight ? weight + " kg" : "—"}</span></div>
+  let wsHtml = `
+    <div class="hi-item"><span class="hi-label">Weight</span><span class="hi-value">${weight ? displayWeight(weight) : "—"}</span></div>
     <div class="hi-item"><span class="hi-label">Streak</span><span class="hi-value">${streak}d</span></div>
     <div class="hi-item"><span class="hi-label">Last</span><span class="hi-value">${lastSession ? lastSession.workoutName : "—"}</span></div>
     <div class="hi-item"><span class="hi-label">Week</span><span class="hi-value">${weekSessions.length}</span></div>
   `;
+
+  if (state.weeklyReview !== false && weekSessions.length > 0) {
+    const totalSets = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
+    const totalVol = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
+    const prevWeekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)));
+    const prevCount = prevWeekSessions.length;
+    wsHtml += `<div class="home-weekly-review"><div class="wr-grid" style="grid-template-columns:repeat(4,1fr);gap:0.3rem;padding:0.5rem 0">
+      <div class="wr-item" style="text-align:center"><strong>${weekSessions.length}</strong><small>Workouts</small></div>
+      <div class="wr-item" style="text-align:center"><strong>${totalSets}</strong><small>Sets</small></div>
+      <div class="wr-item" style="text-align:center"><strong>${Math.round(totalVol / 1000)}k</strong><small>Volume</small></div>
+      <div class="wr-item" style="text-align:center"><strong>${prevCount > 0 ? (weekSessions.length > prevCount ? "↑" : weekSessions.length < prevCount ? "↓" : "—") : "—"}</strong><small>vs Last Wk</small></div>
+    </div></div>`;
+  }
+
+  document.getElementById("homeInsights").innerHTML = wsHtml;
+
+  if (state.goalAnalysis !== false) {
+    const goals = state.goals || [];
+    if (goals.length > 0) {
+      let gaHtml = goals.slice(0, 3).map((g) => {
+        const pct = getGoalProgress(g);
+        return `<div class="goal-card" style="background:var(--surface-2);border-radius:var(--radius-sm);padding:0.4rem 0.5rem;font-size:0.75rem">
+          <div style="display:flex;justify-content:space-between;margin-bottom:0.2rem">
+            <span style="font-weight:600">${g.name}</span>
+            <span>${pct}%</span>
+          </div>
+          <div class="goal-bar-wrap" style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
+            <div class="goal-bar-fill" style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px"></div>
+          </div>
+        </div>`;
+      }).join("");
+      if (gaHtml) {
+        document.getElementById("homeInsights").innerHTML += `<div class="home-goal-analysis" style="margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem">${gaHtml}</div>`;
+      }
+    }
+  }
 
   // Workout groups + ungrouped
   const activePlan = loadCustomProgram() || plan;
@@ -1939,13 +2010,38 @@ function renderExerciseDetail() {
   const lastWorking = [...ex.sets].reverse().find((s) => !s.isWarmup && s.weight && Number(s.weight) > 0);
   if (lastWorking) autoGenerateWarmups(ex, lastWorking.weight);
 
+  // Render new feature cards
+  renderPreviousPerformance(currentExName);
+  renderTargetCard(currentExName);
+  renderSetProgress(ex);
+
+  const skipBtn = document.getElementById("skipWarmupsBtn");
+  if (skipBtn) {
+    const hasPendingWarmups = ex.sets.some((s) => s.isWarmup && !s.done);
+    if (state.autoWarmup && hasPendingWarmups) {
+      skipBtn.style.display = "";
+      skipBtn.onclick = () => {
+        ex.sets.forEach((s) => { if (s.isWarmup) { s.done = true; s.loggedAt = new Date().toISOString(); } });
+        saveState();
+        renderExerciseDetail();
+      };
+    } else {
+      skipBtn.style.display = "none";
+    }
+  }
+
   const container = document.getElementById("edSetList");
   container.innerHTML = renderSetRows(ex);
 
-  // Click handlers for set rows (working sets open edit, warmup sets mark done, pending working sets log)
+  // Check completion after sets are rendered
+  const completionHtml = renderExerciseCompletion(ex);
+  if (completionHtml) container.innerHTML += completionHtml;
+
+  // Click handlers for set rows — always open edit bottom sheet
   container.querySelectorAll(".ed-set-row, .ed-set-working-pending").forEach((row) => {
     row.addEventListener("click", (e) => {
       if (e.target.closest("[data-dup-set-id]")) return;
+      if (e.target.closest("#edNextExBtn")) return;
       const setId = row.dataset.setId;
       if (!setId) return;
       const set = ex.sets.find((s) => s.id === setId);
@@ -1960,19 +2056,25 @@ function renderExerciseDetail() {
         }
         saveState();
         renderExerciseDetail();
-      } else if (set.done) {
-        openEditSet(setId);
       } else {
-        // Pending working set — log it directly
-        set.done = true;
-        set.loggedAt = new Date().toISOString();
-        if (Number(set.weight) > 0) startStopwatch();
-        saveState();
-        if (Number(set.weight) > 0) startRestTimer();
-        renderExerciseDetail();
+        openEditBottomSheet(setId);
       }
     });
   });
+
+  // Next exercise button handler
+  const nextBtn = document.getElementById("edNextExBtn");
+  if (nextBtn) {
+    nextBtn.addEventListener("click", () => {
+      const session = getTodaySession();
+      if (!session) return;
+      const idx = session.exercises.indexOf(ex);
+      if (idx >= 0 && idx < session.exercises.length - 1) {
+        const next = session.exercises.slice(idx + 1).find((e) => e.sets.some((s) => !s.isWarmup && !s.done));
+        if (next) openExerciseDetail(next.name);
+      }
+    });
+  }
 
   // Duplicate set buttons
   container.querySelectorAll("[data-dup-set-id]").forEach((btn) => {
@@ -1982,17 +2084,8 @@ function renderExerciseDetail() {
     });
   });
 
-  // Skip warmups button
-  const skipBtn = document.getElementById("skipWarmupsBtn");
-  if (skipBtn) {
-    const hasPendingWarmups = ex.sets.some((s) => s.isWarmup && !s.done);
-    skipBtn.style.display = state.autoWarmup && hasPendingWarmups ? "" : "none";
-    skipBtn.onclick = () => {
-      ex.sets.forEach((s) => { if (s.isWarmup) { s.done = true; s.loggedAt = new Date().toISOString(); } });
-      saveState();
-      renderExerciseDetail();
-    };
-  }
+  // Exercise notes
+  renderEdNotes(currentExName);
 }
 
 function renderExerciseSetup(ex) {
@@ -2059,15 +2152,15 @@ function renderExerciseSetup(ex) {
       const field = btn.dataset.setupField;
       const adjust = Number(btn.dataset.setupAdjust);
       const el = document.getElementById(`es${field.charAt(0).toUpperCase() + field.slice(1)}Val`);
-      const cur = Number(el.textContent);
+      let cur = Number(el.textContent);
       const min = field === "weight" ? 0 : 1;
       const max = field === "weight" ? 500 : 50;
-      const step = field === "weight" && Math.abs(adjust) === 1 ? 1 : Math.abs(adjust);
-      let next;
-      if (adjust < 0) next = Math.max(min, Math.round((cur + adjust) / step) * step);
-      else next = Math.min(max, Math.round((cur + adjust) / step) * step);
-      if (next < min) next = min;
-      el.textContent = next;
+      const inc = field === "weight" ? (state.weightInc || 1) : (state.repInc || 1);
+      const step = Math.abs(adjust) === 5 ? inc * 5 : inc;
+      if (adjust < 0) cur = Math.max(min, cur - step);
+      else cur = Math.min(max, cur + step);
+      if (field === "weight") cur = parseFloat(cur.toFixed(2));
+      el.textContent = cur;
     });
   });
 
@@ -2171,6 +2264,17 @@ function duplicateSet(setId) {
   renderExerciseDetail();
 }
 
+function navigateToNextExercise(ex) {
+  const session = getTodaySession();
+  if (!session) return;
+  const idx = session.exercises.indexOf(ex);
+  if (idx < 0 || idx >= session.exercises.length - 1) return;
+  const next = session.exercises.slice(idx + 1).find((e) => e.sets.some((s) => !s.isWarmup && !s.done));
+  if (next) {
+    setTimeout(() => openExerciseDetail(next.name), 1200);
+  }
+}
+
 function renderSetRows(exercise) {
   const workingSets = exercise.sets.filter((s) => s.done && !s.isWarmup);
   const warmupSets = exercise.sets.filter((s) => s.done && s.isWarmup);
@@ -2180,76 +2284,54 @@ function renderSetRows(exercise) {
 
   let html = "";
 
+  // Warm-up status card
+  html += renderWarmupStatus(exercise);
+
   // Warm-up section
-  if (allWarmups.length > 0) {
-    if (allDone) {
-      // Collapsed: all warm-ups completed
-      const totalWarmupVolume = warmupSets.reduce((s, set) => s + (Number(set.weight) || 0) * (set.reps || 0), 0);
-      html += `<div class="ed-section-header ed-section-header-wu-done">
-        <span class="ed-section-label">Warm-Up</span>
-        <span class="ed-section-wu-summary">${warmupSets.length} sets · ${totalWarmupVolume} kg</span>
-        <span class="ed-section-wu-badge">✓</span>
-      </div>`;
-    } else {
-      html += `<div class="ed-section-header"><span class="ed-section-label">Warm-Up</span></div>`;
-      // Pending warmups (undone, auto-generated)
-      pendingWarmups.forEach((set, i) => {
-        if (!set.id) set.id = crypto.randomUUID();
-        html += `<div class="ed-set-row ed-set-warmup" data-set-id="${set.id}">
-          <span class="ed-set-num">W${i + 1}</span>
-          <span class="ed-set-time"></span>
-          <span class="ed-set-reps">${set.reps}</span>
-          <span class="ed-set-weight">${Number(set.weight) || ""}</span>
-          <span class="ed-set-wu-label">WARM-UP</span>
-        </div>`;
-      });
-      // Completed warmups
-      warmupSets.forEach((set, i) => {
-        if (!set.id) set.id = crypto.randomUUID();
-        html += `<div class="ed-set-row ed-set-warmup is-done" data-set-id="${set.id}">
-          <span class="ed-set-num">W${i + 1}</span>
-          <span class="ed-set-time">${set.loggedAt ? formatSetTime(set.loggedAt) : ""}</span>
-          <span class="ed-set-reps">${set.reps}</span>
-          <span class="ed-set-weight">${Number(set.weight) || ""}</span>
-          <span class="ed-set-wu-label">WARM-UP ✓</span>
-        </div>`;
-      });
-    }
-  }
-
-  // Working sets section
-  if (workingSets.length > 0) {
-    html += `<div class="ed-section-header"><span class="ed-section-label">Working Sets</span></div>`;
-    workingSets.forEach((set, i) => {
+  if (allWarmups.length > 0 && !allDone) {
+    html += `<div class="ed-section-header"><span class="ed-section-label">Warm-Up</span></div>`;
+    pendingWarmups.forEach((set, i) => {
       if (!set.id) set.id = crypto.randomUUID();
-      const time = set.loggedAt ? formatSetTime(set.loggedAt) : "";
-      html += `<div class="ed-set-row" data-set-id="${set.id}">
-        <span class="ed-set-num">${i + 1}</span>
-        <span class="ed-set-time">${time}</span>
-        <span class="ed-set-reps">${set.reps}</span>
-        <span class="ed-set-weight">${Number(set.weight) || 0}</span>
-        <button class="ed-set-dup-btn" data-dup-set-id="${set.id}">⧉</button>
+      html += `<div class="ed-set-row ed-set-warmup" data-set-id="${set.id}">
+        <span class="ed-set-num">W${i + 1}</span>
+        <span class="ed-set-reps">${Number(set.reps) || 0}</span>
+        <span class="ed-set-weight">${displayWeight(Number(set.weight) || "")}</span>
+        <span class="ed-set-wu-label">WARM-UP</span>
+      </div>`;
+    });
+    warmupSets.forEach((set, i) => {
+      if (!set.id) set.id = crypto.randomUUID();
+      html += `<div class="ed-set-row ed-set-warmup is-done" data-set-id="${set.id}">
+        <span class="ed-set-num">W${i + 1}</span>
+        <span class="ed-set-reps">${Number(set.reps) || 0}</span>
+        <span class="ed-set-weight">${displayWeight(Number(set.weight) || "")}</span>
+        <span class="ed-set-wu-label">WARM-UP ✓</span>
       </div>`;
     });
   }
 
-  // Pending working sets (not yet done, after warmup section)
-  const pendingWorking = exercise.sets.filter((s) => !s.done && !s.isWarmup);
-  if (pendingWorking.length > 0 && workingSets.length === 0) {
+  // Working sets with completion indicators
+  const allWorking = exercise.sets.filter((s) => !s.isWarmup);
+  if (allWorking.length > 0) {
     html += `<div class="ed-section-header"><span class="ed-section-label">Working Sets</span></div>`;
-    pendingWorking.forEach((set, i) => {
+    allWorking.forEach((set, i) => {
       if (!set.id) set.id = crypto.randomUUID();
-      html += `<div class="ed-set-row ed-set-working-pending" data-set-id="${set.id}">
+      const isDone = set.done;
+      const reps = Number(set.reps) || 0;
+      const weight = Number(set.weight) || 0;
+      const checkmark = isDone ? "✓" : "○";
+      const cls = isDone ? "ed-set-row" : "ed-set-row ed-set-working-pending";
+      html += `<div class="${cls}" data-set-id="${set.id}">
+        <span class="ed-set-check">${checkmark}</span>
         <span class="ed-set-num">${i + 1}</span>
-        <span class="ed-set-time"></span>
-        <span class="ed-set-reps">${set.reps}</span>
-        <span class="ed-set-weight">${Number(set.weight) || 0}</span>
-        <span class="ed-set-working-label">SET</span>
+        <span class="ed-set-reps">${reps}</span>
+        <span class="ed-set-weight">${displayWeight(weight)}</span>
+        ${!isDone ? '<span class="ed-set-working-label">SET</span>' : '<button class="ed-set-dup-btn" data-dup-set-id="' + set.id + '">⧉</button>'}
       </div>`;
     });
   }
 
-  if (allWarmups.length === 0 && workingSets.length === 0 && pendingWorking.length === 0) {
+  if (allWarmups.length === 0 && allWorking.length === 0) {
     html = `<p class="ed-empty">No sets yet.</p>`;
   }
 
@@ -2314,78 +2396,119 @@ function saveAddSet() {
   startStopwatch();
   if (weight > 0) {
     const prs = loadPRs();
-    const current = prs[currentExName];
-    if (!current || weight > current.weight) {
-      prs[currentExName] = { weight, reps, date: getDateKey() };
-      savePRs(prs);
-      showPRToast(`${currentExName.replace(/([A-Z])/g, " $1").trim()}: ${weight} kg × ${reps}`);
-    } else if (current && weight === current.weight && reps > current.reps) {
-      prs[currentExName] = { weight, reps, date: getDateKey() };
-      savePRs(prs);
-      showPRToast(`${currentExName.replace(/([A-Z])/g, " $1").trim()}: ${weight} kg × ${reps} (rep PR)`);
-    }
+    const current = prs[currentExName] || {};
+    const w = Number(weight);
+    const r = Number(reps) || 0;
+    const vol = w * r;
+    const est = calc1RM(w, r);
+    let prType = null;
+    if (!current.weight || w > current.weight) { prType = "weight"; current.weight = w; current.reps = r; current.date = getDateKey(); }
+    else if (w === current.weight && r > (current.reps || 0)) { prType = "reps"; current.reps = r; current.date = getDateKey(); }
+    if (!current.bestSetVol || vol > current.bestSetVol) { prType = prType || "volume"; current.bestSetVol = vol; }
+    if (!current.est1RM || est > current.est1RM) { current.est1RM = est; }
+    prs[currentExName] = current;
+    savePRs(prs);
+    if (prType) showPRToast(`🏆 ${prType === "weight" ? "New Weight PR" : prType === "reps" ? "New Rep PR" : "New Volume PR"}: ${currentExName.replace(/([A-Z])/g, " $1").trim()} · ${displayWeight(w)} × ${r}`);
   }
-  startRestTimer();
+  if (state.autoRest) startRestTimer();
 
   closeAddSetModal();
   renderExerciseDetail();
+  if (state.autoNext) {
+    const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
+    if (pending.length === 0) navigateToNextExercise(ex);
+  }
 }
 
-// ===== LEVEL 3B: EDIT SET =====
-function openEditSet(setId) {
-  editingSetId = setId;
+// ===== LEVEL 3C: EDIT SET BOTTOM SHEET =====
+let editSetReps = 10;
+let editSetWeight = 0;
+let editSetId = null;
+
+function openEditBottomSheet(setId) {
   const session = getTodaySession();
+  if (!session) return;
   const ex = session.exercises.find((e) => e.name === currentExName);
   if (!ex) return;
   const set = ex.sets.find((s) => s.id === setId);
   if (!set) return;
 
-  setReps = set.reps || 10;
-  setWeight = Number(set.weight) || 0;
+  editSetId = setId;
+  editSetReps = Number(set.reps) || 10;
+  editSetWeight = Number(set.weight) || 0;
 
-  document.getElementById("esExercise").textContent = currentExName.replace(/([A-Z])/g, " $1").trim();
-  document.getElementById("esRepsValue").textContent = setReps;
-  document.getElementById("esWeightValue").textContent = setWeight;
-  document.getElementById("esNotes").value = set.notes || "";
-  document.getElementById("esTime").textContent = set.loggedAt ? formatSetTime(set.loggedAt) : "";
-  document.getElementById("esConfirm").classList.add("is-hidden");
-
-  showScreen("screen-es");
+  document.getElementById("esExName").textContent = currentExName.replace(/([A-Z])/g, " $1").trim();
+  document.getElementById("esRepsValue").textContent = editSetReps;
+  document.getElementById("esWeightValue").textContent = editSetWeight;
+  document.getElementById("bsEditSet").classList.remove("is-hidden");
 }
 
-function closeEditSet() {
-  showScreen("screen-ed");
+function closeEditBottomSheet() {
+  document.getElementById("bsEditSet").classList.add("is-hidden");
+  editSetId = null;
+}
+
+function completeSetFromSheet() {
+  const session = getTodaySession();
+  if (!session) return;
+  const ex = session.exercises.find((e) => e.name === currentExName);
+  if (!ex) return;
+  const set = ex.sets.find((s) => s.id === editSetId);
+  if (!set) return;
+
+  set.reps = editSetReps;
+  set.weight = editSetWeight;
+  set.done = true;
+  set.loggedAt = set.loggedAt || new Date().toISOString();
+  if (Number(set.weight) > 0 && !session.duration) startStopwatch();
+
+  saveState();
+
+  // PR detection
+  if (Number(set.weight) > 0) {
+    const w = Number(set.weight);
+    const r = Number(set.reps) || 0;
+    const vol = w * r;
+    const est = calc1RM(w, r);
+    const prs = loadPRs();
+    const current = prs[currentExName] || {};
+    let prType = null;
+    if (!current.weight || w > current.weight) { prType = "weight"; current.weight = w; current.reps = r; current.date = getDateKey(); }
+    else if (w === current.weight && r > (current.reps || 0)) { prType = "reps"; current.reps = r; current.date = getDateKey(); }
+    if (!current.bestSetVol || vol > current.bestSetVol) { prType = prType || "volume"; current.bestSetVol = vol; }
+    if (!current.est1RM || est > current.est1RM) { current.est1RM = est; }
+    prs[currentExName] = current;
+    savePRs(prs);
+    if (prType) showPRToast(`🏆 ${prType === "weight" ? "New Weight PR" : prType === "reps" ? "New Rep PR" : "New Volume PR"}: ${currentExName.replace(/([A-Z])/g, " $1").trim()} · ${displayWeight(w)} × ${r}`);
+  }
+
+  closeEditBottomSheet();
+  if (Number(set.weight) > 0 && state.autoRest) startRestTimer();
+  renderExerciseDetail();
+  if (state.autoNext) {
+    const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
+    if (pending.length === 0) navigateToNextExercise(ex);
+  }
+}
+
+function deleteSetFromSheet() {
+  const session = getTodaySession();
+  if (!session) return;
+  const ex = session.exercises.find((e) => e.name === currentExName);
+  if (!ex) return;
+  const idx = ex.sets.findIndex((s) => s.id === editSetId);
+  if (idx >= 0) ex.sets.splice(idx, 1);
+  saveState();
+  closeEditBottomSheet();
   renderExerciseDetail();
 }
 
-function saveEditSet() {
-  const session = getTodaySession();
-  const ex = session.exercises.find((e) => e.name === currentExName);
-  if (!ex) return;
-  const set = ex.sets.find((s) => s.id === editingSetId);
-  if (!set) return;
-
-  set.reps = setReps;
-  set.weight = setWeight;
-  set.notes = document.getElementById("esNotes").value || "";
-
-  saveState();
-  closeEditSet();
-}
-
-function deleteSet() {
-  document.getElementById("esConfirm").classList.remove("is-hidden");
-}
-
-function confirmDeleteSet() {
-  const session = getTodaySession();
-  const ex = session.exercises.find((e) => e.name === currentExName);
-  if (!ex) return;
-  const idx = ex.sets.findIndex((s) => s.id === editingSetId);
-  if (idx >= 0) ex.sets.splice(idx, 1);
-  saveState();
-  closeEditSet();
-}
+// Old edit set functions (kept for backward compatibility via screen-es)
+function openEditSet(setId) { openEditBottomSheet(setId); }
+function closeEditSet() { showScreen("screen-ed"); renderExerciseDetail(); }
+function saveEditSet() { /* replaced by completeSetFromSheet */ }
+function deleteSet() { /* replaced by deleteSetFromSheet */ }
+function confirmDeleteSet() { /* replaced by deleteSetFromSheet */ }
 
 // ===== FINISH WORKOUT =====
 function finishWorkout() {
@@ -2544,12 +2667,12 @@ function renderEaOverview(container) {
 
   container.innerHTML = `
     <div class="ea-grid">
-      <div class="ea-card"><div class="ea-card-title">Best Weight</div><div class="ea-card-val">${prs.weight ? prs.weight + " kg" : "—"}</div></div>
-      <div class="ea-card"><div class="ea-card-title">e1RM</div><div class="ea-card-val">${prs.est1RM ? prs.est1RM + " kg" : "—"}</div></div>
-      <div class="ea-card"><div class="ea-card-title">Best Set Vol</div><div class="ea-card-val">${prs.bestSetVol ? prs.bestSetVol + " kg" : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">Best Weight</div><div class="ea-card-val">${prs.weight ? displayWeight(prs.weight) : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">e1RM</div><div class="ea-card-val">${prs.est1RM ? displayWeight(prs.est1RM) : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">Best Set Vol</div><div class="ea-card-val">${prs.bestSetVol ? displayWeight(prs.bestSetVol) : "—"}</div></div>
       <div class="ea-card"><div class="ea-card-title">Lifetime Vol</div><div class="ea-card-val">${lifetime.volume >= 1000 ? (lifetime.volume / 1000).toFixed(1) + "k" : lifetime.volume || "—"}</div></div>
     </div>
-    ${latest ? `<div class="ea-card"><div class="ea-card-title">Last Performed</div><div class="ea-card-val">${latest.workoutName}</div><div class="ea-card-sub">${formatReadableDate(parseDateKey(latest.date))} · ${latest.bestWeight} kg best set</div></div>` : ""}
+    ${latest ? `<div class="ea-card"><div class="ea-card-title">Last Performed</div><div class="ea-card-val">${latest.workoutName}</div><div class="ea-card-sub">${formatReadableDate(parseDateKey(latest.date))} · ${displayWeight(latest.bestWeight)} best set</div></div>` : ""}
     ${monthChange !== null ? `<div class="ea-card"><div class="ea-card-title">30-Day Volume Change</div><div class="ea-card-val" style="color:${monthChange >= 0 ? "var(--accent)" : "var(--red)"}">${monthChange >= 0 ? "+" : ""}${(monthChange / 1000).toFixed(1)}k kg</div></div>` : ""}
   `;
 }
@@ -3114,74 +3237,90 @@ document.getElementById("qaWarmup").addEventListener("click", () => {
 document.getElementById("bsAddOverlay").addEventListener("click", closeAddSetModal);
 
 document.getElementById("asRepsMinus").addEventListener("click", () => {
-  addSetReps = Math.max(1, addSetReps - 1);
+  const step = state.repInc || 1;
+  addSetReps = Math.max(1, addSetReps - step);
   document.getElementById("asRepsValue").textContent = addSetReps;
 });
 document.getElementById("asRepsPlus").addEventListener("click", () => {
-  addSetReps = Math.min(50, addSetReps + 1);
+  const step = state.repInc || 1;
+  addSetReps = Math.min(50, addSetReps + step);
   document.getElementById("asRepsValue").textContent = addSetReps;
 });
 
 document.getElementById("asWeightMinus5").addEventListener("click", () => {
-  addSetWeight = Math.max(0, addSetWeight - 5);
+  const step = (state.weightInc || 1) * 5;
+  addSetWeight = Math.max(0, parseFloat((addSetWeight - step).toFixed(2)));
   document.getElementById("asWeightValue").textContent = addSetWeight;
 });
 document.getElementById("asWeightMinus1").addEventListener("click", () => {
-  addSetWeight = Math.max(0, addSetWeight - 1);
+  const step = state.weightInc || 1;
+  addSetWeight = Math.max(0, parseFloat((addSetWeight - step).toFixed(2)));
   document.getElementById("asWeightValue").textContent = addSetWeight;
 });
 document.getElementById("asWeightPlus1").addEventListener("click", () => {
-  addSetWeight = Math.min(500, addSetWeight + 1);
+  const step = state.weightInc || 1;
+  addSetWeight = Math.min(500, parseFloat((addSetWeight + step).toFixed(2)));
   document.getElementById("asWeightValue").textContent = addSetWeight;
 });
 document.getElementById("asWeightPlus5").addEventListener("click", () => {
-  addSetWeight = Math.min(500, addSetWeight + 5);
+  const step = (state.weightInc || 1) * 5;
+  addSetWeight = Math.min(500, parseFloat((addSetWeight + step).toFixed(2)));
   document.getElementById("asWeightValue").textContent = addSetWeight;
 });
 
 document.getElementById("asSaveBtn").addEventListener("click", saveAddSet);
 
-// ===== EVENT LISTENERS: EDIT SET =====
+// ===== EVENT LISTENERS: EDIT SET (back/save for old screen-es) =====
 document.getElementById("esBackBtn").addEventListener("click", closeEditSet);
 document.getElementById("esSaveBtn").addEventListener("click", saveEditSet);
 
+// ===== EVENT LISTENERS: EDIT SET BOTTOM SHEET =====
+document.getElementById("bsEditOverlay").addEventListener("click", closeEditBottomSheet);
+
 document.getElementById("esRepsMinus").addEventListener("click", () => {
-  setReps = Math.max(1, setReps - 1);
-  document.getElementById("esRepsValue").textContent = setReps;
+  const step = state.repInc || 1;
+  editSetReps = Math.max(1, editSetReps - step);
+  document.getElementById("esRepsValue").textContent = editSetReps;
 });
 document.getElementById("esRepsPlus").addEventListener("click", () => {
-  setReps = Math.min(50, setReps + 1);
-  document.getElementById("esRepsValue").textContent = setReps;
+  const step = state.repInc || 1;
+  editSetReps = Math.min(50, editSetReps + step);
+  document.getElementById("esRepsValue").textContent = editSetReps;
 });
 
 document.getElementById("esWeightMinus5").addEventListener("click", () => {
-  setWeight = Math.max(0, setWeight - 5);
-  document.getElementById("esWeightValue").textContent = setWeight;
+  const step = (state.weightInc || 1) * 5;
+  editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
+});
+document.getElementById("esWeightMinus2").addEventListener("click", () => {
+  const step = (state.weightInc || 1) * 2.5;
+  editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
 });
 document.getElementById("esWeightMinus1").addEventListener("click", () => {
-  setWeight = Math.max(0, setWeight - 1);
-  document.getElementById("esWeightValue").textContent = setWeight;
+  const step = state.weightInc || 1;
+  editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
 });
 document.getElementById("esWeightPlus1").addEventListener("click", () => {
-  setWeight = Math.min(500, setWeight + 1);
-  document.getElementById("esWeightValue").textContent = setWeight;
+  const step = state.weightInc || 1;
+  editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
+});
+document.getElementById("esWeightPlus2").addEventListener("click", () => {
+  const step = (state.weightInc || 1) * 2.5;
+  editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
 });
 document.getElementById("esWeightPlus5").addEventListener("click", () => {
-  setWeight = Math.min(500, setWeight + 5);
-  document.getElementById("esWeightValue").textContent = setWeight;
+  const step = (state.weightInc || 1) * 5;
+  editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
+  document.getElementById("esWeightValue").textContent = editSetWeight;
 });
 
-document.getElementById("esDeleteBtn").addEventListener("click", deleteSet);
-document.getElementById("esConfirmCancel").addEventListener("click", () => {
-  document.getElementById("esConfirm").classList.add("is-hidden");
-});
-document.getElementById("esConfirmDelete").addEventListener("click", confirmDeleteSet);
-
-// ===== SET ROW CLICK DELEGATION =====
-document.getElementById("edSetList").addEventListener("click", (e) => {
-  const row = e.target.closest(".ed-set-row");
-  if (row) openEditSet(row.dataset.setId);
-});
+document.getElementById("esCompleteBtn").addEventListener("click", completeSetFromSheet);
+document.getElementById("esEditDeleteBtn").addEventListener("click", deleteSetFromSheet);
 
 // ===== MUSCLE SHEET =====
 document.getElementById("muscleSheetOverlay")?.addEventListener("click", () => {
@@ -3193,8 +3332,260 @@ document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
 
 // ===== REST TIMER CONTROLS =====
 document.getElementById("rtAdd30").addEventListener("click", () => { restTimerSeconds += 30; updateRestTimerDisplay(); });
-document.getElementById("rtReset").addEventListener("click", () => { restTimerSeconds = DEFAULT_REST; updateRestTimerDisplay(); });
+document.getElementById("rtReset").addEventListener("click", () => { restTimerSeconds = state.restTimer || DEFAULT_REST; updateRestTimerDisplay(); });
 document.getElementById("rtSkip").addEventListener("click", () => { clearRestTimer(); });
+
+// ===== EXERCISE DETAIL TAB SWITCHING =====
+document.getElementById("screen-ed").addEventListener("click", (e) => {
+  const tab = e.target.closest(".ed-tab");
+  if (!tab) return;
+  document.querySelectorAll(".ed-tab").forEach((t) => t.classList.toggle("is-active", t === tab));
+  document.querySelectorAll(".ed-content").forEach((c) => c.classList.toggle("is-active", c.id === "edTab" + tab.dataset.edTab.charAt(0).toUpperCase() + tab.dataset.edTab.slice(1)));
+  if (tab.dataset.edTab === "analyze") renderEdAnalyze();
+  else if (tab.dataset.edTab === "1rm") renderEd1rm();
+});
+
+// ===== EXERCISE NOTES =====
+function getExerciseNotes(exName) {
+  try { const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {}; return n[exName] || ""; } catch { return ""; }
+}
+function setExerciseNotes(exName, text) {
+  try { const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {}; n[exName] = text; localStorage.setItem("wl_exercise_notes", JSON.stringify(n)); } catch {}
+}
+
+function renderEdNotes(exName) {
+  const container = document.getElementById("edNotesSection");
+  const notes = getExerciseNotes(exName);
+  container.innerHTML = `<div class="ed-notes" id="edNotesToggle">
+    <span class="ed-notes-header">ⓘ Exercise Notes</span>
+    <div class="ed-notes-body ${notes ? "is-visible" : "is-hidden"}" id="edNotesBody">
+      <textarea class="ed-notes-input" id="edNotesInput" placeholder="Add notes for this exercise..." rows="3">${notes}</textarea>
+    </div>
+  </div>`;
+  requestAnimationFrame(() => {
+    document.getElementById("edNotesToggle").addEventListener("click", (e) => {
+      if (e.target.closest("textarea")) return;
+      const body = document.getElementById("edNotesBody");
+      body.classList.toggle("is-hidden");
+      if (!body.classList.contains("is-hidden")) document.getElementById("edNotesInput")?.focus();
+    });
+    document.getElementById("edNotesInput").addEventListener("input", (e) => {
+      setExerciseNotes(currentExName, e.target.value);
+    });
+  });
+}
+
+// ===== PREVIOUS PERFORMANCE CARD =====
+function getLastExerciseSession(exName) {
+  const sessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  for (const s of sessions) {
+    const ex = s.exercises.find((e) => e.name === exName);
+    if (!ex) continue;
+    const done = ex.sets.filter((st) => st.done && !st.isWarmup && Number(st.weight) > 0);
+    if (done.length === 0) continue;
+    const bestSet = done.reduce((a, b) => (Number(a.weight) * Number(a.reps) > Number(b.weight) * Number(b.reps) ? a : b), done[0]);
+    const daysAgo = Math.floor((Date.now() - parseDateKey(s.dateKey).getTime()) / 86400000);
+    return { dateKey: s.dateKey, sets: done, bestSet, daysAgo, workoutName: s.workoutName };
+  }
+  return null;
+}
+
+function renderPreviousPerformance(exName) {
+  const container = document.getElementById("edPerformanceCard");
+  const last = getLastExerciseSession(exName);
+  if (!last) { container.innerHTML = ""; return; }
+  const daysLabel = last.daysAgo === 0 ? "Today" : last.daysAgo === 1 ? "Yesterday" : `${last.daysAgo} Days Ago`;
+  container.innerHTML = `
+    <div class="ed-prev-perf">
+      <div class="ed-prev-perf-header">Last Session</div>
+      <div class="ed-prev-perf-sets">${last.sets.map((s) => `<span class="ed-prev-perf-set">${displayWeight(Number(s.weight))} × ${s.reps}</span>`).join("")}</div>
+      <div class="ed-prev-perf-footer">Best Set: ${displayWeight(Number(last.bestSet.weight))} × ${last.bestSet.reps} · ${daysLabel}</div>
+    </div>`;
+}
+
+// ===== TODAY'S TARGET CARD =====
+function getTargetSuggestion(exName) {
+  const last = getLastExerciseSession(exName);
+  if (!last) return null;
+  const lastSet = last.sets[last.sets.length - 1];
+  if (!lastSet) return null;
+  const w = Number(lastSet.weight);
+  const r = Number(lastSet.reps);
+  if (!w || !r) return null;
+  const inc = state.weightInc || 2.5;
+  const targetReps = r;
+  const suggestWeight = Math.round((w + inc) / (inc || 1)) * (inc || 1);
+  return {
+    weight: suggestWeight,
+    reps: targetReps,
+    reason: `Last session: ${w} kg × ${r}. ${r >= targetReps ? "Target achieved. Increase weight." : "Repeat weight."}`,
+    progressed: r >= targetReps,
+  };
+}
+
+function renderTargetCard(exName) {
+  const container = document.getElementById("edTargetCard");
+  const suggestion = getTargetSuggestion(exName);
+  if (!suggestion) { container.innerHTML = ""; return; }
+  container.innerHTML = `
+    <div class="ed-target">
+      <div class="ed-target-header">Suggested</div>
+      <div class="ed-target-value">${displayWeight(suggestion.weight)} × ${suggestion.reps}</div>
+      <div class="ed-target-reason">${suggestion.reason}</div>
+    </div>`;
+}
+
+// ===== SET PROGRESS TRACKER =====
+function renderSetProgress(ex) {
+  const container = document.getElementById("edProgressTracker");
+  const working = ex.sets.filter((s) => !s.isWarmup);
+  const done = working.filter((s) => s.done);
+  const total = working.length;
+  if (total === 0) { container.innerHTML = ""; return; }
+  const allDone = done.length === total;
+  if (allDone) {
+    container.innerHTML = `<div class="ed-progress is-complete">
+      <span class="ed-progress-dots">${working.map(() => "✓").join(" ")}</span>
+      <span class="ed-progress-label">Exercise Complete</span>
+    </div>`;
+  } else {
+    container.innerHTML = `<div class="ed-progress">
+      <span class="ed-progress-dots">${working.map((s) => s.done ? "✓" : "○").join(" ")}</span>
+      <span class="ed-progress-label">${done.length} / ${total} Sets</span>
+    </div>`;
+  }
+}
+
+// ===== EXERCISE COMPLETION STATE =====
+function renderExerciseCompletion(ex) {
+  const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
+  if (pending.length > 0) return "";
+  if (ex.sets.filter((s) => !s.isWarmup).length === 0) return "";
+  const session = getTodaySession();
+  const idx = session ? session.exercises.indexOf(ex) : -1;
+  const hasNext = idx >= 0 && idx < session.exercises.length - 1;
+  const autoNext = state.autoNext;
+  return `<div class="ed-ex-complete" id="edExComplete">
+    <span class="ed-ex-complete-icon">✓</span>
+    <span class="ed-ex-complete-label">Exercise Complete</span>
+    ${hasNext ? (autoNext ? "" : `<button class="ed-ex-complete-btn" id="edNextExBtn">Open Next Exercise</button>`) : ""}
+  </div>`;
+}
+
+// ===== WARM-UP STATUS =====
+function renderWarmupStatus(ex) {
+  const warmups = ex.sets.filter((s) => s.isWarmup);
+  if (warmups.length === 0) return "";
+  const done = warmups.filter((s) => s.done).length;
+  const total = warmups.length;
+  if (done === total) return `<div class="ed-wu-status is-done">
+    <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
+    <span class="ed-wu-badge">✓</span>
+  </div>`;
+  return `<div class="ed-wu-status">
+    <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
+  </div>`;
+}
+
+// ===== COPY LAST SESSION =====
+function copyLastSession() {
+  const session = getTodaySession();
+  if (!session) return;
+  const ex = session.exercises.find((e) => e.name === currentExName);
+  if (!ex) return;
+  const last = getLastExerciseSession(currentExName);
+  if (!last || last.sets.length === 0) return;
+  ex.sets = ex.sets.filter((s) => s.isWarmup || s.done);
+  last.sets.forEach((s) => {
+    ex.sets.push({
+      id: crypto.randomUUID(),
+      reps: s.reps,
+      weight: s.weight,
+      notes: s.notes || "",
+      label: "",
+      done: false,
+      isWarmup: false,
+      loggedAt: null,
+    });
+  });
+  ex.warmupGenerated = false;
+  autoGenerateWarmups(ex, last.sets[0].weight);
+  saveState();
+  renderExerciseDetail();
+}
+
+// ===== ANALYZE TAB =====
+function renderEdAnalyze() {
+  const container = document.getElementById("edTabAnalyze");
+  const history = getExerciseHistory(currentExName);
+  const prs = loadPRs()[currentExName] || {};
+  const last = getLastExerciseSession(currentExName);
+  if (!last && !prs.weight) {
+    container.innerHTML = `<p class="ed-empty">Log some sets to see analysis.</p>`;
+    return;
+  }
+  let html = `<div class="ea-grid">`;
+  if (last) {
+    html += `<div class="ea-card ea-card-wide">
+      <div class="ea-card-title">Last Session</div>
+      <div class="ea-card-val">${last.sets.map((s) => `${Number(s.weight)} kg × ${s.reps}`).join(", ")}</div>
+      <div class="ea-card-sub">${last.daysAgo === 0 ? "Today" : last.daysAgo + " days ago"} · ${last.workoutName}</div>
+    </div>`;
+  }
+  html += `<div class="ea-card"><div class="ea-card-title">Best Set</div>
+    <div class="ea-card-val">${prs.weight ? displayWeight(prs.weight) + " × " + (prs.reps || "—") : "—"}</div></div>`;
+  html += `<div class="ea-card"><div class="ea-card-title">e1RM</div>
+    <div class="ea-card-val">${prs.est1RM ? displayWeight(prs.est1RM) : "—"}</div></div>`;
+  html += `<div class="ea-card"><div class="ea-card-title">Personal Records</div>
+    <div class="ea-card-val">${prs.date ? formatReadableDate(parseDateKey(prs.date)) : "—"}</div>
+    ${prs.weight ? `<div class="ea-card-sub">${displayWeight(prs.weight)} × ${prs.reps || "—"}</div>` : ""}</div>`;
+  if (history.length >= 2) {
+    const first = history[0].bestWeight;
+    const latest = history[history.length - 1].bestWeight;
+    const change = latest - first;
+    html += `<div class="ea-card"><div class="ea-card-title">Weight Progression</div>
+      <div class="ea-card-val" style="color:${change >= 0 ? "var(--accent)" : "var(--red)"}">${change >= 0 ? "+" : ""}${change} kg</div>
+      <div class="ea-card-sub">${first} kg → ${latest} kg</div></div>`;
+  }
+  if (history.length >= 2) {
+    const totalVol = history.reduce((s, h) => s + h.totalVolume, 0);
+    const avgVol = Math.round(totalVol / history.length);
+    html += `<div class="ea-card"><div class="ea-card-title">Volume Trend</div>
+      <div class="ea-card-val">${avgVol >= 1000 ? (avgVol / 1000).toFixed(1) + "k" : avgVol} kg avg</div>
+      <div class="ea-card-sub">${history.length} sessions</div></div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
+// ===== 1RM TAB =====
+function renderEd1rm() {
+  const container = document.getElementById("edTab1rm");
+  const history = getExerciseHistory(currentExName);
+  const prs = loadPRs()[currentExName] || {};
+  if (!prs.est1RM && history.length === 0) {
+    container.innerHTML = `<p class="ed-empty">Log at least one set to calculate 1RM.</p>`;
+    return;
+  }
+  const bestSet = history.length > 0 ? history.reduce((a, b) => (a.est1RM > b.est1RM ? a : b)) : null;
+  const est1RM = prs.est1RM || (bestSet ? bestSet.est1RM : 0);
+  const tableData = [95, 90, 85, 80, 75, 70, 65, 60].map((pct) => ({
+    pct,
+    weight: Math.round(est1RM * pct / 100 / 2.5) * 2.5,
+  }));
+  container.innerHTML = `
+    <div class="ed-1rm">
+      <div class="ed-1rm-value">${est1RM} kg</div>
+      <div class="ed-1rm-label">Estimated 1RM</div>
+      <div class="ed-1rm-table">
+        <div class="ed-1rm-row ed-1rm-header"><span>%</span><span>Weight</span><span>Reps</span></div>
+        ${tableData.map((d) => `
+          <div class="ed-1rm-row"><span>${d.pct}%</span><span>${d.weight} kg</span><span>${d.pct >= 85 ? "3-5" : d.pct >= 70 ? "6-8" : "8-12"}</span></div>
+        `).join("")}
+      </div>
+      <div class="ed-1rm-note">Based on best set: ${prs.weight ? prs.weight + " kg × " + (prs.reps || "—") : "—"}</div>
+    </div>`;
+}
 
 // ===== SESSIONS TAB =====
 function renderSessionsTab() {
@@ -3223,10 +3614,10 @@ function renderPRBoard() {
   const entries = Object.entries(prs).sort((a, b) => b[1].date.localeCompare(a[1].date));
   container.innerHTML = entries.length
     ? entries.slice(0, 8).map(([name, data]) => {
-        const wLabel = data.weight ? `${data.weight} kg` : "—";
+        const wLabel = data.weight ? displayWeight(data.weight) : "—";
         const rLabel = data.reps ? `${data.reps} reps` : "—";
-        const volLabel = data.bestSetVol ? `${data.bestSetVol} kg` : "—";
-        const estLabel = data.est1RM ? `${data.est1RM} kg` : "—";
+        const volLabel = data.bestSetVol ? displayWeight(data.bestSetVol) : "—";
+        const estLabel = data.est1RM ? displayWeight(data.est1RM) : "—";
         return `<div class="pr-card" onclick="showExerciseAnalytics('${name.replace(/'/g, "\\'")}')">
           <strong>${name.replace(/([A-Z])/g, " $1").trim()}</strong>
           <div class="pr-stats">
@@ -3515,18 +3906,43 @@ function renderProteinScore() {
   `;
 }
 
+function renderNutritionTargets() {
+  const container = document.getElementById("nutritionTargetsCard");
+  if (!container) return;
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
+  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
+  const water = meals.reduce((s, m) => s + (Number(m.water) || 0), 0);
+  const calTarget = state.calorieTarget || CAL_GOAL;
+  const protTarget = state.proteinGoal || PROTEIN_GOAL;
+  const waterTarget = state.waterGoal || WATER_TARGET;
+  const calCls = cal >= calTarget ? "is-met" : cal >= calTarget * 0.75 ? "is-partial" : "is-miss";
+  const protCls = p >= protTarget ? "is-met" : p >= protTarget * 0.75 ? "is-partial" : "is-miss";
+  const waterCls = water >= waterTarget ? "is-met" : water >= waterTarget * 0.75 ? "is-partial" : "is-miss";
+  container.innerHTML = `
+    <div class="nut-targets">
+      <div class="nut-target-row"><span class="nut-target-label">Calories</span><span class="nut-target-value ${calCls}">${Math.round(cal)} / ${calTarget} kcal</span></div>
+      <div class="nut-target-row"><span class="nut-target-label">Protein</span><span class="nut-target-value ${protCls}">${Math.round(p)} / ${protTarget} g</span></div>
+      <div class="nut-target-row"><span class="nut-target-label">Water</span><span class="nut-target-value ${waterCls}">${Math.round(water)} / ${waterTarget} ml</span></div>
+    </div>`;
+}
+
 function renderNutritionCompliance() {
   const container = document.getElementById("nutritionComplianceContent");
+  if (!container) return;
   const today = getDateKey();
   const meals = loadMeals(today);
   const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
   const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
   const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
   const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  const pPct = Math.min(Math.round((p / PROTEIN_GOAL) * 100), 100);
+  const pTarget = state.proteinGoal || PROTEIN_GOAL;
+  const calTarget = state.calorieTarget || CAL_GOAL;
   const cPct = Math.min(Math.round((c / CARBS_GOAL) * 100), 100);
   const fPct = Math.min(Math.round((f / FAT_GOAL) * 100), 100);
-  const calPct = Math.min(Math.round((cal / CAL_GOAL) * 100), 100);
+  const pPct = Math.min(Math.round((p / pTarget) * 100), 100);
+  const calPct = Math.min(Math.round((cal / calTarget) * 100), 100);
   const goal = GOALS.find((g) => g.id === state.bodyGoal);
   let resultText = "Nutrition looks good today.";
   let resultCls = "is-green";
@@ -3556,7 +3972,8 @@ function renderSmartSuggestions() {
   const today = getDateKey();
   const meals = loadMeals(today);
   const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const remaining = Math.max(0, PROTEIN_GOAL - protein);
+  const protGoal = state.proteinGoal || PROTEIN_GOAL;
+  const remaining = Math.max(0, protGoal - protein);
   if (remaining < 10) {
     container.innerHTML = `<p class="empty-state">Protein target met. Great work.</p>`;
     return;
@@ -3881,6 +4298,23 @@ function renderCoachInsights() {
     text: `Trained <strong>${weekSessions.length}/6</strong> sessions this week. ${weekSessions.length >= 5 ? "Excellent consistency." : weekSessions.length >= 3 ? "Building momentum." : "Try to increase frequency."}`,
   });
 
+  // Progress suggestions
+  if (state.progressSuggestions !== false) {
+    const prs = loadPRs();
+    const suggestions = [];
+    Object.entries(prs).forEach(([name, data]) => {
+      if (!data.weight || data.weight <= 0) return;
+      const last = getLastExerciseSession(name);
+      if (!last || !last.daysAgo || last.daysAgo < 7) return;
+      if (last.daysAgo >= 14) {
+        suggestions.push(name.replace(/([A-Z])/g, " $1").trim() + " hasn't been trained in " + last.daysAgo + " days — consider adding it back.");
+      }
+    });
+    suggestions.slice(0, 2).forEach((text) => {
+      insights.push({ icon: "💡", text: text });
+    });
+  }
+
   // Insight 5: Warmup & stretch compliance
   const warmupComp = getWarmupCompliance();
   const stretchComp = getStretchCompliance();
@@ -3902,6 +4336,19 @@ function renderCoachInsights() {
     muscleInsights.slice(0, 3).forEach((ins) => {
       insights.push({ icon: ins.icon, text: ins.text });
     });
+    if (state.muscleCoverage !== false) {
+      const trained = MUSCLE_GROUPS.filter((mg) => {
+        const data = muscleSum[mg.id];
+        return data && data.weeklySets > 0;
+      }).slice(0, 6);
+      if (trained.length > 0) {
+        const breakdown = trained.map((mg) => {
+          const data = muscleSum[mg.id];
+          return mg.label + ": " + data.weeklySets + " sets";
+        }).join(", ");
+        insights.push({ icon: "🎯", text: "Muscle coverage this week: " + breakdown });
+      }
+    }
   }
 
   container.innerHTML = insights.slice(0, 7).map((insight) =>
@@ -3972,6 +4419,10 @@ function renderBodyTab() {
   renderGoalPrediction();
   renderBodyAnalysis();
   renderWeightHistoryChart();
+  renderNutritionCompliance();
+  renderNutritionTargets();
+  renderSmartSuggestions();
+  renderFavoriteMeals();
 }
 
 function renderGoalSelector() {
@@ -3996,7 +4447,7 @@ function renderWeighIn() {
   const entry = log.find((e) => e.date === today);
   if (entry) {
     container.innerHTML = `
-      <div class="weigh-in-current">${entry.weight} kg</div>
+      <div class="weigh-in-current">${displayWeight(entry.weight)}</div>
       <div class="weigh-in-changes">
         ${entry.bf ? `<span>BF: ${entry.bf}%</span>` : ""}
       </div>
@@ -4109,8 +4560,8 @@ function renderGoalPrediction() {
   const estDate = weeksNeeded > 0 ? targetDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "--";
   container.innerHTML = `
     <div class="prediction-grid">
-      <div class="prediction-row"><span>Current</span><span>${avgRecent.toFixed(1)} kg</span></div>
-      <div class="prediction-row"><span>Target</span><span>~${goalWeight.toFixed(1)} kg</span></div>
+      <div class="prediction-row"><span>Current</span><span>${displayWeight(avgRecent)}</span></div>
+      <div class="prediction-row"><span>Target</span><span>~${displayWeight(goalWeight)}</span></div>
       <div class="prediction-row"><span>Rate</span><span>${weeklyRate > 0 ? "+" : ""}${weeklyRate} kg/week</span></div>
       ${weeksNeeded > 0 ? `<div class="prediction-highlight">Goal by ${estDate} (${Math.ceil(weeksNeeded)} weeks)</div>` : `<div class="prediction-highlight">Maintaining current phase.</div>`}
     </div>
@@ -4863,6 +5314,53 @@ document.getElementById("peSaveBtn").addEventListener("click", () => {
 });
 
 // ===== WEIGHT LOG MODAL =====
+let wlEntryId = null;
+
+function renderWeightLogList() {
+  const list = document.getElementById("wlEntryList");
+  if (!list) return;
+  const entries = (state.weightLog || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  if (entries.length === 0) {
+    list.innerHTML = `<p class="empty-state" style="font-size:0.75rem;padding:0.5rem 0">No entries yet.</p>`;
+    return;
+  }
+  list.innerHTML = entries.map((e, i) => `
+    <div class="wl-entry-row" data-wl-idx="${i}">
+      <span class="wl-entry-weight">${displayWeight(e.weight)}</span>
+      <span class="wl-entry-date">${formatReadableDate(parseDateKey(e.date))}</span>
+      ${e.notes ? `<span class="wl-entry-notes">${e.notes}</span>` : ""}
+      <button class="wl-entry-edit" data-wl-edit="${i}">✎</button>
+      <button class="wl-entry-del" data-wl-del="${i}">✕</button>
+    </div>
+  `).join("");
+  list.querySelectorAll("[data-wl-edit]").forEach((btn) => {
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const idx = Number(btn.dataset.wlEdit);
+      const entry = state.weightLog[idx];
+      if (!entry) return;
+      wlEntryId = idx;
+      document.getElementById("wlWeight").value = entry.weight;
+      document.getElementById("wlDate").value = entry.date;
+      document.getElementById("wlNotes").value = entry.notes || "";
+      document.querySelector("#weightLogModal h2").textContent = "Edit Weight";
+      document.getElementById("wlSaveBtn").textContent = "Update";
+      document.getElementById("wlDeleteBtn").classList.remove("is-hidden");
+    });
+  });
+  list.querySelectorAll("[data-wl-del]").forEach((btn) => {
+    btn.addEventListener("click", (ev) => {
+      ev.stopPropagation();
+      const idx = Number(btn.dataset.wlDel);
+      if (!confirm("Delete this weight entry?")) return;
+      state.weightLog.splice(idx, 1);
+      saveState();
+      renderWeightLogList();
+      renderSettings();
+    });
+  });
+}
+
 function openWeightLogModal() {
   const wlW = document.getElementById("wlWeight"); if (!wlW) return;
   const wlD = document.getElementById("wlDate"); if (!wlD) return;
@@ -4870,11 +5368,24 @@ function openWeightLogModal() {
   wlW.value = (state.user && state.user.weight) || "";
   wlD.value = getDateKey();
   wlN.value = "";
+  wlEntryId = null;
+  document.querySelector("#weightLogModal h2").textContent = "Log Weight";
+  document.getElementById("wlSaveBtn").textContent = "Save";
+  document.getElementById("wlDeleteBtn").classList.add("is-hidden");
+  renderWeightLogList();
   const m = document.getElementById("weightLogModal");
   if (m) m.classList.remove("is-hidden");
 }
 document.getElementById("wlClose")?.addEventListener("click", () => {
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
+});
+document.getElementById("wlDeleteBtn")?.addEventListener("click", () => {
+  if (wlEntryId === null || !confirm("Delete this weight entry?")) return;
+  state.weightLog.splice(wlEntryId, 1);
+  saveState();
+  wlEntryId = null;
+  document.getElementById("weightLogModal")?.classList.add("is-hidden");
+  renderSettings();
 });
 document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
   const wlW = document.getElementById("wlWeight"); if (!wlW) return;
@@ -4882,9 +5393,56 @@ document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
   const wlN = document.getElementById("wlNotes"); if (!wlN) return;
   const w = wlW.value, d = wlD.value;
   if (!w || !d) return;
-  logWeight(Number(w), d, wlN.value);
+  if (wlEntryId !== null) {
+    if (!state.weightLog) state.weightLog = [];
+    state.weightLog[wlEntryId] = { weight: Number(w), date: d, notes: wlN.value || "", loggedAt: new Date().toISOString() };
+    wlEntryId = null;
+  } else {
+    logWeight(Number(w), d, wlN.value);
+  }
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
+  renderSettings();
 });
+
+// ===== REMINDER NOTIFICATIONS =====
+function requestNotificationPermission() {
+  if ("Notification" in window && Notification.permission === "default") {
+    Notification.requestPermission();
+  }
+}
+
+function showDailyReminder(title, body) {
+  if (!("Notification" in window) || Notification.permission !== "granted") return;
+  const today = getDateKey();
+  const key = "wl_reminder_" + title.replace(/\s+/g, "_").toLowerCase();
+  if (localStorage.getItem(key) === today) return;
+  try { new Notification(title, { body, icon: "/assets/icons/favicon.svg" }); } catch {}
+  localStorage.setItem(key, today);
+}
+
+function checkReminders() {
+  if (state.weightReminder) {
+    showDailyReminder("Daily Weight", "Log your weight for today to track progress.");
+  }
+  if (state.nutritionReminder) {
+    showDailyReminder("Nutrition Check", "Track your meals and macros for today.");
+  }
+}
+
+// ===== WAKE LOCK =====
+let wakeLockSentinel = null;
+
+async function requestWakeLock() {
+  try {
+    if (wakeLockSentinel) return;
+    wakeLockSentinel = await navigator.wakeLock.request("screen");
+    wakeLockSentinel.addEventListener("release", () => { wakeLockSentinel = null; });
+  } catch {}
+}
+
+function releaseWakeLock() {
+  if (wakeLockSentinel) { wakeLockSentinel.release(); wakeLockSentinel = null; }
+}
 
 // ===== SETTINGS EVENT DELEGATION =====
 document.getElementById("screen-settings").addEventListener("click", (e) => {
@@ -4962,7 +5520,50 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     saveState(); renderSettings(); return;
   }
   if (setting === "export-json") {
-    const blob = new Blob([JSON.stringify(state, null, 2)], { type: "application/json" });
+    const exportData = {
+      sessions: state.sessions || [],
+      nutrition: state.nutrition || {},
+      user: state.user || null,
+      plan: state.plan || null,
+      workoutGroups: state.workoutGroups || [],
+      weightLog: state.weightLog || [],
+      goals: state.goals || [],
+      recoveryLog: state.recoveryLog || [],
+      bodyGoal: state.bodyGoal || "recomp",
+      calorieTarget: state.calorieTarget || CAL_GOAL,
+      proteinGoal: state.proteinGoal || PROTEIN_GOAL,
+      waterGoal: state.waterGoal || WATER_TARGET,
+      fatTarget: state.fatTarget || FAT_GOAL,
+      planOffset: state.planOffset || 0,
+      restTimer: state.restTimer || 90,
+      weightUnit: state.weightUnit || "kg",
+      heightUnit: state.heightUnit || "cm",
+      weightInc: state.weightInc || 1,
+      repInc: state.repInc || 1,
+      autoRest: !!state.autoRest,
+      autoNext: !!state.autoNext,
+      focusMode: !!state.focusMode,
+      screenAwake: !!state.screenAwake,
+      autoWarmup: state.autoWarmup !== false,
+      warmupStyle: state.warmupStyle || "simple",
+      warmupReminder: state.warmupReminder !== false,
+      stretchReminder: state.stretchReminder !== false,
+      theme: state.theme || "Dark",
+      accent: state.accent || "Green",
+      fontSize: state.fontSize || "Medium",
+      compactMode: !!state.compactMode,
+      show7dAvg: state.show7dAvg !== false,
+      show30dAvg: state.show30dAvg !== false,
+      progressPhotos: !!state.progressPhotos,
+      bodyMeasurements: !!state.bodyMeasurements,
+      weightReminder: !!state.weightReminder,
+      nutritionReminder: !!state.nutritionReminder,
+      weeklyReview: state.weeklyReview !== false,
+      goalAnalysis: state.goalAnalysis !== false,
+      muscleCoverage: state.muscleCoverage !== false,
+      progressSuggestions: state.progressSuggestions !== false,
+    };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
     const a = document.createElement("a"); a.href = url; a.download = `ironlog-export-${getDateKey()}.json`;
     a.click(); URL.revokeObjectURL(url); return;
@@ -4975,7 +5576,12 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
-          Object.assign(state, JSON.parse(ev.target.result));
+          const data = JSON.parse(ev.target.result);
+          if (!data || typeof data !== "object" || (!data.sessions && !data.user && !data.weightLog)) {
+            alert("Invalid file: missing required data (sessions, user, or weightLog).");
+            return;
+          }
+          Object.assign(state, data);
           saveState(); render(); renderHome(); renderSettings();
           alert("Data imported successfully!");
         } catch { alert("Invalid file format."); }
@@ -5016,6 +5622,13 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
     "auto-warmup": "autoWarmup", "warmup-reminder": "warmupReminder", "stretch-reminder": "stretchReminder",
   };
   if (map[setting] !== undefined) { state[map[setting]] = checked; saveState(); }
+
+  if (setting === "focus-mode") {
+    document.documentElement.classList.toggle("focus-mode", checked);
+  }
+  if (setting === "screen-awake") {
+    if (checked) requestWakeLock(); else releaseWakeLock();
+  }
 });
 
 // Delete data modal (static elements)
@@ -5094,11 +5707,11 @@ document.getElementById("warmupGenerateBtn").addEventListener("click", () => {
     result.innerHTML = `<p style="font-size:0.78rem;color:var(--text-secondary);text-align:center;padding:0.5rem">Enter a valid working weight.</p>`;
     return;
   }
-  let html = `<p style="font-size:0.78rem;color:var(--accent);font-weight:700;margin-bottom:0.5rem">Warmup for ${weight} kg</p>`;
+  let html = `<p style="font-size:0.78rem;color:var(--accent);font-weight:700;margin-bottom:0.5rem">Warmup for ${displayWeight(weight)}</p>`;
   sets.forEach((s) => {
     const isWorking = s.pct === "Working";
     html += `<div class="wu-set" style="${isWorking ? 'background:var(--surface-2);border-radius:6px;padding:0.5rem 0.4rem;margin-top:0.35rem' : ''}">
-      <div><span class="wu-set-value">${s.bar} kg</span><span class="wu-set-label"> × ${s.reps}</span></div>
+      <div><span class="wu-set-value">${displayWeight(s.bar)}</span><span class="wu-set-label"> × ${s.reps}</span></div>
       <div><span class="wu-set-label">${s.pct}</span>${isWorking ? '<span style="color:var(--accent);font-size:0.68rem;margin-left:0.35rem">⬅ Working Set</span>' : ''}</div>
     </div>`;
   });
@@ -5390,6 +6003,13 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   activateTab("sets");
+
+  // Apply persisted settings
+  if (state.focusMode) document.documentElement.classList.add("focus-mode");
+  if (state.screenAwake) requestWakeLock();
+
+  requestNotificationPermission();
+  checkReminders();
 });
 
 // ===== MUSCLE SEARCH =====
