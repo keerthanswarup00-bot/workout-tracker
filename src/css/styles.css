@@ -1,9 +1,9 @@
 :root {
-  --bg: #0a0a0a;
-  --surface: #161616;
-  --surface-2: #1e1e1e;
-  --surface-3: #232323;
-  --border: #2a2a2a;
+  --bg: #050505;
+  --surface: #151515;
+  --surface-2: #1a1a1a;
+  --surface-3: #202020;
+  --border: rgba(255,255,255,0.08);
   --text: #e5e5e5;
   --text-secondary: #737373;
   --accent: #00d26a;
@@ -33,7 +33,10 @@ html, body {
   color: var(--text);
   font-family: "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
 }
+
+img, canvas { max-width: 100%; height: auto; }
 
 h1, h2, h3, h4 { font-weight: 700; }
 button, input, textarea { font: inherit; color: inherit; }
@@ -95,7 +98,7 @@ input:focus, textarea:focus { outline: none; }
   flex: 1;
   max-width: 640px;
   margin: 0 auto;
-  padding: 1rem 1rem calc(5rem + env(safe-area-inset-bottom, 0px));
+  padding: env(safe-area-inset-top, 8px) 16px calc(80px + env(safe-area-inset-bottom, 8px));
   width: 100%;
 }
 
@@ -186,7 +189,7 @@ input:focus, textarea:focus { outline: none; }
 /* ===== PILL-SHAPED BOTTOM NAV ===== */
 .bottom-nav {
   position: fixed;
-  bottom: 20px;
+  bottom: max(20px, env(safe-area-inset-bottom, 20px));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
@@ -194,7 +197,7 @@ input:focus, textarea:focus { outline: none; }
   background: var(--surface-2);
   border-radius: 999px;
   padding: 6px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--border);
   z-index: 100;
   width: min(360px, calc(100vw - 32px));
 }
@@ -245,7 +248,7 @@ input:focus, textarea:focus { outline: none; }
   margin-bottom: 1rem;
 }
 
-.l1-title { font-size: 2rem; font-weight: 800; letter-spacing: -0.03em; color: var(--text); line-height: 1.1; }
+.l1-title { font-size: 28px; font-weight: 800; letter-spacing: -0.03em; color: var(--text); line-height: 1.1; }
 
 .l1-header-right { display: flex; align-items: center; gap: 0.25rem; }
 
@@ -1793,6 +1796,7 @@ input:focus, textarea:focus { outline: none; }
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
   padding-bottom: 0.25rem;
+  flex-wrap: nowrap;
 }
 
 .bm-mode-btn {
@@ -2321,6 +2325,13 @@ input:focus, textarea:focus { outline: none; }
   color: var(--text-secondary);
   border-bottom: 2px solid transparent;
   margin-bottom: -1px;
+  background: none;
+  border-top: 0;
+  border-left: 0;
+  border-right: 0;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
 }
 
 .ed-tab.is-active {
@@ -2390,25 +2401,6 @@ input:focus, textarea:focus { outline: none; }
   margin-left: auto;
   flex-shrink: 0;
 }
-
-/* ===== FLOATING ACTION BUTTON ===== */
-.fab {
-  position: fixed;
-  bottom: calc(84px + env(safe-area-inset-bottom, 0px));
-  left: 50%;
-  transform: translateX(-50%);
-  width: 56px;
-  height: 56px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #0a0a0a;
-  display: grid;
-  place-items: center;
-  box-shadow: 0 4px 20px rgba(0,210,106,0.3);
-  z-index: 50;
-}
-
-.fab:active { transform: translateX(-50%) scale(0.93); }
 
 /* ===== BOTTOM SHEET (ADD SET) ===== */
 .bottom-sheet {
@@ -3473,22 +3465,9 @@ input:focus, textarea:focus { outline: none; }
 .ed-notes-input:focus { border-color:var(--accent);outline:none }
 
 /* ===== 1RM TAB ===== */
-.ed-1rm { text-align:center;padding:1rem }
-.ed-1rm-value { font-size:2.5rem;font-weight:800;color:var(--accent);line-height:1 }
-.ed-1rm-label { font-size:0.72rem;font-weight:600;color:var(--text-secondary);margin-bottom:1rem }
-.ed-1rm-table { max-width:280px;margin:0 auto }
-.ed-1rm-row { display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;padding:0.4rem 0.75rem;border-bottom:1px solid var(--border);font-size:0.82rem;font-weight:600 }
-.ed-1rm-header { font-size:0.65rem;font-weight:700;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.06em;border-bottom:2px solid var(--border) }
-.ed-1rm-note { font-size:0.7rem;color:var(--text-secondary);margin-top:0.75rem }
-
 /* ===== ED TAB CONTENT ===== */
 .ed-content { display:none }
 .ed-content.is-active { display:block }
-
-/* ===== ED TAB STYLING ===== */
-.ed-tabs { display:flex;gap:0;margin-bottom:0.5rem;border-bottom:1px solid var(--border) }
-.ed-tab { flex:1;padding:0.5rem 0;font-size:0.75rem;font-weight:600;color:var(--text-secondary);background:none;border:none;border-bottom:2px solid transparent;font-family:inherit;cursor:pointer;text-align:center }
-.ed-tab.is-active { color:var(--text);border-bottom-color:var(--accent) }
 
 /* ===== ED SET ROW REMOVE TIMESTAMP ===== */
 .ed-set-row .ed-set-time { display:none }
@@ -3546,3 +3525,69 @@ input:focus, textarea:focus { outline: none; }
 /* ===== HOME SCREEN COACH CARDS ===== */
 .home-weekly-review { background:var(--surface-2);border-radius:var(--radius-sm);padding:0.25rem 0.5rem;margin-top:0.35rem;font-size:0.75rem }
 .home-goal-analysis { margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem }
+
+/* ===== TYPOGRAPHY SYSTEM ===== */
+h1, .h1 { font-size: 32px; font-weight: 800; line-height: 1.1; letter-spacing: -0.03em }
+h2, .h2 { font-size: 24px; font-weight: 700 }
+h3, .h3 { font-size: 18px; font-weight: 700 }
+h4, .h4 { font-size: 16px; font-weight: 600 }
+.body-secondary { font-size: 14px; color: var(--text-secondary) }
+.body-small { font-size: 12px; color: var(--text-secondary) }
+
+/* ===== HOME GREETING & STATS ===== */
+.home-greeting-line { font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.1rem; font-weight: 500 }
+.home-name-line { font-size: 1.5rem; font-weight: 800; letter-spacing: -0.03em; margin-bottom: 0.35rem; color: var(--text) }
+.home-dash-card { background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 0 0; margin-bottom: 1rem; overflow: hidden }
+.home-dash-grid { display: grid; grid-template-columns: repeat(4, 1fr) }
+.home-dash-item { padding: 0.75rem 0.3rem; text-align: center; border-right: 1px solid var(--border) }
+.home-dash-item:last-child { border-right: 0 }
+.home-dash-value { display: block; font-size: 1rem; font-weight: 800; color: var(--text); line-height: 1.2 }
+.home-dash-label { display: block; font-size: 0.6rem; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.06em; margin-top: 0.15rem; font-weight: 600 }
+
+/* ===== WORKOUT CARD REFINEMENT ===== */
+.wo-card { min-height: 80px }
+.home-wo-card { min-height: 80px; background: var(--surface); border-radius: var(--radius); border: 1px solid var(--border); padding: 0.75rem; margin-bottom: 0.35rem }
+.wo-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0 }
+.wo-card-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; flex: 1; min-width: 0 }
+.wo-card-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.25rem }
+.wo-card-actions { display: flex; align-items: center; gap: 0.35rem; margin-left: auto; flex-shrink: 0 }
+.wo-card-desc { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; line-height: 1.4 }
+
+.home-wo-open-btn {
+  min-height: 32px; padding: 0 0.75rem; border-radius: 999px; background: var(--accent); color: #0a0a0a;
+  font-size: 0.7rem; font-weight: 700; letter-spacing: 0.02em; border: 0; cursor: pointer;
+}
+.home-wo-open-btn.is-resume { background: var(--surface-2); color: var(--text); border: 1px solid var(--border); }
+.home-wo-open-btn:active { opacity: 0.85; }
+.home-wo-menu-btn { background: none; border: 0; color: var(--text-secondary); font-size: 1rem; cursor: pointer; padding: 0.2rem; line-height: 1; letter-spacing: 0; }
+.home-wo-menu-btn:hover { color: var(--text); }
+.wo-card-header { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 0 }
+.wo-card-title { font-size: 1rem; font-weight: 700; letter-spacing: -0.01em; flex: 1; min-width: 0 }
+.wo-card-meta { display: flex; align-items: center; gap: 0.5rem; font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.2rem }
+.wo-card-actions { display: flex; align-items: center; gap: 0.35rem; margin-left: auto; flex-shrink: 0 }
+.wo-card-desc { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.15rem; line-height: 1.4 }
+
+/* ===== STICKY QA BAR ===== */
+.qa-bar { position: sticky; bottom: 0; background: var(--bg); padding: 0.5rem 0; z-index: 5; display: flex; gap: 0.35rem; border-top: 1px solid var(--border); margin-top: 0.5rem }
+.qa-btn { flex: 1; min-height: 44px; display: grid; place-items: center; background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius-sm); font-size: 0.78rem; font-weight: 600; color: var(--text); padding: 0 0.35rem }
+.qa-btn:active { background: var(--surface-3) }
+
+/* ===== EXERCISE SCREEN COMPRESS ===== */
+.ed-content.is-active { display: flex; flex-direction: column; gap: 0 }
+#edPerformanceCard:empty { display: none }
+#edTargetCard:empty { display: none }
+#edProgressTracker:empty { display: none }
+.ed-content > div { margin-bottom: 0 }
+.ed-content > * + * { margin-top: 0.25rem }
+#edSetList { margin-top: 0.35rem }
+.ed-section-header { margin-top: 0.35rem; margin-bottom: 0.2rem }
+
+/* ===== HIDE OLD HI CLASSES ===== */
+.hi-item, .hi-label, .hi-value { display: none }
+
+/* ===== FORM BOTTOM SPACING (prevent nav overlap) ===== */
+.screen { padding-bottom: 0 }
+.ws-exercises { padding-bottom: 1rem }
+.ws-actions { padding-bottom: env(safe-area-inset-bottom, 0px) }
+.modal-card { margin-bottom: env(safe-area-inset-bottom, 0px) }
+.nw-footer { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) }

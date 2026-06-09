@@ -131,7 +131,6 @@
           <div class="ed-tabs">
             <button class="ed-tab is-active" data-ed-tab="sets">Sets</button>
             <button class="ed-tab" data-ed-tab="analyze">Analyze</button>
-            <button class="ed-tab" data-ed-tab="1rm">1RM</button>
           </div>
 
           <div class="ed-content is-active" id="edTabSets">
@@ -150,13 +149,6 @@
           <div class="ed-content" id="edTabAnalyze">
             <p class="ed-empty">Start logging sets to see analysis.</p>
           </div>
-          <div class="ed-content" id="edTab1rm">
-            <p class="ed-empty">Log at least one set to calculate 1RM.</p>
-          </div>
-
-          <button class="fab" id="fabAddSet">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          </button>
         </div>
 
         <!-- Level 3A: Add Set Bottom Sheet -->
@@ -244,62 +236,6 @@
           </div>
         </div>
 
-        <!-- Level 3B: Edit Set Screen (deprecated, kept for compatibility) -->
-        <div id="screen-es" class="screen is-hidden">
-          <div class="es-header">
-            <button class="btn-back" id="esBackBtn">←</button>
-            <div class="es-header-title">Edit Set</div>
-            <button class="es-header-save" id="esSaveBtn">✓</button>
-          </div>
-
-          <div class="es-form">
-            <div class="es-field">
-              <div class="es-field-label">Exercise</div>
-              <div class="es-field-val" id="esExercise"></div>
-            </div>
-
-            <div class="es-field">
-              <div class="es-field-label">Repetitions</div>
-              <div class="es-number-input">
-                <button class="as-btn" id="esOldRepsMinus">−</button>
-                <span class="as-value" id="esOldRepsValue">10</span>
-                <button class="as-btn" id="esOldRepsPlus">+</button>
-              </div>
-            </div>
-
-            <div class="es-field">
-              <div class="es-field-label">Weight</div>
-              <div class="es-number-input">
-                <button class="as-btn" id="esOldWeightMinus5">−5</button>
-                <button class="as-btn" id="esOldWeightMinus1">−1</button>
-                <span class="as-value" id="esOldWeightValue">20</span>
-                <button class="as-btn" id="esOldWeightPlus1">+1</button>
-                <button class="as-btn" id="esOldWeightPlus5">+5</button>
-              </div>
-            </div>
-
-            <div class="es-field">
-              <div class="es-field-label">Notes</div>
-              <input type="text" class="es-input" id="esNotes" placeholder="Comment..." autocomplete="off" />
-            </div>
-
-            <div class="es-field">
-              <div class="es-field-label">Time</div>
-              <div class="es-field-val" id="esTime"></div>
-            </div>
-
-            <button class="es-delete" id="esDeleteBtn">Delete Set</button>
-          </div>
-
-          <!-- Delete confirmation -->
-          <div class="es-confirm is-hidden" id="esConfirm">
-            <p>Delete this set?</p>
-            <div class="es-confirm-actions">
-              <button class="btn-secondary" id="esConfirmCancel">Cancel</button>
-              <button class="btn-primary es-confirm-del" id="esConfirmDelete">Delete</button>
-            </div>
-          </div>
-        </div>
 
         <!-- Exercise Library Screen -->
         <div id="screen-ex-library" class="screen is-hidden">
@@ -535,9 +471,7 @@
       <!-- ===== BODY PANEL ===== -->
       <section class="panel" id="panel-body">
 
-        <div class="section-label">Body Goal</div>
-        <div id="goalSelector" class="goal-chips"></div>
-        <div class="section-label" style="margin-top:1.25rem">Weigh-In</div>
+        <div class="section-label">Weigh-In</div>
         <div id="weighInCard" class="card-content"></div>
         <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
         <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
@@ -550,17 +484,6 @@
           <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
         </div>
         <div id="bodyAnalysis" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Nutrition Goals</div>
-        <div id="nutritionComplianceContent" class="card-content"></div>
-        <div id="nutritionTargetsCard" class="card-content" style="margin-top:0.5rem"></div>
-        <div class="section-label" style="margin-top:1.25rem">Smart Suggestions</div>
-        <div id="smartSuggestionsContent" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Favorite Meals</div>
-        <div id="favoriteMealsList" class="card-content"></div>
-
-        <div class="section-label" style="margin-top:1.25rem">Bodyweight History</div>
-        <div class="filter-row" id="historyFilterChips"></div>
-        <div class="chart-wrap"><canvas id="weightHistoryChart"></canvas></div>
 
       </section>
 

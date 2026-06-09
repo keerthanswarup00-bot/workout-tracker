@@ -1645,11 +1645,42 @@ function showScreen(screenId) {
 }
 
 // ===== HOME DASHBOARD =====
+function getDailyMessage() {
+  const messages = [
+    "Have a great day.",
+    "Keep showing up.",
+    "Consistency wins.",
+    "Sleep well. Recovery matters.",
+    "Train hard. Recover harder.",
+    "Small steps compound.",
+    "Stay patient.",
+    "Focus on today's workout.",
+    "Recovery is part of training.",
+    "Progress takes time.",
+    "One session at a time.",
+  ];
+  const today = getDateKey();
+  const stored = localStorage.getItem("wl_daily_msg");
+  const storedDate = localStorage.getItem("wl_daily_msg_date");
+  if (stored && storedDate === today) return stored;
+  const idx = Math.abs(hashString(today)) % messages.length;
+  const msg = messages[idx];
+  localStorage.setItem("wl_daily_msg", msg);
+  localStorage.setItem("wl_daily_msg_date", today);
+  return msg;
+}
+
+function hashString(s) {
+  let hash = 0;
+  for (let i = 0; i < s.length; i++) { hash = ((hash << 5) - hash) + s.charCodeAt(i); hash |= 0; }
+  return hash;
+}
+
 function renderHome() {
   const user = state.user;
   const name = user ? user.name : "there";
   const g = getGreeting();
-  document.getElementById("homeGreeting").innerHTML = `${g.text}, ${name} ${g.emoji}`;
+  document.getElementById("homeGreeting").innerHTML = `<div class="home-greeting-line">${g.text} ${g.emoji}</div><div class="home-name-line">${name}</div><div class="body-secondary body-small" style="margin-top:-0.5rem;margin-bottom:0.65rem">${getDailyMessage()}</div>`;
 
   // Insights — use latest weight log if available
   const streak = getStreak();
@@ -1658,11 +1689,14 @@ function renderHome() {
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
   let wsHtml = `
-    <div class="hi-item"><span class="hi-label">Weight</span><span class="hi-value">${weight ? displayWeight(weight) : "—"}</span></div>
-    <div class="hi-item"><span class="hi-label">Streak</span><span class="hi-value">${streak}d</span></div>
-    <div class="hi-item"><span class="hi-label">Last</span><span class="hi-value">${lastSession ? lastSession.workoutName : "—"}</span></div>
-    <div class="hi-item"><span class="hi-label">Week</span><span class="hi-value">${weekSessions.length}</span></div>
-  `;
+    <div class="home-dash-card">
+      <div class="home-dash-grid">
+        <div class="home-dash-item"><span class="home-dash-value">${weight ? displayWeight(weight) : "—"}</span><span class="home-dash-label">Weight</span></div>
+        <div class="home-dash-item"><span class="home-dash-value">${streak}d</span><span class="home-dash-label">Streak</span></div>
+        <div class="home-dash-item"><span class="home-dash-value">${lastSession ? lastSession.workoutName : "—"}</span><span class="home-dash-label">Last</span></div>
+        <div class="home-dash-item"><span class="home-dash-value">${weekSessions.length}</span><span class="home-dash-label">Week</span></div>
+      </div>
+    </div>`;
 
   if (state.weeklyReview !== false && weekSessions.length > 0) {
     const totalSets = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
@@ -1732,7 +1766,7 @@ function renderHome() {
   if (ungrouped.length > 0) {
     html += `<div class="home-ungrouped">`;
     ungrouped.forEach((w) => {
-      html += `<div class="home-wo-card" style="background:var(--surface);border-radius:var(--radius);border:1px solid var(--border);margin-bottom:0.35rem">`;
+      html += `<div class="home-wo-card">`;
       html += renderWorkoutCardInner(w, todaySession);
       html += `</div>`;
     });
@@ -1843,14 +1877,14 @@ function renderWorkoutCardInner(workout, todaySession) {
   const lastPerf = state.sessions.filter((s) => s.finishedAt && s.workoutId === workout.id).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const lastLabel = lastPerf ? formatRelativeDate(lastPerf.dateKey) : "Never";
   const duration = workout.duration || "";
-  return `<div class="home-wo-card-info" style="flex:1;min-width:0">
-    <div class="home-wo-card-name">${workout.name}</div>
-    <div class="home-wo-card-meta">${sessionCount} exercises · ${lastLabel}${duration ? " · " + duration : ""}</div>
+  return `<div class="wo-card-header">
+    <div class="wo-card-title">${workout.name}</div>
+    <div class="wo-card-actions">
+      <button class="home-wo-open-btn ${inProgress ? "is-resume" : ""}" data-open-workout="${workout.id}">${inProgress ? "Resume" : "Open"}</button>
+      <button class="home-wo-menu-btn" data-wo-menu="${workout.id}">•••</button>
+    </div>
   </div>
-  <div class="home-wo-card-actions">
-    <button class="home-wo-open-btn ${inProgress ? "is-resume" : ""}" data-open-workout="${workout.id}">${inProgress ? "Resume" : "Open"}</button>
-    <button class="home-wo-menu-btn" data-wo-menu="${workout.id}">•••</button>
-  </div>`;
+  <div class="wo-card-meta">${sessionCount} exercises · ${lastLabel}${duration ? " · " + duration : ""}</div>`;
 }
 
 function formatRelativeDate(dateKey) {
@@ -1997,13 +2031,11 @@ function renderExerciseDetail() {
 
   if (needsSetup) {
     renderExerciseSetup(ex);
-    document.getElementById("fabAddSet").style.display = "none";
     document.getElementById("skipWarmupsBtn").style.display = "none";
     document.getElementById("qaBar").style.display = "none";
     return;
   }
 
-  document.getElementById("fabAddSet").style.display = "";
   document.getElementById("qaBar").style.display = "";
 
   // Auto-generate warmups on first open if enabled
@@ -2505,10 +2537,6 @@ function deleteSetFromSheet() {
 
 // Old edit set functions (kept for backward compatibility via screen-es)
 function openEditSet(setId) { openEditBottomSheet(setId); }
-function closeEditSet() { showScreen("screen-ed"); renderExerciseDetail(); }
-function saveEditSet() { /* replaced by completeSetFromSheet */ }
-function deleteSet() { /* replaced by deleteSetFromSheet */ }
-function confirmDeleteSet() { /* replaced by deleteSetFromSheet */ }
 
 // ===== FINISH WORKOUT =====
 function finishWorkout() {
@@ -3216,12 +3244,9 @@ document.getElementById("edBackBtn").addEventListener("click", () => {
   renderWorkoutSession();
 });
 
-// ===== EVENT LISTENERS: FAB =====
-document.getElementById("fabAddSet").addEventListener("click", openAddSetModal);
-
 // ===== EVENT LISTENERS: QUICK ACTIONS =====
 document.getElementById("qaRepeatLast").addEventListener("click", repeatLastSet);
-document.getElementById("qaAddEmpty").addEventListener("click", addEmptySet);
+document.getElementById("qaAddEmpty").addEventListener("click", openAddSetModal);
 document.getElementById("qaWarmup").addEventListener("click", () => {
   const session = getTodaySession();
   if (!session) return;
@@ -3269,10 +3294,6 @@ document.getElementById("asWeightPlus5").addEventListener("click", () => {
 });
 
 document.getElementById("asSaveBtn").addEventListener("click", saveAddSet);
-
-// ===== EVENT LISTENERS: EDIT SET (back/save for old screen-es) =====
-document.getElementById("esBackBtn").addEventListener("click", closeEditSet);
-document.getElementById("esSaveBtn").addEventListener("click", saveEditSet);
 
 // ===== EVENT LISTENERS: EDIT SET BOTTOM SHEET =====
 document.getElementById("bsEditOverlay").addEventListener("click", closeEditBottomSheet);
@@ -3342,7 +3363,6 @@ document.getElementById("screen-ed").addEventListener("click", (e) => {
   document.querySelectorAll(".ed-tab").forEach((t) => t.classList.toggle("is-active", t === tab));
   document.querySelectorAll(".ed-content").forEach((c) => c.classList.toggle("is-active", c.id === "edTab" + tab.dataset.edTab.charAt(0).toUpperCase() + tab.dataset.edTab.slice(1)));
   if (tab.dataset.edTab === "analyze") renderEdAnalyze();
-  else if (tab.dataset.edTab === "1rm") renderEd1rm();
 });
 
 // ===== EXERCISE NOTES =====
@@ -3558,34 +3578,6 @@ function renderEdAnalyze() {
   container.innerHTML = html;
 }
 
-// ===== 1RM TAB =====
-function renderEd1rm() {
-  const container = document.getElementById("edTab1rm");
-  const history = getExerciseHistory(currentExName);
-  const prs = loadPRs()[currentExName] || {};
-  if (!prs.est1RM && history.length === 0) {
-    container.innerHTML = `<p class="ed-empty">Log at least one set to calculate 1RM.</p>`;
-    return;
-  }
-  const bestSet = history.length > 0 ? history.reduce((a, b) => (a.est1RM > b.est1RM ? a : b)) : null;
-  const est1RM = prs.est1RM || (bestSet ? bestSet.est1RM : 0);
-  const tableData = [95, 90, 85, 80, 75, 70, 65, 60].map((pct) => ({
-    pct,
-    weight: Math.round(est1RM * pct / 100 / 2.5) * 2.5,
-  }));
-  container.innerHTML = `
-    <div class="ed-1rm">
-      <div class="ed-1rm-value">${est1RM} kg</div>
-      <div class="ed-1rm-label">Estimated 1RM</div>
-      <div class="ed-1rm-table">
-        <div class="ed-1rm-row ed-1rm-header"><span>%</span><span>Weight</span><span>Reps</span></div>
-        ${tableData.map((d) => `
-          <div class="ed-1rm-row"><span>${d.pct}%</span><span>${d.weight} kg</span><span>${d.pct >= 85 ? "3-5" : d.pct >= 70 ? "6-8" : "8-12"}</span></div>
-        `).join("")}
-      </div>
-      <div class="ed-1rm-note">Based on best set: ${prs.weight ? prs.weight + " kg × " + (prs.reps || "—") : "—"}</div>
-    </div>`;
-}
 
 // ===== SESSIONS TAB =====
 function renderSessionsTab() {
@@ -4412,17 +4404,11 @@ let weightHistoryChartInstance = null;
 let historyFilterDays = 30;
 
 function renderBodyTab() {
-  renderGoalSelector();
   renderWeighIn();
   renderTrendAverages();
   renderWeightChart();
   renderGoalPrediction();
   renderBodyAnalysis();
-  renderWeightHistoryChart();
-  renderNutritionCompliance();
-  renderNutritionTargets();
-  renderSmartSuggestions();
-  renderFavoriteMeals();
 }
 
 function renderGoalSelector() {
