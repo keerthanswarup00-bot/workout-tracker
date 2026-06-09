@@ -8,7 +8,7 @@
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
   <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg" />
-  <title>iron log</title>
+  <title>IronLog</title>
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
@@ -18,11 +18,11 @@
   <div class="app-layout">
     <!-- SIDEBAR (desktop) -->
     <aside class="sidebar" id="sidebar">
-      <div class="sidebar-brand">iron log</div>
+      <div class="sidebar-brand">IronLog</div>
       <nav class="sidebar-nav" id="sidebarNav">
         <button class="nav-btn is-active" data-tab="sets">Sets</button>
         <button class="nav-btn" data-tab="sessions">Sessions</button>
-        <button class="nav-btn" data-tab="coach">Coach</button>
+        <button class="nav-btn" data-tab="progress">Progress</button>
         <button class="nav-btn" data-tab="body">Body</button>
       </nav>
       <div class="sidebar-footer">
@@ -39,81 +39,410 @@
         </div>
         <div class="topbar-right">
           <span class="topbar-timer" id="topbarTimer"></span>
+          <button class="topbar-icon-btn" id="topbarSettingsBtn" title="Settings">⚙️</button>
         </div>
       </header>
 
       <!-- ===== SETS PANEL ===== -->
       <section class="panel is-active" id="panel-sets">
 
-        <!-- Level 1: My Workouts -->
-        <div id="setsL1" class="sets-level">
-          <div class="l1-greeting" id="l1Greeting"></div>
-          <div class="l1-header">
-            <h1 class="l1-title">My Workouts</h1>
-            <div class="l1-header-right">
-              <span class="l1-streak" id="l1Streak"></span>
-              <button class="btn-icon" id="settingsBtn">
-                <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
-              </button>
+        <!-- Home Dashboard Screen -->
+        <div id="screen-home" class="screen is-active">
+          <div class="home-greeting" id="homeGreeting"></div>
+          <div class="home-insights" id="homeInsights"></div>
+
+          <div class="home-section">
+            <div class="home-section-header">
+              <span class="home-section-label">My Workouts</span>
+              <div class="home-section-actions">
+                <button class="home-action-btn" id="homeNewWorkout">+ New</button>
+                <button class="home-action-btn" id="homeNewGroup">+ Group</button>
+                <button class="home-action-btn" id="homeBuilderBtn">⚡ Build</button>
+              </div>
             </div>
+            <div id="homeWorkoutList" class="home-workout-list"></div>
           </div>
 
-          <div class="l1-list">
-            <button class="l1-row l1-add" id="newWorkoutBtn">
-              <span class="l1-add-icon">+</span>
-              <span class="l1-add-text">New Workout...</span>
-            </button>
-            <button class="l1-row l1-add" id="newPlanBtn">
-              <span class="l1-add-icon">✦</span>
-              <span class="l1-add-text">New Custom Plan...</span>
-            </button>
-            <button class="l1-row" id="myExercisesBtn">
-              <span class="l1-row-icon">
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-              </span>
-              <span class="l1-row-label">My Exercises <span id="exerciseCount">51</span></span>
-              <span class="l1-chevron">›</span>
-            </button>
-
-            <div class="l1-divider"></div>
-
-            <div id="l1PlanList"></div>
+          <div class="home-section" id="homeRecentSection">
+            <div class="home-section-header">
+              <span class="home-section-label">Recent Workouts</span>
+            </div>
+            <div id="homeRecentList"></div>
           </div>
         </div>
 
-        <!-- Level 2: Plan Detail with inline accordion -->
-        <div id="setsL2" class="sets-level is-hidden">
-          <!-- Sticky workout header -->
-          <div class="wo-header" id="woHeader">
-            <button class="btn-back" id="l2BackBtn">←</button>
-            <div class="wo-header-info">
-              <div class="wo-header-name" id="woHeaderName"></div>
-              <div class="wo-header-meta" id="woHeaderMeta"></div>
-            </div>
-            <div class="wo-header-progress" id="woHeaderProgress">
-              <span class="wo-header-pct" id="woHeaderPct">0%</span>
-            </div>
+        <!-- New Workout Builder Screen -->
+        <div id="screen-new-workout" class="screen is-hidden">
+          <div class="nw-header">
+            <button class="btn-back" id="nwBackBtn">←</button>
+            <span style="flex:1;font-weight:700;font-size:0.9rem">New Workout</span>
           </div>
-
-          <!-- Accordion exercise list -->
-          <div id="l2ExerciseList" class="accordion-list"></div>
-
-          <!-- Complete Workout button -->
-          <button class="wo-finish" id="woFinishBtn">Complete Workout</button>
+          <div class="nw-counter" id="nwCounter">0 exercises selected</div>
+          <div class="nw-list" id="nwList"></div>
+          <div class="nw-footer" id="nwFooter" style="display:none">
+            <input type="text" id="nwGroupName" class="modal-input" style="min-height:44px" placeholder="Name your group..." maxlength="30" autocomplete="off" />
+            <button class="btn-primary" id="nwCreateBtn" disabled style="width:100%;margin-top:0.5rem">Create Group</button>
+          </div>
         </div>
 
-        <!-- Level 3: New Workout / Exercise Selector -->
-        <div id="setsL3" class="sets-level is-hidden">
-          <div class="wo-header">
-            <button class="btn-back" id="l3BackBtn">←</button>
-            <div class="wo-header-info">
-              <div class="wo-header-name">New Workout</div>
-              <div class="wo-header-meta" id="l3Meta">Select exercises</div>
+        <!-- Workout Session Screen -->
+        <div id="screen-ws" class="screen is-hidden">
+          <div class="ws-header">
+            <div class="ws-header-left">
+              <button class="btn-back" id="wsBackBtn">←</button>
+              <div class="ws-header-info">
+                <div class="ws-header-name" id="wsName"></div>
+                <div class="ws-header-meta" id="wsMeta"></div>
+              </div>
+            </div>
+            <button class="ws-menu-btn" id="wsMenuBtn">•••</button>
+          </div>
+
+          <div class="ws-desc" id="wsDesc">
+            <span class="ws-desc-text" id="wsDescText"></span>
+            <button class="ws-desc-more" id="wsDescMore">more</button>
+          </div>
+
+          <button class="ws-notes-btn" id="wsNotesBtn">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+            Notes
+          </button>
+
+          <div id="wsExerciseList" class="ws-exercises"></div>
+
+          <div class="ws-actions">
+            <button class="ws-add-ex-btn" id="wsAddExBtn">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Add Exercise
+            </button>
+            <button class="ws-finish-btn" id="wsFinishBtn">Finish Workout</button>
+          </div>
+        </div>
+
+        <!-- Level 2: Exercise Detail Screen -->
+        <div id="screen-ed" class="screen is-hidden">
+          <div class="ed-header">
+            <button class="btn-back" id="edBackBtn">←</button>
+            <div class="ed-header-info">
+              <div class="ed-header-name" id="edName"></div>
             </div>
           </div>
-          <input type="text" id="l3NameInput" class="l3-name-input" placeholder="Workout name..." maxlength="40" autocomplete="off" />
-          <div id="l3ExerciseList" class="exercise-grid"></div>
-          <button class="wo-finish" id="l3CreateBtn" disabled>Create & Start (0)</button>
+
+          <div class="ed-tabs">
+            <button class="ed-tab is-active" data-ed-tab="sets">Sets</button>
+            <button class="ed-tab" data-ed-tab="analyze">Analyze</button>
+            <button class="ed-tab" data-ed-tab="1rm">1RM</button>
+          </div>
+
+          <div class="ed-content is-active" id="edTabSets">
+            <div class="ed-set-list" id="edSetList"></div>
+            <button class="skip-warmups-btn" id="skipWarmupsBtn" style="display:none">⏭ Skip Warm-Ups</button>
+            <div class="qa-bar" id="qaBar">
+              <button class="qa-btn" id="qaRepeatLast">↻ Repeat Last</button>
+              <button class="qa-btn" id="qaAddEmpty">+ Empty Set</button>
+              <button class="qa-btn" id="qaWarmup">🔥 Warmup</button>
+            </div>
+          </div>
+          <div class="ed-content" id="edTabAnalyze">
+            <p class="ed-empty">Start logging sets to see analysis.</p>
+          </div>
+          <div class="ed-content" id="edTab1rm">
+            <p class="ed-empty">Log at least one set to calculate 1RM.</p>
+          </div>
+
+          <button class="fab" id="fabAddSet">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+          </button>
+        </div>
+
+        <!-- Level 3A: Add Set Bottom Sheet -->
+        <div class="bottom-sheet is-hidden" id="bsAddSet">
+          <div class="bottom-sheet-overlay" id="bsAddOverlay"></div>
+          <div class="bottom-sheet-card">
+            <div class="bottom-sheet-handle"></div>
+            <div class="bottom-sheet-body">
+              <div class="as-title">Add Set</div>
+              <div class="as-ex-name" id="asExName"></div>
+
+              <div class="as-field">
+                <div class="as-label">Repetitions</div>
+                <div class="as-number-wrap">
+                  <div class="as-number-input">
+                    <button class="as-btn" id="asRepsMinus">−</button>
+                    <span class="as-value" id="asRepsValue">10</span>
+                    <button class="as-btn" id="asRepsPlus">+</button>
+                  </div>
+                  <span class="as-unit">rep</span>
+                </div>
+              </div>
+
+              <div class="as-field">
+                <div class="as-label">Weight</div>
+                <div class="as-number-wrap">
+                  <div class="as-number-input">
+                    <button class="as-btn" id="asWeightMinus5">−5</button>
+                    <button class="as-btn" id="asWeightMinus1">−1</button>
+                    <span class="as-value" id="asWeightValue">0</span>
+                    <button class="as-btn" id="asWeightPlus1">+1</button>
+                    <button class="as-btn" id="asWeightPlus5">+5</button>
+                  </div>
+                  <span class="as-unit">kg</span>
+                </div>
+              </div>
+
+              <button class="as-save" id="asSaveBtn">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Level 3B: Edit Set Screen -->
+        <div id="screen-es" class="screen is-hidden">
+          <div class="es-header">
+            <button class="btn-back" id="esBackBtn">←</button>
+            <div class="es-header-title">Edit Set</div>
+            <button class="es-header-save" id="esSaveBtn">✓</button>
+          </div>
+
+          <div class="es-form">
+            <div class="es-field">
+              <div class="es-field-label">Exercise</div>
+              <div class="es-field-val" id="esExercise"></div>
+            </div>
+
+            <div class="es-field">
+              <div class="es-field-label">Repetitions</div>
+              <div class="es-number-input">
+                <button class="as-btn" id="esRepsMinus">−</button>
+                <span class="as-value" id="esRepsValue">10</span>
+                <button class="as-btn" id="esRepsPlus">+</button>
+              </div>
+            </div>
+
+            <div class="es-field">
+              <div class="es-field-label">Weight</div>
+              <div class="es-number-input">
+                <button class="as-btn" id="esWeightMinus5">−5</button>
+                <button class="as-btn" id="esWeightMinus1">−1</button>
+                <span class="as-value" id="esWeightValue">20</span>
+                <button class="as-btn" id="esWeightPlus1">+1</button>
+                <button class="as-btn" id="esWeightPlus5">+5</button>
+              </div>
+            </div>
+
+            <div class="es-field">
+              <div class="es-field-label">Notes</div>
+              <input type="text" class="es-input" id="esNotes" placeholder="Comment..." autocomplete="off" />
+            </div>
+
+            <div class="es-field">
+              <div class="es-field-label">Time</div>
+              <div class="es-field-val" id="esTime"></div>
+            </div>
+
+            <button class="es-delete" id="esDeleteBtn">Delete Set</button>
+          </div>
+
+          <!-- Delete confirmation -->
+          <div class="es-confirm is-hidden" id="esConfirm">
+            <p>Delete this set?</p>
+            <div class="es-confirm-actions">
+              <button class="btn-secondary" id="esConfirmCancel">Cancel</button>
+              <button class="btn-primary es-confirm-del" id="esConfirmDelete">Delete</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercise Library Screen -->
+        <div id="screen-ex-library" class="screen is-hidden">
+          <div class="el-header">
+            <button class="btn-back" id="elBackBtn">←</button>
+            <div class="el-header-title">Exercise Library</div>
+            <button class="el-custom-btn" id="elCustomBtn">+ Custom</button>
+          </div>
+
+          <div class="el-search-wrap">
+            <input type="text" class="el-search" id="elSearch" placeholder="Search exercise..." autocomplete="off" />
+          </div>
+
+          <div class="el-categories" id="elCategories"></div>
+
+          <div class="el-content" id="elContent">
+            <div class="el-section" id="elRecentSection">
+              <div class="el-section-label">Recent</div>
+              <div id="elRecentList" class="el-grid"></div>
+            </div>
+            <div class="el-section">
+              <div class="el-section-label">All Exercises</div>
+              <div id="elAllList" class="el-grid"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Custom Exercise Modal -->
+        <div class="modal-overlay is-hidden" id="customExModal">
+          <div class="modal-card" style="max-width:360px">
+            <div class="modal-header">
+              <h2>Custom Exercise</h2>
+              <button class="modal-close" id="customExClose">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <input type="text" id="customExName" class="modal-input" placeholder="Exercise name" maxlength="40" autocomplete="off" />
+              <select id="customExCategory" class="modal-input">
+                <option value="Chest">Chest</option>
+                <option value="Shoulders">Shoulders</option>
+                <option value="Back">Back</option>
+                <option value="Biceps">Biceps</option>
+                <option value="Triceps">Triceps</option>
+                <option value="Legs">Legs</option>
+                <option value="Glutes">Glutes</option>
+                <option value="Calves">Calves</option>
+                <option value="Abs">Abs</option>
+                <option value="Forearms">Forearms</option>
+                <option value="Full Body">Full Body</option>
+              </select>
+              <input type="text" id="customExEquipment" class="modal-input" placeholder="Equipment (e.g. Barbell, Dumbbell)" maxlength="30" autocomplete="off" />
+            </div>
+            <div class="modal-actions" style="margin-top:1rem">
+              <button class="btn-primary" id="customExSave">Add Exercise</button>
+            </div>
+          </div>
+        </div>
+        <!-- Create Workout Modal -->
+        <div class="modal-overlay is-hidden" id="createWorkoutModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2>New Workout</h2>
+              <button class="modal-close" id="cwClose">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <input type="text" id="cwName" class="modal-input" style="min-height:44px;resize:none" placeholder="Workout name" maxlength="40" autocomplete="off" />
+              <input type="text" id="cwDesc" class="modal-input" style="min-height:44px;resize:none" placeholder="Description (optional)" maxlength="100" autocomplete="off" />
+              <select id="cwGroup" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <option value="">No group</option>
+              </select>
+              <input type="text" id="cwDuration" class="modal-input" style="min-height:44px;resize:none" placeholder="Target duration (e.g. 60 min)" maxlength="20" autocomplete="off" />
+              <input type="text" id="cwNotes" class="modal-input" style="min-height:44px;resize:none" placeholder="Notes (optional)" maxlength="200" autocomplete="off" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn-primary" id="cwSaveBtn">Create Workout</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Create Group Modal -->
+        <div class="modal-overlay is-hidden" id="createGroupModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2>New Workout Group</h2>
+              <button class="modal-close" id="cgClose">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <input type="text" id="cgName" class="modal-input" style="min-height:44px;resize:none" placeholder="Group name" maxlength="30" autocomplete="off" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn-primary" id="cgSaveBtn">Create Group</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Exercise Analytics Screen -->
+        <div id="screen-exercise-analytics" class="screen is-hidden">
+          <div class="es-header" style="border-bottom:1px solid var(--border);margin-bottom:1rem">
+            <button class="btn-back" id="eaBackBtn">←</button>
+            <div class="es-header-title" id="eaTitle">Exercise Analytics</div>
+          </div>
+          <div class="ea-tabs" id="eaTabs">
+            <button class="ea-tab is-active" data-ea-tab="overview">Overview</button>
+            <button class="ea-tab" data-ea-tab="volume">Volume</button>
+            <button class="ea-tab" data-ea-tab="strength">Strength</button>
+            <button class="ea-tab" data-ea-tab="history">History</button>
+          </div>
+          <div id="eaContent"></div>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="screen-settings" class="screen is-hidden">
+          <div class="settings-header">
+            <button class="btn-back" id="settingsBackBtn">←</button>
+            <span class="settings-header-title">Settings</span>
+          </div>
+          <div class="settings-scroll" id="settingsContent"></div>
+        </div>
+
+        <!-- Profile Editor Modal -->
+        <div class="modal-overlay is-hidden" id="profileEditorModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2>Edit Profile</h2>
+              <button class="modal-close" id="peClose">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <input type="text" id="peName" class="modal-input" style="min-height:44px;resize:none" placeholder="Name" maxlength="30" autocomplete="off" />
+              <input type="number" id="peAge" class="modal-input" style="min-height:44px;resize:none" placeholder="Age" min="10" max="120" />
+              <select id="peGender" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <option value="">Gender</option>
+                <option value="male">Male</option>
+                <option value="female">Female</option>
+                <option value="other">Other</option>
+              </select>
+              <input type="number" id="peHeight" class="modal-input" style="min-height:44px;resize:none" placeholder="Height (cm)" min="100" max="250" />
+              <input type="number" id="peWeight" class="modal-input" style="min-height:44px;resize:none" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+              <select id="peGoal" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <option value="">Fitness Goal</option>
+                <option value="fat-loss">Fat Loss</option>
+                <option value="build-muscle">Build Muscle</option>
+                <option value="recomp">Body Recomposition</option>
+                <option value="strength">Strength</option>
+                <option value="athletic">Athletic Performance</option>
+                <option value="general">General Fitness</option>
+                <option value="custom">Custom</option>
+              </select>
+              <select id="peActivity" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <option value="">Activity Level</option>
+                <option value="sedentary">Sedentary</option>
+                <option value="light">Lightly Active</option>
+                <option value="moderate">Moderately Active</option>
+                <option value="very">Very Active</option>
+                <option value="athlete">Athlete</option>
+              </select>
+            </div>
+            <div class="modal-actions">
+              <button class="btn-primary" id="peSaveBtn">Save Profile</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Weight Log Modal -->
+        <div class="modal-overlay is-hidden" id="weightLogModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2>Log Weight</h2>
+              <button class="modal-close" id="wlClose">✕</button>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:0.6rem">
+              <input type="number" id="wlWeight" class="modal-input" style="min-height:44px" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+              <input type="date" id="wlDate" class="modal-input" style="min-height:44px" />
+              <input type="text" id="wlNotes" class="modal-input" style="min-height:44px" placeholder="Notes (optional)" maxlength="100" />
+            </div>
+            <div class="modal-actions">
+              <button class="btn-primary" id="wlSaveBtn">Save</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Delete Data Confirmation Modal -->
+        <div class="modal-overlay is-hidden" id="deleteDataModal">
+          <div class="modal-card">
+            <div class="modal-header">
+              <h2>Delete All Data</h2>
+              <button class="modal-close" id="ddClose">✕</button>
+            </div>
+            <p style="color:var(--text-secondary);margin-bottom:1rem">This will permanently delete all your workout data, profile, and settings. This cannot be undone.</p>
+            <div class="modal-actions">
+              <button class="btn-secondary" id="ddCancelBtn">Cancel</button>
+              <button class="btn-primary" style="background:var(--error)" id="ddConfirmBtn">Delete Everything</button>
+            </div>
+          </div>
         </div>
 
       </section>
@@ -134,18 +463,21 @@
 
       </section>
 
-      <!-- ===== COACH PANEL ===== -->
-      <section class="panel" id="panel-coach">
+      <!-- ===== PROGRESS PANEL ===== -->
+      <section class="panel" id="panel-progress">
 
-        <div class="section-label">Training Calendar</div>
+        <div class="section-label">Workout Calendar</div>
         <div id="trainingCalendar" class="calendar-wrap"></div>
 
-        <div class="section-label" style="margin-top:1.25rem">Coach Insights</div>
+        <div class="section-label" style="margin-top:1.25rem">Training Summary</div>
         <div id="coachInsights" class="insights-list"></div>
 
-        <div class="section-label" style="margin-top:1.25rem">Recovery</div>
+        <div class="section-label" style="margin-top:1.25rem">Recovery Status</div>
         <div class="recovery-header"><span class="recovery-dot" id="recoveryDot"></span></div>
         <div id="recoveryContent" class="card-content"></div>
+
+        <div class="section-label" style="margin-top:1.25rem">Goals</div>
+        <div id="goalsContent"></div>
 
       </section>
 
@@ -187,9 +519,9 @@
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
       <span>Sessions</span>
     </button>
-    <button class="nav-tab" data-tab="coach">
+    <button class="nav-tab" data-tab="progress">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
-      <span>Coach</span>
+      <span>Progress</span>
     </button>
     <button class="nav-tab" data-tab="body">
       <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10M18 20V4M6 20v-4"/></svg>
@@ -215,6 +547,78 @@
 
   <!-- PR TOAST -->
   <div id="prToast" class="pr-toast is-hidden"><span id="prToastMsg"></span></div>
+
+  <!-- SESSION SUMMARY OVERLAY -->
+  <div id="sessionSummaryOverlay" class="ss-overlay is-hidden">
+    <div class="ss-card">
+      <div class="ss-title">💪 Workout Complete</div>
+      <div class="ss-subtitle" id="ssSubtitle"></div>
+      <div class="ss-grid" id="ssGrid"></div>
+      <div class="ss-muscles" id="ssMuscles"></div>
+      <div class="ss-pr-list" id="ssPrList"></div>
+      <div class="ss-actions" style="display:flex;flex-direction:column;gap:0.4rem;margin-top:0.75rem">
+        <button class="btn-primary" id="ssStartStretch">🧘 Start Stretching</button>
+        <button class="btn-secondary" id="ssSkipStretch">Skip — Finish</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- PRE-WORKOUT WARM-UP MODAL -->
+  <div class="modal-overlay is-hidden" id="warmupReminderModal">
+    <div class="modal-card" style="max-width:380px">
+      <div class="modal-header">
+        <h2>⚡ Prepare for Workout</h2>
+      </div>
+      <p style="font-size:0.82rem;color:var(--text-secondary);margin-bottom:0.75rem" id="wrmWorkoutInfo"></p>
+      <div style="background:var(--surface-2);border-radius:var(--radius-sm);padding:0.6rem 0.75rem;margin-bottom:0.75rem;font-size:0.78rem;line-height:1.5">
+        <strong>Benefits</strong><br>
+        • Better performance<br>
+        • Reduced injury risk<br>
+        • Improved mobility
+      </div>
+      <div id="wrmRoutine" style="margin-bottom:0.75rem">
+        <div style="font-size:0.72rem;font-weight:700;color:var(--accent);margin-bottom:0.4rem" id="wrmRoutineTitle">Recommended Warm-Up</div>
+        <div id="wrmRoutineList" style="font-size:0.78rem;display:flex;flex-direction:column;gap:0.25rem"></div>
+      </div>
+      <div class="modal-actions" style="flex-direction:column;gap:0.4rem">
+        <button class="btn-primary" id="wrmStartBtn" style="width:100%">🔥 Start Warm-Up</button>
+        <button class="btn-secondary" id="wrmSkipBtn" style="width:100%">Skip — Start Workout</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- WARM-UP TIMER SCREEN (shown within modal) -->
+  <div class="modal-overlay is-hidden" id="warmupTimerModal">
+    <div class="modal-card" style="max-width:320px;text-align:center">
+      <div class="modal-header" style="justify-content:center">
+        <h2>🔥 Warm-Up</h2>
+      </div>
+      <div style="font-size:3rem;font-weight:800;margin:1rem 0" id="wtTimer">04:00</div>
+      <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.5rem" id="wtExerciseList"></p>
+      <div class="modal-actions" style="justify-content:center;gap:0.5rem">
+        <button class="btn-secondary" id="wtPauseBtn">⏸ Pause</button>
+        <button class="btn-secondary" id="wtSkipBtn">⏭ Skip</button>
+        <button class="btn-primary" id="wtFinishBtn">✓ Done</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST-WORKOUT STRETCH TIMER -->
+  <div class="modal-overlay is-hidden" id="stretchTimerModal">
+    <div class="modal-card" style="max-width:320px;text-align:center">
+      <div class="modal-header" style="justify-content:center">
+        <h2>🧘 Stretch</h2>
+      </div>
+      <div style="font-size:1.1rem;font-weight:700;margin-bottom:0.35rem" id="stExName">Quad Stretch</div>
+      <div style="font-size:2.5rem;font-weight:800;margin:0.5rem 0" id="stTimer">00:30</div>
+      <div style="font-size:0.72rem;color:var(--text-secondary)" id="stProgress">1 / 4</div>
+      <div class="modal-actions" style="justify-content:center;gap:0.5rem;margin-top:0.75rem">
+        <button class="btn-secondary" id="stPauseBtn">⏸ Pause</button>
+        <button class="btn-secondary" id="stSkipBtn">⏭ Skip</button>
+        <button class="btn-primary" id="stFinishBtn">✓ Done</button>
+      </div>
+    </div>
+  </div>
 
   <!-- SESSION NOTES MODAL -->
   <div class="modal-overlay is-hidden" id="notesModal">
@@ -256,7 +660,7 @@
   <div class="modal-overlay is-hidden" id="onboardingModal">
     <div class="modal-card" style="max-width:340px">
       <div class="modal-header">
-        <h2>Welcome to iron log</h2>
+        <h2>Welcome to IronLog</h2>
       </div>
       <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1rem">Let's get to know you.</p>
       <div style="display:flex;flex-direction:column;gap:0.6rem">
@@ -299,6 +703,97 @@
       <div class="modal-actions">
         <button class="btn-primary" id="confirmProgramYes">Confirm</button>
         <button class="btn-secondary" id="confirmProgramNo">Cancel</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- SMART WORKOUT BUILDER MODAL -->
+  <div class="modal-overlay is-hidden" id="builderModal">
+    <div class="modal-card" style="max-width:380px">
+      <div class="modal-header">
+        <h2>Workout Builder</h2>
+        <button class="modal-close" id="builderClose">✕</button>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:0.6rem">
+        <select id="builderGoal" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+          <option value="">Goal</option>
+          <option value="build-muscle">Build Muscle</option>
+          <option value="strength">Strength</option>
+          <option value="fat-loss">Fat Loss</option>
+          <option value="general">General Fitness</option>
+          <option value="athletic">Athletic Performance</option>
+        </select>
+        <select id="builderDays" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+          <option value="">Days Per Week</option>
+          <option value="3">3 Days</option>
+          <option value="4">4 Days</option>
+          <option value="5">5 Days</option>
+          <option value="6">6 Days</option>
+        </select>
+        <select id="builderEquipment" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+          <option value="">Equipment</option>
+          <option value="full">Full Gym</option>
+          <option value="basic">Dumbbells + Bench</option>
+          <option value="home">Bodyweight Only</option>
+        </select>
+        <select id="builderDuration" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+          <option value="">Session Duration</option>
+          <option value="30">30 min</option>
+          <option value="45">45 min</option>
+          <option value="60">60 min</option>
+          <option value="90">90 min</option>
+        </select>
+      </div>
+      <div class="modal-actions">
+        <button class="btn-primary" id="builderGenerateBtn" disabled>Generate Program</button>
+      </div>
+      <div id="builderResult" style="margin-top:0.5rem"></div>
+    </div>
+  </div>
+
+  <!-- WARMUP GENERATOR MODAL -->
+  <div class="modal-overlay is-hidden" id="warmupModal">
+    <div class="modal-card" style="max-width:320px">
+      <div class="modal-header">
+        <h2>Warmup Generator</h2>
+        <button class="modal-close" id="warmupClose">✕</button>
+      </div>
+      <p style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.75rem">For compound lifts — enter your working weight to get warmup sets.</p>
+      <input type="number" id="warmupWeight" class="modal-input" style="min-height:44px" placeholder="Working weight (kg)" min="1" max="500" />
+      <div class="modal-actions" style="margin-top:0.75rem">
+        <button class="btn-primary" id="warmupGenerateBtn">Generate</button>
+      </div>
+      <div id="warmupResult" style="margin-top:0.5rem"></div>
+    </div>
+  </div>
+
+  <!-- CREATE GROUP FROM WORKOUTS MODAL -->
+  <div class="modal-overlay is-hidden" id="workoutPickerModal">
+    <div class="modal-card" style="max-width:400px">
+      <div class="modal-header">
+        <h2 id="wpTitle">Create Group</h2>
+        <button class="modal-close" id="wpClose">✕</button>
+      </div>
+      <input type="text" id="wpGroupName" class="modal-input" style="min-height:44px;margin-bottom:0.75rem" placeholder="Group name" maxlength="30" autocomplete="off" />
+      <div id="wpWorkoutList" style="max-height:50vh;overflow-y:auto;display:flex;flex-direction:column;gap:0.35rem"></div>
+      <div class="modal-actions" style="margin-top:0.75rem">
+        <button class="btn-primary" id="wpCreateBtn" disabled>Create Group</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- GOAL EDITOR MODAL -->
+  <div class="modal-overlay is-hidden" id="goalEditorModal">
+    <div class="modal-card" style="max-width:340px">
+      <div class="modal-header">
+        <h2>Edit Goal</h2>
+        <button class="modal-close" id="goalEditorClose">✕</button>
+      </div>
+      <input type="text" id="goalEditorName" class="modal-input" style="min-height:44px" placeholder="Goal name (e.g. Bench Press)" />
+      <input type="number" id="goalEditorTarget" class="modal-input" style="min-height:44px" placeholder="Target (kg or reps)" min="1" max="9999" />
+      <div class="modal-actions">
+        <button class="btn-primary" id="goalEditorSave">Save Goal</button>
+        <button class="btn-secondary" id="goalEditorDelete">Delete</button>
       </div>
     </div>
   </div>
