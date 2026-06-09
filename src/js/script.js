@@ -12,6 +12,7 @@ function getWorkingSets(sets) { return sets.filter((s) => s.done && !s.isWarmup)
 
 function autoGenerateWarmups(exercise, workingWeight) {
   if (!state.autoWarmup) return;
+  if (exercise.autoWarmup === false) return;
   if (exercise.warmupGenerated) return;
   const w = Number(workingWeight);
   if (!w || w <= 0) return;
@@ -255,6 +256,27 @@ const EXERCISE_LIBRARY = [
 const EXERCISE_CATEGORIES = [
   "Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"
 ];
+
+const COMPOUND_EXERCISE_NAMES = new Set([
+  "Barbell Bench Press", "Incline Barbell Bench Press", "Decline Bench Press",
+  "Dumbbell Bench Press", "Incline Dumbbell Press", "Machine Chest Press",
+  "Dips", "Overhead Press", "Seated Dumbbell Press", "Arnold Press",
+  "Machine Shoulder Press", "Upright Row",
+  "Pull Ups", "Chin Ups", "Lat Pulldown", "Wide Grip Pulldown", "Close Grip Pulldown",
+  "Barbell Row", "Pendlay Row", "T Bar Row", "Seated Cable Row",
+  "Single Arm Dumbbell Row", "Machine Row", "Straight Arm Pulldown",
+  "Deadlift", "Power Clean", "Clean and Press", "Thruster", "Kettlebell Swing",
+  "Back Squat", "Front Squat", "Hack Squat", "Leg Press",
+  "Bulgarian Split Squat", "Walking Lunges", "Goblet Squat", "Step Ups", "Reverse Lunge",
+  "Romanian Deadlift", "Stiff Leg Deadlift",
+  "Close Grip Bench Press", "JM Press",
+  "Hip Thrust", "Smith Machine Hip Thrust", "Glute Bridge",
+  "Barbell Shrug", "Farmer Carry", "Farmer's Carry",
+]);
+
+function isCompoundExercise(exName) {
+  return COMPOUND_EXERCISE_NAMES.has(exName);
+}
 
 const state = loadState();
 
@@ -1449,6 +1471,7 @@ function renderSettings() {
     <div class="sg-row" data-setting="rep-inc"><span>Rep Increment</span><span class="sg-row-val">${state.repInc || "1"}</span><span class="sg-chevron">›</span></div>
     <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Auto-Generate Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
+    <div class="sg-row" data-setting="warmup-style"><span>Warm-Up Style</span><span class="sg-row-val">${state.warmupStyle === "advanced" ? "Advanced" : "Simple"}</span><span class="sg-chevron">›</span></div>
   </div>
 
   <!-- SECTION 4: BODY & PROGRESS -->
@@ -1898,6 +1921,20 @@ function renderExerciseDetail() {
 
   document.getElementById("edName").textContent = currentExName.replace(/([A-Z])/g, " $1").trim();
 
+  const hasDoneSets = ex.sets.some((s) => s.done);
+  const needsSetup = !hasDoneSets && !ex.setupDone;
+
+  if (needsSetup) {
+    renderExerciseSetup(ex);
+    document.getElementById("fabAddSet").style.display = "none";
+    document.getElementById("skipWarmupsBtn").style.display = "none";
+    document.getElementById("qaBar").style.display = "none";
+    return;
+  }
+
+  document.getElementById("fabAddSet").style.display = "";
+  document.getElementById("qaBar").style.display = "";
+
   // Auto-generate warmups on first open if enabled
   const lastWorking = [...ex.sets].reverse().find((s) => !s.isWarmup && s.weight && Number(s.weight) > 0);
   if (lastWorking) autoGenerateWarmups(ex, lastWorking.weight);
@@ -1905,8 +1942,8 @@ function renderExerciseDetail() {
   const container = document.getElementById("edSetList");
   container.innerHTML = renderSetRows(ex);
 
-  // Click handlers for set rows (working sets open edit, warmup sets mark done)
-  container.querySelectorAll(".ed-set-row").forEach((row) => {
+  // Click handlers for set rows (working sets open edit, warmup sets mark done, pending working sets log)
+  container.querySelectorAll(".ed-set-row, .ed-set-working-pending").forEach((row) => {
     row.addEventListener("click", (e) => {
       if (e.target.closest("[data-dup-set-id]")) return;
       const setId = row.dataset.setId;
@@ -1914,7 +1951,6 @@ function renderExerciseDetail() {
       const set = ex.sets.find((s) => s.id === setId);
       if (!set) return;
       if (set.isWarmup) {
-        // Toggle warmup set done
         set.done = !set.done;
         if (set.done) {
           set.loggedAt = new Date().toISOString();
@@ -1924,8 +1960,16 @@ function renderExerciseDetail() {
         }
         saveState();
         renderExerciseDetail();
-      } else {
+      } else if (set.done) {
         openEditSet(setId);
+      } else {
+        // Pending working set — log it directly
+        set.done = true;
+        set.loggedAt = new Date().toISOString();
+        if (Number(set.weight) > 0) startStopwatch();
+        saveState();
+        if (Number(set.weight) > 0) startRestTimer();
+        renderExerciseDetail();
       }
     });
   });
@@ -1949,6 +1993,121 @@ function renderExerciseDetail() {
       renderExerciseDetail();
     };
   }
+}
+
+function renderExerciseSetup(ex) {
+  const isFirstTime = !ex.autoWarmupSet;
+  if (isFirstTime) {
+    ex.autoWarmup = ex.autoWarmup !== undefined ? ex.autoWarmup : state.autoWarmup !== false && isCompoundExercise(ex.name);
+    ex.autoWarmupSet = true;
+  }
+  const isCompound = isCompoundExercise(ex.name);
+  const showWuDefault = ex.autoWarmup !== undefined ? ex.autoWarmup : (state.autoWarmup !== false && isCompound);
+
+  // Pre-fill from template sets if available
+  const templateSets = ex.sets.filter((s) => !s.isWarmup);
+  const defaultReps = templateSets.length > 0 ? (templateSets[0].reps || 10) : 10;
+  const defaultWeight = templateSets.length > 0 ? (templateSets[0].weight || 20) : 20;
+  const defaultCount = templateSets.length > 0 ? templateSets.length : 3;
+
+  const compoundTag = isCompound
+    ? '<span style="font-size:0.65rem;color:var(--accent);background:rgba(0,210,106,0.1);padding:0.15rem 0.4rem;border-radius:4px;font-weight:600">Compound</span>'
+    : '<span style="font-size:0.65rem;color:var(--text-secondary);background:var(--surface-2);padding:0.15rem 0.4rem;border-radius:4px;font-weight:600">Isolation</span>';
+
+  const container = document.getElementById("edSetList");
+  container.innerHTML = `
+    <div class="ed-setup-card">
+      <div class="ed-setup-title">Quick Setup</div>
+      <div class="ed-setup-meta">${compoundTag} <span style="font-size:0.72rem;color:var(--text-secondary)">Enter your working weight, sets, and reps</span></div>
+      <div class="ed-setup-row">
+        <label class="ed-setup-label">Weight (kg)</label>
+        <div class="ed-setup-controls">
+          <button class="ed-setup-btn" data-setup-adjust="-5" data-setup-field="weight">−5</button>
+          <span class="ed-setup-value" id="esWeightVal">${defaultWeight}</span>
+          <button class="ed-setup-btn" data-setup-adjust="5" data-setup-field="weight">+5</button>
+          <button class="ed-setup-btn" data-setup-adjust="1" data-setup-field="weight">+1</button>
+        </div>
+      </div>
+      <div class="ed-setup-row">
+        <label class="ed-setup-label">Reps</label>
+        <div class="ed-setup-controls">
+          <button class="ed-setup-btn" data-setup-adjust="-1" data-setup-field="reps">−</button>
+          <span class="ed-setup-value" id="esRepsVal">${defaultReps}</span>
+          <button class="ed-setup-btn" data-setup-adjust="1" data-setup-field="reps">+</button>
+        </div>
+      </div>
+      <div class="ed-setup-row">
+        <label class="ed-setup-label">Sets</label>
+        <div class="ed-setup-controls">
+          <button class="ed-setup-btn" data-setup-adjust="-1" data-setup-field="sets">−</button>
+          <span class="ed-setup-value" id="esSetsVal">${defaultCount}</span>
+          <button class="ed-setup-btn" data-setup-adjust="1" data-setup-field="sets">+</button>
+        </div>
+      </div>
+      <label class="ed-setup-toggle">
+        <input type="checkbox" id="esAutoWarmup" ${showWuDefault ? "checked" : ""} />
+        <span class="ed-setup-toggle-track"></span>
+        <span>Auto Warm-Up</span>
+        ${!isCompound ? '<span style="font-size:0.65rem;color:var(--text-secondary);margin-left:0.25rem">(isolation — not needed)</span>' : ""}
+      </label>
+      <button class="btn-primary" id="esStartBtn" style="width:100%;margin-top:0.75rem">▶ Start Exercise</button>
+    </div>
+  `;
+
+  container.querySelectorAll("[data-setup-adjust]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const field = btn.dataset.setupField;
+      const adjust = Number(btn.dataset.setupAdjust);
+      const el = document.getElementById(`es${field.charAt(0).toUpperCase() + field.slice(1)}Val`);
+      const cur = Number(el.textContent);
+      const min = field === "weight" ? 0 : 1;
+      const max = field === "weight" ? 500 : 50;
+      const step = field === "weight" && Math.abs(adjust) === 1 ? 1 : Math.abs(adjust);
+      let next;
+      if (adjust < 0) next = Math.max(min, Math.round((cur + adjust) / step) * step);
+      else next = Math.min(max, Math.round((cur + adjust) / step) * step);
+      if (next < min) next = min;
+      el.textContent = next;
+    });
+  });
+
+  document.getElementById("esStartBtn").onclick = () => handleExerciseSetup(ex);
+}
+
+function handleExerciseSetup(ex) {
+  const weight = Number(document.getElementById("esWeightVal").textContent);
+  const reps = Number(document.getElementById("esRepsVal").textContent);
+  const setsCount = Number(document.getElementById("esSetsVal").textContent);
+  const autoWarmup = document.getElementById("esAutoWarmup").checked;
+
+  ex.autoWarmup = autoWarmup;
+  ex.setupDone = true;
+  ex.warmupGenerated = false;
+
+  // Clear existing template sets
+  ex.sets = [];
+
+  // Generate warm-ups if enabled and compound
+  if (autoWarmup && state.autoWarmup !== false) {
+    autoGenerateWarmups(ex, weight);
+  }
+
+  // Generate working sets
+  for (let i = 0; i < setsCount; i++) {
+    ex.sets.push({
+      id: crypto.randomUUID(),
+      reps: reps,
+      weight: weight,
+      notes: "",
+      label: "",
+      done: false,
+      isWarmup: false,
+      loggedAt: null,
+    });
+  }
+
+  saveState();
+  renderExerciseDetail();
 }
 
 function repeatLastSet() {
@@ -2016,33 +2175,46 @@ function renderSetRows(exercise) {
   const workingSets = exercise.sets.filter((s) => s.done && !s.isWarmup);
   const warmupSets = exercise.sets.filter((s) => s.done && s.isWarmup);
   const pendingWarmups = exercise.sets.filter((s) => !s.done && s.isWarmup);
+  const allWarmups = [...warmupSets, ...pendingWarmups];
+  const allDone = pendingWarmups.length === 0 && warmupSets.length > 0;
 
   let html = "";
 
   // Warm-up section
-  if (warmupSets.length > 0 || pendingWarmups.length > 0) {
-    html += `<div class="ed-section-header"><span class="ed-section-label">Warm-Up</span></div>`;
-    // Pending warmups (undone, auto-generated)
-    pendingWarmups.forEach((set, i) => {
-      html += `<div class="ed-set-row ed-set-warmup" data-set-id="${set.id}">
-        <span class="ed-set-num">W${i + 1}</span>
-        <span class="ed-set-time"></span>
-        <span class="ed-set-reps">${set.reps}</span>
-        <span class="ed-set-weight">${Number(set.weight) || ""}</span>
-        <span class="ed-set-wu-label">WARM-UP</span>
+  if (allWarmups.length > 0) {
+    if (allDone) {
+      // Collapsed: all warm-ups completed
+      const totalWarmupVolume = warmupSets.reduce((s, set) => s + (Number(set.weight) || 0) * (set.reps || 0), 0);
+      html += `<div class="ed-section-header ed-section-header-wu-done">
+        <span class="ed-section-label">Warm-Up</span>
+        <span class="ed-section-wu-summary">${warmupSets.length} sets · ${totalWarmupVolume} kg</span>
+        <span class="ed-section-wu-badge">✓</span>
       </div>`;
-    });
-    // Completed warmups
-    warmupSets.forEach((set, i) => {
-      if (!set.id) set.id = crypto.randomUUID();
-      html += `<div class="ed-set-row ed-set-warmup is-done" data-set-id="${set.id}">
-        <span class="ed-set-num">W${i + 1}</span>
-        <span class="ed-set-time">${set.loggedAt ? formatSetTime(set.loggedAt) : ""}</span>
-        <span class="ed-set-reps">${set.reps}</span>
-        <span class="ed-set-weight">${Number(set.weight) || ""}</span>
-        <span class="ed-set-wu-label">WARM-UP ✓</span>
-      </div>`;
-    });
+    } else {
+      html += `<div class="ed-section-header"><span class="ed-section-label">Warm-Up</span></div>`;
+      // Pending warmups (undone, auto-generated)
+      pendingWarmups.forEach((set, i) => {
+        if (!set.id) set.id = crypto.randomUUID();
+        html += `<div class="ed-set-row ed-set-warmup" data-set-id="${set.id}">
+          <span class="ed-set-num">W${i + 1}</span>
+          <span class="ed-set-time"></span>
+          <span class="ed-set-reps">${set.reps}</span>
+          <span class="ed-set-weight">${Number(set.weight) || ""}</span>
+          <span class="ed-set-wu-label">WARM-UP</span>
+        </div>`;
+      });
+      // Completed warmups
+      warmupSets.forEach((set, i) => {
+        if (!set.id) set.id = crypto.randomUUID();
+        html += `<div class="ed-set-row ed-set-warmup is-done" data-set-id="${set.id}">
+          <span class="ed-set-num">W${i + 1}</span>
+          <span class="ed-set-time">${set.loggedAt ? formatSetTime(set.loggedAt) : ""}</span>
+          <span class="ed-set-reps">${set.reps}</span>
+          <span class="ed-set-weight">${Number(set.weight) || ""}</span>
+          <span class="ed-set-wu-label">WARM-UP ✓</span>
+        </div>`;
+      });
+    }
   }
 
   // Working sets section
@@ -2061,8 +2233,24 @@ function renderSetRows(exercise) {
     });
   }
 
-  if (workingSets.length === 0 && warmupSets.length === 0 && pendingWarmups.length === 0) {
-    html = `<p class="ed-empty">No sets logged yet. Tap + to add one.</p>`;
+  // Pending working sets (not yet done, after warmup section)
+  const pendingWorking = exercise.sets.filter((s) => !s.done && !s.isWarmup);
+  if (pendingWorking.length > 0 && workingSets.length === 0) {
+    html += `<div class="ed-section-header"><span class="ed-section-label">Working Sets</span></div>`;
+    pendingWorking.forEach((set, i) => {
+      if (!set.id) set.id = crypto.randomUUID();
+      html += `<div class="ed-set-row ed-set-working-pending" data-set-id="${set.id}">
+        <span class="ed-set-num">${i + 1}</span>
+        <span class="ed-set-time"></span>
+        <span class="ed-set-reps">${set.reps}</span>
+        <span class="ed-set-weight">${Number(set.weight) || 0}</span>
+        <span class="ed-set-working-label">SET</span>
+      </div>`;
+    });
+  }
+
+  if (allWarmups.length === 0 && workingSets.length === 0 && pendingWorking.length === 0) {
+    html = `<p class="ed-empty">No sets yet.</p>`;
   }
 
   return html;
@@ -4725,6 +4913,10 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
   if (setting === "rep-inc") {
     const cur = state.repInc || 1;
     state.repInc = cur === 1 ? 2 : 1;
+    saveState(); renderSettings(); return;
+  }
+  if (setting === "warmup-style") {
+    state.warmupStyle = state.warmupStyle === "advanced" ? "simple" : "advanced";
     saveState(); renderSettings(); return;
   }
   if (setting === "weight-unit") {

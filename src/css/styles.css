@@ -3359,6 +3359,29 @@ input:focus, textarea:focus { outline: none; }
 .ed-set-wu-label { font-size:0.6rem;color:var(--text-secondary);background:var(--surface);padding:0.15rem 0.35rem;border-radius:4px;letter-spacing:0.04em;margin-left:auto;white-space:nowrap }
 .skip-warmups-btn { display:block;width:100%;padding:0.5rem;margin-top:0.5rem;background:none;border:1px dashed var(--border);border-radius:var(--radius-sm);color:var(--text-secondary);font-size:0.72rem;cursor:pointer;font-family:inherit;text-align:center }
 .skip-warmups-btn:active { background:var(--surface-2) }
+.ed-section-header-wu-done { color:var(--accent);opacity:0.7;cursor:default }
+.ed-section-wu-summary { font-weight:400;font-size:0.65rem;color:var(--text-secondary);text-transform:none;letter-spacing:0 }
+.ed-section-wu-badge { display:grid;place-items:center;width:18px;height:18px;border-radius:50%;background:var(--accent);color:#000;font-size:0.6rem;font-weight:800 }
+.ed-set-working-pending { opacity:0.8;border-style:dashed }
+.ed-set-working-pending:active { background:var(--surface-2) }
+.ed-set-working-label { font-size:0.6rem;color:var(--text-secondary);background:var(--surface-2);padding:0.15rem 0.35rem;border-radius:4px;letter-spacing:0.04em;margin-left:auto;white-space:nowrap }
+
+/* ===== EXERCISE SETUP CARD ===== */
+.ed-setup-card { background:var(--surface);border:1px solid var(--border);border-radius:var(--radius);padding:0.85rem;margin-bottom:1rem }
+.ed-setup-title { font-size:0.85rem;font-weight:700;margin-bottom:0.25rem }
+.ed-setup-meta { display:flex;align-items:center;gap:0.4rem;margin-bottom:0.75rem;flex-wrap:wrap }
+.ed-setup-row { display:flex;align-items:center;justify-content:space-between;padding:0.4rem 0;border-bottom:1px solid var(--border) }
+.ed-setup-label { font-size:0.78rem;font-weight:600;color:var(--text);min-width:5rem }
+.ed-setup-controls { display:flex;align-items:center;gap:0.35rem }
+.ed-setup-value { font-size:1.1rem;font-weight:800;min-width:2.5rem;text-align:center;font-variant-numeric:tabular-nums }
+.ed-setup-btn { width:36px;height:32px;border-radius:6px;background:var(--surface-2);border:1px solid var(--border);color:var(--text);font-size:0.7rem;font-weight:700;cursor:pointer;font-family:inherit;display:grid;place-items:center }
+.ed-setup-btn:active { background:var(--surface-3) }
+.ed-setup-toggle { display:flex;align-items:center;gap:0.5rem;padding:0.6rem 0;font-size:0.8rem;font-weight:600;cursor:pointer }
+.ed-setup-toggle input[type="checkbox"] { display:none }
+.ed-setup-toggle-track { width:38px;height:22px;background:var(--surface-2);border-radius:11px;position:relative;transition:background 0.2s;flex-shrink:0;border:1px solid var(--border) }
+.ed-setup-toggle-track::after { content:"";position:absolute;top:2px;left:2px;width:16px;height:16px;border-radius:50%;background:var(--text-secondary);transition:all 0.2s }
+.ed-setup-toggle input:checked + .ed-setup-toggle-track { background:var(--accent);border-color:var(--accent) }
+.ed-setup-toggle input:checked + .ed-setup-toggle-track::after { background:#000;left:18px }
 
 /* ===== WARMUP / STRETCH MODALS ===== */
 #wrmRoutineList > div { border-bottom:1px solid var(--border);font-size:0.82rem }
