@@ -1,0 +1,50 @@
+import prettier from "eslint-config-prettier";
+
+export default [
+  {
+    ignores: ["node_modules/"],
+  },
+  {
+    files: ["src/js/**/*.js"],
+    languageOptions: {
+      ecmaVersion: "latest",
+      sourceType: "script",
+      globals: {
+        window: "readonly",
+        document: "readonly",
+        localStorage: "readonly",
+        navigator: "readonly",
+        Notification: "readonly",
+        crypto: "readonly",
+        console: "readonly",
+        prompt: "readonly",
+        BODY_MAP_SVG: "readonly",
+        alert: "readonly",
+        confirm: "readonly",
+        fetch: "readonly",
+        setTimeout: "readonly",
+        clearTimeout: "readonly",
+        setInterval: "readonly",
+        clearInterval: "readonly",
+        location: "readonly",
+        Blob: "readonly",
+        URL: "readonly",
+        FileReader: "readonly",
+        EventSource: "readonly",
+        requestAnimationFrame: "readonly",
+        cancelAnimationFrame: "readonly",
+        Chart: "readonly",
+      },
+    },
+    rules: {
+      "no-unused-vars": ["warn", { args: "none", varsIgnorePattern: "^_" }],
+      "no-undef": "error",
+      "no-console": "off",
+      "prefer-const": "warn",
+      "no-var": "warn",
+      "eqeqeq": ["warn", "smart"],
+      "no-empty": ["warn", { allowEmptyCatch: true }],
+      ...prettier.rules,
+    },
+  },
+];

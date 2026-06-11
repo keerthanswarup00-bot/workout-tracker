@@ -1,0 +1,10 @@
+.is-hidden {
+  display: none !important;
+}
+
+.empty-state {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  padding: 0.5rem 0;
+}

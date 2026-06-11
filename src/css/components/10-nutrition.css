@@ -1,0 +1,519 @@
+/* ===== NUTRITION ===== */
+.status-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  display: grid;
+  gap: 0.6rem;
+}
+
+.status-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.8rem;
+  font-weight: 500;
+}
+
+.status-label {
+  color: var(--text-secondary);
+}
+.status-value {
+  font-weight: 700;
+  color: var(--text);
+}
+.status-value.is-green {
+  color: var(--accent);
+}
+.status-value.is-yellow {
+  color: var(--yellow);
+}
+.status-value.is-red {
+  color: var(--red);
+}
+
+.status-score {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.status-score-num {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 2.2rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1;
+}
+
+.status-score-label {
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.status-rec {
+  padding: 0.65rem 0.75rem;
+  background: var(--surface-2);
+  border-radius: var(--radius);
+  font-size: 0.78rem;
+  font-weight: 500;
+  line-height: 1.4;
+  color: var(--text);
+}
+
+.status-rec strong {
+  display: block;
+  margin-bottom: 0.1rem;
+  color: var(--accent);
+}
+
+.macro-summary {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+
+.macro-stat {
+  text-align: center;
+  padding: 0.5rem 0.2rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+}
+
+.macro-stat strong {
+  display: block;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+}
+.macro-stat small {
+  font-size: 0.58rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+.macro-stat .label-protein {
+  color: var(--protein);
+}
+.macro-stat .label-carbs {
+  color: var(--carbs);
+}
+.macro-stat .label-fat {
+  color: var(--fat);
+}
+.macro-stat .label-cal {
+  color: var(--text);
+}
+
+.macro-bars {
+  display: grid;
+  gap: 0.35rem;
+  margin-bottom: 0.5rem;
+}
+
+.macro-bar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.72rem;
+  font-weight: 500;
+}
+
+.macro-bar .bar-label {
+  width: 3.5rem;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.macro-bar .bar-track {
+  flex: 1;
+  height: 6px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.macro-bar .bar-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s ease;
+}
+
+.macro-bar .bar-value {
+  width: 3.5rem;
+  text-align: right;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.score-row {
+  margin-bottom: 0.5rem;
+}
+
+.score-pill {
+  font-size: 0.68rem;
+  font-weight: 700;
+  padding: 0.2rem 0.5rem;
+  border-radius: 999px;
+}
+
+.score-pill.is-green {
+  color: var(--accent);
+}
+.score-pill.is-yellow {
+  color: var(--yellow);
+}
+.score-pill.is-red {
+  color: var(--red);
+}
+
+.food-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  margin-bottom: 0.75rem;
+}
+
+.food-btn {
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  background: var(--surface);
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--text);
+  border: 1px solid var(--border);
+}
+
+.food-btn:hover {
+  background: var(--surface-2);
+}
+.food-btn:active {
+  background: var(--surface-3);
+}
+.food-btn:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 2px;
+}
+
+.suggestion-chip {
+  min-height: 40px;
+  padding: 0 0.75rem;
+  border-radius: 999px;
+  background: var(--orange);
+  color: #0a0a0a;
+  font-weight: 700;
+  font-size: 0.78rem;
+}
+
+.suggestion-chip:active {
+  opacity: 0.85;
+}
+
+#mealLog {
+  display: grid;
+  gap: 0.3rem;
+}
+
+.meal-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+
+.meal-item strong {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.8rem;
+}
+
+.meal-macros {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.meal-delete {
+  min-height: 34px;
+  min-width: 34px;
+  border-radius: 6px;
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  display: grid;
+  place-items: center;
+}
+
+.meal-delete:active {
+  color: var(--red);
+}
+
+.fav-header {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.5rem;
+}
+
+.fav-list {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.fav-meal-row {
+  display: flex;
+  gap: 0.35rem;
+}
+
+.fav-btn {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  border-radius: var(--radius);
+  background: var(--surface);
+  font-weight: 500;
+  font-size: 0.78rem;
+  color: var(--text);
+  border: 1px solid var(--border);
+  flex: 1;
+  text-align: left;
+}
+
+.fav-btn:active {
+  background: var(--surface-2);
+}
+.fav-btn .fav-name {
+  flex: 1;
+}
+.fav-btn .fav-macros {
+  font-size: 0.6rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.fav-delete {
+  min-height: 34px;
+  min-width: 34px;
+  border-radius: 6px;
+  color: var(--text-secondary);
+  font-size: 0.8rem;
+  display: grid;
+  place-items: center;
+}
+
+.fav-delete:active {
+  color: var(--red);
+}
+
+.water-card {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.water-ring {
+  position: relative;
+  width: 72px;
+  height: 72px;
+  flex-shrink: 0;
+}
+
+.water-ring svg {
+  width: 100%;
+  height: 100%;
+}
+
+.water-ring-text {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  font-variant-numeric: tabular-nums;
+}
+
+.water-ring-text small {
+  font-size: 0.45rem;
+  font-weight: 500;
+}
+
+.water-controls {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+  flex: 1;
+}
+
+.water-btn {
+  flex: 1;
+  min-width: 56px;
+  min-height: 40px;
+  border-radius: var(--radius);
+  background: var(--surface);
+  color: var(--blue);
+  font-weight: 500;
+  font-size: 0.72rem;
+  border: 1px solid var(--border);
+}
+
+.water-btn:active {
+  background: var(--surface-2);
+}
+
+.water-prediction {
+  font-size: 0.68rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  margin-top: 0.35rem;
+}
+
+.ns-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+.ns-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.nc-grid {
+  display: grid;
+  gap: 0.35rem;
+}
+
+.nc-row {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 0.75rem;
+  font-weight: 500;
+}
+
+.nc-label {
+  width: 3.5rem;
+  flex-shrink: 0;
+  color: var(--text-secondary);
+}
+
+.nc-track {
+  flex: 1;
+  height: 5px;
+  border-radius: 999px;
+  background: var(--surface);
+  overflow: hidden;
+}
+
+.nc-track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  transition: width 0.3s;
+}
+
+.nc-pct {
+  width: 2.5rem;
+  text-align: right;
+}
+
+.nc-result {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.78rem;
+  font-weight: 700;
+  border-radius: var(--radius);
+  margin-top: 0.5rem;
+}
+
+.nc-result.is-green {
+  color: var(--accent);
+  background: var(--surface);
+  border: 1px solid var(--accent);
+}
+.nc-result.is-yellow {
+  color: var(--yellow);
+  background: var(--surface);
+  border: 1px solid var(--yellow);
+}
+.nc-result.is-red {
+  color: var(--red);
+  background: var(--surface);
+  border: 1px solid var(--red);
+}
+
+.wn-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+.wn-row span:first-child {
+  color: var(--text-secondary);
+}
+
+.wn-score {
+  text-align: center;
+  padding: 0.65rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-top: 0.5rem;
+}
+
+.wn-score-num {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.4rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.wn-score-label {
+  font-size: 0.6rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+
+/* ===== NUTRITION TARGETS ===== */
+.nut-targets {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.nut-target-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  font-size: 0.78rem;
+  padding: 0.3rem 0;
+}
+.nut-target-label {
+  color: var(--text-secondary);
+}
+.nut-target-value {
+  font-weight: 600;
+}
+.nut-target-value.is-met {
+  color: var(--accent);
+}
+.nut-target-value.is-partial {
+  color: var(--yellow);
+}
+.nut-target-value.is-miss {
+  color: var(--red);
+}

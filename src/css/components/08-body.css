@@ -1,0 +1,624 @@
+/* ===== BODY PAGE (REDESIGN) ===== */
+
+/* --- Container --- */
+#bodyPageContent {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 100px;
+}
+
+/* --- SECTION 1: Body Snapshot --- */
+.body-snapshot {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+
+.bs-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.bs-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+}
+
+.bs-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.bs-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+
+.bs-dim {
+  font-size: 0.78rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+}
+
+.bs-footer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 0.4rem;
+  padding-top: 0.35rem;
+  border-top: 1px solid var(--border);
+}
+
+.bs-updated {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.bs-edit-btn {
+  width: 30px;
+  height: 30px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+
+.bs-edit-btn:hover {
+  background: var(--border);
+}
+
+.bs-edit-btn:active {
+  transform: scale(0.9);
+}
+
+/* --- SECTION 2: Weight Trend --- */
+.body-weight-trend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+}
+
+.bw-header {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.bw-stat {
+  flex: 1;
+  text-align: center;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.bw-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+
+.bw-stat-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.bw-stat.is-up .bw-stat-value {
+  color: var(--accent);
+}
+
+.bw-stat.is-down .bw-stat-value {
+  color: var(--red);
+}
+
+.bw-chart-wrap {
+  width: 100%;
+  min-height: 180px;
+  max-height: 220px;
+  position: relative;
+}
+
+.bw-chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 220px;
+}
+
+/* --- Chart Skeleton --- */
+.bw-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 120px;
+  padding: 1rem;
+}
+.bw-skel-line {
+  width: 80%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  opacity: 0.3;
+}
+.bw-skel-line:nth-child(2) { width: 60%; }
+.bw-skel-line:nth-child(3) { width: 40%; }
+.bw-skel-text {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+/* --- SECTION 3: Muscle Coverage (Compact) --- */
+.body-coverage-compact {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.bc-ring {
+  width: 56px;
+  height: 56px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  background: conic-gradient(var(--accent) 0deg, var(--surface-2) 0deg);
+  display: grid;
+  place-items: center;
+}
+.bc-ring-inner {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.bc-info {
+  flex: 1;
+}
+.bc-info-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+.bc-info-value {
+  font-size: 0.82rem;
+  color: var(--text);
+  font-weight: 600;
+}
+.bc-tabs-row {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.3rem;
+}
+.bc-tab-sm {
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  border: 1px solid var(--border);
+  background: transparent;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  cursor: pointer;
+  font-family: inherit;
+}
+.bc-tab-sm.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #0a0a0a;
+}
+
+/* --- SECTION 4: Needs Attention --- */
+.body-needs {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+}
+
+.bn-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.bn-list {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.bn-card {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.5rem 0.6rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.bn-card:active {
+  background: var(--border);
+  transform: scale(0.98);
+}
+
+.bn-left {
+  display: flex;
+  flex-direction: column;
+  gap: 0.1rem;
+}
+
+.bn-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.bn-meta {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.bn-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.35rem;
+  border-radius: 999px;
+  border: 1px solid;
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.bn-dot {
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.body-needs-all {
+  text-align: center;
+  font-size: 0.72rem;
+  color: var(--accent);
+  font-weight: 600;
+  padding: 0.3rem 0;
+}
+
+/* --- SECTION 5: Recovery Summary --- */
+.body-recovery {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+}
+.br-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+.br-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.br-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.75rem;
+}
+.br-item-icon {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+.br-item-label {
+  font-weight: 600;
+  color: var(--text);
+  min-width: 5rem;
+}
+.br-item-muscles {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+.br-empty {
+  text-align: center;
+  padding: 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-tertiary);
+}
+
+/* --- SECTION 6: Goals --- */
+.body-goals {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+}
+
+.bg-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.bg-list {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.bg-card {
+  padding: 0.55rem 0.6rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.bg-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.3rem;
+}
+
+.bg-name {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.bg-pct {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+
+.bg-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 0.3rem;
+}
+
+.bg-bar {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+.bg-meta {
+  font-size: 0.62rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+}
+
+.bg-view-all {
+  display: block;
+  width: 100%;
+  padding: 0.5rem;
+  margin-top: 0.3rem;
+  border-radius: var(--radius-sm);
+  background: transparent;
+  border: 1px dashed var(--border);
+  color: var(--text-secondary);
+  font-size: 0.72rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: center;
+}
+
+.bg-view-all:active {
+  background: var(--surface-2);
+}
+
+/* --- Empty Card (shared) --- */
+.body-empty-card {
+  text-align: center;
+  padding: 1rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+}
+
+/* --- SECTION 6: Insights --- */
+.body-insights {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem 0.75rem;
+}
+
+.bi-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+.bi-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.bi-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  font-size: 0.72rem;
+  line-height: 1.4;
+}
+
+.bi-icon {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+  margin-top: 0.05rem;
+}
+
+.bi-text {
+  flex: 1;
+  color: var(--text);
+}
+
+.bi-item.is-green .bi-text {
+  color: var(--accent);
+}
+
+.bi-item.is-yellow .bi-text {
+  color: var(--yellow);
+}
+
+.bi-item.is-blue .bi-text {
+  color: var(--blue);
+}
+
+.body-empty-insights {
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+/* --- Bottom Sheet (updated) --- */
+.ms-grid-2col {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.ms-grid-2col .ms-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.ms-label-sm {
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ms-exercises-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.ms-exercises {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
+
+.ms-ex-chip {
+  padding: 0.2rem 0.45rem;
+  border-radius: 999px;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ms-empty-exercises {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-align: center;
+  padding: 0.5rem 0;
+}
+
+.ms-rec-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.ms-rec-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+/* --- Weight Input --- */
+#wlWeight {
+  font-size: 16px;
+}
+
+/* --- Responsive --- */
+@media (max-width: 400px) {
+  .bs-grid {
+    gap: 0.3rem;
+  }
+  .bs-value {
+    font-size: 0.95rem;
+  }
+}

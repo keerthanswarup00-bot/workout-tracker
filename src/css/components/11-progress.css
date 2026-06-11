@@ -1,0 +1,607 @@
+/* ===== 11 - PROGRESS PAGE ===== */
+
+/* ===== CALENDAR HERO ===== */
+.calendar-wrap {
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  padding: 0.75rem;
+}
+
+.cal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 0.75rem;
+}
+
+.cal-title {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.cal-nav {
+  display: flex;
+  gap: 0.25rem;
+}
+
+.cal-nav-btn {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  background: none;
+  border: none;
+  cursor: pointer;
+}
+
+.cal-nav-btn:active {
+  background: var(--surface-2);
+}
+
+.cal-weekdays {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  text-align: center;
+  font-size: 0.62rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.35rem;
+}
+
+.cal-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 2px;
+}
+
+.cal-cell {
+  aspect-ratio: 1;
+  display: grid;
+  place-items: center;
+  font-size: 0.72rem;
+  font-weight: 500;
+  color: var(--text);
+  border-radius: 50%;
+  position: relative;
+}
+
+.cal-cell.cal-empty {
+  background: var(--surface-2);
+}
+
+.cal-cell.cal-trained {
+  background: var(--accent);
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+.cal-cell.cal-heavy {
+  background: #00e676;
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+.cal-cell.cal-pr-day {
+  background: var(--accent);
+  color: #0a0a0a;
+  font-weight: 700;
+}
+
+.cal-cell.cal-pr-day::after {
+  content: "🏆";
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  font-size: 0.45rem;
+}
+
+.cal-cell.cal-today {
+  outline: 2px solid var(--text);
+  outline-offset: -2px;
+}
+
+.cal-cell.cal-other {
+  color: var(--text-secondary);
+  opacity: 0.2;
+}
+
+.cal-cell.cal-future {
+  color: var(--text-secondary);
+  opacity: 0.25;
+}
+
+.cal-cell.is-clickable {
+  cursor: pointer;
+}
+
+.cal-legend {
+  display: flex;
+  justify-content: flex-start;
+  gap: 0.6rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  flex-wrap: wrap;
+}
+
+.cal-legend span {
+  display: flex;
+  align-items: center;
+  gap: 0.25rem;
+}
+
+.cal-legend-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  display: inline-block;
+}
+
+.cal-legend-dot.is-green {
+  background: var(--accent);
+}
+
+.cal-legend-dot.is-bright {
+  background: #00e676;
+}
+
+.cal-legend-dot.is-empty {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+}
+
+/* ===== WORKOUT REPORT OVERLAY ===== */
+.wr-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 400;
+  background: var(--bg);
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.wr-header {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.75rem 1rem;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 1;
+  border-bottom: 1px solid var(--border);
+}
+
+.wr-back-btn {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 1.25rem;
+  cursor: pointer;
+  padding: 0.25rem;
+}
+
+.wr-header-info {
+  flex: 1;
+}
+
+.wr-header-name {
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.wr-header-date {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.wr-body {
+  padding: 1rem;
+}
+
+/* ===== WEEKLY REVIEW GRID ===== */
+.wr-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 0.75rem;
+}
+.wr-item {
+  text-align: center;
+  padding: 0.4rem 0.2rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.wr-item strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.3;
+}
+.wr-item small {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 0.1rem;
+}
+
+/* ===== WORKOUT REPORT OVERVIEW GRID ===== */
+.wr-overview-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+}
+
+.wr-ov-item {
+  text-align: center;
+  padding: 0.5rem 0.2rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+
+.wr-ov-value {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+}
+
+.wr-ov-label {
+  display: block;
+  font-size: 0.58rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 0.1rem;
+}
+
+/* ===== WORKOUT REPORT SECTION ===== */
+.wr-section {
+  margin-bottom: 1rem;
+}
+
+.wr-section-title {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== WORKOUT REPORT EXERCISES ===== */
+.wr-exercise {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 0.4rem;
+}
+
+.wr-ex-name {
+  font-size: 0.85rem;
+  font-weight: 700;
+  margin-bottom: 0.35rem;
+}
+
+.wr-ex-set {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.2rem 0;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  border-bottom: 1px solid var(--border);
+}
+
+.wr-ex-set:last-of-type {
+  border-bottom: none;
+}
+
+.wr-ex-set-weight {
+  font-weight: 600;
+  color: var(--text);
+}
+
+.wr-ex-volume {
+  font-size: 0.68rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  margin-top: 0.3rem;
+  padding-top: 0.3rem;
+  border-top: 1px solid var(--border);
+  text-align: right;
+}
+
+/* ===== WORKOUT REPORT MUSCLE CHIPS ===== */
+.wr-muscles {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+
+.wr-muscle-chip {
+  font-size: 0.68rem;
+  padding: 0.25rem 0.6rem;
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ===== WORKOUT REPORT PR BLOCK ===== */
+.wr-pr-block {
+  background: var(--surface);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wr-pr-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  margin-bottom: 0.35rem;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.wr-pr-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+  padding: 0.2rem 0;
+}
+
+/* ===== WORKOUT REPORT NOTES ===== */
+.wr-notes-block {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+
+.wr-notes-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  white-space: pre-wrap;
+}
+
+/* ===== WORKOUT REPORT ACTIONS ===== */
+.wr-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  margin-top: 0.5rem;
+}
+
+.wr-action-btn {
+  width: 100%;
+  padding: 0.7rem;
+  border-radius: var(--radius);
+  font-size: 0.82rem;
+  font-weight: 600;
+  cursor: pointer;
+  font-family: inherit;
+  border: 1px solid var(--border);
+  background: var(--surface);
+  color: var(--text);
+  transition: background 0.15s;
+}
+
+.wr-action-btn:active {
+  background: var(--surface-2);
+}
+
+/* ===== SECTION CARD (shared) ===== */
+.progress-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 1rem;
+  margin-bottom: 0.75rem;
+}
+
+.progress-card-title {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--accent);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.5rem;
+}
+
+/* ===== STREAK CARD ===== */
+.progress-streak-card {
+  display: flex;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.ps-item {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.65rem;
+  text-align: center;
+}
+.ps-value {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.ps-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-top: 0.1rem;
+}
+
+/* ===== MONTHLY REVIEW ===== */
+.monthly-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.monthly-item {
+  text-align: center;
+  padding: 0.5rem 0.3rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.monthly-item strong {
+  display: block;
+  font-size: 0.85rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.monthly-item small {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+  margin-top: 0.1rem;
+}
+
+/* ===== ACHIEVEMENTS ===== */
+.ach-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+.ach-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+  font-size: 0.74rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.ach-icon {
+  flex-shrink: 0;
+  font-size: 0.85rem;
+}
+.ach-date {
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  font-weight: 500;
+  margin-left: auto;
+  flex-shrink: 0;
+}
+
+/* ===== SECTION DIVIDER ===== */
+.progress-section {
+  margin-top: 1.25rem;
+}
+
+.progress-section:first-child {
+  margin-top: 0;
+}
+
+/* ===== CALENDAR DATE BOTTOM SHEET ===== */
+.cal-date-title {
+  font-size: 1.15rem;
+  font-weight: 800;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+.cal-date-workout {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  margin-bottom: 0.75rem;
+}
+.cal-date-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+.cal-date-stat {
+  text-align: center;
+  padding: 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.cal-date-stat strong {
+  display: block;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.cal-date-stat small {
+  font-size: 0.58rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.03em;
+}
+.cal-date-prs {
+  font-size: 0.75rem;
+  color: var(--accent);
+  font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+.cal-date-actions {
+  display: flex;
+  gap: 0.5rem;
+  margin-top: 0.5rem;
+}
+.cal-date-actions button {
+  flex: 1;
+  height: 40px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-size: 0.8rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+.cal-date-close-btn {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  color: var(--text);
+}
+.cal-date-detail-btn {
+  background: var(--accent);
+  border: none;
+  color: #0a0a0a;
+}
+
+/* ===== EMPTY STATE ===== */
+.progress-empty {
+  text-align: center;
+  padding: 2rem 1rem;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 500;
+  line-height: 1.5;
+}

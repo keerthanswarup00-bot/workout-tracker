@@ -1,0 +1,27 @@
+{
+  "name": "IronLog",
+  "short_name": "IronLog",
+  "description": "Track your workouts, body composition, and nutrition. Log sets. Lift. Progress.",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#050505",
+  "theme_color": "#0a0a0a",
+  "orientation": "portrait-primary",
+  "categories": ["fitness", "health", "lifestyle"],
+  "icons": [
+    {
+      "src": "assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
+      "src": "assets/icons/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "maskable"
+    }
+  ],
+  "screenshots": [],
+  "prefer_related_applications": false
+}

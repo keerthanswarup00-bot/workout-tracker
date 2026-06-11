@@ -7,8 +7,12 @@ const WATER_TARGET = 3000;
 const DEFAULT_REST = 90;
 let nwPendingExercises = [];
 
-function isWorkingSet(s) { return s.done && !s.isWarmup && Number(s.weight) > 0; }
-function getWorkingSets(sets) { return sets.filter((s) => s.done && !s.isWarmup); }
+function isWorkingSet(s) {
+  return s.done && !s.isWarmup && Number(s.weight) > 0;
+}
+function getWorkingSets(sets) {
+  return sets.filter((s) => s.done && !s.isWarmup);
+}
 
 function autoGenerateWarmups(exercise, workingWeight) {
   if (!state.autoWarmup) return;
@@ -20,47 +24,46 @@ function autoGenerateWarmups(exercise, workingWeight) {
   if (state.warmupStyle === "advanced") {
     if (w <= 20) {
       warmups = [
-        { bar: Math.round(w * 0.5 / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
-        { bar: Math.round(w * 0.75 / 2.5) * 2.5 || 10, reps: 10, pct: "75%" },
+        { bar: Math.round((w * 0.5) / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
+        { bar: Math.round((w * 0.75) / 2.5) * 2.5 || 10, reps: 10, pct: "75%" },
       ];
     } else if (w <= 60) {
       warmups = [
         { bar: 20, reps: 10, pct: "Bar" },
-        { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 8, pct: "75%" },
+        { bar: Math.round((w * 0.75) / 2.5) * 2.5, reps: 8, pct: "75%" },
       ];
     } else if (w <= 100) {
       warmups = [
-        { bar: Math.round(w * 0.5 / 2.5) * 2.5, reps: 10, pct: "50%" },
-        { bar: Math.round(w * 0.75 / 2.5) * 2.5, reps: 5, pct: "75%" },
-        { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
+        { bar: Math.round((w * 0.5) / 2.5) * 2.5, reps: 10, pct: "50%" },
+        { bar: Math.round((w * 0.75) / 2.5) * 2.5, reps: 5, pct: "75%" },
+        { bar: Math.round((w * 0.9) / 2.5) * 2.5, reps: 3, pct: "90%" },
       ];
     } else {
       warmups = [
-        { bar: Math.round(w * 0.4 / 2.5) * 2.5, reps: 10, pct: "40%" },
-        { bar: Math.round(w * 0.6 / 2.5) * 2.5, reps: 8, pct: "60%" },
-        { bar: Math.round(w * 0.8 / 2.5) * 2.5, reps: 5, pct: "80%" },
-        { bar: Math.round(w * 0.9 / 2.5) * 2.5, reps: 3, pct: "90%" },
+        { bar: Math.round((w * 0.4) / 2.5) * 2.5, reps: 10, pct: "40%" },
+        { bar: Math.round((w * 0.6) / 2.5) * 2.5, reps: 8, pct: "60%" },
+        { bar: Math.round((w * 0.8) / 2.5) * 2.5, reps: 5, pct: "80%" },
+        { bar: Math.round((w * 0.9) / 2.5) * 2.5, reps: 3, pct: "90%" },
       ];
     }
   } else {
     // Simple: 1-2 light warmup sets
     if (w <= 20) {
-      warmups = [
-        { bar: Math.round(w * 0.5 / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
-      ];
+      warmups = [{ bar: Math.round((w * 0.5) / 2.5) * 2.5 || 5, reps: 10, pct: "50%" }];
     } else if (w <= 60) {
-      warmups = [
-        { bar: 20, reps: 10, pct: "Light" },
-      ];
+      warmups = [{ bar: 20, reps: 10, pct: "Light" }];
     } else {
-      warmups = [
-        { bar: Math.round(w * 0.5 / 2.5) * 2.5, reps: 8, pct: "50%" },
-      ];
+      warmups = [{ bar: Math.round((w * 0.5) / 2.5) * 2.5, reps: 8, pct: "50%" }];
     }
   }
   warmups = warmups.filter((s) => s.bar > 0 && s.bar < w);
   const seen = new Set();
-  warmups = warmups.filter((s) => { const k = s.bar; if (seen.has(k)) return false; seen.add(k); return true; });
+  warmups = warmups.filter((s) => {
+    const k = s.bar;
+    if (seen.has(k)) return false;
+    seen.add(k);
+    return true;
+  });
   warmups.forEach((wu) => {
     exercise.sets.push({
       id: crypto.randomUUID(),
@@ -102,85 +105,315 @@ const curatedFoods = [
 ];
 
 const plan = [
-  { id: "push-heavy", name: "Push (Heavy)", focus: "Heavy pressing with focused triceps and lateral delt work.", day: "Day 1", duration: "75-80 min", rest: "3-4 min on big presses, 60 sec between triceps superset pairs.",
+  {
+    id: "push-heavy",
+    name: "Push (Heavy)",
+    focus: "Heavy pressing with focused triceps and lateral delt work.",
+    day: "Day 1",
+    duration: "75-80 min",
+    rest: "3-4 min on big presses, 60 sec between triceps superset pairs.",
     exercises: [
-      { name: "Flat Barbell Bench Press", sets: 4, reps: 6, repTarget: "4-6", weight: "", priority: true, tip: "Scapula retracted, slight arch, feet flat, 3 sec negative." },
+      {
+        name: "Flat Barbell Bench Press",
+        sets: 4,
+        reps: 6,
+        repTarget: "4-6",
+        weight: "",
+        priority: true,
+        tip: "Scapula retracted, slight arch, feet flat, 3 sec negative.",
+      },
       { name: "Incline Dumbbell Press", sets: 3, reps: 8, repTarget: "6-8", weight: "", tip: "Use a 30 degree incline, pause in the bottom stretch." },
       { name: "Landmine Press", sets: 3, reps: 8, repTarget: "8", weight: "", tip: "Shoulder-safe press, one arm at a time, drive through heel of palm." },
       { name: "Cable Lateral Raise", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Low pulley behind body, lead with elbow, use full range." },
-      { name: "Cable Overhead Tricep Extension", sets: 3, reps: 10, repTarget: "10", weight: "", superset: "Pair with rope pushdown.", tip: "Full long-head stretch at the top, 3 sec negative." },
-      { name: "Tricep Rope Pushdown", sets: 3, reps: 12, repTarget: "12", weight: "", superset: "Pair with overhead extension.", tip: "Elbows pinned, full lockout, 60 sec rest after the pair." },
-    ] },
-  { id: "pull-heavy", name: "Pull (Heavy)", focus: "Heavy deadlift and vertical pull work with rear delt volume.", day: "Day 2", duration: "80-85 min", rest: "3-4 min on deadlift and heavy pulls.",
+      {
+        name: "Cable Overhead Tricep Extension",
+        sets: 3,
+        reps: 10,
+        repTarget: "10",
+        weight: "",
+        superset: "Pair with rope pushdown.",
+        tip: "Full long-head stretch at the top, 3 sec negative.",
+      },
+      {
+        name: "Tricep Rope Pushdown",
+        sets: 3,
+        reps: 12,
+        repTarget: "12",
+        weight: "",
+        superset: "Pair with overhead extension.",
+        tip: "Elbows pinned, full lockout, 60 sec rest after the pair.",
+      },
+    ],
+  },
+  {
+    id: "pull-heavy",
+    name: "Pull (Heavy)",
+    focus: "Heavy deadlift and vertical pull work with rear delt volume.",
+    day: "Day 2",
+    duration: "80-85 min",
+    rest: "3-4 min on deadlift and heavy pulls.",
     exercises: [
-      { name: "Conventional Deadlift", sets: 4, reps: 5, repTarget: "3-5", weight: "", priority: true, tip: "First exercise. Brace 360, lats engaged, drive the floor away." },
-      { name: "Weighted Pull-Up / Lat Pulldown", sets: 4, reps: 6, repTarget: "4-6", weight: "", priority: true, tip: "Pull elbows to hips, 3 sec negative, lat width is priority." },
+      {
+        name: "Conventional Deadlift",
+        sets: 4,
+        reps: 5,
+        repTarget: "3-5",
+        weight: "",
+        priority: true,
+        tip: "First exercise. Brace 360, lats engaged, drive the floor away.",
+      },
+      {
+        name: "Weighted Pull-Up / Lat Pulldown",
+        sets: 4,
+        reps: 6,
+        repTarget: "4-6",
+        weight: "",
+        priority: true,
+        tip: "Pull elbows to hips, 3 sec negative, lat width is priority.",
+      },
       { name: "Chest-Supported Dumbbell Row", sets: 3, reps: 10, repTarget: "8-10", weight: "", tip: "Bench at 30 degrees, drive elbows past torso." },
-      { name: "Face Pulls", sets: 4, reps: 15, repTarget: "15", weight: "", priority: true, tip: "Every pull session. Rope to forehead with external rotation." },
+      {
+        name: "Face Pulls",
+        sets: 4,
+        reps: 15,
+        repTarget: "15",
+        weight: "",
+        priority: true,
+        tip: "Every pull session. Rope to forehead with external rotation.",
+      },
       { name: "Incline Dumbbell Curl", sets: 3, reps: 10, repTarget: "8-10", weight: "", tip: "Full stretch at bottom, slow negative." },
-      { name: "Farmer's Carry", sets: 3, reps: 1, repTarget: "20-30m length", weight: "", priority: true, tip: "Heaviest dumbbells, locked wrists, grip and forearm finisher." },
-    ] },
-  { id: "legs-quad", name: "Legs (Quad Focus)", focus: "Quad-biased squatting and leg press with hamstring support.", day: "Day 3", duration: "75-80 min", rest: "3-4 min on box squat, controlled tempo on accessories.",
+      {
+        name: "Farmer's Carry",
+        sets: 3,
+        reps: 1,
+        repTarget: "20-30m length",
+        weight: "",
+        priority: true,
+        tip: "Heaviest dumbbells, locked wrists, grip and forearm finisher.",
+      },
+    ],
+  },
+  {
+    id: "legs-quad",
+    name: "Legs (Quad Focus)",
+    focus: "Quad-biased squatting and leg press with hamstring support.",
+    day: "Day 3",
+    duration: "75-80 min",
+    rest: "3-4 min on box squat, controlled tempo on accessories.",
     exercises: [
-      { name: "Box Squat to Parallel", sets: 4, reps: 6, repTarget: "4-6", weight: "", priority: true, tip: "To bench only, not below parallel until knee is pain-free 4+ weeks." },
+      {
+        name: "Box Squat to Parallel",
+        sets: 4,
+        reps: 6,
+        repTarget: "4-6",
+        weight: "",
+        priority: true,
+        tip: "To bench only, not below parallel until knee is pain-free 4+ weeks.",
+      },
       { name: "Romanian Deadlift", sets: 3, reps: 10, repTarget: "10", weight: "", tip: "Lighter than Pull A, hamstring stretch, 1 sec pause." },
       { name: "Leg Press (Feet High)", sets: 3, reps: 12, repTarget: "10-12", weight: "", tip: "High foot placement, do not lock out at top." },
       { name: "Seated Leg Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Slow negative, full stretch at bottom." },
       { name: "Standing Calf Raise", sets: 4, reps: 20, repTarget: "20", weight: "", tip: "Full range, 2 sec stretch pause, 4 sec negative." },
-    ] },
-  { id: "push-volume", name: "Push (Volume)", focus: "Higher-rep pressing volume with shoulder and triceps finishers.", day: "Day 4", duration: "80-85 min", rest: "60-90 sec on isolations, 60 sec between triceps superset pairs.",
+    ],
+  },
+  {
+    id: "push-volume",
+    name: "Push (Volume)",
+    focus: "Higher-rep pressing volume with shoulder and triceps finishers.",
+    day: "Day 4",
+    duration: "80-85 min",
+    rest: "60-90 sec on isolations, 60 sec between triceps superset pairs.",
     exercises: [
-      { name: "Flat Barbell Bench Press", sets: 4, reps: 10, repTarget: "8-10", weight: "", priority: true, tip: "Same movement as A day, more reps, harder negative." },
+      {
+        name: "Flat Barbell Bench Press",
+        sets: 4,
+        reps: 10,
+        repTarget: "8-10",
+        weight: "",
+        priority: true,
+        tip: "Same movement as A day, more reps, harder negative.",
+      },
       { name: "Incline Dumbbell Press", sets: 3, reps: 12, repTarget: "10-12", weight: "", tip: "Pause at bottom stretch 1 sec." },
       { name: "Cable Lateral Raise", sets: 4, reps: 15, repTarget: "15", weight: "", tip: "Constant tension, 3 sec negative, burn them out." },
-      { name: "Seated Dumbbell Shoulder Press", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Neutral grip, elbows slightly in front for shoulder safety." },
-      { name: "Cable Overhead Tricep Extension", sets: 3, reps: 15, repTarget: "12-15", weight: "", superset: "Pair with rope pushdown.", tip: "Higher-rep long-head triceps work." },
-      { name: "Tricep Rope Pushdown", sets: 3, reps: 15, repTarget: "15", weight: "", superset: "Pair with overhead extension.", tip: "Elbows pinned, chase the pump." },
-    ] },
-  { id: "pull-volume", name: "Pull (Volume)", focus: "Back volume, traps, rear delts, and layered biceps work.", day: "Day 5", duration: "85-90 min", rest: "60-90 sec on volume pulls and arms.",
+      {
+        name: "Seated Dumbbell Shoulder Press",
+        sets: 3,
+        reps: 12,
+        repTarget: "12",
+        weight: "",
+        tip: "Neutral grip, elbows slightly in front for shoulder safety.",
+      },
+      {
+        name: "Cable Overhead Tricep Extension",
+        sets: 3,
+        reps: 15,
+        repTarget: "12-15",
+        weight: "",
+        superset: "Pair with rope pushdown.",
+        tip: "Higher-rep long-head triceps work.",
+      },
+      {
+        name: "Tricep Rope Pushdown",
+        sets: 3,
+        reps: 15,
+        repTarget: "15",
+        weight: "",
+        superset: "Pair with overhead extension.",
+        tip: "Elbows pinned, chase the pump.",
+      },
+    ],
+  },
+  {
+    id: "pull-volume",
+    name: "Pull (Volume)",
+    focus: "Back volume, traps, rear delts, and layered biceps work.",
+    day: "Day 5",
+    duration: "85-90 min",
+    rest: "60-90 sec on volume pulls and arms.",
     exercises: [
-      { name: "Lat Pulldown / Pull-Up", sets: 4, reps: 10, repTarget: "8-10", weight: "", priority: true, tip: "Full range, 3 sec negative, squeeze at bottom." },
+      {
+        name: "Lat Pulldown / Pull-Up",
+        sets: 4,
+        reps: 10,
+        repTarget: "8-10",
+        weight: "",
+        priority: true,
+        tip: "Full range, 3 sec negative, squeeze at bottom.",
+      },
       { name: "Seated Cable Row", sets: 4, reps: 12, repTarget: "12", weight: "", tip: "Narrow grip, hard squeeze at end range." },
       { name: "Face Pulls", sets: 4, reps: 15, repTarget: "15", weight: "", priority: true, tip: "Shoulder health. Light and controlled." },
       { name: "Barbell Shrug", sets: 4, reps: 12, repTarget: "12", weight: "", priority: true, tip: "Straight up, hold 1 sec, straight down. Never roll." },
       { name: "Hammer Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Brachialis and arm thickness, no swinging." },
       { name: "Incline Dumbbell Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Extra arm volume, full stretch, slow negative." },
       { name: "Reverse Curl", sets: 3, reps: 15, repTarget: "15", weight: "", tip: "Overhand grip, brachioradialis and forearm extensor finisher." },
-    ] },
-  { id: "legs-hamstring", name: "Legs (Hamstring Focus)", focus: "Heavy hinge work with hamstring volume and lighter squat practice.", day: "Day 6", duration: "75-80 min", rest: "3-4 min on heavy RDL, controlled tempo on hamstring work.",
+    ],
+  },
+  {
+    id: "legs-hamstring",
+    name: "Legs (Hamstring Focus)",
+    focus: "Heavy hinge work with hamstring volume and lighter squat practice.",
+    day: "Day 6",
+    duration: "75-80 min",
+    rest: "3-4 min on heavy RDL, controlled tempo on hamstring work.",
     exercises: [
-      { name: "Romanian Deadlift (Heavy)", sets: 4, reps: 8, repTarget: "6-8", weight: "", priority: true, tip: "Primary movement today, heavier than Wednesday." },
+      {
+        name: "Romanian Deadlift (Heavy)",
+        sets: 4,
+        reps: 8,
+        repTarget: "6-8",
+        weight: "",
+        priority: true,
+        tip: "Primary movement today, heavier than Wednesday.",
+      },
       { name: "Leg Press (Feet High)", sets: 4, reps: 15, repTarget: "12-15", weight: "", tip: "Pause at bottom for glute stretch." },
       { name: "Seated Leg Curl", sets: 4, reps: 12, repTarget: "10-12", weight: "", tip: "Heavier than Wednesday, 4 sec negative." },
       { name: "Box Squat (Light)", sets: 3, reps: 10, repTarget: "10", weight: "", tip: "Volume-focused second squat exposure." },
       { name: "Standing Calf Raise", sets: 4, reps: 20, repTarget: "20", weight: "", tip: "Full range, 2 sec stretch pause, 4 sec negative." },
-    ] },
+    ],
+  },
 ];
 
 const EXERCISE_LIBRARY = [
   // CHEST
-  { id: "barbell-bench-press", name: "Barbell Bench Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Barbell" },
-  { id: "incline-barbell-bench-press", name: "Incline Barbell Bench Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Barbell" },
-  { id: "decline-bench-press", name: "Decline Bench Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Barbell" },
-  { id: "dumbbell-bench-press", name: "Dumbbell Bench Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Dumbbell" },
-  { id: "incline-dumbbell-press", name: "Incline Dumbbell Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Dumbbell" },
-  { id: "decline-dumbbell-press", name: "Decline Dumbbell Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Dumbbell" },
+  {
+    id: "barbell-bench-press",
+    name: "Barbell Bench Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Barbell",
+  },
+  {
+    id: "incline-barbell-bench-press",
+    name: "Incline Barbell Bench Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Barbell",
+  },
+  {
+    id: "decline-bench-press",
+    name: "Decline Bench Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Barbell",
+  },
+  {
+    id: "dumbbell-bench-press",
+    name: "Dumbbell Bench Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Dumbbell",
+  },
+  {
+    id: "incline-dumbbell-press",
+    name: "Incline Dumbbell Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Dumbbell",
+  },
+  {
+    id: "decline-dumbbell-press",
+    name: "Decline Dumbbell Press",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Front Delts", "Triceps"],
+    equipment: "Dumbbell",
+  },
   { id: "machine-chest-press", name: "Machine Chest Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps"], equipment: "Machine" },
   { id: "chest-fly-machine", name: "Chest Fly Machine", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Machine" },
   { id: "cable-fly", name: "Cable Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable" },
   { id: "push-ups", name: "Push Ups", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight" },
-  { id: "weighted-push-ups", name: "Weighted Push Ups", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight" },
+  {
+    id: "weighted-push-ups",
+    name: "Weighted Push Ups",
+    category: "Chest",
+    primaryMuscle: "Chest",
+    secondaryMuscles: ["Triceps", "Front Delts"],
+    equipment: "Bodyweight",
+  },
   { id: "dips", name: "Dips", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight" },
   // SHOULDERS
-  { id: "overhead-press", name: "Overhead Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Triceps"], equipment: "Barbell" },
-  { id: "seated-dumbbell-press", name: "Seated Dumbbell Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Triceps"], equipment: "Dumbbell" },
-  { id: "arnold-press", name: "Arnold Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Triceps"], equipment: "Dumbbell" },
+  {
+    id: "overhead-press",
+    name: "Overhead Press",
+    category: "Shoulders",
+    primaryMuscle: "Front Delts",
+    secondaryMuscles: ["Side Delts", "Triceps"],
+    equipment: "Barbell",
+  },
+  {
+    id: "seated-dumbbell-press",
+    name: "Seated Dumbbell Press",
+    category: "Shoulders",
+    primaryMuscle: "Front Delts",
+    secondaryMuscles: ["Side Delts", "Triceps"],
+    equipment: "Dumbbell",
+  },
+  {
+    id: "arnold-press",
+    name: "Arnold Press",
+    category: "Shoulders",
+    primaryMuscle: "Front Delts",
+    secondaryMuscles: ["Side Delts", "Triceps"],
+    equipment: "Dumbbell",
+  },
   { id: "lateral-raises", name: "Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Dumbbell" },
   { id: "cable-lateral-raises", name: "Cable Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Cable" },
   { id: "front-raises", name: "Front Raises", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: [], equipment: "Dumbbell" },
   { id: "rear-delt-fly", name: "Rear Delt Fly", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: [], equipment: "Dumbbell" },
   { id: "face-pulls", name: "Face Pulls", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: ["Traps"], equipment: "Cable" },
-  { id: "machine-shoulder-press", name: "Machine Shoulder Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Triceps"], equipment: "Machine" },
+  {
+    id: "machine-shoulder-press",
+    name: "Machine Shoulder Press",
+    category: "Shoulders",
+    primaryMuscle: "Front Delts",
+    secondaryMuscles: ["Triceps"],
+    equipment: "Machine",
+  },
   { id: "upright-row", name: "Upright Row", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: ["Traps"], equipment: "Barbell" },
   // BACK
   { id: "pull-ups", name: "Pull Ups", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Bodyweight" },
@@ -191,8 +424,22 @@ const EXERCISE_LIBRARY = [
   { id: "barbell-row", name: "Barbell Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell" },
   { id: "pendlay-row", name: "Pendlay Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Barbell" },
   { id: "t-bar-row", name: "T Bar Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell" },
-  { id: "seated-cable-row", name: "Seated Cable Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Cable" },
-  { id: "single-arm-dumbbell-row", name: "Single Arm Dumbbell Row", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Middle Back", "Biceps"], equipment: "Dumbbell" },
+  {
+    id: "seated-cable-row",
+    name: "Seated Cable Row",
+    category: "Back",
+    primaryMuscle: "Middle Back",
+    secondaryMuscles: ["Lats", "Biceps"],
+    equipment: "Cable",
+  },
+  {
+    id: "single-arm-dumbbell-row",
+    name: "Single Arm Dumbbell Row",
+    category: "Back",
+    primaryMuscle: "Lats",
+    secondaryMuscles: ["Middle Back", "Biceps"],
+    equipment: "Dumbbell",
+  },
   { id: "machine-row", name: "Machine Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Machine" },
   { id: "straight-arm-pulldown", name: "Straight Arm Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Triceps"], equipment: "Cable" },
   // BICEPS
@@ -209,9 +456,23 @@ const EXERCISE_LIBRARY = [
   // TRICEPS
   { id: "cable-pushdown", name: "Cable Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
   { id: "rope-pushdown", name: "Rope Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
-  { id: "overhead-tricep-extension", name: "Overhead Tricep Extension", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
+  {
+    id: "overhead-tricep-extension",
+    name: "Overhead Tricep Extension",
+    category: "Triceps",
+    primaryMuscle: "Triceps",
+    secondaryMuscles: [],
+    equipment: "Cable",
+  },
   { id: "skull-crushers", name: "Skull Crushers", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Barbell" },
-  { id: "close-grip-bench-press", name: "Close Grip Bench Press", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest", "Front Delts"], equipment: "Barbell" },
+  {
+    id: "close-grip-bench-press",
+    name: "Close Grip Bench Press",
+    category: "Triceps",
+    primaryMuscle: "Triceps",
+    secondaryMuscles: ["Chest", "Front Delts"],
+    equipment: "Barbell",
+  },
   { id: "bench-dips", name: "Bench Dips", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Bodyweight" },
   { id: "machine-dip", name: "Machine Dip", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Machine" },
   { id: "single-arm-pushdown", name: "Single Arm Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
@@ -222,7 +483,14 @@ const EXERCISE_LIBRARY = [
   { id: "front-squat", name: "Front Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
   { id: "hack-squat", name: "Hack Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Machine" },
   { id: "leg-press", name: "Leg Press", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Machine" },
-  { id: "bulgarian-split-squat", name: "Bulgarian Split Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell" },
+  {
+    id: "bulgarian-split-squat",
+    name: "Bulgarian Split Squat",
+    category: "Legs",
+    primaryMuscle: "Quads",
+    secondaryMuscles: ["Glutes", "Hamstrings"],
+    equipment: "Dumbbell",
+  },
   { id: "walking-lunges", name: "Walking Lunges", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell" },
   { id: "romanian-deadlift", name: "Romanian Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
   { id: "stiff-leg-deadlift", name: "Stiff Leg Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
@@ -234,7 +502,14 @@ const EXERCISE_LIBRARY = [
   { id: "hip-thrust", name: "Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Barbell" },
   { id: "glute-bridge", name: "Glute Bridge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight" },
   { id: "cable-kickback", name: "Cable Kickback", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: [], equipment: "Cable" },
-  { id: "smith-machine-hip-thrust", name: "Smith Machine Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Machine" },
+  {
+    id: "smith-machine-hip-thrust",
+    name: "Smith Machine Hip Thrust",
+    category: "Glutes",
+    primaryMuscle: "Glutes",
+    secondaryMuscles: ["Hamstrings"],
+    equipment: "Machine",
+  },
   { id: "reverse-lunge", name: "Reverse Lunge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Quads", "Hamstrings"], equipment: "Dumbbell" },
   // CALVES
   { id: "standing-calf-raise", name: "Standing Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine" },
@@ -260,33 +535,93 @@ const EXERCISE_LIBRARY = [
   { id: "behind-back-wrist-curl", name: "Behind Back Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Barbell" },
   { id: "plate-pinch-hold", name: "Plate Pinch Hold", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Other" },
   // FULL BODY
-  { id: "deadlift", name: "Deadlift", category: "Full Body", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes", "Lower Back", "Forearms"], equipment: "Barbell" },
-  { id: "power-clean", name: "Power Clean", category: "Full Body", primaryMuscle: "Quads", secondaryMuscles: ["Hamstrings", "Traps", "Core"], equipment: "Barbell" },
-  { id: "clean-and-press", name: "Clean and Press", category: "Full Body", primaryMuscle: "Shoulders", secondaryMuscles: ["Quads", "Triceps", "Core"], equipment: "Barbell" },
+  {
+    id: "deadlift",
+    name: "Deadlift",
+    category: "Full Body",
+    primaryMuscle: "Hamstrings",
+    secondaryMuscles: ["Glutes", "Lower Back", "Forearms"],
+    equipment: "Barbell",
+  },
+  {
+    id: "power-clean",
+    name: "Power Clean",
+    category: "Full Body",
+    primaryMuscle: "Quads",
+    secondaryMuscles: ["Hamstrings", "Traps", "Core"],
+    equipment: "Barbell",
+  },
+  {
+    id: "clean-and-press",
+    name: "Clean and Press",
+    category: "Full Body",
+    primaryMuscle: "Shoulders",
+    secondaryMuscles: ["Quads", "Triceps", "Core"],
+    equipment: "Barbell",
+  },
   { id: "thruster", name: "Thruster", category: "Full Body", primaryMuscle: "Quads", secondaryMuscles: ["Shoulders", "Core"], equipment: "Barbell" },
-  { id: "kettlebell-swing", name: "Kettlebell Swing", category: "Full Body", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings", "Core"], equipment: "Kettlebell" },
+  {
+    id: "kettlebell-swing",
+    name: "Kettlebell Swing",
+    category: "Full Body",
+    primaryMuscle: "Glutes",
+    secondaryMuscles: ["Hamstrings", "Core"],
+    equipment: "Kettlebell",
+  },
   { id: "burpee", name: "Burpee", category: "Full Body", primaryMuscle: "Core", secondaryMuscles: ["Quads", "Chest", "Shoulders"], equipment: "Bodyweight" },
 ];
 
-const EXERCISE_CATEGORIES = [
-  "Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"
-];
+const EXERCISE_CATEGORIES = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"];
 
 const COMPOUND_EXERCISE_NAMES = new Set([
-  "Barbell Bench Press", "Incline Barbell Bench Press", "Decline Bench Press",
-  "Dumbbell Bench Press", "Incline Dumbbell Press", "Machine Chest Press",
-  "Dips", "Overhead Press", "Seated Dumbbell Press", "Arnold Press",
-  "Machine Shoulder Press", "Upright Row",
-  "Pull Ups", "Chin Ups", "Lat Pulldown", "Wide Grip Pulldown", "Close Grip Pulldown",
-  "Barbell Row", "Pendlay Row", "T Bar Row", "Seated Cable Row",
-  "Single Arm Dumbbell Row", "Machine Row", "Straight Arm Pulldown",
-  "Deadlift", "Power Clean", "Clean and Press", "Thruster", "Kettlebell Swing",
-  "Back Squat", "Front Squat", "Hack Squat", "Leg Press",
-  "Bulgarian Split Squat", "Walking Lunges", "Goblet Squat", "Step Ups", "Reverse Lunge",
-  "Romanian Deadlift", "Stiff Leg Deadlift",
-  "Close Grip Bench Press", "JM Press",
-  "Hip Thrust", "Smith Machine Hip Thrust", "Glute Bridge",
-  "Barbell Shrug", "Farmer Carry", "Farmer's Carry",
+  "Barbell Bench Press",
+  "Incline Barbell Bench Press",
+  "Decline Bench Press",
+  "Dumbbell Bench Press",
+  "Incline Dumbbell Press",
+  "Machine Chest Press",
+  "Dips",
+  "Overhead Press",
+  "Seated Dumbbell Press",
+  "Arnold Press",
+  "Machine Shoulder Press",
+  "Upright Row",
+  "Pull Ups",
+  "Chin Ups",
+  "Lat Pulldown",
+  "Wide Grip Pulldown",
+  "Close Grip Pulldown",
+  "Barbell Row",
+  "Pendlay Row",
+  "T Bar Row",
+  "Seated Cable Row",
+  "Single Arm Dumbbell Row",
+  "Machine Row",
+  "Straight Arm Pulldown",
+  "Deadlift",
+  "Power Clean",
+  "Clean and Press",
+  "Thruster",
+  "Kettlebell Swing",
+  "Back Squat",
+  "Front Squat",
+  "Hack Squat",
+  "Leg Press",
+  "Bulgarian Split Squat",
+  "Walking Lunges",
+  "Goblet Squat",
+  "Step Ups",
+  "Reverse Lunge",
+  "Romanian Deadlift",
+  "Stiff Leg Deadlift",
+  "Close Grip Bench Press",
+  "JM Press",
+  "Hip Thrust",
+  "Smith Machine Hip Thrust",
+  "Glute Bridge",
+  "Barbell Shrug",
+  "Farmer Carry",
+  "Farmer's Carry",
 ]);
 
 function isCompoundExercise(exName) {
@@ -294,6 +629,7 @@ function isCompoundExercise(exName) {
 }
 
 const state = loadState();
+migrateLegacyPRs();
 
 function displayWeight(kg) {
   const n = Number(kg) || 0;
@@ -301,7 +637,7 @@ function displayWeight(kg) {
   return n + " kg";
 }
 function parseWeight(val) {
-  if (state.weightUnit === "lb") return Math.round((Number(val) || 0) / 2.20462 * 10) / 10;
+  if (state.weightUnit === "lb") return Math.round(((Number(val) || 0) / 2.20462) * 10) / 10;
   return Number(val) || 0;
 }
 function displayHeight(cm) {
@@ -348,270 +684,425 @@ const MUSCLE_GROUPS = [
 ];
 
 const MUSCLE_GROUP_MAP = {
-  "sternocleidomastoid-left":"neck","sternocleidomastoid-right":"neck",
-  "anterior-deltoid-left":"frontDelts","anterior-deltoid-right":"frontDelts",
-  "lateral-deltoid-left":"sideDelts","lateral-deltoid-right":"sideDelts",
-  "pectoralis-major-upper-left":"upperChest","pectoralis-major-upper-right":"upperChest",
-  "pectoralis-major-lower-left":"lowerChest","pectoralis-major-lower-right":"lowerChest",
-  "serratus-left":"obliques","serratus-right":"obliques",
-  "external-oblique-left":"obliques","external-oblique-right":"obliques",
-  "rectus-abdominis-upper-left":"upperAbs","rectus-abdominis-upper-right":"upperAbs",
-  "rectus-abdominis-middle-left":"upperAbs","rectus-abdominis-middle-right":"upperAbs",
-  "rectus-abdominis-lower-left":"lowerAbs","rectus-abdominis-lower-right":"lowerAbs",
-  "biceps-left":"biceps","biceps-right":"biceps",
-  "brachialis-left":"biceps","brachialis-right":"biceps",
-  "forearm-flexors-left":"forearms","forearm-flexors-right":"forearms",
-  "adductors-left":"innerThighs","adductors-right":"innerThighs",
-  "quadriceps-outer-left":"quads","quadriceps-outer-right":"quads",
-  "quadriceps-inner-left":"quads","quadriceps-inner-right":"quads",
-  "tibialis-anterior-left":"tibialis","tibialis-anterior-right":"tibialis",
-  "upper-trapezius-left":"upperTraps","upper-trapezius-right":"upperTraps",
-  "middle-trapezius-left":"middleTraps","middle-trapezius-right":"middleTraps",
-  "lower-trapezius-left":"lowerTraps","lower-trapezius-right":"lowerTraps",
-  "rear-deltoid-left":"rearDelts","rear-deltoid-right":"rearDelts",
-  "teres-major-left":"lats","teres-major-right":"lats",
-  "rhomboid-left":"midBack","rhomboid-right":"midBack",
-  "latissimus-left":"lats","latissimus-right":"lats",
-  "triceps-long-head-left":"triceps","triceps-long-head-right":"triceps",
-  "triceps-lateral-head-left":"triceps","triceps-lateral-head-right":"triceps",
-  "erector-spinae-left":"lowerBack","erector-spinae-right":"lowerBack",
-  "glute-max-left":"glutes","glute-max-right":"glutes",
-  "glute-med-left":"glutes","glute-med-right":"glutes",
-  "hamstring-inner-left":"hamstrings","hamstring-inner-right":"hamstrings",
-  "hamstring-outer-left":"hamstrings","hamstring-outer-right":"hamstrings",
-  "gastrocnemius-inner-left":"calvesBack","gastrocnemius-inner-right":"calvesBack",
-  "gastrocnemius-outer-left":"calvesBack","gastrocnemius-outer-right":"calvesBack",
-  "soleus-left":"calvesBack","soleus-right":"calvesBack",
+  "sternocleidomastoid-left": "neck",
+  "sternocleidomastoid-right": "neck",
+  "anterior-deltoid-left": "frontDelts",
+  "anterior-deltoid-right": "frontDelts",
+  "lateral-deltoid-left": "sideDelts",
+  "lateral-deltoid-right": "sideDelts",
+  "pectoralis-major-upper-left": "upperChest",
+  "pectoralis-major-upper-right": "upperChest",
+  "pectoralis-major-lower-left": "lowerChest",
+  "pectoralis-major-lower-right": "lowerChest",
+  "serratus-left": "obliques",
+  "serratus-right": "obliques",
+  "external-oblique-left": "obliques",
+  "external-oblique-right": "obliques",
+  "rectus-abdominis-upper-left": "upperAbs",
+  "rectus-abdominis-upper-right": "upperAbs",
+  "rectus-abdominis-middle-left": "upperAbs",
+  "rectus-abdominis-middle-right": "upperAbs",
+  "rectus-abdominis-lower-left": "lowerAbs",
+  "rectus-abdominis-lower-right": "lowerAbs",
+  "biceps-left": "biceps",
+  "biceps-right": "biceps",
+  "brachialis-left": "biceps",
+  "brachialis-right": "biceps",
+  "forearm-flexors-left": "forearms",
+  "forearm-flexors-right": "forearms",
+  "adductors-left": "innerThighs",
+  "adductors-right": "innerThighs",
+  "quadriceps-outer-left": "quads",
+  "quadriceps-outer-right": "quads",
+  "quadriceps-inner-left": "quads",
+  "quadriceps-inner-right": "quads",
+  "tibialis-anterior-left": "tibialis",
+  "tibialis-anterior-right": "tibialis",
+  "upper-trapezius-left": "upperTraps",
+  "upper-trapezius-right": "upperTraps",
+  "middle-trapezius-left": "middleTraps",
+  "middle-trapezius-right": "middleTraps",
+  "lower-trapezius-left": "lowerTraps",
+  "lower-trapezius-right": "lowerTraps",
+  "rear-deltoid-left": "rearDelts",
+  "rear-deltoid-right": "rearDelts",
+  "teres-major-left": "lats",
+  "teres-major-right": "lats",
+  "rhomboid-left": "midBack",
+  "rhomboid-right": "midBack",
+  "latissimus-left": "lats",
+  "latissimus-right": "lats",
+  "triceps-long-head-left": "triceps",
+  "triceps-long-head-right": "triceps",
+  "triceps-lateral-head-left": "triceps",
+  "triceps-lateral-head-right": "triceps",
+  "erector-spinae-left": "lowerBack",
+  "erector-spinae-right": "lowerBack",
+  "glute-max-left": "glutes",
+  "glute-max-right": "glutes",
+  "glute-med-left": "glutes",
+  "glute-med-right": "glutes",
+  "hamstring-inner-left": "hamstrings",
+  "hamstring-inner-right": "hamstrings",
+  "hamstring-outer-left": "hamstrings",
+  "hamstring-outer-right": "hamstrings",
+  "gastrocnemius-inner-left": "calvesBack",
+  "gastrocnemius-inner-right": "calvesBack",
+  "gastrocnemius-outer-left": "calvesBack",
+  "gastrocnemius-outer-right": "calvesBack",
+  "soleus-left": "calvesBack",
+  "soleus-right": "calvesBack",
 };
 
 const MUSCLE_LABEL_MAP = {
-  "sternocleidomastoid-left":"Sternocleidomastoid (L)","sternocleidomastoid-right":"Sternocleidomastoid (R)",
-  "anterior-deltoid-left":"Front Delt (L)","anterior-deltoid-right":"Front Delt (R)",
-  "lateral-deltoid-left":"Side Delt (L)","lateral-deltoid-right":"Side Delt (R)",
-  "pectoralis-major-upper-left":"Upper Pec (L)","pectoralis-major-upper-right":"Upper Pec (R)",
-  "pectoralis-major-lower-left":"Lower Pec (L)","pectoralis-major-lower-right":"Lower Pec (R)",
-  "serratus-left":"Serratus (L)","serratus-right":"Serratus (R)",
-  "external-oblique-left":"Oblique (L)","external-oblique-right":"Oblique (R)",
-  "rectus-abdominis-upper-left":"Upper Ab (L)","rectus-abdominis-upper-right":"Upper Ab (R)",
-  "rectus-abdominis-middle-left":"Mid Ab (L)","rectus-abdominis-middle-right":"Mid Ab (R)",
-  "rectus-abdominis-lower-left":"Lower Ab (L)","rectus-abdominis-lower-right":"Lower Ab (R)",
-  "biceps-left":"Biceps (L)","biceps-right":"Biceps (R)",
-  "brachialis-left":"Brachialis (L)","brachialis-right":"Brachialis (R)",
-  "forearm-flexors-left":"Forearm Flexors (L)","forearm-flexors-right":"Forearm Flexors (R)",
-  "adductors-left":"Adductor (L)","adductors-right":"Adductor (R)",
-  "quadriceps-outer-left":"Outer Quad (L)","quadriceps-outer-right":"Outer Quad (R)",
-  "quadriceps-inner-left":"Inner Quad (L)","quadriceps-inner-right":"Inner Quad (R)",
-  "tibialis-anterior-left":"Tibialis (L)","tibialis-anterior-right":"Tibialis (R)",
-  "upper-trapezius-left":"Upper Trap (L)","upper-trapezius-right":"Upper Trap (R)",
-  "middle-trapezius-left":"Mid Trap (L)","middle-trapezius-right":"Mid Trap (R)",
-  "lower-trapezius-left":"Lower Trap (L)","lower-trapezius-right":"Lower Trap (R)",
-  "rear-deltoid-left":"Rear Delt (L)","rear-deltoid-right":"Rear Delt (R)",
-  "teres-major-left":"Teres Major (L)","teres-major-right":"Teres Major (R)",
-  "rhomboid-left":"Rhomboid (L)","rhomboid-right":"Rhomboid (R)",
-  "latissimus-left":"Lat (L)","latissimus-right":"Lat (R)",
-  "triceps-long-head-left":"Triceps Long (L)","triceps-long-head-right":"Triceps Long (R)",
-  "triceps-lateral-head-left":"Triceps Lateral (L)","triceps-lateral-head-right":"Triceps Lateral (R)",
-  "erector-spinae-left":"Erector Spinae (L)","erector-spinae-right":"Erector Spinae (R)",
-  "glute-max-left":"Glute Max (L)","glute-max-right":"Glute Max (R)",
-  "glute-med-left":"Glute Med (L)","glute-med-right":"Glute Med (R)",
-  "hamstring-inner-left":"Inner Hamstring (L)","hamstring-inner-right":"Inner Hamstring (R)",
-  "hamstring-outer-left":"Outer Hamstring (L)","hamstring-outer-right":"Outer Hamstring (R)",
-  "gastrocnemius-inner-left":"Inner Calf (L)","gastrocnemius-inner-right":"Inner Calf (R)",
-  "gastrocnemius-outer-left":"Outer Calf (L)","gastrocnemius-outer-right":"Outer Calf (R)",
-  "soleus-left":"Soleus (L)","soleus-right":"Soleus (R)",
-  "neck":"Neck","upperChest":"Upper Chest","middleChest":"Middle Chest","lowerChest":"Lower Chest",
-  "frontDelts":"Front Delts","sideDelts":"Side Delts",
-  "biceps":"Biceps","forearms":"Forearms",
-  "upperAbs":"Upper Abs","lowerAbs":"Lower Abs",
-  "obliques":"Obliques","hipFlexors":"Hip Flexors",
-  "quads":"Quads","innerThighs":"Inner Thighs","calves":"Calves","tibialis":"Tibialis",
-  "upperTraps":"Upper Traps","middleTraps":"Mid Traps","lowerTraps":"Lower Traps",
-  "rearDelts":"Rear Delts","lats":"Lats","midBack":"Mid Back","lowerBack":"Lower Back",
-  "triceps":"Triceps","forearmsBack":"Forearms","glutes":"Glutes","hamstrings":"Hamstrings","calvesBack":"Calves",
+  "sternocleidomastoid-left": "Sternocleidomastoid (L)",
+  "sternocleidomastoid-right": "Sternocleidomastoid (R)",
+  "anterior-deltoid-left": "Front Delt (L)",
+  "anterior-deltoid-right": "Front Delt (R)",
+  "lateral-deltoid-left": "Side Delt (L)",
+  "lateral-deltoid-right": "Side Delt (R)",
+  "pectoralis-major-upper-left": "Upper Pec (L)",
+  "pectoralis-major-upper-right": "Upper Pec (R)",
+  "pectoralis-major-lower-left": "Lower Pec (L)",
+  "pectoralis-major-lower-right": "Lower Pec (R)",
+  "serratus-left": "Serratus (L)",
+  "serratus-right": "Serratus (R)",
+  "external-oblique-left": "Oblique (L)",
+  "external-oblique-right": "Oblique (R)",
+  "rectus-abdominis-upper-left": "Upper Ab (L)",
+  "rectus-abdominis-upper-right": "Upper Ab (R)",
+  "rectus-abdominis-middle-left": "Mid Ab (L)",
+  "rectus-abdominis-middle-right": "Mid Ab (R)",
+  "rectus-abdominis-lower-left": "Lower Ab (L)",
+  "rectus-abdominis-lower-right": "Lower Ab (R)",
+  "biceps-left": "Biceps (L)",
+  "biceps-right": "Biceps (R)",
+  "brachialis-left": "Brachialis (L)",
+  "brachialis-right": "Brachialis (R)",
+  "forearm-flexors-left": "Forearm Flexors (L)",
+  "forearm-flexors-right": "Forearm Flexors (R)",
+  "adductors-left": "Adductor (L)",
+  "adductors-right": "Adductor (R)",
+  "quadriceps-outer-left": "Outer Quad (L)",
+  "quadriceps-outer-right": "Outer Quad (R)",
+  "quadriceps-inner-left": "Inner Quad (L)",
+  "quadriceps-inner-right": "Inner Quad (R)",
+  "tibialis-anterior-left": "Tibialis (L)",
+  "tibialis-anterior-right": "Tibialis (R)",
+  "upper-trapezius-left": "Upper Trap (L)",
+  "upper-trapezius-right": "Upper Trap (R)",
+  "middle-trapezius-left": "Mid Trap (L)",
+  "middle-trapezius-right": "Mid Trap (R)",
+  "lower-trapezius-left": "Lower Trap (L)",
+  "lower-trapezius-right": "Lower Trap (R)",
+  "rear-deltoid-left": "Rear Delt (L)",
+  "rear-deltoid-right": "Rear Delt (R)",
+  "teres-major-left": "Teres Major (L)",
+  "teres-major-right": "Teres Major (R)",
+  "rhomboid-left": "Rhomboid (L)",
+  "rhomboid-right": "Rhomboid (R)",
+  "latissimus-left": "Lat (L)",
+  "latissimus-right": "Lat (R)",
+  "triceps-long-head-left": "Triceps Long (L)",
+  "triceps-long-head-right": "Triceps Long (R)",
+  "triceps-lateral-head-left": "Triceps Lateral (L)",
+  "triceps-lateral-head-right": "Triceps Lateral (R)",
+  "erector-spinae-left": "Erector Spinae (L)",
+  "erector-spinae-right": "Erector Spinae (R)",
+  "glute-max-left": "Glute Max (L)",
+  "glute-max-right": "Glute Max (R)",
+  "glute-med-left": "Glute Med (L)",
+  "glute-med-right": "Glute Med (R)",
+  "hamstring-inner-left": "Inner Hamstring (L)",
+  "hamstring-inner-right": "Inner Hamstring (R)",
+  "hamstring-outer-left": "Outer Hamstring (L)",
+  "hamstring-outer-right": "Outer Hamstring (R)",
+  "gastrocnemius-inner-left": "Inner Calf (L)",
+  "gastrocnemius-inner-right": "Inner Calf (R)",
+  "gastrocnemius-outer-left": "Outer Calf (L)",
+  "gastrocnemius-outer-right": "Outer Calf (R)",
+  "soleus-left": "Soleus (L)",
+  "soleus-right": "Soleus (R)",
+  neck: "Neck",
+  upperChest: "Upper Chest",
+  middleChest: "Middle Chest",
+  lowerChest: "Lower Chest",
+  frontDelts: "Front Delts",
+  sideDelts: "Side Delts",
+  biceps: "Biceps",
+  forearms: "Forearms",
+  upperAbs: "Upper Abs",
+  lowerAbs: "Lower Abs",
+  obliques: "Obliques",
+  hipFlexors: "Hip Flexors",
+  quads: "Quads",
+  innerThighs: "Inner Thighs",
+  calves: "Calves",
+  tibialis: "Tibialis",
+  upperTraps: "Upper Traps",
+  middleTraps: "Mid Traps",
+  lowerTraps: "Lower Traps",
+  rearDelts: "Rear Delts",
+  lats: "Lats",
+  midBack: "Mid Back",
+  lowerBack: "Lower Back",
+  triceps: "Triceps",
+  forearmsBack: "Forearms",
+  glutes: "Glutes",
+  hamstrings: "Hamstrings",
+  calvesBack: "Calves",
 };
 
 const EXERCISE_MUSCLE_CONTRIBUTION = {
   "Flat Barbell Bench Press": [
-    { id: "upperChest", pct: 0.25 }, { id: "middleChest", pct: 0.30 },
-    { id: "lowerChest", pct: 0.15 }, { id: "frontDelts", pct: 0.20 },
-    { id: "triceps", pct: 0.10 },
+    { id: "upperChest", pct: 0.25 },
+    { id: "middleChest", pct: 0.3 },
+    { id: "lowerChest", pct: 0.15 },
+    { id: "frontDelts", pct: 0.2 },
+    { id: "triceps", pct: 0.1 },
   ],
   "Incline Dumbbell Press": [
-    { id: "upperChest", pct: 0.40 }, { id: "middleChest", pct: 0.20 },
-    { id: "frontDelts", pct: 0.25 }, { id: "triceps", pct: 0.15 },
+    { id: "upperChest", pct: 0.4 },
+    { id: "middleChest", pct: 0.2 },
+    { id: "frontDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.15 },
   ],
   "Landmine Press": [
-    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.20 },
-    { id: "triceps", pct: 0.25 }, { id: "upperChest", pct: 0.20 },
+    { id: "frontDelts", pct: 0.35 },
+    { id: "sideDelts", pct: 0.2 },
+    { id: "triceps", pct: 0.25 },
+    { id: "upperChest", pct: 0.2 },
   ],
   "Cable Lateral Raise": [
-    { id: "sideDelts", pct: 0.80 }, { id: "frontDelts", pct: 0.20 },
+    { id: "sideDelts", pct: 0.8 },
+    { id: "frontDelts", pct: 0.2 },
   ],
   "Cable Overhead Tricep Extension": [{ id: "triceps", pct: 1.0 }],
   "Tricep Rope Pushdown": [{ id: "triceps", pct: 1.0 }],
   "Conventional Deadlift": [
-    { id: "hamstrings", pct: 0.25 }, { id: "glutes", pct: 0.20 },
-    { id: "lowerBack", pct: 0.15 }, { id: "midBack", pct: 0.10 },
-    { id: "lats", pct: 0.10 }, { id: "forearmsBack", pct: 0.10 },
-    { id: "quads", pct: 0.10 },
+    { id: "hamstrings", pct: 0.25 },
+    { id: "glutes", pct: 0.2 },
+    { id: "lowerBack", pct: 0.15 },
+    { id: "midBack", pct: 0.1 },
+    { id: "lats", pct: 0.1 },
+    { id: "forearmsBack", pct: 0.1 },
+    { id: "quads", pct: 0.1 },
   ],
   "Weighted Pull-Up / Lat Pulldown": [
-    { id: "lats", pct: 0.40 }, { id: "midBack", pct: 0.15 },
-    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "lats", pct: 0.4 },
+    { id: "midBack", pct: 0.15 },
+    { id: "lowerTraps", pct: 0.1 },
+    { id: "biceps", pct: 0.2 },
     { id: "rearDelts", pct: 0.15 },
   ],
   "Chest-Supported Dumbbell Row": [
-    { id: "midBack", pct: 0.30 }, { id: "lats", pct: 0.20 },
-    { id: "lowerTraps", pct: 0.15 }, { id: "biceps", pct: 0.15 },
-    { id: "rearDelts", pct: 0.20 },
+    { id: "midBack", pct: 0.3 },
+    { id: "lats", pct: 0.2 },
+    { id: "lowerTraps", pct: 0.15 },
+    { id: "biceps", pct: 0.15 },
+    { id: "rearDelts", pct: 0.2 },
   ],
   "Face Pulls": [
-    { id: "rearDelts", pct: 0.50 }, { id: "upperTraps", pct: 0.20 },
-    { id: "sideDelts", pct: 0.30 },
+    { id: "rearDelts", pct: 0.5 },
+    { id: "upperTraps", pct: 0.2 },
+    { id: "sideDelts", pct: 0.3 },
   ],
   "Incline Dumbbell Curl": [{ id: "biceps", pct: 1.0 }],
   "Farmer's Carry": [
-    { id: "forearms", pct: 0.40 }, { id: "upperTraps", pct: 0.20 },
-    { id: "quads", pct: 0.20 }, { id: "upperAbs", pct: 0.10 },
-    { id: "lowerAbs", pct: 0.10 },
+    { id: "forearms", pct: 0.4 },
+    { id: "upperTraps", pct: 0.2 },
+    { id: "quads", pct: 0.2 },
+    { id: "upperAbs", pct: 0.1 },
+    { id: "lowerAbs", pct: 0.1 },
   ],
   "Box Squat to Parallel": [
-    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.25 },
-    { id: "hipFlexors", pct: 0.10 }, { id: "lowerBack", pct: 0.10 },
-    { id: "upperAbs", pct: 0.10 },
+    { id: "quads", pct: 0.45 },
+    { id: "glutes", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.1 },
+    { id: "lowerBack", pct: 0.1 },
+    { id: "upperAbs", pct: 0.1 },
   ],
   "Romanian Deadlift": [
-    { id: "hamstrings", pct: 0.45 }, { id: "glutes", pct: 0.25 },
-    { id: "lowerBack", pct: 0.20 }, { id: "midBack", pct: 0.10 },
+    { id: "hamstrings", pct: 0.45 },
+    { id: "glutes", pct: 0.25 },
+    { id: "lowerBack", pct: 0.2 },
+    { id: "midBack", pct: 0.1 },
   ],
   "Leg Press (Feet High)": [
-    { id: "quads", pct: 0.50 }, { id: "glutes", pct: 0.30 },
-    { id: "hamstrings", pct: 0.20 },
+    { id: "quads", pct: 0.5 },
+    { id: "glutes", pct: 0.3 },
+    { id: "hamstrings", pct: 0.2 },
   ],
   "Seated Leg Curl": [{ id: "hamstrings", pct: 1.0 }],
   "Standing Calf Raise": [{ id: "calves", pct: 1.0 }],
   "Lat Pulldown / Pull-Up": [
-    { id: "lats", pct: 0.40 }, { id: "midBack", pct: 0.15 },
-    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "lats", pct: 0.4 },
+    { id: "midBack", pct: 0.15 },
+    { id: "lowerTraps", pct: 0.1 },
+    { id: "biceps", pct: 0.2 },
     { id: "rearDelts", pct: 0.15 },
   ],
   "Seated Cable Row": [
-    { id: "midBack", pct: 0.35 }, { id: "lats", pct: 0.20 },
-    { id: "lowerTraps", pct: 0.10 }, { id: "biceps", pct: 0.20 },
+    { id: "midBack", pct: 0.35 },
+    { id: "lats", pct: 0.2 },
+    { id: "lowerTraps", pct: 0.1 },
+    { id: "biceps", pct: 0.2 },
     { id: "rearDelts", pct: 0.15 },
   ],
   "Barbell Shrug": [
-    { id: "upperTraps", pct: 0.80 }, { id: "middleTraps", pct: 0.20 },
+    { id: "upperTraps", pct: 0.8 },
+    { id: "middleTraps", pct: 0.2 },
   ],
   "Hammer Curl": [
-    { id: "biceps", pct: 0.60 }, { id: "forearms", pct: 0.40 },
+    { id: "biceps", pct: 0.6 },
+    { id: "forearms", pct: 0.4 },
   ],
   "Reverse Curl": [
-    { id: "forearms", pct: 0.80 }, { id: "biceps", pct: 0.20 },
+    { id: "forearms", pct: 0.8 },
+    { id: "biceps", pct: 0.2 },
   ],
   "Romanian Deadlift (Heavy)": [
-    { id: "hamstrings", pct: 0.45 }, { id: "glutes", pct: 0.25 },
-    { id: "lowerBack", pct: 0.20 }, { id: "midBack", pct: 0.10 },
+    { id: "hamstrings", pct: 0.45 },
+    { id: "glutes", pct: 0.25 },
+    { id: "lowerBack", pct: 0.2 },
+    { id: "midBack", pct: 0.1 },
   ],
   "Seated Dumbbell Shoulder Press": [
-    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.25 },
-    { id: "triceps", pct: 0.20 }, { id: "upperChest", pct: 0.20 },
+    { id: "frontDelts", pct: 0.35 },
+    { id: "sideDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.2 },
+    { id: "upperChest", pct: 0.2 },
   ],
   "Box Squat (Light)": [
-    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.25 },
-    { id: "hipFlexors", pct: 0.10 }, { id: "lowerBack", pct: 0.10 },
-    { id: "upperAbs", pct: 0.10 },
+    { id: "quads", pct: 0.45 },
+    { id: "glutes", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.1 },
+    { id: "lowerBack", pct: 0.1 },
+    { id: "upperAbs", pct: 0.1 },
   ],
-  "Dips": [
-    { id: "lowerChest", pct: 0.35 }, { id: "triceps", pct: 0.35 },
-    { id: "frontDelts", pct: 0.30 },
+  Dips: [
+    { id: "lowerChest", pct: 0.35 },
+    { id: "triceps", pct: 0.35 },
+    { id: "frontDelts", pct: 0.3 },
   ],
   "Push-Ups": [
-    { id: "middleChest", pct: 0.35 }, { id: "triceps", pct: 0.25 },
-    { id: "frontDelts", pct: 0.20 }, { id: "upperAbs", pct: 0.20 },
+    { id: "middleChest", pct: 0.35 },
+    { id: "triceps", pct: 0.25 },
+    { id: "frontDelts", pct: 0.2 },
+    { id: "upperAbs", pct: 0.2 },
   ],
   "Dumbbell Bench Press": [
-    { id: "middleChest", pct: 0.35 }, { id: "frontDelts", pct: 0.25 },
-    { id: "triceps", pct: 0.20 }, { id: "upperAbs", pct: 0.20 },
+    { id: "middleChest", pct: 0.35 },
+    { id: "frontDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.2 },
+    { id: "upperAbs", pct: 0.2 },
   ],
   "Close-Grip Bench Press": [
-    { id: "triceps", pct: 0.50 }, { id: "middleChest", pct: 0.25 },
+    { id: "triceps", pct: 0.5 },
+    { id: "middleChest", pct: 0.25 },
     { id: "frontDelts", pct: 0.25 },
   ],
   "Dumbbell Pullover": [
-    { id: "lats", pct: 0.50 }, { id: "lowerChest", pct: 0.30 },
-    { id: "triceps", pct: 0.20 },
+    { id: "lats", pct: 0.5 },
+    { id: "lowerChest", pct: 0.3 },
+    { id: "triceps", pct: 0.2 },
   ],
   "Standing Overhead Press": [
-    { id: "frontDelts", pct: 0.35 }, { id: "sideDelts", pct: 0.25 },
-    { id: "triceps", pct: 0.25 }, { id: "upperChest", pct: 0.15 },
+    { id: "frontDelts", pct: 0.35 },
+    { id: "sideDelts", pct: 0.25 },
+    { id: "triceps", pct: 0.25 },
+    { id: "upperChest", pct: 0.15 },
   ],
   "Front Raise": [
-    { id: "frontDelts", pct: 0.60 }, { id: "upperChest", pct: 0.20 },
-    { id: "sideDelts", pct: 0.20 },
+    { id: "frontDelts", pct: 0.6 },
+    { id: "upperChest", pct: 0.2 },
+    { id: "sideDelts", pct: 0.2 },
   ],
   "Reverse Fly": [
-    { id: "rearDelts", pct: 0.60 }, { id: "upperTraps", pct: 0.20 },
-    { id: "middleTraps", pct: 0.20 },
+    { id: "rearDelts", pct: 0.6 },
+    { id: "upperTraps", pct: 0.2 },
+    { id: "middleTraps", pct: 0.2 },
   ],
   "Arnold Press": [
-    { id: "frontDelts", pct: 0.30 }, { id: "sideDelts", pct: 0.30 },
-    { id: "triceps", pct: 0.20 }, { id: "upperChest", pct: 0.20 },
+    { id: "frontDelts", pct: 0.3 },
+    { id: "sideDelts", pct: 0.3 },
+    { id: "triceps", pct: 0.2 },
+    { id: "upperChest", pct: 0.2 },
   ],
   "Skull Crushers": [{ id: "triceps", pct: 1.0 }],
   "Preacher Curl": [{ id: "biceps", pct: 1.0 }],
   "Concentration Curl": [{ id: "biceps", pct: 1.0 }],
   "Tricep Kickback": [{ id: "triceps", pct: 1.0 }],
   "Barbell Row": [
-    { id: "midBack", pct: 0.30 }, { id: "lats", pct: 0.25 },
-    { id: "lowerTraps", pct: 0.15 }, { id: "biceps", pct: 0.15 },
+    { id: "midBack", pct: 0.3 },
+    { id: "lats", pct: 0.25 },
+    { id: "lowerTraps", pct: 0.15 },
+    { id: "biceps", pct: 0.15 },
     { id: "rearDelts", pct: 0.15 },
   ],
   "Chin-Ups": [
-    { id: "lats", pct: 0.30 }, { id: "midBack", pct: 0.15 },
-    { id: "biceps", pct: 0.35 }, { id: "lowerTraps", pct: 0.10 },
-    { id: "rearDelts", pct: 0.10 },
+    { id: "lats", pct: 0.3 },
+    { id: "midBack", pct: 0.15 },
+    { id: "biceps", pct: 0.35 },
+    { id: "lowerTraps", pct: 0.1 },
+    { id: "rearDelts", pct: 0.1 },
   ],
   "Good Mornings": [
-    { id: "hamstrings", pct: 0.35 }, { id: "lowerBack", pct: 0.35 },
-    { id: "glutes", pct: 0.30 },
+    { id: "hamstrings", pct: 0.35 },
+    { id: "lowerBack", pct: 0.35 },
+    { id: "glutes", pct: 0.3 },
   ],
   "Back Extension": [
-    { id: "lowerBack", pct: 0.50 }, { id: "glutes", pct: 0.25 },
+    { id: "lowerBack", pct: 0.5 },
+    { id: "glutes", pct: 0.25 },
     { id: "hamstrings", pct: 0.25 },
   ],
   "Front Squat": [
-    { id: "quads", pct: 0.50 }, { id: "glutes", pct: 0.20 },
-    { id: "upperAbs", pct: 0.15 }, { id: "lowerBack", pct: 0.15 },
+    { id: "quads", pct: 0.5 },
+    { id: "glutes", pct: 0.2 },
+    { id: "upperAbs", pct: 0.15 },
+    { id: "lowerBack", pct: 0.15 },
   ],
   "Hip Thrust": [
-    { id: "glutes", pct: 0.70 }, { id: "hamstrings", pct: 0.30 },
+    { id: "glutes", pct: 0.7 },
+    { id: "hamstrings", pct: 0.3 },
   ],
   "Bulgarian Split Squat": [
-    { id: "quads", pct: 0.45 }, { id: "glutes", pct: 0.35 },
-    { id: "hamstrings", pct: 0.10 }, { id: "innerThighs", pct: 0.10 },
+    { id: "quads", pct: 0.45 },
+    { id: "glutes", pct: 0.35 },
+    { id: "hamstrings", pct: 0.1 },
+    { id: "innerThighs", pct: 0.1 },
   ],
-  "Lunges": [
-    { id: "quads", pct: 0.40 }, { id: "glutes", pct: 0.25 },
-    { id: "hamstrings", pct: 0.20 }, { id: "calves", pct: 0.15 },
+  Lunges: [
+    { id: "quads", pct: 0.4 },
+    { id: "glutes", pct: 0.25 },
+    { id: "hamstrings", pct: 0.2 },
+    { id: "calves", pct: 0.15 },
   ],
   "Glute Bridge": [
-    { id: "glutes", pct: 0.65 }, { id: "hamstrings", pct: 0.25 },
-    { id: "lowerBack", pct: 0.10 },
+    { id: "glutes", pct: 0.65 },
+    { id: "hamstrings", pct: 0.25 },
+    { id: "lowerBack", pct: 0.1 },
   ],
-  "Planks": [
-    { id: "upperAbs", pct: 0.40 }, { id: "lowerAbs", pct: 0.30 },
-    { id: "obliques", pct: 0.20 }, { id: "hipFlexors", pct: 0.10 },
+  Planks: [
+    { id: "upperAbs", pct: 0.4 },
+    { id: "lowerAbs", pct: 0.3 },
+    { id: "obliques", pct: 0.2 },
+    { id: "hipFlexors", pct: 0.1 },
   ],
   "Hanging Leg Raise": [
-    { id: "lowerAbs", pct: 0.45 }, { id: "upperAbs", pct: 0.25 },
-    { id: "hipFlexors", pct: 0.20 }, { id: "obliques", pct: 0.10 },
+    { id: "lowerAbs", pct: 0.45 },
+    { id: "upperAbs", pct: 0.25 },
+    { id: "hipFlexors", pct: 0.2 },
+    { id: "obliques", pct: 0.1 },
   ],
   "Cable Crunch": [
-    { id: "upperAbs", pct: 0.60 }, { id: "lowerAbs", pct: 0.40 },
+    { id: "upperAbs", pct: 0.6 },
+    { id: "lowerAbs", pct: 0.4 },
   ],
   "Pallof Press": [
-    { id: "obliques", pct: 0.70 }, { id: "upperAbs", pct: 0.30 },
+    { id: "obliques", pct: 0.7 },
+    { id: "upperAbs", pct: 0.3 },
   ],
 };
 
@@ -642,7 +1133,7 @@ const MUSCLE_MAP = {
   "Romanian Deadlift (Heavy)": ["hamstrings", "glutes", "lowerBack", "midBack"],
   "Seated Dumbbell Shoulder Press": ["frontDelts", "sideDelts", "triceps", "upperChest"],
   "Box Squat (Light)": ["quads", "glutes", "hipFlexors", "lowerBack", "upperAbs"],
-  "Dips": ["lowerChest", "triceps", "frontDelts"],
+  Dips: ["lowerChest", "triceps", "frontDelts"],
   "Push-Ups": ["middleChest", "triceps", "frontDelts", "upperAbs"],
   "Dumbbell Bench Press": ["middleChest", "frontDelts", "triceps", "upperAbs"],
   "Close-Grip Bench Press": ["triceps", "middleChest", "frontDelts"],
@@ -662,9 +1153,9 @@ const MUSCLE_MAP = {
   "Front Squat": ["quads", "glutes", "upperAbs", "lowerBack"],
   "Hip Thrust": ["glutes", "hamstrings"],
   "Bulgarian Split Squat": ["quads", "glutes", "hamstrings", "innerThighs"],
-  "Lunges": ["quads", "glutes", "hamstrings", "calves"],
+  Lunges: ["quads", "glutes", "hamstrings", "calves"],
   "Glute Bridge": ["glutes", "hamstrings", "lowerBack"],
-  "Planks": ["upperAbs", "lowerAbs", "obliques", "hipFlexors"],
+  Planks: ["upperAbs", "lowerAbs", "obliques", "hipFlexors"],
   "Hanging Leg Raise": ["lowerAbs", "upperAbs", "hipFlexors", "obliques"],
   "Cable Crunch": ["upperAbs", "lowerAbs"],
   "Pallof Press": ["obliques", "upperAbs"],
@@ -672,12 +1163,47 @@ const MUSCLE_MAP = {
 
 // ===== STATE =====
 function loadState() {
-  const fallback = { sessions: [], nutrition: {}, planOffset: 0, recoveryLog: [], bodyGoal: "recomp", calorieTarget: CAL_GOAL, fatTarget: FAT_GOAL, user: null, plan: null, workoutGroups: [], weightLog: [], goals: [], autoWarmup: true, warmupReminder: true, stretchReminder: true };
-  try { return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) }; } catch { return fallback; }
+  const fallback = {
+    sessions: [],
+    nutrition: {},
+    planOffset: 0,
+    recoveryLog: [],
+    bodyGoal: "recomp",
+    calorieTarget: CAL_GOAL,
+    fatTarget: FAT_GOAL,
+    user: null,
+    plan: null,
+    workoutGroups: [],
+    weightLog: [],
+    goals: [],
+    autoWarmup: true,
+    warmupReminder: true,
+    stretchReminder: true,
+    autoSummary: true,
+    autoCooldown: true,
+    coolDownDuration: 5,
+    autoAdvanceStretches: true,
+    showTomorrowPreview: true,
+    showRecoveryAdvice: true,
+    showWorkoutProgress: true,
+    recoveryAnalysis: true,
+  };
+  try {
+    return { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+  } catch {
+    return fallback;
+  }
 }
 
-function saveState() { try { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); } catch {} }
-function saveAndRender() { saveState(); render(); }
+function saveState() {
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+  } catch {}
+}
+function saveAndRender() {
+  saveState();
+  render();
+}
 
 function getTodaySession() {
   return state.sessions.find((item) => item.dateKey === getDateKey()) || null;
@@ -753,12 +1279,8 @@ function getNextUndoneSet(exSession) {
   return exSession.sets.findIndex((s) => !s.done);
 }
 
-// ===== PR SYSTEM =====
-function loadPRs() {
-  try { return JSON.parse(localStorage.getItem("wl_prs")) || {}; } catch { return {}; }
-}
-function savePRs(prs) { try { localStorage.setItem("wl_prs", JSON.stringify(prs)); } catch {} }
-
+// ===== PR SYSTEM (moved to js/data/prs.js) =====
+// Legacy: kept for backward compat
 function calc1RM(weight, reps) {
   if (!weight || !reps || reps <= 0) return 0;
   const w = Number(weight);
@@ -770,7 +1292,9 @@ function calc1RM(weight, reps) {
 function getExerciseVolumeSets(session, exName) {
   const ex = session.exercises.find((e) => e.name === exName);
   if (!ex) return { sets: 0, reps: 0, volume: 0 };
-  let sets = 0, reps = 0, volume = 0;
+  let sets = 0,
+    reps = 0,
+    volume = 0;
   for (const s of ex.sets) {
     if (s.isWarmup) continue;
     if (s.done && Number(s.weight) > 0) {
@@ -783,7 +1307,9 @@ function getExerciseVolumeSets(session, exName) {
 }
 
 function getLifetimeVolume(exName) {
-  let totalVolume = 0, totalSets = 0, totalReps = 0;
+  let totalVolume = 0,
+    totalSets = 0,
+    totalReps = 0;
   for (const s of state.sessions) {
     const v = getExerciseVolumeSets(s, exName);
     totalVolume += v.volume;
@@ -814,57 +1340,6 @@ function getExerciseHistory(exName) {
     });
   }
   return history.sort((a, b) => a.date.localeCompare(b.date));
-}
-
-function checkPRs(session) {
-  const prs = loadPRs();
-  let updated = false;
-  const newPRs = [];
-  for (const ex of session.exercises) {
-    for (const set of ex.sets) {
-      if (set.isWarmup) continue;
-      if (set.done && set.weight && Number(set.weight) > 0) {
-        const w = Number(set.weight);
-        const r = Number(set.reps) || 0;
-        const vol = w * r;
-        const est = calc1RM(w, r);
-        const current = prs[ex.name] || {};
-        if (!current.weight || w > current.weight) {
-          current.weight = w;
-          current.reps = r;
-          current.date = session.dateKey;
-          updated = true;
-          newPRs.push({ name: ex.name, weight: w, reps: r, type: "weight" });
-        } else if (w === current.weight && r > (current.reps || 0)) {
-          current.reps = r;
-          current.date = session.dateKey;
-          updated = true;
-          newPRs.push({ name: ex.name, weight: w, reps: r, type: "reps" });
-        }
-        if (!current.bestSetVol || vol > current.bestSetVol) {
-          current.bestSetVol = vol;
-          current.bestSetDate = session.dateKey;
-          updated = true;
-          newPRs.push({ name: ex.name, weight: w, reps: r, type: "volume" });
-        }
-        if (!current.est1RM || est > current.est1RM) {
-          current.est1RM = est;
-          current.est1RMDate = session.dateKey;
-          updated = true;
-        }
-        prs[ex.name] = current;
-      }
-    }
-  }
-  if (updated) savePRs(prs);
-  return newPRs;
-}
-
-function showPRToast(msg) {
-  const toast = document.getElementById("prToast");
-  document.getElementById("prToastMsg").textContent = msg;
-  toast.classList.remove("is-hidden");
-  setTimeout(() => toast.classList.add("is-hidden"), 3000);
 }
 
 // ===== DATE UTILITIES =====
@@ -902,10 +1377,28 @@ function getTargetReps(exercise) {
 // ===== ANALYSIS =====
 function getWeeklyStrengthChange() {
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  const prevSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)) && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)));
-  const volWeek = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-  const volPrev = prevSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-  if (volPrev > 0) return (volWeek - volPrev) / volPrev * 100;
+  const prevSessions = state.sessions.filter(
+    (s) => s.finishedAt && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)) && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)),
+  );
+  const volWeek = weekSessions.reduce(
+    (s, ses) =>
+      s +
+      ses.exercises.reduce(
+        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+        0,
+      ),
+    0,
+  );
+  const volPrev = prevSessions.reduce(
+    (s, ses) =>
+      s +
+      ses.exercises.reduce(
+        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+        0,
+      ),
+    0,
+  );
+  if (volPrev > 0) return ((volWeek - volPrev) / volPrev) * 100;
   return null;
 }
 
@@ -913,19 +1406,28 @@ function getWeeklyProteinAdherence() {
   let totalPct = 0;
   let days = 0;
   for (let i = 0; i < 7; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     const key = getDateKey(d);
     const meals = loadMeals(key);
     const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-    if (protein > 0) { totalPct += (protein / PROTEIN_GOAL) * 100; days++; }
+    if (protein > 0) {
+      totalPct += (protein / PROTEIN_GOAL) * 100;
+      days++;
+    }
   }
   return days > 0 ? totalPct / days : null;
 }
 
 function getWeeklyMacroAvg() {
-  let p = 0, c = 0, f = 0, cal = 0, days = 0;
+  let p = 0,
+    c = 0,
+    f = 0,
+    cal = 0,
+    days = 0;
   for (let i = 0; i < 7; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     const meals = loadMeals(getDateKey(d));
     if (meals.length > 0) {
       p += meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
@@ -939,9 +1441,14 @@ function getWeeklyMacroAvg() {
 }
 
 function getMonthlyMacroAvg() {
-  let p = 0, c = 0, f = 0, cal = 0, days = 0;
+  let p = 0,
+    c = 0,
+    f = 0,
+    cal = 0,
+    days = 0;
   for (let i = 0; i < 30; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     const meals = loadMeals(getDateKey(d));
     if (meals.length > 0) {
       p += meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
@@ -966,7 +1473,7 @@ function getGoalAlignmentScore() {
     const r = log.filter((e) => e.date >= wa);
     const p = log.filter((e) => e.date >= twa && e.date < wa);
     if (r.length >= 2 && p.length >= 2) {
-      const change = (r.reduce((s, e) => s + e.weight, 0) / r.length) - (p.reduce((s, e) => s + e.weight, 0) / p.length);
+      const change = r.reduce((s, e) => s + e.weight, 0) / r.length - p.reduce((s, e) => s + e.weight, 0) / p.length;
       if (goal.id === "fat-loss" && change < 0) score += 2;
       else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change > 0) score += 2;
       else if (goal.id === "recomp" && Math.abs(change) < 0.3) score += 2;
@@ -990,38 +1497,84 @@ function getGoalAlignmentScore() {
 
 // ===== DATA LOADERS =====
 function loadMeals(dateKey) {
-  try { return JSON.parse(localStorage.getItem(`wl_meals_${dateKey}`)) || []; } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem(`wl_meals_${dateKey}`)) || [];
+  } catch {
+    return [];
+  }
 }
-function saveMeals(dateKey, meals) { try { localStorage.setItem(`wl_meals_${dateKey}`, JSON.stringify(meals)); } catch {} }
+function saveMeals(dateKey, meals) {
+  try {
+    localStorage.setItem(`wl_meals_${dateKey}`, JSON.stringify(meals));
+  } catch {}
+}
 
-function loadWater(dateKey) { try { return Number(localStorage.getItem(`wl_water_${dateKey}`)) || 0; } catch { return 0; } }
-function saveWater(dateKey, ml) { try { localStorage.setItem(`wl_water_${dateKey}`, String(ml)); } catch {} }
+function loadWater(dateKey) {
+  try {
+    return Number(localStorage.getItem(`wl_water_${dateKey}`)) || 0;
+  } catch {
+    return 0;
+  }
+}
+function saveWater(dateKey, ml) {
+  try {
+    localStorage.setItem(`wl_water_${dateKey}`, String(ml));
+  } catch {}
+}
 
-function loadBodyLog() { try { return JSON.parse(localStorage.getItem("wl_bodylog")) || []; } catch { return []; } }
+function loadBodyLog() {
+  try {
+    return JSON.parse(localStorage.getItem("wl_bodylog")) || [];
+  } catch {
+    return [];
+  }
+}
 function saveBodyLogEntry(entry) {
   const log = loadBodyLog();
   const idx = log.findIndex((e) => e.date === entry.date);
   if (idx >= 0) log[idx] = entry;
   else log.push(entry);
-  try { localStorage.setItem("wl_bodylog", JSON.stringify(log)); } catch {}
+  try {
+    localStorage.setItem("wl_bodylog", JSON.stringify(log));
+  } catch {}
 }
 
 function loadCustomProgram() {
   if (state.plan) return state.plan;
-  try { return JSON.parse(localStorage.getItem("wl_custom_program")); } catch { return null; }
+  try {
+    return JSON.parse(localStorage.getItem("wl_custom_program"));
+  } catch {
+    return null;
+  }
 }
 
-function loadFavoriteMeals() { try { return JSON.parse(localStorage.getItem("wl_fav_meals")) || []; } catch { return []; } }
-function saveFavoriteMeals(meals) { try { localStorage.setItem("wl_fav_meals", JSON.stringify(meals)); } catch {} }
+function loadFavoriteMeals() {
+  try {
+    return JSON.parse(localStorage.getItem("wl_fav_meals")) || [];
+  } catch {
+    return [];
+  }
+}
+function saveFavoriteMeals(meals) {
+  try {
+    localStorage.setItem("wl_fav_meals", JSON.stringify(meals));
+  } catch {}
+}
 
 function loadRecentFoods() {
-  try { return JSON.parse(localStorage.getItem("wl_recent_foods")) || []; } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("wl_recent_foods")) || [];
+  } catch {
+    return [];
+  }
 }
 function saveRecentFoods(name) {
   const list = loadRecentFoods();
   const filtered = list.filter((f) => f !== name);
   filtered.unshift(name);
-  try { localStorage.setItem("wl_recent_foods", JSON.stringify(filtered.slice(0, 8))); } catch {}
+  try {
+    localStorage.setItem("wl_recent_foods", JSON.stringify(filtered.slice(0, 8)));
+  } catch {}
 }
 
 function getTodayMealsSnapshot() {
@@ -1033,16 +1586,16 @@ function getTodayMealsSnapshot() {
 // ===== MUSCLE COMPUTATION =====
 let bodyMapCache = null;
 
-function computeMuscleSummary() {
+function computeMuscleSummary(mode) {
   const summary = {};
   MUSCLE_GROUPS.forEach((mg) => {
     summary[mg.id] = { weeklySets: 0, weeklyVolume: 0, weeklyStimulus: 0, lastTrained: null, exercises: [], doneToday: false };
   });
   const todayKey = getDateKey();
-  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
+  const cutoff = mode === "today" ? todayKey : mode === "month" ? getDateKey(new Date(Date.now() - 28 * 86400000)) : getDateKey(new Date(Date.now() - 7 * 86400000));
+  const sessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= cutoff);
 
-  for (const session of weekSessions) {
+  for (const session of sessions) {
     for (const ex of session.exercises) {
       const contributions = EXERCISE_MUSCLE_CONTRIBUTION[ex.name];
       if (!contributions) continue;
@@ -1062,7 +1615,7 @@ function computeMuscleSummary() {
       }
     }
   }
-  bodyMapCache = { summary, computedAt: Date.now() };
+  bodyMapCache = { summary, computedAt: Date.now(), mode };
   return summary;
 }
 
@@ -1086,6 +1639,14 @@ function getRecoveryDays(lastTrained) {
   return Math.floor((today - trained) / 86400000);
 }
 
+function getRecoveryLevel(daysAgo, weeklySets) {
+  const heavy = (weeklySets || 0) >= 20;
+  if (daysAgo === 0 || (daysAgo <= 1 && heavy)) return "fatigued";
+  if (daysAgo <= 1) return "fatigued";
+  if (daysAgo <= 3) return "recovering";
+  return "recovered";
+}
+
 function getRecoveryStatus(daysAgo) {
   if (daysAgo === 0) return "trained";
   if (daysAgo <= 1) return "low";
@@ -1096,7 +1657,9 @@ function getRecoveryStatus(daysAgo) {
 function getStrengthTrend(muscleId) {
   // Look at exercises targeting this muscle across last 2 session pairs
   const exercises = MUSCLE_GROUPS.filter((m) => m.id === muscleId).flatMap((m) =>
-    Object.entries(EXERCISE_MUSCLE_CONTRIBUTION).filter(([, c]) => c.some((x) => x.id === m.id)).map(([name]) => name)
+    Object.entries(EXERCISE_MUSCLE_CONTRIBUTION)
+      .filter(([, c]) => c.some((x) => x.id === m.id))
+      .map(([name]) => name),
   );
   const allSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   const recentSessions = allSessions.slice(0, 6);
@@ -1119,42 +1682,16 @@ function getStrengthTrend(muscleId) {
   return ((recentAvg - earlierAvg) / earlierAvg) * 100;
 }
 
-function getMuscleColor(muscleId, mode, summary) {
+function getCoverageColor(muscleId, mode, summary) {
   const data = summary[muscleId];
   const sets = data ? data.weeklySets : 0;
-  if (mode === "today") {
-    if (data && data.doneToday) return "#00d26a";
-    return "#3a3a3a";
-  }
-  if (mode === "weekly") {
-    return getMuscleStatus(sets) === "untrained" ? "#3a3a3a"
-      : getMuscleStatus(sets) === "undertrained" ? "#3b82f6"
-      : getMuscleStatus(sets) === "optimal" ? "#00d26a"
-      : getMuscleStatus(sets) === "high" ? "#ff9f0a"
-      : "#ef4444";
-  }
-  if (mode === "recovery") {
-    const days = data ? getRecoveryDays(data.lastTrained) : 99;
-    if (days === 0) return "#ef4444";
-    if (days <= 1) return "#ff9f0a";
-    if (days <= 3) return "#ffd60a";
-    return "#00d26a";
-  }
-  if (mode === "strength") {
-    const trend = getStrengthTrend(muscleId);
-    if (trend === null) return "#3a3a3a";
-    if (trend > 2) return "#00d26a";
-    if (trend > -2) return "#ffd60a";
-    return "#ef4444";
-  }
-  return "#3a3a3a";
+  if (mode === "today") return data && data.doneToday ? "#00d26a" : "#3a3a3a";
+  if (mode === "month") return sets === 0 ? "#3a3a3a" : `hsl(140, 70%, ${30 + Math.min(sets / 12, 1) * 30}%)`;
+  if (sets === 0) return "#3a3a3a";
+  return `hsl(140, 70%, ${30 + Math.min(sets / 12, 1) * 30}%)`;
 }
 
-function getBodyMapColor(muscleId, mode, summary) {
-  return getMuscleColor(muscleId, mode, summary);
-}
-
-let bodyMapMode = "weekly";
+let bodyMapMode = "week";
 
 // ===== SVG BODY MAP RENDERER =====
 function renderBodyMuscleMap(container, summary) {
@@ -1163,23 +1700,12 @@ function renderBodyMuscleMap(container, summary) {
   container.querySelectorAll("[data-muscle]").forEach((path) => {
     const detailedId = path.dataset.muscle;
     const groupId = MUSCLE_GROUP_MAP[detailedId] || detailedId;
+    const color = getCoverageColor(groupId, bodyMapMode, summary);
     const data = summary[groupId];
     const sets = data ? data.weeklySets : 0;
-    const color = getBodyMapColor(groupId, bodyMapMode, summary);
-    const opacity = sets > 0 ? "0.85" : "0.3";
     path.setAttribute("fill", color);
-    path.setAttribute("fill-opacity", opacity);
+    path.setAttribute("fill-opacity", sets > 0 ? "0.85" : "0.3");
     path.style.cursor = "pointer";
-
-    path.addEventListener("mouseenter", (e) => {
-      path.style.filter = "brightness(1.3)";
-      showMuscleTooltip(e, detailedId, groupId, summary);
-    });
-    path.addEventListener("mousemove", (e) => moveMuscleTooltip(e));
-    path.addEventListener("mouseleave", () => {
-      path.style.filter = "";
-      hideMuscleTooltip();
-    });
     path.addEventListener("click", (e) => {
       e.stopPropagation();
       showMuscleSheet(detailedId, summary);
@@ -1187,174 +1713,51 @@ function renderBodyMuscleMap(container, summary) {
   });
 }
 
-// ===== MUSCLE TOOLTIP =====
-function showMuscleTooltip(e, detailedId, groupId, summary) {
-  const tip = document.getElementById("muscleTooltip");
-  if (!tip) return;
-  const label = MUSCLE_LABEL_MAP[detailedId] || detailedId;
-  const group = MUSCLE_GROUPS.find((g) => g.id === groupId);
-  const data = summary[groupId] || {};
-  const days = getRecoveryDays(data.lastTrained);
-  const sets = data.weeklySets || 0;
-  document.getElementById("mtName").textContent = label;
-  document.getElementById("mtGroup").textContent = group ? group.label : groupId;
-  document.getElementById("mtSets").textContent = sets;
-  document.getElementById("mtVolume").textContent = `${Math.round((data.weeklyVolume || 0) / 100) / 10 || 0}k kg`;
-  document.getElementById("mtLast").textContent = data.lastTrained
-    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
-    : "Not trained";
-  document.getElementById("mtRecovery").textContent = days === 0 ? "Just trained"
-    : days <= 1 ? "Low"
-    : days <= 3 ? "Recovering"
-    : "Recovered";
-  tip.classList.remove("is-hidden");
-  moveMuscleTooltip(e);
-}
-
-function moveMuscleTooltip(e) {
-  const tip = document.getElementById("muscleTooltip");
-  if (!tip) return;
-  let x = e.clientX + 12, y = e.clientY - 10;
-  if (x + 200 > window.innerWidth) x = e.clientX - 210;
-  if (y < 0) y = 10;
-  tip.style.left = x + "px";
-  tip.style.top = y + "px";
-}
-
-function hideMuscleTooltip() {
-  const tip = document.getElementById("muscleTooltip");
-  if (tip) tip.classList.add("is-hidden");
-}
-
 // ===== BOTTOM SHEET =====
 function showMuscleSheet(muscleId, summary) {
   const groupId = MUSCLE_GROUP_MAP[muscleId] || muscleId;
   const mg = MUSCLE_GROUPS.find((m) => m.id === groupId);
   if (!mg) return;
-  const label = MUSCLE_LABEL_MAP[muscleId] || mg.label;
+  const label = mg.label;
   const data = summary[groupId] || { weeklySets: 0, weeklyVolume: 0, lastTrained: null, exercises: [] };
   const days = getRecoveryDays(data.lastTrained);
-  const trend = getStrengthTrend(groupId);
-  const trendStr = trend === null ? "—" : `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%`;
-  const trendColor = trend === null ? "#737373" : trend > 2 ? "#00d26a" : trend > -2 ? "#ffd60a" : "#ef4444";
-  const lastTrainedStr = data.lastTrained
-    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
-    : "Not trained";
-  const recColor = days === 0 ? "#ef4444" : days <= 1 ? "#ff9f0a" : days <= 3 ? "#ffd60a" : "#00d26a";
+  const lastTrainedStr = data.lastTrained ? (days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`) : "Not trained";
+  const recovery = state.recoveryAnalysis !== false ? getRecoveryLevel(days, data.weeklySets) : null;
+  const recConfig = {
+    fatigued: { label: "Fatigued", color: "var(--red)" },
+    recovering: { label: "Recovering", color: "var(--yellow)" },
+    recovered: { label: "Recovered", color: "var(--accent)" },
+  };
+  const recBadge = recovery ? recConfig[recovery] : null;
 
   const sheet = document.getElementById("muscleSheet");
   const body = document.getElementById("muscleSheetBody");
   body.innerHTML = `
-    <div class="ms-header">${label}</div>
-    <div class="ms-sub">${mg.label}</div>
-    <div class="ms-grid">
-      <div class="ms-item"><span class="ms-label">Weekly Sets</span><span class="ms-value">${data.weeklySets}</span></div>
-      <div class="ms-item"><span class="ms-label">Volume</span><span class="ms-value">${Math.round(data.weeklyVolume / 100) / 10 || 0}k kg</span></div>
-      <div class="ms-item"><span class="ms-label">Last Trained</span><span class="ms-value">${lastTrainedStr}</span></div>
-      <div class="ms-item"><span class="ms-label">Recovery</span><span class="ms-value" style="color:${recColor}">${days === 0 ? "Just trained" : days <= 1 ? "Low" : days <= 3 ? "Recovering" : "Recovered"}</span></div>
-      <div class="ms-item"><span class="ms-label">Strength Trend</span><span class="ms-value" style="color:${trendColor}">${trendStr}</span></div>
+    <div class="ms-header">${label.toUpperCase()}</div>
+    <div class="ms-grid-2col">
+      <div class="ms-item"><span class="ms-label-sm">Weekly Sets</span><span class="ms-value">${data.weeklySets}</span></div>
+      <div class="ms-item"><span class="ms-label-sm">Last Trained</span><span class="ms-value">${lastTrainedStr}</span></div>
+      <div class="ms-item"><span class="ms-label-sm">Recovery</span><span class="ms-value">${recBadge ? `<span class="ms-rec-badge" style="color:${recBadge.color}"><span class="ms-rec-dot" style="background:${recBadge.color}"></span>${recBadge.label}</span>` : `<span style="color:var(--text-secondary)">—</span>`}</span></div>
+      <div class="ms-item"><span class="ms-label-sm">Volume</span><span class="ms-value">${Math.round(data.weeklyVolume / 100) / 10 || 0}k kg</span></div>
     </div>
-    ${data.exercises.length > 0 ? `
-    <div class="ms-exercises-label">Exercises</div>
-    <div class="ms-exercises">${data.exercises.map((ex) =>
-      `<span class="ms-ex-chip">${ex.replace(/([A-Z])/g, " $1").trim()}</span>`
-    ).join("")}</div>` : ""}`;
+    ${data.exercises.length > 0 ? `<div class="ms-exercises-label">Exercises</div><div class="ms-exercises">${data.exercises.map((ex) => `<span class="ms-ex-chip">${ex.replace(/([A-Z])/g, " $1").trim()}</span>`).join("")}</div>` : ""}
+    ${data.exercises.length === 0 ? '<div class="ms-empty-exercises">No exercises targeting this muscle</div>' : ""}`;
   sheet.classList.remove("is-hidden");
 }
 
-// ===== COACH INSIGHTS HELPER =====
-function generateMuscleInsights(summary) {
-  const insights = [];
-  const coverage = getMuscleCoverageScore(summary);
-
-  // Undertrained detection
-  const undertrained = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return data && data.weeklySets > 0 && data.weeklySets < 5;
-  }).slice(0, 3);
-  if (undertrained.length > 0) {
-    insights.push({
-      icon: "⚠️", severity: "yellow",
-      text: `${undertrained.map((m) => m.label).join(", ")} ${undertrained.length === 1 ? "is" : "are"} undertrained. Currently getting <5 weekly sets. Add targeted work.`,
-    });
-  }
-
-  // Overtrained detection
-  const overtrained = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return data && data.weeklySets > 18;
-  }).slice(0, 3);
-  if (overtrained.length > 0) {
-    insights.push({
-      icon: "⚠️", severity: "red",
-      text: `${overtrained.map((m) => m.label).join(", ")} ${overtrained.length === 1 ? "has" : "have"} unusually high volume (>18 weekly sets). Monitor recovery.`,
-    });
-  }
-
-  // Neglected (no training)
-  const neglected = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return !data || data.weeklySets === 0;
-  });
-  if (neglected.length > 0 && coverage < 90) {
-    const topNeglected = neglected.slice(0, 3);
-    insights.push({
-      icon: "🎯", severity: "yellow",
-      text: `${topNeglected.map((m) => m.label).join(", ")} ${topNeglected.length === 1 ? "has" : "have"} received no direct training. Coverage: <strong>${coverage}%</strong>.`,
-    });
-  }
-
-  // Positive insight
-  const optimal = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return data && data.weeklySets >= 5 && data.weeklySets <= 14;
-  }).length;
-  if (optimal >= 8) {
-    insights.push({
-      icon: "✅", severity: "green",
-      text: `${optimal} muscle groups are in the optimal training range (5-14 weekly sets). Excellent balance.`,
-    });
-  }
-
-  // Recovery insight
-  const todayTrained = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return data && data.doneToday;
-  });
-  if (todayTrained.length > 0) {
-    insights.push({
-      icon: "🔄", severity: "blue",
-      text: `${todayTrained.map((m) => m.label).join(", ")} trained today. Prioritize sleep and nutrition for recovery.`,
-    });
-  }
-
-  // Quad/ham imbalance
-  const quadData = summary["quads"];
-  const hamData = summary["hamstrings"];
-  if (quadData && hamData && quadData.weeklySets > 0 && hamData.weeklySets > 0) {
-    const ratio = quadData.weeklySets / (hamData.weeklySets || 1);
-    if (ratio > 2) {
-      insights.push({
-        icon: "⚠️", severity: "yellow",
-        text: `Quad/Ham imbalance: Quads receiving ${ratio.toFixed(1)}× more sets. Add hamstring work like RDLs and leg curls.`,
-      });
-    }
-  }
-
-  // Strength trend insight
-  const improving = MUSCLE_GROUPS.filter((mg) => {
-    const trend = getStrengthTrend(mg.id);
-    return trend !== null && trend > 5;
-  }).slice(0, 3);
-  if (improving.length > 0) {
-    insights.push({
-      icon: "📈", severity: "green",
-      text: `${improving.map((m) => m.label).join(", ")} ${improving.length === 1 ? "is" : "are"} showing strong strength progression (>5% increase).`,
-    });
-  }
-
-  return insights;
+function getBodyNeedsAttention(summary) {
+  return MUSCLE_GROUPS.map((mg) => ({
+    ...mg,
+    sets: summary[mg.id] ? summary[mg.id].weeklySets : 0,
+    lastTrained: summary[mg.id] ? summary[mg.id].lastTrained : null,
+    days: summary[mg.id] ? getRecoveryDays(summary[mg.id].lastTrained) : 99,
+  }))
+    .filter((m) => m.sets === 0 || m.days >= 5)
+    .sort((a, b) => (a.days !== b.days ? b.days - a.days : a.sets - b.sets))
+    .slice(0, 3);
 }
+
+// ===== COACH INSIGHTS HELPER =====
 
 // ===== CALENDAR STATE =====
 let calendarYear = new Date().getFullYear();
@@ -1411,7 +1814,10 @@ function startStopwatch() {
 }
 
 function stopStopwatch() {
-  if (stopwatchInterval) { clearInterval(stopwatchInterval); stopwatchInterval = null; }
+  if (stopwatchInterval) {
+    clearInterval(stopwatchInterval);
+    stopwatchInterval = null;
+  }
   const session = getTodaySession();
   session.duration = stopwatchElapsed;
   saveState();
@@ -1448,15 +1854,84 @@ function updateStreak() {
   if (badge) badge.textContent = streak > 0 ? `${streak} day streak` : "";
 }
 
+function openStreakDrawer() {
+  const streak = getStreak();
+  const longest = getLongestStreak();
+  const today = new Date();
+  let daysHtml = "";
+  for (let i = 6; i >= 0; i--) {
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
+    const dk = getDateKey(d);
+    const dayName = d.toLocaleDateString("en", { weekday: "short" });
+    const hasSession = state.sessions.some((s) => s.finishedAt && s.dateKey === dk);
+    daysHtml += `<div class="sd-day${hasSession ? " is-done" : ""}">${dayName}${hasSession ? " ✓" : ""}</div>`;
+  }
+  document.getElementById("sdCurrent").textContent = `Current Streak: ${streak} Day${streak !== 1 ? "s" : ""}`;
+  document.getElementById("sdDays").innerHTML = daysHtml;
+  document.getElementById("sdLongest").textContent = `Longest Streak: ${longest} Days`;
+  document.getElementById("streakDrawer").classList.remove("is-hidden");
+}
+
+function getLongestStreak() {
+  const sessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => a.dateKey.localeCompare(b.dateKey));
+  if (!sessions.length) return 0;
+  let longest = 1;
+  let current = 1;
+  for (let i = 1; i < sessions.length; i++) {
+    const prev = new Date(sessions[i - 1].dateKey);
+    const curr = new Date(sessions[i].dateKey);
+    const diffDays = Math.round((curr - prev) / 86400000);
+    if (diffDays === 1) {
+      current++;
+      if (current > longest) longest = current;
+    } else {
+      current = 1;
+    }
+  }
+  return longest;
+}
+
+function getMonthlyStats(month, year) {
+  const prefix = `${year}-${String(month + 1).padStart(2, "0")}`;
+  const sessions = state.sessions.filter((s) => s.finishedAt && s.dateKey.startsWith(prefix));
+  const totalDays = new Date(year, month + 1, 0).getDate();
+  const today = new Date();
+  const daysSoFar = Math.min(today.getDate(), totalDays);
+  const completionRate = daysSoFar > 0 ? Math.round((sessions.length / daysSoFar) * 100) : 0;
+  return { count: sessions.length, completionRate, totalDays, daysSoFar };
+}
+
 // ===== SETTINGS =====
 // ===== SETTINGS RENDER =====
 function renderSettings() {
   const u = state.user || {};
-  const bmi = u.height && u.weight ? (u.weight / ((u.height/100)*(u.height/100))).toFixed(1) : null;
+  const bmi = u.height && u.weight ? (u.weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
   const bmiCat = bmi ? (bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese") : null;
-  const goalLabels = { "fat-loss":"Fat Loss","build-muscle":"Build Muscle","recomp":"Recomp","strength":"Strength","athletic":"Athletic","general":"Fitness","custom":"Custom" };
-  const mCals = u.weight ? Math.round(u.weight * (u.activity === "sedentary" ? 24 : u.activity === "light" ? 26.5 : u.activity === "moderate" ? 29 : u.activity === "very" ? 31.5 : 34) * (u.goal === "fat-loss" ? 0.8 : u.goal === "build-muscle" || u.goal === "strength" ? 1.1 : 1)) : "—";
-  const initials = u.name ? u.name.split(" ").map(w=>w[0]).join("").toUpperCase().slice(0,2) : "IL";
+  const goalLabels = {
+    "fat-loss": "Fat Loss",
+    "build-muscle": "Build Muscle",
+    recomp: "Recomp",
+    strength: "Strength",
+    athletic: "Athletic",
+    general: "Fitness",
+    custom: "Custom",
+  };
+  const mCals = u.weight
+    ? Math.round(
+        u.weight *
+          (u.activity === "sedentary" ? 24 : u.activity === "light" ? 26.5 : u.activity === "moderate" ? 29 : u.activity === "very" ? 31.5 : 34) *
+          (u.goal === "fat-loss" ? 0.8 : u.goal === "build-muscle" || u.goal === "strength" ? 1.1 : 1),
+      )
+    : "—";
+  const initials = u.name
+    ? u.name
+        .split(" ")
+        .map((w) => w[0])
+        .join("")
+        .toUpperCase()
+        .slice(0, 2)
+    : "IL";
 
   let html = `
   <!-- SECTION 1: PROFILE -->
@@ -1466,7 +1941,7 @@ function renderSettings() {
       <div class="sg-avatar" style="background:var(--accent);color:#000;font-weight:800">${initials}</div>
       <div class="sg-card-body">
         <div class="sg-card-name">${u.name || "Tap to set up"}</div>
-        <div class="sg-card-meta">${[u.age ? u.age+" yrs":"", u.height ? u.height+" cm":"", u.weight ? displayWeight(u.weight):"", u.goal ? goalLabels[u.goal]||"":""].filter(Boolean).join(" · ") || "No profile yet"}</div>
+        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", u.goal ? goalLabels[u.goal] || "" : ""].filter(Boolean).join(" · ") || "No profile yet"}</div>
       </div>
       <span class="sg-chevron">›</span>
     </button>
@@ -1474,24 +1949,46 @@ function renderSettings() {
       <div class="sg-stat"><span class="sg-stat-val">${u.age || "—"}</span><span class="sg-stat-lbl">Age</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.height ? displayHeight(u.height) : "—"}</span><span class="sg-stat-lbl">Height</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.weight ? displayWeight(u.weight) : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.goal ? (u.goal==="fat-loss"?"Fat Loss":u.goal==="build-muscle"?"Build Muscle":u.goal==="recomp"?"Recomp":u.goal==="strength"?"Strength":u.goal==="athletic"?"Athletic":"General") : "—"}</span><span class="sg-stat-lbl">Goal</span></div>
+      <div class="sg-stat"><span class="sg-stat-val">${u.goal ? (u.goal === "fat-loss" ? "Fat Loss" : u.goal === "build-muscle" ? "Build Muscle" : u.goal === "recomp" ? "Recomp" : u.goal === "strength" ? "Strength" : u.goal === "athletic" ? "Athletic" : "General") : "—"}</span><span class="sg-stat-lbl">Goal</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${bmi || "—"}</span><span class="sg-stat-lbl">BMI</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${mCals}</span><span class="sg-stat-lbl">Calories</span></div>
     </div>
-    ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi/40*100) + '%;background:' + (bmiCat==="Underweight"?"#4a9eff":bmiCat==="Normal"?"#00d26a":bmiCat==="Overweight"?"#ff9500":"#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ''}
+    ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi / 40) * 100 + "%;background:" + (bmiCat === "Underweight" ? "#4a9eff" : bmiCat === "Normal" ? "#00d26a" : bmiCat === "Overweight" ? "#ff9500" : "#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ""}
+    ${!isProfileComplete() ? '<button class="sg-card sg-card-cta" id="settingsCompleteProfile"><div class="sg-card-body"><div class="sg-card-name">Complete Your Profile</div><div class="sg-card-meta">Add your stats to unlock features</div></div><span class="sg-chevron">›</span></button>' : ""}
   </div>
 
   <!-- SECTION 2: FITNESS GOALS -->
   <div class="sg">
     <div class="sg-label">FITNESS GOALS</div>
     <div class="sg-radio-group" data-setting="goal">
-      ${["fat-loss","recomp","lean-bulk","aggressive-bulk"].map(g => {
-        const labels = {"fat-loss":"Fat Loss","recomp":"Recomp","lean-bulk":"Lean Bulk","aggressive-bulk":"Aggressive Bulk"};
-        const descs = {"fat-loss":"Lose body fat while preserving muscle","recomp":"Build muscle while losing fat","lean-bulk":"Gain muscle with minimal fat","aggressive-bulk":"Maximize muscle gain"};
-        const rates = {"fat-loss":"0.5–1 kg/week","recomp":"Maintenance","lean-bulk":"0.25 kg/week","aggressive-bulk":"0.5 kg/week"};
-        const sel = (state.bodyGoal||"recomp") === g;
-        return '<label class="sg-radio' + (sel?' is-sel':'') + '"><input type="radio" name="sg-goal" value="' + g + '"' + (sel?' checked':'') + '><span class="sg-radio-dot"></span><span class="sg-radio-body"><span class="sg-radio-title">' + labels[g] + '</span><span class="sg-radio-desc">' + descs[g] + '</span><span class="sg-radio-rate">' + rates[g] + '</span></span></label>';
-      }).join("")}
+      ${["fat-loss", "recomp", "lean-bulk", "aggressive-bulk"]
+        .map((g) => {
+          const labels = { "fat-loss": "Fat Loss", recomp: "Recomp", "lean-bulk": "Lean Bulk", "aggressive-bulk": "Aggressive Bulk" };
+          const descs = {
+            "fat-loss": "Lose body fat while preserving muscle",
+            recomp: "Build muscle while losing fat",
+            "lean-bulk": "Gain muscle with minimal fat",
+            "aggressive-bulk": "Maximize muscle gain",
+          };
+          const rates = { "fat-loss": "0.5–1 kg/week", recomp: "Maintenance", "lean-bulk": "0.25 kg/week", "aggressive-bulk": "0.5 kg/week" };
+          const sel = (state.bodyGoal || "recomp") === g;
+          return (
+            '<label class="sg-radio' +
+            (sel ? " is-sel" : "") +
+            '"><input type="radio" name="sg-goal" value="' +
+            g +
+            '"' +
+            (sel ? " checked" : "") +
+            '><span class="sg-radio-dot"></span><span class="sg-radio-body"><span class="sg-radio-title">' +
+            labels[g] +
+            '</span><span class="sg-radio-desc">' +
+            descs[g] +
+            '</span><span class="sg-radio-rate">' +
+            rates[g] +
+            "</span></span></label>"
+          );
+        })
+        .join("")}
     </div>
   </div>
 
@@ -1507,12 +2004,19 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Auto-Generate Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
     <div class="sg-row" data-setting="warmup-style"><span>Warm-Up Style</span><span class="sg-row-val">${state.warmupStyle === "advanced" ? "Advanced" : "Simple"}</span><span class="sg-chevron">›</span></div>
+    <label class="sg-row sg-toggle"><span>Auto-Open Summary</span><input type="checkbox" ${state.autoSummary !== false ? "checked" : ""} data-setting="auto-summary" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Auto-Start Cool Down</span><input type="checkbox" ${state.autoCooldown ? "checked" : ""} data-setting="auto-cooldown" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Show Workout Progress</span><input type="checkbox" ${state.showWorkoutProgress !== false ? "checked" : ""} data-setting="show-workout-progress" /><span class="sg-toggle-track"></span></label>
+    <div class="sg-row" data-setting="cool-down-duration"><span>Cool Down Duration</span><span class="sg-row-val" id="sgCoolDownVal">${state.coolDownDuration || 5} min</span><span class="sg-chevron">›</span></div>
+    <label class="sg-row sg-toggle"><span>Auto-Advance Stretches</span><input type="checkbox" ${state.autoAdvanceStretches !== false ? "checked" : ""} data-setting="auto-advance-stretches" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Tomorrow Preview</span><input type="checkbox" ${state.showTomorrowPreview !== false ? "checked" : ""} data-setting="show-tomorrow" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Recovery Advice</span><input type="checkbox" ${state.showRecoveryAdvice !== false ? "checked" : ""} data-setting="show-recovery" /><span class="sg-toggle-track"></span></label>
   </div>
 
   <!-- SECTION 4: BODY & PROGRESS -->
   <div class="sg">
     <div class="sg-label">BODY & PROGRESS</div>
-    <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog||[]).length} entries</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
     <label class="sg-row sg-toggle"><span>Daily Weight Reminder</span><input type="checkbox" ${state.weightReminder ? "checked" : ""} data-setting="weight-reminder" /><span class="sg-toggle-track"></span></label>
     <div class="sg-row" data-setting="weight-unit"><span>Weight Unit</span><span class="sg-row-val">${state.weightUnit || "kg"}</span><span class="sg-chevron">›</span></div>
     <div class="sg-row" data-setting="height-unit"><span>Height Unit</span><span class="sg-row-val">${state.heightUnit || "cm"}</span><span class="sg-chevron">›</span></div>
@@ -1557,6 +2061,7 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Progress Suggestions</span><input type="checkbox" ${state.progressSuggestions !== false ? "checked" : ""} data-setting="progress-suggestions" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Warm-Up Reminders</span><input type="checkbox" ${state.warmupReminder !== false ? "checked" : ""} data-setting="warmup-reminder" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Stretch Reminders</span><input type="checkbox" ${state.stretchReminder !== false ? "checked" : ""} data-setting="stretch-reminder" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Recovery Analysis</span><input type="checkbox" ${state.recoveryAnalysis !== false ? "checked" : ""} data-setting="recovery-analysis" /><span class="sg-toggle-track"></span></label>
   </div>
 
   <!-- SECTION 9: ABOUT -->
@@ -1603,10 +2108,13 @@ function activateTab(tabName) {
   positionNavIndicator();
 
   if (tabName === "sessions") renderSessionsTab();
-  if (tabName === "progress") renderCoachTab();
+  if (tabName === "progress") renderProgressPage();
   if (tabName === "body") renderBodyTab();
   if (tabName === "sets") renderSetsPanel();
-  if (tabName === "settings") { showScreen("screen-settings"); renderSettings(); }
+  if (tabName === "settings") {
+    showScreen("screen-settings");
+    renderSettings();
+  }
 }
 
 function positionNavIndicator() {
@@ -1624,7 +2132,7 @@ function render() {
   updateStreak();
   renderSetsPanel();
   if (currentTab === "sessions") renderSessionsTab();
-  if (currentTab === "progress") renderCoachTab();
+  if (currentTab === "progress") renderProgressPage();
   if (currentTab === "body") renderBodyTab();
   updateTopbarTimer();
 }
@@ -1672,7 +2180,10 @@ function getDailyMessage() {
 
 function hashString(s) {
   let hash = 0;
-  for (let i = 0; i < s.length; i++) { hash = ((hash << 5) - hash) + s.charCodeAt(i); hash |= 0; }
+  for (let i = 0; i < s.length; i++) {
+    hash = (hash << 5) - hash + s.charCodeAt(i);
+    hash |= 0;
+  }
   return hash;
 }
 
@@ -1680,28 +2191,48 @@ function renderHome() {
   const user = state.user;
   const name = user ? user.name : "there";
   const g = getGreeting();
-  document.getElementById("homeGreeting").innerHTML = `<div class="home-greeting-line">${g.text} ${g.emoji}</div><div class="home-name-line">${name}</div><div class="body-secondary body-small" style="margin-top:-0.5rem;margin-bottom:0.65rem">${getDailyMessage()}</div>`;
-
-  // Insights — use latest weight log if available
   const streak = getStreak();
   const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const weight = latestLog ? latestLog.weight : (user ? user.weight : null);
+  const weight = latestLog ? latestLog.weight : user ? user.weight : null;
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  let wsHtml = `
-    <div class="home-dash-card">
-      <div class="home-dash-grid">
-        <div class="home-dash-item"><span class="home-dash-value">${weight ? displayWeight(weight) : "—"}</span><span class="home-dash-label">Weight</span></div>
-        <div class="home-dash-item"><span class="home-dash-value">${streak}d</span><span class="home-dash-label">Streak</span></div>
-        <div class="home-dash-item"><span class="home-dash-value">${lastSession ? lastSession.workoutName : "—"}</span><span class="home-dash-label">Last</span></div>
-        <div class="home-dash-item"><span class="home-dash-value">${weekSessions.length}</span><span class="home-dash-label">Week</span></div>
+  const profileComplete = isProfileComplete();
+  const hasWeight = weight !== null && weight !== undefined;
+  document.getElementById("homeGreeting").innerHTML = `
+    <div class="hero-greeting">${g.text} ${g.emoji}</div>
+    <div class="hero-name">${name}</div>
+    <div class="hero-motivation">${getDailyMessage()}</div>
+    ${profileComplete ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span>Complete your profile to unlock all features</span><span class="home-incomplete-cta">Set Up →</span></div>`}
+    <div class="hero-cards-row">
+      <div class="hero-streak-card" id="heroStreakCard">
+        <div class="hc-header"><span>🔥</span>STREAK</div>
+        <div class="hc-value">${streak} Day${streak !== 1 ? "s" : ""}</div>
+        <div class="hc-sub">Gym visits in a row</div>
+        ${lastSession ? `<div class="hc-last">Last workout: ${lastSession.workoutName}</div>` : ""}
+      </div>
+      <div class="hero-weight-card" id="heroWeightCard">
+        <div class="hc-header"><span>⚖</span>WEIGHT</div>
+        <div class="hc-value">${hasWeight ? displayWeight(weight) : "—"}</div>
+        <div class="hc-sub">${hasWeight ? "Updated Today" : "Tap to log weight"}</div>
       </div>
     </div>`;
 
+  let wsHtml = "";
+
   if (state.weeklyReview !== false && weekSessions.length > 0) {
     const totalSets = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
-    const totalVol = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-    const prevWeekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)));
+    const totalVol = weekSessions.reduce(
+      (s, ses) =>
+        s +
+        ses.exercises.reduce(
+          (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+          0,
+        ),
+      0,
+    );
+    const prevWeekSessions = state.sessions.filter(
+      (s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)),
+    );
     const prevCount = prevWeekSessions.length;
     wsHtml += `<div class="home-weekly-review"><div class="wr-grid" style="grid-template-columns:repeat(4,1fr);gap:0.3rem;padding:0.5rem 0">
       <div class="wr-item" style="text-align:center"><strong>${weekSessions.length}</strong><small>Workouts</small></div>
@@ -1716,9 +2247,11 @@ function renderHome() {
   if (state.goalAnalysis !== false) {
     const goals = state.goals || [];
     if (goals.length > 0) {
-      let gaHtml = goals.slice(0, 3).map((g) => {
-        const pct = getGoalProgress(g);
-        return `<div class="goal-card" style="background:var(--surface-2);border-radius:var(--radius-sm);padding:0.4rem 0.5rem;font-size:0.75rem">
+      let gaHtml = goals
+        .slice(0, 3)
+        .map((g) => {
+          const pct = getGoalProgress(g);
+          return `<div class="goal-card" style="background:var(--surface-2);border-radius:var(--radius-sm);padding:0.4rem 0.5rem;font-size:0.75rem">
           <div style="display:flex;justify-content:space-between;margin-bottom:0.2rem">
             <span style="font-weight:600">${g.name}</span>
             <span>${pct}%</span>
@@ -1727,9 +2260,11 @@ function renderHome() {
             <div class="goal-bar-fill" style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px"></div>
           </div>
         </div>`;
-      }).join("");
+        })
+        .join("");
       if (gaHtml) {
-        document.getElementById("homeInsights").innerHTML += `<div class="home-goal-analysis" style="margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem">${gaHtml}</div>`;
+        document.getElementById("homeInsights").innerHTML +=
+          `<div class="home-goal-analysis" style="margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem">${gaHtml}</div>`;
       }
     }
   }
@@ -1817,15 +2352,28 @@ function renderHome() {
             localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
             state.plan = activePlan;
             // Also remove from any groups
-            (state.workoutGroups || []).forEach((g) => { g.workoutIds = g.workoutIds.filter((i) => i !== wid); });
+            (state.workoutGroups || []).forEach((g) => {
+              g.workoutIds = g.workoutIds.filter((i) => i !== wid);
+            });
             saveState();
           }
-          closeAllMenus(); renderHome();
+          closeAllMenus();
+          renderHome();
         }
         if (a === "rename-workout") {
           const activePlan = loadCustomProgram() || plan;
           const w = activePlan.find((w2) => w2.id === wid);
-          if (w) { const n = prompt("New name:", w.name); if (n && n.trim()) { w.name = n.trim(); localStorage.setItem("wl_custom_program", JSON.stringify(activePlan)); state.plan = activePlan; saveState(); closeAllMenus(); renderHome(); } }
+          if (w) {
+            const n = prompt("New name:", w.name);
+            if (n && n.trim()) {
+              w.name = n.trim();
+              localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+              state.plan = activePlan;
+              saveState();
+              closeAllMenus();
+              renderHome();
+            }
+          }
         }
       });
     });
@@ -1847,14 +2395,34 @@ function renderHome() {
         if (a === "delete-group") {
           if (!confirm("Delete this group? Workouts will be ungrouped.")) return;
           state.workoutGroups = (state.workoutGroups || []).filter((g) => g.id !== gid);
-          saveState(); closeAllMenus(); renderHome();
+          saveState();
+          closeAllMenus();
+          renderHome();
         }
         if (a === "rename-group") {
           const g = (state.workoutGroups || []).find((g2) => g2.id === gid);
-          if (g) { const n = prompt("New name:", g.name); if (n && n.trim()) { g.name = n.trim(); saveState(); closeAllMenus(); renderHome(); } }
+          if (g) {
+            const n = prompt("New name:", g.name);
+            if (n && n.trim()) {
+              g.name = n.trim();
+              saveState();
+              closeAllMenus();
+              renderHome();
+            }
+          }
         }
       });
     });
+  });
+
+  // Bind hero cards
+  document.getElementById("heroStreakCard")?.addEventListener("click", openStreakDrawer);
+  document.getElementById("heroWeightCard")?.addEventListener("click", () => {
+    const entry = latestWeight();
+    document.getElementById("wlWeight").value = entry ? entry.weight : "";
+    document.getElementById("wlSave").disabled = !(entry && entry.weight > 0);
+    document.getElementById("weightLogSheet").classList.remove("is-hidden");
+    setTimeout(() => document.getElementById("wlWeight").focus(), 150);
   });
 
   // Recent workouts
@@ -1890,7 +2458,8 @@ function renderWorkoutCardInner(workout, todaySession) {
 function formatRelativeDate(dateKey) {
   const today = getDateKey();
   if (dateKey === today) return "Today";
-  const yesterday = new Date(); yesterday.setDate(yesterday.getDate() - 1);
+  const yesterday = new Date();
+  yesterday.setDate(yesterday.getDate() - 1);
   if (dateKey === getDateKey(yesterday)) return "Yesterday";
   const d = parseDateKey(dateKey);
   const diff = Math.floor((new Date() - d) / 86400000);
@@ -1901,21 +2470,26 @@ function formatRelativeDate(dateKey) {
 function renderRecentWorkouts() {
   const section = document.getElementById("homeRecentSection");
   const container = document.getElementById("homeRecentList");
-  const recent = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey)).slice(0, 5);
+  const recent = state.sessions
+    .filter((s) => s.finishedAt)
+    .sort((a, b) => b.dateKey.localeCompare(a.dateKey))
+    .slice(0, 5);
   if (!recent.length) {
     section.style.display = "none";
     return;
   }
   section.style.display = "";
-  container.innerHTML = recent.map((s) => {
-    const d = parseDateKey(s.dateKey);
-    return `<div class="home-recent-card" data-open-workout="${s.workoutId}">
+  container.innerHTML = recent
+    .map((s) => {
+      const d = parseDateKey(s.dateKey);
+      return `<div class="home-recent-card" data-open-workout="${s.workoutId}">
       <div class="home-recent-card-info">
         <div class="home-recent-card-name">${s.workoutName}</div>
         <div class="home-recent-card-date">${formatReadableDate(d)}</div>
       </div>
     </div>`;
-  }).join("");
+    })
+    .join("");
   container.querySelectorAll("[data-open-workout]").forEach((btn) => {
     btn.addEventListener("click", () => openWorkout(btn.dataset.openWorkout));
   });
@@ -1965,17 +2539,58 @@ function getGreeting() {
 }
 
 // ===== LEVEL 1: WORKOUT SESSION =====
+// ===== PROGRESS INDICATOR (V1.6) =====
+function renderProgressIndicator() {
+  const session = getTodaySession();
+  if (!session || state.showWorkoutProgress === false) return "";
+  const total = session.exercises.length;
+  const idx = currentExName ? session.exercises.findIndex((e) => e.name === currentExName) : -1;
+  const currentIdx = idx >= 0 ? idx : session.exercises.filter((e) => e.sets.some((s) => s.done)).length;
+
+  const dots = session.exercises.map((ex, i) => {
+    const done = ex.sets.some((s) => s.done);
+    let cls = "pr-dot";
+    if (i === currentIdx && (!done || (done && i === total - 1))) cls += " is-current";
+    else if (done) cls += " is-completed";
+    else cls += " is-upcoming";
+    return `<span class="${cls}" data-ex-index="${i}"></span>`;
+  }).join("");
+
+  return `<div class="pr-container">
+    <div class="pr-counter">Exercise ${Math.min(currentIdx + 1, total)} of ${total}</div>
+    <div class="pr-dots">${dots}</div>
+  </div>`;
+}
+function updateProgressIndicator() {
+  const el = document.getElementById("wsProgressIndicator");
+  if (el) el.innerHTML = renderProgressIndicator();
+  // Click-to-navigate on upcoming dots (when auto-next is OFF)
+  if (!state.autoNext) {
+    document.querySelectorAll(".pr-dot.is-upcoming").forEach((dot) => {
+      dot.style.cursor = "pointer";
+      dot.addEventListener("click", () => {
+        const idx = parseInt(dot.dataset.exIndex);
+        const session = getTodaySession();
+        if (session && session.exercises[idx]) {
+          openExerciseDetail(session.exercises[idx].name);
+        }
+      });
+    });
+  }
+}
+
 function renderWorkoutSession() {
   const activePlan = loadCustomProgram() || plan;
   const session = getTodaySession();
-  if (!session) { closeWorkout(); return; }
+  if (!session) {
+    closeWorkout();
+    return;
+  }
   const workout = activePlan.find((w) => w.id === session.workoutId);
-  const name = workout ? workout.name : (session.workoutName || "Workout");
+  const name = workout ? workout.name : session.workoutName || "Workout";
 
   document.getElementById("wsName").textContent = name;
-  const total = session.exercises.length;
-  const doneEx = session.exercises.filter((e) => e.sets.some((s) => s.done)).length;
-  document.getElementById("wsMeta").textContent = total > 0 ? `${doneEx}/${total} exercises` : "";
+  document.getElementById("wsProgressIndicator").innerHTML = renderProgressIndicator();
 
   // Description
   const descEl = document.getElementById("wsDesc");
@@ -1988,19 +2603,21 @@ function renderWorkoutSession() {
 
   // Exercise list
   const list = document.getElementById("wsExerciseList");
-  list.innerHTML = session.exercises.map((ex, i) => {
-    const workingDone = ex.sets.filter((s) => s.done && !s.isWarmup).length;
-    const totalWorking = ex.sets.filter((s) => !s.isWarmup).length;
-    const cardLabel = totalWorking > 0 ? `${workingDone}/${totalWorking} sets` : `${ex.sets.filter(s => s.done).length} sets`;
-    const allDone = workingDone === totalWorking && totalWorking > 0 || (!totalWorking && ex.sets.every(s => s.done));
-    return `<div class="ws-exercise-card" data-ex="${ex.name}">
+  list.innerHTML = session.exercises
+    .map((ex, i) => {
+      const workingDone = ex.sets.filter((s) => s.done && !s.isWarmup).length;
+      const totalWorking = ex.sets.filter((s) => !s.isWarmup).length;
+      const cardLabel = totalWorking > 0 ? `${workingDone}/${totalWorking} sets` : `${ex.sets.filter((s) => s.done).length} sets`;
+      const allDone = (workingDone === totalWorking && totalWorking > 0) || (!totalWorking && ex.sets.every((s) => s.done));
+      return `<div class="ws-exercise-card" data-ex="${ex.name}">
       <div class="ws-ex-card-info">
         <div class="ws-ex-card-name">${ex.name.replace(/([A-Z])/g, " $1").trim()}</div>
         <div class="ws-ex-card-meta">${cardLabel}</div>
       </div>
       ${allDone ? '<span class="ws-ex-card-done">✓</span>' : '<span class="ws-ex-card-chevron">›</span>'}
     </div>`;
-  }).join("");
+    })
+    .join("");
 
   list.querySelectorAll(".ws-exercise-card").forEach((card) => {
     card.addEventListener("click", () => {
@@ -2009,6 +2626,17 @@ function renderWorkoutSession() {
   });
 
   document.getElementById("wsFinishBtn").onclick = finishWorkout;
+  document.getElementById("wsCompleteCta").onclick = () => {
+    const session = getTodaySession();
+    if (!session) return;
+    stopStopwatch();
+    session.finishedAt = new Date().toISOString();
+    state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+    currentWorkoutId = null;
+    const todayPRs = getTodayPRs(session.dateKey || getDateKey());
+    saveAndRender();
+    showEnhancedSummary(todayPRs);
+  };
 }
 
 // ===== LEVEL 2: EXERCISE DETAIL =====
@@ -2053,7 +2681,12 @@ function renderExerciseDetail() {
     if (state.autoWarmup && hasPendingWarmups) {
       skipBtn.style.display = "";
       skipBtn.onclick = () => {
-        ex.sets.forEach((s) => { if (s.isWarmup) { s.done = true; s.loggedAt = new Date().toISOString(); } });
+        ex.sets.forEach((s) => {
+          if (s.isWarmup) {
+            s.done = true;
+            s.loggedAt = new Date().toISOString();
+          }
+        });
         saveState();
         renderExerciseDetail();
       };
@@ -2108,6 +2741,14 @@ function renderExerciseDetail() {
     });
   }
 
+  // Finish workout button handler (last exercise, manual mode)
+  const finishBtn = document.getElementById("edFinishBtn");
+  if (finishBtn) {
+    finishBtn.addEventListener("click", () => {
+      finishWorkout();
+    });
+  }
+
   // Duplicate set buttons
   container.querySelectorAll("[data-dup-set-id]").forEach((btn) => {
     btn.addEventListener("click", (e) => {
@@ -2118,6 +2759,7 @@ function renderExerciseDetail() {
 
   // Exercise notes
   renderEdNotes(currentExName);
+  updateProgressIndicator();
 }
 
 function renderExerciseSetup(ex) {
@@ -2127,12 +2769,12 @@ function renderExerciseSetup(ex) {
     ex.autoWarmupSet = true;
   }
   const isCompound = isCompoundExercise(ex.name);
-  const showWuDefault = ex.autoWarmup !== undefined ? ex.autoWarmup : (state.autoWarmup !== false && isCompound);
+  const showWuDefault = ex.autoWarmup !== undefined ? ex.autoWarmup : state.autoWarmup !== false && isCompound;
 
   // Pre-fill from template sets if available
   const templateSets = ex.sets.filter((s) => !s.isWarmup);
-  const defaultReps = templateSets.length > 0 ? (templateSets[0].reps || 10) : 10;
-  const defaultWeight = templateSets.length > 0 ? (templateSets[0].weight || 20) : 20;
+  const defaultReps = templateSets.length > 0 ? templateSets[0].reps || 10 : 10;
+  const defaultWeight = templateSets.length > 0 ? templateSets[0].weight || 20 : 20;
   const defaultCount = templateSets.length > 0 ? templateSets.length : 3;
 
   const compoundTag = isCompound
@@ -2187,7 +2829,7 @@ function renderExerciseSetup(ex) {
       let cur = Number(el.textContent);
       const min = field === "weight" ? 0 : 1;
       const max = field === "weight" ? 500 : 50;
-      const inc = field === "weight" ? (state.weightInc || 1) : (state.repInc || 1);
+      const inc = field === "weight" ? state.weightInc || 1 : state.repInc || 1;
       const step = Math.abs(adjust) === 5 ? inc * 5 : inc;
       if (adjust < 0) cur = Math.max(min, cur - step);
       else cur = Math.min(max, cur + step);
@@ -2374,7 +3016,9 @@ function formatSetTime(iso) {
   try {
     const d = new Date(iso);
     return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-  } catch { return ""; }
+  } catch {
+    return "";
+  }
 }
 
 // ===== LEVEL 3A: ADD SET =====
@@ -2427,20 +3071,8 @@ function saveAddSet() {
   saveState();
   startStopwatch();
   if (weight > 0) {
-    const prs = loadPRs();
-    const current = prs[currentExName] || {};
-    const w = Number(weight);
-    const r = Number(reps) || 0;
-    const vol = w * r;
-    const est = calc1RM(w, r);
-    let prType = null;
-    if (!current.weight || w > current.weight) { prType = "weight"; current.weight = w; current.reps = r; current.date = getDateKey(); }
-    else if (w === current.weight && r > (current.reps || 0)) { prType = "reps"; current.reps = r; current.date = getDateKey(); }
-    if (!current.bestSetVol || vol > current.bestSetVol) { prType = prType || "volume"; current.bestSetVol = vol; }
-    if (!current.est1RM || est > current.est1RM) { current.est1RM = est; }
-    prs[currentExName] = current;
-    savePRs(prs);
-    if (prType) showPRToast(`🏆 ${prType === "weight" ? "New Weight PR" : prType === "reps" ? "New Rep PR" : "New Volume PR"}: ${currentExName.replace(/([A-Z])/g, " $1").trim()} · ${displayWeight(w)} × ${r}`);
+    const newPRs = detectPR(currentExName, weight, reps, session.id || "", getDateKey());
+    if (newPRs) showPRToast(newPRs);
   }
   if (state.autoRest) startRestTimer();
 
@@ -2450,6 +3082,7 @@ function saveAddSet() {
     const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
     if (pending.length === 0) navigateToNextExercise(ex);
   }
+  if (isWorkoutComplete()) triggerWorkoutComplete();
 }
 
 // ===== LEVEL 3C: EDIT SET BOTTOM SHEET =====
@@ -2470,9 +3103,16 @@ function openEditBottomSheet(setId) {
   editSetWeight = Number(set.weight) || 0;
 
   document.getElementById("esExName").textContent = currentExName.replace(/([A-Z])/g, " $1").trim();
-  document.getElementById("esRepsValue").textContent = editSetReps;
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetRepsDisplay();
+  updateEditSetWeightDisplay();
   document.getElementById("bsEditSet").classList.remove("is-hidden");
+}
+
+function updateEditSetRepsDisplay() {
+  document.getElementById("esRepsValue").innerHTML = `${editSetReps} <span class="as-unit-inline">reps</span>`;
+}
+function updateEditSetWeightDisplay() {
+  document.getElementById("esWeightValue").innerHTML = `${editSetWeight} <span class="as-unit-inline">kg</span>`;
 }
 
 function closeEditBottomSheet() {
@@ -2498,29 +3138,23 @@ function completeSetFromSheet() {
 
   // PR detection
   if (Number(set.weight) > 0) {
-    const w = Number(set.weight);
-    const r = Number(set.reps) || 0;
-    const vol = w * r;
-    const est = calc1RM(w, r);
-    const prs = loadPRs();
-    const current = prs[currentExName] || {};
-    let prType = null;
-    if (!current.weight || w > current.weight) { prType = "weight"; current.weight = w; current.reps = r; current.date = getDateKey(); }
-    else if (w === current.weight && r > (current.reps || 0)) { prType = "reps"; current.reps = r; current.date = getDateKey(); }
-    if (!current.bestSetVol || vol > current.bestSetVol) { prType = prType || "volume"; current.bestSetVol = vol; }
-    if (!current.est1RM || est > current.est1RM) { current.est1RM = est; }
-    prs[currentExName] = current;
-    savePRs(prs);
-    if (prType) showPRToast(`🏆 ${prType === "weight" ? "New Weight PR" : prType === "reps" ? "New Rep PR" : "New Volume PR"}: ${currentExName.replace(/([A-Z])/g, " $1").trim()} · ${displayWeight(w)} × ${r}`);
+    const newPRs = detectPR(currentExName, Number(set.weight), Number(set.reps) || 0, session?.id || "", getDateKey());
+    if (newPRs) showPRToast(newPRs);
   }
 
   closeEditBottomSheet();
   if (Number(set.weight) > 0 && state.autoRest) startRestTimer();
   renderExerciseDetail();
+  const completedRow = document.querySelector(`.ed-set-row[data-set-id="${editSetId}"]`);
+  if (completedRow) {
+    completedRow.classList.add("is-just-done");
+    setTimeout(() => completedRow.classList.remove("is-just-done"), 200);
+  }
   if (state.autoNext) {
     const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
     if (pending.length === 0) navigateToNextExercise(ex);
   }
+  if (isWorkoutComplete()) triggerWorkoutComplete();
 }
 
 function deleteSetFromSheet() {
@@ -2536,133 +3170,226 @@ function deleteSetFromSheet() {
 }
 
 // Old edit set functions (kept for backward compatibility via screen-es)
-function openEditSet(setId) { openEditBottomSheet(setId); }
+function openEditSet(setId) {
+  openEditBottomSheet(setId);
+}
 
-// ===== FINISH WORKOUT =====
+// ===== WORKOUT COMPLETION (V2 Unified) =====
+function isWorkoutComplete() {
+  const session = getTodaySession();
+  if (!session || !session.exercises.length) return false;
+  for (const ex of session.exercises) {
+    const workSets = ex.sets.filter((s) => !s.isWarmup);
+    if (workSets.length === 0) return false;
+    if (!workSets.every((s) => s.done)) return false;
+  }
+  return true;
+}
+
+function triggerWorkoutComplete() {
+  const session = getTodaySession();
+  if (!session) return;
+  if (!state.autoSummary) {
+    const banner = document.getElementById("wsCompleteBanner");
+    if (banner) banner.classList.remove("is-hidden");
+    return;
+  }
+  stopStopwatch();
+  session.finishedAt = new Date().toISOString();
+  state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  currentWorkoutId = null;
+  saveAndRender();
+  const todayPRs = getTodayPRs(session.dateKey || getDateKey());
+  showEnhancedSummary(todayPRs);
+}
+
 function finishWorkout() {
   const session = getTodaySession();
+  if (!session) return;
   const completion = getCompletion(session);
   if (completion.done === 0) return;
-  showNotesModal();
+  stopStopwatch();
+  session.finishedAt = new Date().toISOString();
+  state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  currentWorkoutId = null;
+  saveAndRender();
+  const todayPRs = getTodayPRs(session.dateKey || getDateKey());
+  showEnhancedSummary(todayPRs);
 }
 
-// ===== SESSION COMPLETE =====
-function buildSessionRecap() {
-  const session = getTodaySession();
-  const prs = loadPRs();
-  let totalVolume = 0;
-  let totalSet = 0;
-  const newPRs = [];
-  for (const ex of session.exercises) {
-    for (const set of ex.sets) {
-      if (set.done && set.weight && Number(set.weight) > 0) {
-        const w = Number(set.weight);
-        const r = Number(set.reps) || 0;
-        totalVolume += w * r;
-        totalSet++;
-        const current = prs[ex.name];
-        if (!current || w > current.weight) {
-          newPRs.push({ name: ex.name, weight: w, reps: r });
-        }
-      }
-    }
+// ===== SESSION SUMMARY (V2 Single Screen) =====
+function getKnownMuscle(name) {
+  const lower = name.toLowerCase();
+  const map = {
+    "bench press":"Chest", push:"Chest", press:"Shoulders", "dumbbell press":"Chest",
+    deadlift:"Back", row:"Back", pulldown:"Back", pull:"Back", "face pull":"Rear Delts",
+    curl:"Biceps", tricep:"Triceps", squat:"Quads", leg:"Legs", lunge:"Legs",
+    calf:"Calves", raise:"Shoulders", fly:"Chest", extension:"Triceps",
+  };
+  for (const [kw, muscle] of Object.entries(map)) {
+    if (lower.includes(kw)) return muscle;
   }
-  const elapsed = session.duration || 0;
-  const duration = elapsed > 0 ? formatStopwatch(elapsed) : null;
-  const volumeKg = totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)}k` : totalVolume;
-  let html = `<div class="session-recap">`;
-  html += `<div><strong>${totalSet}</strong><small>Sets done</small></div>`;
-  html += `<div><strong>${volumeKg}</strong><small>Total kg</small></div>`;
-  html += `<div><strong>${duration || "--:--"}</strong><small>Duration</small></div>`;
-  if (newPRs.length) {
-    html += `<div class="session-recap-pr">🏆 ` + newPRs.map((pr) => `${pr.name}: ${formatWeight(pr.weight)} × ${pr.reps}`).join(" · ") + `</div>`;
-  }
-  html += `</div>`;
-  return html;
+  return null;
 }
 
-function showNotesModal() {
-  document.getElementById("sessionRecap").innerHTML = buildSessionRecap();
-  const session = getTodaySession();
-  document.getElementById("sessionNotesInput").value = session.notes || "";
-  document.getElementById("notesModal").classList.remove("is-hidden");
-}
-
-function hideNotesModal() { document.getElementById("notesModal").classList.add("is-hidden"); }
-
-// ===== SESSION SUMMARY =====
-function showSessionSummary(newPRs) {
+function showEnhancedSummary(newPRs) {
   const session = getTodaySession();
   if (!session) return;
 
-  let totalSets = 0, totalReps = 0, totalVolume = 0;
-  const muscleSet = new Set();
+  let totalSets = 0, totalReps = 0;
   for (const ex of session.exercises) {
     for (const set of ex.sets) {
       if (set.isWarmup) continue;
       if (set.done && Number(set.weight) > 0) {
         totalSets++;
         totalReps += Number(set.reps) || 0;
-        totalVolume += Number(set.weight) * (Number(set.reps) || 0);
       }
     }
   }
   const elapsed = session.duration || 0;
   const duration = elapsed > 0 ? formatStopwatch(elapsed) : "--:--";
 
+  document.getElementById("ssTitle").textContent = "💪 Workout Complete";
   document.getElementById("ssSubtitle").textContent = `${session.workoutName || "Workout"} · ${duration}`;
   document.getElementById("ssGrid").innerHTML = `
     <div class="ss-item"><span class="ss-item-val">${totalSets}</span><span class="ss-item-lbl">Sets</span></div>
     <div class="ss-item"><span class="ss-item-val">${totalReps}</span><span class="ss-item-lbl">Reps</span></div>
-    <div class="ss-item"><span class="ss-item-val">${totalVolume >= 1000 ? (totalVolume / 1000).toFixed(1) + "k" : totalVolume}</span><span class="ss-item-lbl">Volume</span></div>
+    <div class="ss-item"><span class="ss-item-val">${duration}</span><span class="ss-item-lbl">Duration</span></div>
   `;
 
-  // Muscles trained (approximate from exercise names via muscle group map)
-  const exNames = session.exercises.filter((ex) => ex.sets.some((s) => s.done)).map((ex) => ex.name);
-  const muscleChips = [];
-  for (const [exId, muscleGroupId] of Object.entries(MUSCLE_GROUP_MAP)) {
-    const group = MUSCLE_GROUPS.find((m) => m.id === muscleGroupId);
-    if (group && !muscleChips.includes(group.label)) muscleChips.push(group.label);
-  }
-  // Show unique muscle groups from known exercises — simplified for now using name matching
-  const knownExercises = {
-    "bench press":"Chest","push":"Chest","press":"Shoulders","dumbbell press":"Chest",
-    "deadlift":"Back","row":"Back","pulldown":"Back","pull":"Back","face pull":"Rear Delts",
-    "curl":"Biceps","tricep":"Triceps","squat":"Quads","leg":"Legs","lunge":"Legs",
-    "calf":"Calves","raise":"Shoulders","fly":"Chest","extension":"Triceps",
-  };
-  const trainedMuscles = new Set();
-  for (const name of exNames) {
-    const lower = name.toLowerCase();
-    for (const [keyword, muscle] of Object.entries(knownExercises)) {
-      if (lower.includes(keyword)) trainedMuscles.add(muscle);
-    }
-  }
-  document.getElementById("ssMuscles").innerHTML = trainedMuscles.size
-    ? [...trainedMuscles].map((m) => `<span class="ss-muscle-chip">${m}</span>`).join("")
-    : "";
-
-  // PRs
-  const prHtml = newPRs.length
-    ? newPRs.map((pr) => {
-        const typeLabel = pr.type === "weight" ? "🏆 New PR" : pr.type === "reps" ? "📈 Rep PR" : "📊 Volume PR";
-        return `<div class="ss-pr-item">${typeLabel}: ${pr.name.replace(/([A-Z])/g, " $1").trim()} · ${pr.weight} kg × ${pr.reps}</div>`;
+  // PRs: only weight & reps, max 5
+  const prTypes = ["weight", "reps"];
+  const filteredPRs = newPRs.filter((pr) => prTypes.includes(pr.type)).slice(0, 5);
+  const prHtml = filteredPRs.length
+    ? `<div class="ss-section-title">🏆 PRs</div>` + filteredPRs.map((pr) => {
+        const typeLabel = pr.type === "weight" ? "Weight PR" : "Rep PR";
+        const exName = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
+        return `<div class="ss-pr-item"><span class="ss-pr-label">${typeLabel}</span><span class="ss-pr-detail">${exName} · ${pr.weight} kg × ${pr.reps}</span></div>`;
       }).join("")
     : "";
   document.getElementById("ssPrList").innerHTML = prHtml;
-  document.getElementById("ssStartStretch").onclick = () => {
+
+  // Muscle chips (max 4 visible, overflow shows +N)
+  const exNames = session.exercises.filter((ex) => ex.sets.some((s) => s.done)).map((ex) => ex.name);
+  const trainedMuscles = [...new Set(exNames.map((n) => getKnownMuscle(n)).filter(Boolean))];
+  const mc = document.getElementById("ssMuscles");
+  if (trainedMuscles.length) {
+    const visible = trainedMuscles.slice(0, 4);
+    const extra = trainedMuscles.length - 4;
+    mc.innerHTML = visible.map((m) => `<span class="ss-muscle-chip">${m}</span>`).join("") +
+      (extra > 0 ? `<span class="ss-muscle-chip ss-muscle-chip-extra">+${extra}</span>` : "");
+  } else {
+    mc.innerHTML = "";
+  }
+
+  // Recovery Impact (top 3 hardest-hit muscles)
+  const riContainer = document.getElementById("ssRecoveryImpact");
+  const riList = document.getElementById("ssRecoveryList");
+  if (state.recoveryAnalysis !== false && trainedMuscles.length) {
+    const weekSummary = computeMuscleSummary("week");
+    const impacted = trainedMuscles.map((name) => {
+      const mg = MUSCLE_GROUPS.find((m) => m.label === name);
+      if (!mg) return null;
+      const data = weekSummary[mg.id];
+      const sets = data ? data.weeklySets : 0;
+      const days = data ? getRecoveryDays(data.lastTrained) : 99;
+      const level = getRecoveryLevel(days, sets);
+      const scores = { fatigued: 3, recovering: 2, recovered: 1 };
+      return { name, level, score: scores[level] || 0 };
+    }).filter(Boolean).sort((a, b) => b.score - a.score).slice(0, 3);
+    if (impacted.length) {
+      const riConfig = { fatigued: { color: "var(--red)", label: "Fatigued" }, recovering: { color: "var(--yellow)", label: "Recovering" }, recovered: { color: "var(--accent)", label: "Recovered" } };
+      riList.innerHTML = impacted.map((m) => {
+        const cfg = riConfig[m.level];
+        return `<div class="ss-ri-item"><span class="ss-ri-dot" style="background:${cfg.color}"></span><span class="ss-ri-name">${m.name}</span><span class="ss-ri-label" style="color:${cfg.color}">${cfg.label}</span></div>`;
+      }).join("");
+      riContainer.style.display = "";
+    } else {
+      riContainer.style.display = "none";
+    }
+  } else {
+    riContainer.style.display = "none";
+  }
+
+  // Inline notes
+  document.getElementById("ssNotesInput").value = session.notes || "";
+
+  // Actions
+  document.getElementById("ssSkipCoolDown").onclick = () => {
+    if (session.notes !== undefined) {
+      session.notes = document.getElementById("ssNotesInput").value || "";
+      saveState();
+    }
     document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
-    openStretchTimer();
+    finishWorkoutComplete();
   };
-  document.getElementById("ssSkipStretch").onclick = () => {
-    const session = getTodaySession();
-    if (session) { session.stretchDone = false; session.warmupDone = session.warmupDone || false; saveState(); }
+  document.getElementById("ssStartCoolDown").onclick = () => {
+    if (session.notes !== undefined) {
+      session.notes = document.getElementById("ssNotesInput").value || "";
+      saveState();
+    }
     document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
-    renderHome();
+    openCoolDown();
   };
 
   document.getElementById("sessionSummaryOverlay").classList.remove("is-hidden");
+
+  // Auto-start cool down if enabled (2s delay)
+  if (state.autoCooldown) {
+    setTimeout(() => {
+      if (!document.getElementById("sessionSummaryOverlay").classList.contains("is-hidden")) {
+        session.notes = document.getElementById("ssNotesInput").value || "";
+        saveState();
+        document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
+        openCoolDown();
+      }
+    }, 2000);
+  }
 }
+
+function buildRecoveryAdvice(session) {
+  if (state.showRecoveryAdvice === false) return;
+  const container = document.getElementById("ssRecovery");
+  const content = document.getElementById("ssRecoveryContent");
+  if (!container || !content) return;
+  const exNames = session.exercises.filter((ex) => ex.sets.some((s) => s.done)).map((ex) => ex.name);
+  const knownRecovery = {
+    Chest: 48, Shoulders: 48, "Rear Delts": 24, Back: 48,
+    Biceps: 24, Triceps: 24, Quads: 48, Legs: 48, Calves: 24,
+  };
+  const trained = new Set();
+  const knownMap = {
+    "bench press":"Chest", push:"Chest", press:"Shoulders", "dumbbell press":"Chest",
+    deadlift:"Back", row:"Back", pulldown:"Back", pull:"Back", "face pull":"Rear Delts",
+    curl:"Biceps", tricep:"Triceps", squat:"Quads", leg:"Legs", lunge:"Legs",
+    calf:"Calves", raise:"Shoulders", fly:"Chest", extension:"Triceps",
+  };
+  for (const name of exNames) {
+    const lower = name.toLowerCase();
+    for (const [keyword, muscle] of Object.entries(knownMap)) {
+      if (lower.includes(keyword)) trained.add(muscle);
+    }
+  }
+  const items = [...trained].map((muscle) => {
+    const hours = knownRecovery[muscle] || 24;
+    const now = Date.now();
+    const sessionTime = session.finishedAt ? new Date(session.finishedAt).getTime() : now;
+    const elapsed = Math.max(0, Math.floor((now - sessionTime) / 3600000));
+    const remaining = Math.max(0, hours - elapsed);
+    const pct = Math.min(100, Math.round((elapsed / hours) * 100));
+    const color = remaining > 24 ? "var(--red)" : remaining > 12 ? "var(--accent)" : "var(--green)";
+    return `<div class="ss-recovery-item"><span class="ss-recovery-muscle">${muscle}</span><span class="ss-recovery-hours">${remaining}h remaining</span></div>
+      <div class="ss-recovery-bar-wrap"><div class="ss-recovery-bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
+  }).join("");
+  if (items) {
+    container.style.display = "block";
+    content.innerHTML = items;
+  } else {
+    container.style.display = "none";
+  }
+}
+
+
 
 // ===== EXERCISE ANALYTICS =====
 let analyticsExName = "";
@@ -2688,16 +3415,16 @@ function renderExerciseAnalyticsTab(tab) {
 function renderEaOverview(container) {
   const history = getExerciseHistory(analyticsExName);
   const lifetime = getLifetimeVolume(analyticsExName);
-  const prs = loadPRs()[analyticsExName] || {};
+  const prData = getPRsForExercise(analyticsExName);
   const latest = history[history.length - 1] || null;
   const prevMonth = history.filter((h) => h.date >= getDateKey(new Date(Date.now() - 30 * 86400000)));
   const monthChange = prevMonth.length >= 2 ? prevMonth[prevMonth.length - 1].totalVolume - prevMonth[0].totalVolume : null;
 
   container.innerHTML = `
     <div class="ea-grid">
-      <div class="ea-card"><div class="ea-card-title">Best Weight</div><div class="ea-card-val">${prs.weight ? displayWeight(prs.weight) : "—"}</div></div>
-      <div class="ea-card"><div class="ea-card-title">e1RM</div><div class="ea-card-val">${prs.est1RM ? displayWeight(prs.est1RM) : "—"}</div></div>
-      <div class="ea-card"><div class="ea-card-title">Best Set Vol</div><div class="ea-card-val">${prs.bestSetVol ? displayWeight(prs.bestSetVol) : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">Best Weight</div><div class="ea-card-val">${prData.weightPR ? displayWeight(prData.weightPR.value) : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">e1RM</div><div class="ea-card-val">${prData.est1RM ? displayWeight(prData.est1RM.value) : "—"}</div></div>
+      <div class="ea-card"><div class="ea-card-title">Best Set Vol</div><div class="ea-card-val">${prData.volumePR ? displayWeight(prData.volumePR.value) : "—"}</div></div>
       <div class="ea-card"><div class="ea-card-title">Lifetime Vol</div><div class="ea-card-val">${lifetime.volume >= 1000 ? (lifetime.volume / 1000).toFixed(1) + "k" : lifetime.volume || "—"}</div></div>
     </div>
     ${latest ? `<div class="ea-card"><div class="ea-card-title">Last Performed</div><div class="ea-card-val">${latest.workoutName}</div><div class="ea-card-sub">${formatReadableDate(parseDateKey(latest.date))} · ${displayWeight(latest.bestWeight)} best set</div></div>` : ""}
@@ -2713,24 +3440,36 @@ function renderEaVolume(container) {
     container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Complete at least 2 sessions to see volume trend.</p>`;
     return;
   }
-  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
+  if (analyticsChart) {
+    analyticsChart.destroy();
+    analyticsChart = null;
+  }
   const ctx = document.getElementById("eaVolChart").getContext("2d");
   analyticsChart = new Chart(ctx, {
     type: "bar",
     data: {
-      labels: filtered.map((h) => { const d = parseDateKey(h.date); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); }),
-      datasets: [{
-        label: "Volume (kg)",
-        data: filtered.map((h) => h.totalVolume),
-        backgroundColor: "rgba(0,210,106,0.5)",
-        borderColor: "#00d26a",
-        borderWidth: 1,
-      }],
+      labels: filtered.map((h) => {
+        const d = parseDateKey(h.date);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      }),
+      datasets: [
+        {
+          label: "Volume (kg)",
+          data: filtered.map((h) => h.totalVolume),
+          backgroundColor: "rgba(0,210,106,0.5)",
+          borderColor: "#00d26a",
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false }, ticks: { color: "#737373", font: { size: 9 } } }, y: { grid: { color: "#1e1e1e" }, ticks: { color: "#737373", font: { size: 9 } } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#737373", font: { size: 9 } } },
+        y: { grid: { color: "#1e1e1e" }, ticks: { color: "#737373", font: { size: 9 } } },
+      },
     },
   });
 }
@@ -2743,28 +3482,40 @@ function renderEaStrength(container) {
     container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Complete at least 2 sessions to see strength trend.</p>`;
     return;
   }
-  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
+  if (analyticsChart) {
+    analyticsChart.destroy();
+    analyticsChart = null;
+  }
   const ctx = document.getElementById("eaStrChart").getContext("2d");
   analyticsChart = new Chart(ctx, {
     type: "line",
     data: {
-      labels: filtered.map((h) => { const d = parseDateKey(h.date); return d.toLocaleDateString("en-US", { month: "short", day: "numeric" }); }),
-      datasets: [{
-        label: "e1RM (kg)",
-        data: filtered.map((h) => h.est1RM),
-        borderColor: "#00d26a",
-        backgroundColor: "rgba(0,210,106,0.1)",
-        fill: true,
-        tension: 0.3,
-        pointRadius: 3,
-        pointBackgroundColor: "#00d26a",
-        borderWidth: 2,
-      }],
+      labels: filtered.map((h) => {
+        const d = parseDateKey(h.date);
+        return d.toLocaleDateString("en-US", { month: "short", day: "numeric" });
+      }),
+      datasets: [
+        {
+          label: "e1RM (kg)",
+          data: filtered.map((h) => h.est1RM),
+          borderColor: "#00d26a",
+          backgroundColor: "rgba(0,210,106,0.1)",
+          fill: true,
+          tension: 0.3,
+          pointRadius: 3,
+          pointBackgroundColor: "#00d26a",
+          borderWidth: 2,
+        },
+      ],
     },
     options: {
-      responsive: true, maintainAspectRatio: false,
+      responsive: true,
+      maintainAspectRatio: false,
       plugins: { legend: { display: false } },
-      scales: { x: { grid: { display: false }, ticks: { color: "#737373", font: { size: 9 } } }, y: { grid: { color: "#1e1e1e" }, ticks: { color: "#737373", font: { size: 9 } } } },
+      scales: {
+        x: { grid: { display: false }, ticks: { color: "#737373", font: { size: 9 } } },
+        y: { grid: { color: "#1e1e1e" }, ticks: { color: "#737373", font: { size: 9 } } },
+      },
     },
   });
 }
@@ -2775,7 +3526,11 @@ function renderEaHistory(container) {
     container.innerHTML = `<p class="empty-state">No history for this exercise yet.</p>`;
     return;
   }
-  container.innerHTML = history.slice().reverse().map((h) => `
+  container.innerHTML = history
+    .slice()
+    .reverse()
+    .map(
+      (h) => `
     <div class="ea-history-item">
       <div>
         <div class="ea-history-date">${formatReadableDate(parseDateKey(h.date))} · ${h.workoutName}</div>
@@ -2783,50 +3538,52 @@ function renderEaHistory(container) {
       </div>
       <div class="ea-history-stat">${h.bestWeight} kg</div>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
 }
 
 // ===== GOAL TRACKING =====
 function getGoalProgress(goal) {
   if (goal.type === "weight") {
-    const weight = state.user ? state.user.weight : null;
+    const entry = typeof latestWeight === "function" ? latestWeight() : null;
+    const weight = entry ? entry.weight : null;
     return weight ? Math.min(100, Math.round((weight / goal.target) * 100)) : 0;
   }
   if (goal.type === "bench" || goal.type === "squat" || goal.type === "deadlift") {
-    const prs = loadPRs();
     const nameMap = { bench: "Flat Barbell Bench Press", squat: "Barbell Back Squat", deadlift: "Conventional Deadlift" };
     const exName = nameMap[goal.type] || goal.name;
-    const pr = prs[exName] || prs[goal.name];
-    return pr && pr.weight ? Math.min(100, Math.round((pr.weight / goal.target) * 100)) : 0;
+    const prData = getPRsForExercise(exName);
+    return prData.weightPR ? Math.min(100, Math.round((prData.weightPR.value / goal.target) * 100)) : 0;
   }
   if (goal.type === "frequency") {
     const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
     return Math.min(100, Math.round((weekSessions.length / goal.target) * 100));
   }
   if (goal.type === "custom") {
-    const prs = loadPRs();
-    const pr = prs[goal.name];
-    return pr && pr.weight ? Math.min(100, Math.round((pr.weight / goal.target) * 100)) : 0;
+    const prData = getPRsForExercise(goal.name);
+    return prData.weightPR ? Math.min(100, Math.round((prData.weightPR.value / goal.target) * 100)) : 0;
   }
   return 0;
 }
 
 function getGoalValue(goal) {
-  if (goal.type === "weight") return state.user ? state.user.weight : 0;
+  if (goal.type === "weight") {
+    const entry = typeof latestWeight === "function" ? latestWeight() : null;
+    return entry ? entry.weight : 0;
+  }
   if (goal.type === "bench" || goal.type === "squat" || goal.type === "deadlift") {
-    const prs = loadPRs();
     const nameMap = { bench: "Flat Barbell Bench Press", squat: "Barbell Back Squat", deadlift: "Conventional Deadlift" };
     const exName = nameMap[goal.type] || goal.name;
-    const pr = prs[exName] || prs[goal.name];
-    return pr ? pr.weight : 0;
+    const prData = getPRsForExercise(exName);
+    return prData.weightPR ? prData.weightPR.value : 0;
   }
   if (goal.type === "frequency") {
     return state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000))).length;
   }
   if (goal.type === "custom") {
-    const prs = loadPRs();
-    const pr = prs[goal.name];
-    return pr ? pr.weight : 0;
+    const prData = getPRsForExercise(goal.name);
+    return prData.weightPR ? prData.weightPR.value : 0;
   }
   return 0;
 }
@@ -2836,11 +3593,12 @@ function renderGoals() {
   const goals = state.goals || [];
   const goalLabels = { weight: "Body Weight", bench: "Bench Press", squat: "Squat", deadlift: "Deadlift", frequency: "Weekly Sessions", custom: "Custom" };
 
-  let html = goals.map((goal, i) => {
-    const pct = getGoalProgress(goal);
-    const current = getGoalValue(goal);
-    const target = goal.target;
-    return `<div class="goal-card" data-goal-index="${i}">
+  let html = goals
+    .map((goal, i) => {
+      const pct = getGoalProgress(goal);
+      const current = getGoalValue(goal);
+      const target = goal.target;
+      return `<div class="goal-card" data-goal-index="${i}">
       <div class="goal-card-header">
         <span class="goal-card-name">${goalLabels[goal.type] || goal.name}</span>
         <span class="goal-card-target">${current} / ${target} ${goal.type === "frequency" ? "sessions" : "kg"}</span>
@@ -2848,7 +3606,8 @@ function renderGoals() {
       <div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
       <div class="goal-bar-pct">${pct}%</div>
     </div>`;
-  }).join("");
+    })
+    .join("");
 
   html += `<button class="goal-add-btn" id="goalAddBtn">+ Add Goal</button>`;
   container.innerHTML = html;
@@ -2928,28 +3687,28 @@ const BUILDER_TEMPLATES = {
       6: ["Push", "Pull", "Legs", "Upper", "Lower", "Full Body"],
     },
     exercises: {
-      "Push": [
+      Push: [
         { name: "Flat Barbell Bench Press", sets: 4, reps: "8-12" },
         { name: "Incline Dumbbell Press", sets: 3, reps: "10-12" },
         { name: "Dumbbell Lateral Raise", sets: 3, reps: "12-15" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "12-15" },
         { name: "Overhead Tricep Extension", sets: 3, reps: "10-12" },
       ],
-      "Pull": [
+      Pull: [
         { name: "Lat Pulldown", sets: 4, reps: "8-12" },
         { name: "Seated Cable Row", sets: 3, reps: "10-12" },
         { name: "Face Pulls", sets: 3, reps: "15-20" },
         { name: "Dumbbell Curl", sets: 3, reps: "10-12" },
         { name: "Hammer Curl", sets: 3, reps: "10-12" },
       ],
-      "Legs": [
+      Legs: [
         { name: "Barbell Back Squat", sets: 4, reps: "8-10" },
         { name: "Romanian Deadlift", sets: 3, reps: "10-12" },
         { name: "Leg Press", sets: 3, reps: "10-12" },
         { name: "Walking Lunges", sets: 3, reps: "10-12" },
         { name: "Standing Calf Raise", sets: 3, reps: "12-15" },
       ],
-      "Upper": [
+      Upper: [
         { name: "Flat Barbell Bench Press", sets: 4, reps: "8-12" },
         { name: "Bent Over Row", sets: 4, reps: "8-12" },
         { name: "Incline Dumbbell Press", sets: 3, reps: "10-12" },
@@ -2958,7 +3717,7 @@ const BUILDER_TEMPLATES = {
         { name: "Dumbbell Curl", sets: 3, reps: "10-12" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "12-15" },
       ],
-      "Lower": [
+      Lower: [
         { name: "Barbell Back Squat", sets: 4, reps: "8-10" },
         { name: "Romanian Deadlift", sets: 3, reps: "10-12" },
         { name: "Leg Press", sets: 3, reps: "10-12" },
@@ -2977,32 +3736,32 @@ const BUILDER_TEMPLATES = {
   strength: {
     splits: { 3: ["Push", "Pull", "Legs"], 4: ["Upper", "Lower", "Push", "Pull"], 5: ["Heavy Upper", "Heavy Lower", "Push", "Pull", "Full Body"] },
     exercises: {
-      "Push": [
+      Push: [
         { name: "Flat Barbell Bench Press", sets: 5, reps: "3-5" },
         { name: "Overhead Press", sets: 4, reps: "3-5" },
         { name: "Incline Dumbbell Press", sets: 3, reps: "6-8" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "8-10" },
       ],
-      "Pull": [
+      Pull: [
         { name: "Conventional Deadlift", sets: 4, reps: "3-5" },
         { name: "Weighted Pull-Up", sets: 4, reps: "4-6" },
         { name: "Barbell Row", sets: 4, reps: "5-7" },
         { name: "Face Pulls", sets: 3, reps: "12-15" },
       ],
-      "Legs": [
+      Legs: [
         { name: "Barbell Back Squat", sets: 5, reps: "3-5" },
         { name: "Romanian Deadlift", sets: 4, reps: "5-7" },
         { name: "Leg Press", sets: 3, reps: "8-10" },
         { name: "Standing Calf Raise", sets: 3, reps: "10-12" },
       ],
-      "Upper": [
+      Upper: [
         { name: "Flat Barbell Bench Press", sets: 5, reps: "3-5" },
         { name: "Weighted Pull-Up", sets: 4, reps: "4-6" },
         { name: "Overhead Press", sets: 4, reps: "3-5" },
         { name: "Barbell Row", sets: 4, reps: "5-7" },
         { name: "Dumbbell Curl", sets: 3, reps: "8-10" },
       ],
-      "Lower": [
+      Lower: [
         { name: "Barbell Back Squat", sets: 5, reps: "3-5" },
         { name: "Conventional Deadlift", sets: 4, reps: "3-5" },
         { name: "Leg Press", sets: 3, reps: "8-10" },
@@ -3039,26 +3798,26 @@ const BUILDER_TEMPLATES = {
         { name: "Overhead Press", sets: 3, reps: "10-12" },
         { name: "Farmer's Carry", sets: 3, reps: "30s" },
       ],
-      "Upper": [
+      Upper: [
         { name: "Flat Barbell Bench Press", sets: 3, reps: "10-12" },
         { name: "Bent Over Row", sets: 3, reps: "10-12" },
         { name: "Overhead Press", sets: 3, reps: "10-12" },
         { name: "Lat Pulldown", sets: 3, reps: "10-12" },
         { name: "Dumbbell Curl", sets: 2, reps: "12-15" },
       ],
-      "Lower": [
+      Lower: [
         { name: "Barbell Back Squat", sets: 3, reps: "10-12" },
         { name: "Romanian Deadlift", sets: 3, reps: "10-12" },
         { name: "Leg Press", sets: 3, reps: "12-15" },
         { name: "Walking Lunges", sets: 3, reps: "10-12" },
       ],
-      "Push": [
+      Push: [
         { name: "Flat Barbell Bench Press", sets: 3, reps: "10-12" },
         { name: "Incline Dumbbell Press", sets: 3, reps: "12-15" },
         { name: "Dumbbell Lateral Raise", sets: 3, reps: "15-20" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "12-15" },
       ],
-      "Pull": [
+      Pull: [
         { name: "Lat Pulldown", sets: 3, reps: "10-12" },
         { name: "Seated Cable Row", sets: 3, reps: "10-12" },
         { name: "Face Pulls", sets: 3, reps: "15-20" },
@@ -3076,7 +3835,7 @@ const BUILDER_TEMPLATES = {
         { name: "Overhead Press", sets: 2, reps: "8-12" },
         { name: "Dumbbell Curl", sets: 2, reps: "10-15" },
       ],
-      "Upper": [
+      Upper: [
         { name: "Flat Barbell Bench Press", sets: 3, reps: "8-12" },
         { name: "Bent Over Row", sets: 3, reps: "8-12" },
         { name: "Incline Dumbbell Press", sets: 3, reps: "10-12" },
@@ -3084,25 +3843,25 @@ const BUILDER_TEMPLATES = {
         { name: "Dumbbell Lateral Raise", sets: 2, reps: "12-15" },
         { name: "Dumbbell Curl", sets: 2, reps: "10-12" },
       ],
-      "Lower": [
+      Lower: [
         { name: "Barbell Back Squat", sets: 3, reps: "8-12" },
         { name: "Romanian Deadlift", sets: 3, reps: "8-12" },
         { name: "Leg Press", sets: 3, reps: "10-12" },
         { name: "Standing Calf Raise", sets: 3, reps: "12-15" },
       ],
-      "Push": [
+      Push: [
         { name: "Flat Barbell Bench Press", sets: 3, reps: "8-12" },
         { name: "Overhead Press", sets: 3, reps: "8-12" },
         { name: "Dumbbell Lateral Raise", sets: 3, reps: "12-15" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "10-12" },
       ],
-      "Pull": [
+      Pull: [
         { name: "Lat Pulldown", sets: 3, reps: "8-12" },
         { name: "Seated Cable Row", sets: 3, reps: "8-12" },
         { name: "Face Pulls", sets: 3, reps: "12-15" },
         { name: "Dumbbell Curl", sets: 3, reps: "10-12" },
       ],
-      "Legs": [
+      Legs: [
         { name: "Barbell Back Squat", sets: 3, reps: "8-12" },
         { name: "Romanian Deadlift", sets: 3, reps: "8-12" },
         { name: "Leg Press", sets: 3, reps: "10-12" },
@@ -3112,21 +3871,25 @@ const BUILDER_TEMPLATES = {
     },
   },
   athletic: {
-    splits: { 3: ["Power", "Strength", "Conditioning"], 4: ["Upper Power", "Lower Power", "Push", "Pull"], 5: ["Power", "Strength", "Push", "Pull", "Full Body"] },
+    splits: {
+      3: ["Power", "Strength", "Conditioning"],
+      4: ["Upper Power", "Lower Power", "Push", "Pull"],
+      5: ["Power", "Strength", "Push", "Pull", "Full Body"],
+    },
     exercises: {
-      "Power": [
+      Power: [
         { name: "Barbell Back Squat", sets: 4, reps: "3-5" },
         { name: "Conventional Deadlift", sets: 4, reps: "3-5" },
         { name: "Box Jump", sets: 3, reps: "5-8" },
         { name: "Medicine Ball Slam", sets: 3, reps: "8-10" },
       ],
-      "Strength": [
+      Strength: [
         { name: "Flat Barbell Bench Press", sets: 4, reps: "5-7" },
         { name: "Bent Over Row", sets: 4, reps: "5-7" },
         { name: "Overhead Press", sets: 3, reps: "5-7" },
         { name: "Weighted Pull-Up", sets: 3, reps: "5-7" },
       ],
-      "Conditioning": [
+      Conditioning: [
         { name: "Kettlebell Swing", sets: 3, reps: "15-20" },
         { name: "Battle Ropes", sets: 3, reps: "30s" },
         { name: "Farmer's Carry", sets: 3, reps: "30s" },
@@ -3144,13 +3907,13 @@ const BUILDER_TEMPLATES = {
         { name: "Romanian Deadlift", sets: 3, reps: "6-8" },
         { name: "Kettlebell Swing", sets: 3, reps: "15-20" },
       ],
-      "Push": [
+      Push: [
         { name: "Flat Barbell Bench Press", sets: 3, reps: "8-10" },
         { name: "Overhead Press", sets: 3, reps: "8-10" },
         { name: "Dumbbell Lateral Raise", sets: 3, reps: "12-15" },
         { name: "Tricep Rope Pushdown", sets: 3, reps: "10-12" },
       ],
-      "Pull": [
+      Pull: [
         { name: "Bent Over Row", sets: 3, reps: "8-10" },
         { name: "Lat Pulldown", sets: 3, reps: "8-10" },
         { name: "Face Pulls", sets: 3, reps: "15-20" },
@@ -3176,11 +3939,20 @@ function generateProgram(goal, days, equipment, duration) {
   splits.forEach((splitName, dayIdx) => {
     const exList = template.exercises[splitName];
     if (!exList) return;
-    const dayExercises = equipment === "basic"
-      ? exList.filter((ex) => !ex.name.toLowerCase().includes("cable") && !ex.name.toLowerCase().includes("machine") && !ex.name.toLowerCase().includes("lat"))
-      : equipment === "home"
-        ? exList.filter((ex) => !ex.name.toLowerCase().includes("barbell") && !ex.name.toLowerCase().includes("dumbbell") && !ex.name.toLowerCase().includes("cable") && !ex.name.toLowerCase().includes("machine"))
-        : exList;
+    const dayExercises =
+      equipment === "basic"
+        ? exList.filter(
+            (ex) => !ex.name.toLowerCase().includes("cable") && !ex.name.toLowerCase().includes("machine") && !ex.name.toLowerCase().includes("lat"),
+          )
+        : equipment === "home"
+          ? exList.filter(
+              (ex) =>
+                !ex.name.toLowerCase().includes("barbell") &&
+                !ex.name.toLowerCase().includes("dumbbell") &&
+                !ex.name.toLowerCase().includes("cable") &&
+                !ex.name.toLowerCase().includes("machine"),
+            )
+          : exList;
 
     const scaledSets = duration <= 30 ? dayExercises.slice(0, 3) : duration <= 45 ? dayExercises.slice(0, 4) : dayExercises;
     program.push({
@@ -3205,36 +3977,13 @@ function generateWarmup(workingWeight) {
   if (!w || w <= 0) return [];
   const sets = [
     { bar: 20, reps: 10, pct: "Bar" },
-    { bar: Math.round(w * 0.4 / 5) * 5 || 20, reps: 8, pct: "40%" },
-    { bar: Math.round(w * 0.6 / 5) * 5, reps: 5, pct: "60%" },
-    { bar: Math.round(w * 0.8 / 5) * 5, reps: 3, pct: "80%" },
+    { bar: Math.round((w * 0.4) / 5) * 5 || 20, reps: 8, pct: "40%" },
+    { bar: Math.round((w * 0.6) / 5) * 5, reps: 5, pct: "60%" },
+    { bar: Math.round((w * 0.8) / 5) * 5, reps: 3, pct: "80%" },
     { bar: w, reps: 1, pct: "Working" },
   ];
   return sets.filter((s) => s.bar <= w && s.bar >= 20);
 }
-
-function completeSession(notes) {
-  const session = getTodaySession();
-  const wasFinished = !!session.finishedAt;
-  session.finishedAt = new Date().toISOString();
-  session.notes = notes || "";
-  const newPRs = checkPRs(session);
-  if (!wasFinished) {
-    state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
-  }
-  hideNotesModal();
-  stopStopwatch();
-  saveAndRender();
-  currentWorkoutId = null;
-  showSessionSummary(newPRs);
-}
-
-document.getElementById("saveNotesButton").addEventListener("click", () => {
-  completeSession(document.getElementById("sessionNotesInput").value);
-});
-document.getElementById("skipNotesButton").addEventListener("click", () => completeSession(""));
-document.getElementById("notesModalClose").addEventListener("click", hideNotesModal);
-document.getElementById("notesModal").addEventListener("click", (e) => { if (e.target === e.currentTarget) hideNotesModal(); });
 
 // ===== EVENT LISTENERS: NAVIGATION =====
 document.getElementById("wsBackBtn").addEventListener("click", closeWorkout);
@@ -3301,43 +4050,43 @@ document.getElementById("bsEditOverlay").addEventListener("click", closeEditBott
 document.getElementById("esRepsMinus").addEventListener("click", () => {
   const step = state.repInc || 1;
   editSetReps = Math.max(1, editSetReps - step);
-  document.getElementById("esRepsValue").textContent = editSetReps;
+  updateEditSetRepsDisplay();
 });
 document.getElementById("esRepsPlus").addEventListener("click", () => {
   const step = state.repInc || 1;
   editSetReps = Math.min(50, editSetReps + step);
-  document.getElementById("esRepsValue").textContent = editSetReps;
+  updateEditSetRepsDisplay();
 });
 
 document.getElementById("esWeightMinus5").addEventListener("click", () => {
   const step = (state.weightInc || 1) * 5;
   editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 document.getElementById("esWeightMinus2").addEventListener("click", () => {
   const step = (state.weightInc || 1) * 2.5;
   editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 document.getElementById("esWeightMinus1").addEventListener("click", () => {
   const step = state.weightInc || 1;
   editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 document.getElementById("esWeightPlus1").addEventListener("click", () => {
   const step = state.weightInc || 1;
   editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 document.getElementById("esWeightPlus2").addEventListener("click", () => {
   const step = (state.weightInc || 1) * 2.5;
   editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 document.getElementById("esWeightPlus5").addEventListener("click", () => {
   const step = (state.weightInc || 1) * 5;
   editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
-  document.getElementById("esWeightValue").textContent = editSetWeight;
+  updateEditSetWeightDisplay();
 });
 
 document.getElementById("esCompleteBtn").addEventListener("click", completeSetFromSheet);
@@ -3352,25 +4101,44 @@ document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
 });
 
 // ===== REST TIMER CONTROLS =====
-document.getElementById("rtAdd30").addEventListener("click", () => { restTimerSeconds += 30; updateRestTimerDisplay(); });
-document.getElementById("rtReset").addEventListener("click", () => { restTimerSeconds = state.restTimer || DEFAULT_REST; updateRestTimerDisplay(); });
-document.getElementById("rtSkip").addEventListener("click", () => { clearRestTimer(); });
+document.getElementById("rtAdd30").addEventListener("click", () => {
+  restTimerSeconds += 30;
+  updateRestTimerDisplay();
+});
+document.getElementById("rtReset").addEventListener("click", () => {
+  restTimerSeconds = state.restTimer || DEFAULT_REST;
+  updateRestTimerDisplay();
+});
+document.getElementById("rtSkip").addEventListener("click", () => {
+  clearRestTimer();
+});
 
 // ===== EXERCISE DETAIL TAB SWITCHING =====
 document.getElementById("screen-ed").addEventListener("click", (e) => {
   const tab = e.target.closest(".ed-tab");
   if (!tab) return;
   document.querySelectorAll(".ed-tab").forEach((t) => t.classList.toggle("is-active", t === tab));
-  document.querySelectorAll(".ed-content").forEach((c) => c.classList.toggle("is-active", c.id === "edTab" + tab.dataset.edTab.charAt(0).toUpperCase() + tab.dataset.edTab.slice(1)));
+  document
+    .querySelectorAll(".ed-content")
+    .forEach((c) => c.classList.toggle("is-active", c.id === "edTab" + tab.dataset.edTab.charAt(0).toUpperCase() + tab.dataset.edTab.slice(1)));
   if (tab.dataset.edTab === "analyze") renderEdAnalyze();
 });
 
 // ===== EXERCISE NOTES =====
 function getExerciseNotes(exName) {
-  try { const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {}; return n[exName] || ""; } catch { return ""; }
+  try {
+    const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {};
+    return n[exName] || "";
+  } catch {
+    return "";
+  }
 }
 function setExerciseNotes(exName, text) {
-  try { const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {}; n[exName] = text; localStorage.setItem("wl_exercise_notes", JSON.stringify(n)); } catch {}
+  try {
+    const n = JSON.parse(localStorage.getItem("wl_exercise_notes")) || {};
+    n[exName] = text;
+    localStorage.setItem("wl_exercise_notes", JSON.stringify(n));
+  } catch {}
 }
 
 function renderEdNotes(exName) {
@@ -3413,12 +4181,21 @@ function getLastExerciseSession(exName) {
 function renderPreviousPerformance(exName) {
   const container = document.getElementById("edPerformanceCard");
   const last = getLastExerciseSession(exName);
-  if (!last) { container.innerHTML = ""; return; }
+  if (!last) {
+    container.innerHTML = "";
+    return;
+  }
   const daysLabel = last.daysAgo === 0 ? "Today" : last.daysAgo === 1 ? "Yesterday" : `${last.daysAgo} Days Ago`;
+  const prData = getPRsForExercise(exName);
+  const hasPR = !!(prData.weightPR || prData.repPR || prData.volumePR);
   container.innerHTML = `
     <div class="ed-prev-perf">
-      <div class="ed-prev-perf-header">Last Session</div>
-      <div class="ed-prev-perf-sets">${last.sets.map((s) => `<span class="ed-prev-perf-set">${displayWeight(Number(s.weight))} × ${s.reps}</span>`).join("")}</div>
+      <div class="ed-prev-perf-header">Last Session${hasPR ? ' <span class="pr-badge pr-badge--weight">PR</span>' : ""}</div>
+      <div class="ed-prev-perf-sets">${last.sets.map((s) => {
+        let badge = "";
+        if (prData.weightPR && Number(s.weight) >= prData.weightPR.value) badge = `<span class="pr-badge pr-badge--weight">Best</span>`;
+        return `<span class="ed-prev-perf-set">${displayWeight(Number(s.weight))} × ${s.reps}${badge}</span>`;
+      }).join("")}</div>
       <div class="ed-prev-perf-footer">Best Set: ${displayWeight(Number(last.bestSet.weight))} × ${last.bestSet.reps} · ${daysLabel}</div>
     </div>`;
 }
@@ -3446,7 +4223,10 @@ function getTargetSuggestion(exName) {
 function renderTargetCard(exName) {
   const container = document.getElementById("edTargetCard");
   const suggestion = getTargetSuggestion(exName);
-  if (!suggestion) { container.innerHTML = ""; return; }
+  if (!suggestion) {
+    container.innerHTML = "";
+    return;
+  }
   container.innerHTML = `
     <div class="ed-target">
       <div class="ed-target-header">Suggested</div>
@@ -3461,7 +4241,10 @@ function renderSetProgress(ex) {
   const working = ex.sets.filter((s) => !s.isWarmup);
   const done = working.filter((s) => s.done);
   const total = working.length;
-  if (total === 0) { container.innerHTML = ""; return; }
+  if (total === 0) {
+    container.innerHTML = "";
+    return;
+  }
   const allDone = done.length === total;
   if (allDone) {
     container.innerHTML = `<div class="ed-progress is-complete">
@@ -3470,7 +4253,7 @@ function renderSetProgress(ex) {
     </div>`;
   } else {
     container.innerHTML = `<div class="ed-progress">
-      <span class="ed-progress-dots">${working.map((s) => s.done ? "✓" : "○").join(" ")}</span>
+      <span class="ed-progress-dots">${working.map((s) => (s.done ? "✓" : "○")).join(" ")}</span>
       <span class="ed-progress-label">${done.length} / ${total} Sets</span>
     </div>`;
   }
@@ -3484,11 +4267,13 @@ function renderExerciseCompletion(ex) {
   const session = getTodaySession();
   const idx = session ? session.exercises.indexOf(ex) : -1;
   const hasNext = idx >= 0 && idx < session.exercises.length - 1;
+  const isLastExercise = !hasNext && isWorkoutComplete();
   const autoNext = state.autoNext;
   return `<div class="ed-ex-complete" id="edExComplete">
     <span class="ed-ex-complete-icon">✓</span>
     <span class="ed-ex-complete-label">Exercise Complete</span>
     ${hasNext ? (autoNext ? "" : `<button class="ed-ex-complete-btn" id="edNextExBtn">Open Next Exercise</button>`) : ""}
+    ${isLastExercise ? `<button class="ed-ex-complete-btn ed-finish-btn" id="edFinishBtn">Finish Workout</button>` : ""}
   </div>`;
 }
 
@@ -3498,7 +4283,8 @@ function renderWarmupStatus(ex) {
   if (warmups.length === 0) return "";
   const done = warmups.filter((s) => s.done).length;
   const total = warmups.length;
-  if (done === total) return `<div class="ed-wu-status is-done">
+  if (done === total)
+    return `<div class="ed-wu-status is-done">
     <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
     <span class="ed-wu-badge">✓</span>
   </div>`;
@@ -3538,9 +4324,9 @@ function copyLastSession() {
 function renderEdAnalyze() {
   const container = document.getElementById("edTabAnalyze");
   const history = getExerciseHistory(currentExName);
-  const prs = loadPRs()[currentExName] || {};
+  const prData = getPRsForExercise(currentExName);
   const last = getLastExerciseSession(currentExName);
-  if (!last && !prs.weight) {
+  if (!last && !prData.weightPR) {
     container.innerHTML = `<p class="ed-empty">Log some sets to see analysis.</p>`;
     return;
   }
@@ -3552,13 +4338,15 @@ function renderEdAnalyze() {
       <div class="ea-card-sub">${last.daysAgo === 0 ? "Today" : last.daysAgo + " days ago"} · ${last.workoutName}</div>
     </div>`;
   }
+  const wPR = prData.weightPR;
+  const ePR = prData.est1RM;
   html += `<div class="ea-card"><div class="ea-card-title">Best Set</div>
-    <div class="ea-card-val">${prs.weight ? displayWeight(prs.weight) + " × " + (prs.reps || "—") : "—"}</div></div>`;
+    <div class="ea-card-val">${wPR ? displayWeight(wPR.value) + " × " + (wPR.reps || "—") : "—"}</div></div>`;
   html += `<div class="ea-card"><div class="ea-card-title">e1RM</div>
-    <div class="ea-card-val">${prs.est1RM ? displayWeight(prs.est1RM) : "—"}</div></div>`;
+    <div class="ea-card-val">${ePR ? displayWeight(ePR.value) : "—"}</div></div>`;
   html += `<div class="ea-card"><div class="ea-card-title">Personal Records</div>
-    <div class="ea-card-val">${prs.date ? formatReadableDate(parseDateKey(prs.date)) : "—"}</div>
-    ${prs.weight ? `<div class="ea-card-sub">${displayWeight(prs.weight)} × ${prs.reps || "—"}</div>` : ""}</div>`;
+    <div class="ea-card-val">${wPR ? formatReadableDate(parseDateKey(wPR.date)) : "—"}</div>
+    ${wPR ? `<div class="ea-card-sub">${displayWeight(wPR.value)} × ${wPR.reps || "—"}</div>` : ""}</div>`;
   if (history.length >= 2) {
     const first = history[0].bestWeight;
     const latest = history[history.length - 1].bestWeight;
@@ -3578,7 +4366,6 @@ function renderEdAnalyze() {
   container.innerHTML = html;
 }
 
-
 // ===== SESSIONS TAB =====
 function renderSessionsTab() {
   renderSessionLog();
@@ -3590,27 +4377,39 @@ function renderSessionsTab() {
 
 function renderSessionLog() {
   const container = document.getElementById("sessionLog");
-  const logs = state.sessions.filter((s) => s.finishedAt).slice().sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  const logs = state.sessions
+    .filter((s) => s.finishedAt)
+    .slice()
+    .sort((a, b) => b.dateKey.localeCompare(a.dateKey));
   container.innerHTML = logs.length
-    ? logs.slice(0, 10).map((s) => {
-        const c = getCompletion(s);
-        const d = s.duration ? formatStopwatch(s.duration) : "";
-        return `<div class="log-item"><div><strong>${s.workoutName}</strong><span>${formatReadableDate(parseDateKey(s.dateKey))}</span></div><span>${d ? d + " · " : ""}${c.done}/${c.total}</span></div>`;
-      }).join("")
+    ? logs
+        .slice(0, 10)
+        .map((s) => {
+          const c = getCompletion(s);
+          const d = s.duration ? formatStopwatch(s.duration) : "";
+          return `<div class="log-item"><div><strong>${s.workoutName}</strong><span>${formatReadableDate(parseDateKey(s.dateKey))}</span></div><span>${d ? d + " · " : ""}${c.done}/${c.total}</span></div>`;
+        })
+        .join("")
     : `<p class="empty-state">No finished sessions yet.</p>`;
 }
 
 function renderPRBoard() {
   const container = document.getElementById("prGrid");
-  const prs = loadPRs();
-  const entries = Object.entries(prs).sort((a, b) => b[1].date.localeCompare(a[1].date));
+  const allPRs = getAllPRs();
+  const entries = Object.entries(allPRs).sort((a, b) => {
+    const aDate = a[1].weightPR?.date || a[1].volumePR?.date || "";
+    const bDate = b[1].weightPR?.date || b[1].volumePR?.date || "";
+    return bDate.localeCompare(aDate);
+  });
   container.innerHTML = entries.length
-    ? entries.slice(0, 8).map(([name, data]) => {
-        const wLabel = data.weight ? displayWeight(data.weight) : "—";
-        const rLabel = data.reps ? `${data.reps} reps` : "—";
-        const volLabel = data.bestSetVol ? displayWeight(data.bestSetVol) : "—";
-        const estLabel = data.est1RM ? displayWeight(data.est1RM) : "—";
-        return `<div class="pr-card" onclick="showExerciseAnalytics('${name.replace(/'/g, "\\'")}')">
+    ? entries
+        .slice(0, 8)
+        .map(([name, data]) => {
+          const wLabel = data.weightPR ? displayWeight(data.weightPR.value) : "—";
+          const rLabel = data.repPR ? `${data.repPR.value} reps` : data.weightPR ? `${data.weightPR.reps} reps` : "—";
+          const volLabel = data.volumePR ? displayWeight(data.volumePR.value) : "—";
+          const estLabel = data.est1RM ? displayWeight(data.est1RM.value) : "—";
+          return `<div class="pr-card" onclick="showExerciseAnalytics('${name.replace(/'/g, "\\'")}')">
           <strong>${name.replace(/([A-Z])/g, " $1").trim()}</strong>
           <div class="pr-stats">
             <span class="pr-stat"><span class="pr-stat-val">${wLabel}</span><span class="pr-stat-lbl">Best</span></span>
@@ -3619,16 +4418,18 @@ function renderPRBoard() {
             <span class="pr-stat"><span class="pr-stat-val">${colLabel(volLabel)}</span><span class="pr-stat-lbl">Set Vol</span></span>
           </div>
         </div>`;
-      }).join("")
+        })
+        .join("")
     : `<p class="empty-state">Set a PR to see it here.</p>`;
 }
 
-function colLabel(v) { return v === "—" ? v : v; }
+function colLabel(v) {
+  return v === "—" ? v : v;
+}
 
 function renderWeeklyReview() {
   const container = document.getElementById("weeklyReviewCard");
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  const prs = loadPRs();
 
   if (weekSessions.length === 0) {
     container.innerHTML = `<p class="empty-state">Complete a session to see your weekly review.</p>`;
@@ -3636,8 +4437,16 @@ function renderWeeklyReview() {
   }
 
   const totalSets = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
-  const totalKg = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-  const prCount = Object.keys(prs).length;
+  const totalKg = weekSessions.reduce(
+    (s, ses) =>
+      s +
+      ses.exercises.reduce(
+        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+        0,
+      ),
+    0,
+  );
+  const prCount = getPRCount();
   const sessionsCount = weekSessions.length;
   const proteinPct = getWeeklyProteinAdherence();
 
@@ -3650,9 +4459,10 @@ function renderWeeklyReview() {
   const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
   const recentWeek = log.filter((e) => e.date >= weekAgo);
   const prevWeek = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-  const bwChange = (recentWeek.length >= 2 && prevWeek.length >= 2)
-    ? ((recentWeek.reduce((s, e) => s + e.weight, 0) / recentWeek.length) - (prevWeek.reduce((s, e) => s + e.weight, 0) / prevWeek.length)).toFixed(1)
-    : "--";
+  const bwChange =
+    recentWeek.length >= 2 && prevWeek.length >= 2
+      ? (recentWeek.reduce((s, e) => s + e.weight, 0) / recentWeek.length - prevWeek.reduce((s, e) => s + e.weight, 0) / prevWeek.length).toFixed(1)
+      : "--";
 
   container.innerHTML = `
     <div class="wr-grid">
@@ -3665,10 +4475,43 @@ function renderWeeklyReview() {
       <div class="wr-item"><strong>${strengthLabel}</strong><small>Strength</small></div>
       <div class="wr-item"><strong>${bwChange !== "--" ? (Number(bwChange) > 0 ? "+" : "") + bwChange + "kg" : "--"}</strong><small>Bodyweight</small></div>
       <div class="wr-item"><strong>${proteinPct !== null ? Math.round(proteinPct) + "%" : "--"}</strong><small>Protein</small></div>
-      <div class="wr-item"><strong>${Math.round(totalKg / (sessionsCount || 1) / 100) / 10 || "--"}</strong><small>Avg/Session</small></div>
+      <div class="wr-item"><strong>—</strong><small></small></div>
     </div>
+    ${(() => {
+      const summary = computeMuscleSummary("week");
+      const entries = Object.entries(summary).map(([id, m]) => ({ id, ...m })).sort((a, b) => b.weeklySets - a.weeklySets);
+      const mostTrained = entries.length > 0 && entries[0].weeklySets > 0 ? entries[0].id : null;
+      const mostTrainedLabel = mostTrained ? (mostTrained.charAt(0).toUpperCase() + mostTrained.slice(1)) : "—";
+      const missed = entries.filter((m) => m.weeklySets === 0).length;
+      return `<div class="wr-grid">
+        <div class="wr-item"><strong>${mostTrainedLabel}</strong><small>Most Trained</small></div>
+        <div class="wr-item"><strong>${missed}</strong><small>Missed Muscles</small></div>
+        <div class="wr-item"><strong>${getMuscleCoverageScore(summary)}%</strong><small>Coverage</small></div>
+        <div class="wr-item"><strong>${Math.round(totalKg / (sessionsCount || 1) / 100) / 10 || "--"}</strong><small>Avg/Session</small></div>
+      </div>`;
+    })()}
+    ${state.recoveryAnalysis !== false ? (() => {
+      const summary = computeMuscleSummary("week");
+      const entries = Object.entries(summary).map(([id, m]) => ({ id, ...m }));
+      let fatigued = 0, recovering = 0, recovered = 0;
+      for (const e of entries) {
+        const days = getRecoveryDays(e.lastTrained);
+        const level = getRecoveryLevel(days, e.weeklySets);
+        if (level === "fatigued") fatigued++;
+        else if (level === "recovering") recovering++;
+        else recovered++;
+      }
+      const total = fatigued + recovering + recovered;
+      if (total === 0) return "";
+      return `<div class="wr-rec-balance"><span class="wr-rec-dot wr-rec-fatigued" style="background:var(--red)"></span>${fatigued} Fatigued <span class="wr-rec-dot wr-rec-recovering" style="background:var(--yellow)"></span>${recovering} Recovering <span class="wr-rec-dot wr-rec-recovered" style="background:var(--accent)"></span>${recovered} Recovered</div>`;
+    })() : ""}
     <div class="wr-note">${getWeeklyNote(strengthPct, bwChange, sessionsCount, proteinPct)}</div>
-    ${(() => { const as = getGoalAlignmentScore(); return as !== null ? `<div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-align:center;padding-top:0.35rem;border-top:1px solid var(--border)">Goal Alignment: <span style="color:var(--accent)">${as}/10</span></div>` : ""; })()}
+    ${(() => {
+      const as = getGoalAlignmentScore();
+      return as !== null
+        ? `<div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-align:center;padding-top:0.35rem;border-top:1px solid var(--border)">Goal Alignment: <span style="color:var(--accent)">${as}/10</span></div>`
+        : "";
+    })()}
   `;
 }
 
@@ -3684,18 +4527,35 @@ function getWeeklyNote(strengthPct, bwChange, sessions, proteinPct) {
 function renderMonthlyReport() {
   const container = document.getElementById("monthlyReportContent");
   const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 30 * 86400000)));
-  const prevMonthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 60 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 30 * 86400000)));
+  const prevMonthSessions = state.sessions.filter(
+    (s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 60 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 30 * 86400000)),
+  );
   if (monthSessions.length === 0) {
     container.innerHTML = `<p class="empty-state">Complete sessions to see your monthly report.</p>`;
     return;
   }
   const sessionsCount = monthSessions.length;
   const totalSets = monthSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
-  const totalKg = monthSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-  const prevKg = prevMonthSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0), 0), 0);
-  const volumeChange = prevKg > 0 ? Math.round((totalKg - prevKg) / prevKg * 100) : null;
-  const prs = loadPRs();
-  const prCount = Object.keys(prs).length;
+  const totalKg = monthSessions.reduce(
+    (s, ses) =>
+      s +
+      ses.exercises.reduce(
+        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+        0,
+      ),
+    0,
+  );
+  const prevKg = prevMonthSessions.reduce(
+    (s, ses) =>
+      s +
+      ses.exercises.reduce(
+        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
+        0,
+      ),
+    0,
+  );
+  const volumeChange = prevKg > 0 ? Math.round(((totalKg - prevKg) / prevKg) * 100) : null;
+  const prCount = getPRCount();
   const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
   const recentLog = log.filter((e) => e.date >= getDateKey(new Date(Date.now() - 30 * 86400000)));
   const prevLog = log.filter((e) => e.date >= getDateKey(new Date(Date.now() - 60 * 86400000)) && e.date < getDateKey(new Date(Date.now() - 30 * 86400000)));
@@ -3710,7 +4570,8 @@ function renderMonthlyReport() {
   let rec = "Continue your current approach. Results are on track.";
   if (volumeChange !== null && volumeChange < -10) rec = "Volume has decreased this month. Consider increasing sets or frequency.";
   if (proteinPct !== null && proteinPct < 75) rec = "Protein intake is consistently low. Aim for protein at every meal to support recovery.";
-  if (bwChange !== "--" && Number(bwChange) > 0.5 && state.bodyGoal === "fat-loss") rec = "Weight is increasing on a fat-loss goal. Review calorie tracking and weekend intake.";
+  if (bwChange !== "--" && Number(bwChange) > 0.5 && state.bodyGoal === "fat-loss")
+    rec = "Weight is increasing on a fat-loss goal. Review calorie tracking and weekend intake.";
   container.innerHTML = `
     <div class="mr-grid">
       <div class="mr-item"><strong>${sessionsCount}</strong><small>Sessions</small></div>
@@ -3732,7 +4593,8 @@ function renderAdherenceGrid() {
   const today = new Date();
   let streak = 0;
   for (let i = 0; ; i++) {
-    const d = new Date(today); d.setDate(d.getDate() - i);
+    const d = new Date(today);
+    d.setDate(d.getDate() - i);
     if (sessions.find((s) => s.dateKey === getDateKey(d))) streak++;
     else break;
   }
@@ -3741,7 +4603,8 @@ function renderAdherenceGrid() {
     html += `<div class="adherence-week">`;
     for (let d = 6; d >= 0; d--) {
       const offset = w * 7 + d;
-      const date = new Date(today); date.setDate(date.getDate() - offset);
+      const date = new Date(today);
+      date.setDate(date.getDate() - offset);
       const key = getDateKey(date);
       const isToday = offset === 0;
       const isFuture = date > today;
@@ -3779,18 +4642,35 @@ function renderTodayStatus() {
       const avgR = r.reduce((s, e) => s + e.weight, 0) / r.length;
       const avgP = p.reduce((s, e) => s + e.weight, 0) / p.length;
       const change = avgR - avgP;
-      if (goal.id === "fat-loss" && change > 0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-red"; }
-      else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) { weightOk = false; weightStatus = "⚠ Off Track"; weightCls = "is-yellow"; }
-      else if (goal.id === "recomp" && Math.abs(change) > 0.5) { weightOk = false; weightStatus = "⚠ Needs Attention"; weightCls = "is-yellow"; }
+      if (goal.id === "fat-loss" && change > 0.3) {
+        weightOk = false;
+        weightStatus = "⚠ Off Track";
+        weightCls = "is-red";
+      } else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) {
+        weightOk = false;
+        weightStatus = "⚠ Off Track";
+        weightCls = "is-yellow";
+      } else if (goal.id === "recomp" && Math.abs(change) > 0.5) {
+        weightOk = false;
+        weightStatus = "⚠ Needs Attention";
+        weightCls = "is-yellow";
+      }
     }
   }
 
   const strengthPct = getWeeklyStrengthChange();
   let strengthStatus = "Improving";
   let strengthCls = "is-green";
-  if (strengthPct === null) { strengthStatus = "Need data"; strengthCls = "is-yellow"; }
-  else if (strengthPct < -3) { strengthStatus = "Declining"; strengthCls = "is-red"; }
-  else if (strengthPct < 2) { strengthStatus = "Stable"; strengthCls = "is-yellow"; }
+  if (strengthPct === null) {
+    strengthStatus = "Need data";
+    strengthCls = "is-yellow";
+  } else if (strengthPct < -3) {
+    strengthStatus = "Declining";
+    strengthCls = "is-red";
+  } else if (strengthPct < 2) {
+    strengthStatus = "Stable";
+    strengthCls = "is-yellow";
+  }
 
   const today = getDateKey();
   const todayMeals = loadMeals(today);
@@ -3802,8 +4682,13 @@ function renderTodayStatus() {
   const todayCal = todayMeals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
   let calStatus = "On Target";
   let calCls = "is-green";
-  if (goal && goal.id === "fat-loss" && todayCal > CAL_GOAL * 1.05) { calStatus = "Over Target"; calCls = "is-yellow"; }
-  else if (goal && goal.id !== "fat-loss" && todayCal < CAL_GOAL * 0.85) { calStatus = "Under Target"; calCls = "is-yellow"; }
+  if (goal && goal.id === "fat-loss" && todayCal > CAL_GOAL * 1.05) {
+    calStatus = "Over Target";
+    calCls = "is-yellow";
+  } else if (goal && goal.id !== "fat-loss" && todayCal < CAL_GOAL * 0.85) {
+    calStatus = "Under Target";
+    calCls = "is-yellow";
+  }
 
   let score = 0;
   if (strengthPct !== null && strengthPct > 3) score += 3;
@@ -3974,17 +4859,27 @@ function renderSmartSuggestions() {
     .filter((f) => f.name !== "Custom Entry" && f.protein > 5)
     .sort((a, b) => b.protein / b.cal - a.protein / a.cal)
     .slice(0, 5);
-  container.innerHTML = suggestions.map((f) => {
-    const needed = Math.ceil(remaining / f.protein);
-    return `<button class="suggestion-chip" data-food="${f.name}">${f.name} ×${needed}</button>`;
-  }).join("");
+  container.innerHTML = suggestions
+    .map((f) => {
+      const needed = Math.ceil(remaining / f.protein);
+      return `<button class="suggestion-chip" data-food="${f.name}">${f.name} ×${needed}</button>`;
+    })
+    .join("");
   container.querySelectorAll("[data-food]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const food = curatedFoods.find((f) => f.name === btn.dataset.food);
       if (!food) return;
       const needed = Math.ceil(remaining / food.protein);
       const meals = loadMeals(today);
-      meals.push({ type: "Quick", food: food.name, qty: needed, protein: food.protein * needed, carbs: food.carbs * needed, fat: food.fat * needed, cal: food.cal * needed });
+      meals.push({
+        type: "Quick",
+        food: food.name,
+        qty: needed,
+        protein: food.protein * needed,
+        carbs: food.carbs * needed,
+        fat: food.fat * needed,
+        cal: food.cal * needed,
+      });
       saveMeals(today, meals);
       saveRecentFoods(food.name);
       renderSessionsTab();
@@ -4000,24 +4895,34 @@ function renderFavoriteMeals() {
     container.innerHTML = `<p class="empty-state">Save meal combos you eat often for one-tap logging.</p>`;
     return;
   }
-  container.innerHTML = favorites.map((meal, i) => {
-    const totalP = meal.items.reduce((s, m) => s + (Number(m.protein) || 0) * (Number(m.qty) || 1), 0);
-    const totalCal = meal.items.reduce((s, m) => s + (Number(m.cal) || 0) * (Number(m.qty) || 1), 0);
-    return `<div class="fav-meal-row">
+  container.innerHTML = favorites
+    .map((meal, i) => {
+      const totalP = meal.items.reduce((s, m) => s + (Number(m.protein) || 0) * (Number(m.qty) || 1), 0);
+      const totalCal = meal.items.reduce((s, m) => s + (Number(m.cal) || 0) * (Number(m.qty) || 1), 0);
+      return `<div class="fav-meal-row">
       <button class="fav-btn" data-fav-idx="${i}">
         <span class="fav-name">${meal.name}</span>
         <span class="fav-macros">${Math.round(totalP)}g P · ${Math.round(totalCal)} cal</span>
       </button>
       <button class="fav-delete" data-del-idx="${i}">✕</button>
     </div>`;
-  }).join("");
+    })
+    .join("");
   container.querySelectorAll("[data-fav-idx]").forEach((btn) => {
     btn.addEventListener("click", () => {
       const meal = favorites[Number(btn.dataset.favIdx)];
       if (!meal) return;
       const meals = loadMeals(today);
       for (const item of meal.items) {
-        meals.push({ type: "Fav", food: item.food, qty: item.qty, protein: Number(item.protein) * Number(item.qty), carbs: Number(item.carbs) * Number(item.qty), fat: Number(item.fat) * Number(item.qty), cal: Number(item.cal) * Number(item.qty) });
+        meals.push({
+          type: "Fav",
+          food: item.food,
+          qty: item.qty,
+          protein: Number(item.protein) * Number(item.qty),
+          carbs: Number(item.carbs) * Number(item.qty),
+          fat: Number(item.fat) * Number(item.qty),
+          cal: Number(item.cal) * Number(item.qty),
+        });
       }
       saveMeals(today, meals);
       renderSessionsTab();
@@ -4070,9 +4975,12 @@ function renderMealLog() {
   const today = getDateKey();
   const meals = loadMeals(today);
   container.innerHTML = meals.length
-    ? meals.map((m, i) =>
-        `<div class="meal-item"><div><strong>${m.food}</strong>${m.qty ? ` ×${m.qty}` : ""} <span class="meal-macros">${m.protein || 0}g P · ${m.carbs || 0}g C · ${m.fat || 0}g F · ${m.cal || 0} cal</span></div><button class="meal-delete" data-idx="${i}">✕</button></div>`
-      ).join("")
+    ? meals
+        .map(
+          (m, i) =>
+            `<div class="meal-item"><div><strong>${m.food}</strong>${m.qty ? ` ×${m.qty}` : ""} <span class="meal-macros">${m.protein || 0}g P · ${m.carbs || 0}g C · ${m.fat || 0}g F · ${m.cal || 0} cal</span></div><button class="meal-delete" data-idx="${i}">✕</button></div>`,
+        )
+        .join("")
     : `<p class="empty-state">No meals logged. Tap a food above.</p>`;
   container.querySelectorAll(".meal-delete").forEach((btn) => {
     btn.addEventListener("click", () => {
@@ -4096,11 +5004,12 @@ function renderWaterTracker() {
   const hoursRemaining = Math.ceil(remaining / 200);
   const now = new Date();
   const endHour = now.getHours() + hoursRemaining;
-  const predText = hoursRemaining > 0 && endHour <= 23
-    ? `Drink 200ml every hour — done by ${endHour}:00`
-    : remaining > 0
-    ? `${Math.ceil(remaining / 300)} more glasses`
-    : "Hydration target met!";
+  const predText =
+    hoursRemaining > 0 && endHour <= 23
+      ? `Drink 200ml every hour — done by ${endHour}:00`
+      : remaining > 0
+        ? `${Math.ceil(remaining / 300)} more glasses`
+        : "Hydration target met!";
   container.innerHTML = `
     <div class="water-ring">
       <svg viewBox="0 0 72 72">
@@ -4141,9 +5050,13 @@ function renderWeeklyNutritionReview() {
   let totalWaterPct = 0;
   let waterDaysCount = 0;
   for (let i = 0; i < waterDays; i++) {
-    const d = new Date(); d.setDate(d.getDate() - i);
+    const d = new Date();
+    d.setDate(d.getDate() - i);
     const w = loadWater(getDateKey(d));
-    if (w > 0) { totalWaterPct += Math.min(w / WATER_TARGET, 1); waterDaysCount++; }
+    if (w > 0) {
+      totalWaterPct += Math.min(w / WATER_TARGET, 1);
+      waterDaysCount++;
+    }
   }
   const waterPct = waterDaysCount > 0 ? Math.round((totalWaterPct / waterDaysCount) * 100) : 0;
   const overall = Math.round((pPct + Math.min(calPct, 100) + waterPct) / 3);
@@ -4223,422 +5136,888 @@ function renderTrainingCalendar() {
     btn.addEventListener("click", () => {
       const dir = Number(btn.dataset.calDir);
       calendarMonth += dir;
-      if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
-      if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+      if (calendarMonth < 0) {
+        calendarMonth = 11;
+        calendarYear--;
+      }
+      if (calendarMonth > 11) {
+        calendarMonth = 0;
+        calendarYear++;
+      }
       renderTrainingCalendar();
     });
   });
 }
 
-// ===== COACH TAB =====
-function renderCoachTab() {
-  renderTrainingCalendar();
-  renderCoachInsights();
-  renderRecovery();
-  renderGoals();
+// ===== PROGRESS PAGE =====
+function renderProgressPage() {
+  const container = document.getElementById("progressPageContent");
+  if (!container) return;
+  const sessions = state.sessions.filter((s) => s.finishedAt);
+  if (!sessions.length) {
+    container.innerHTML = `<div class="progress-empty">Complete your first workout to see progress here.</div>`;
+    return;
+  }
+  container.innerHTML = `
+    <div id="progressCalendarHero"></div>
+    <div class="progress-section">
+      <div class="section-label">Streak</div>
+      <div id="progressStreak" class="progress-streak-card"></div>
+    </div>
+    <div class="progress-section">
+      <div class="section-label">This Week</div>
+      <div id="progressWeekly"></div>
+    </div>
+    <div class="progress-section">
+      <div class="section-label">Monthly</div>
+      <div id="progressMonthly"></div>
+    </div>
+    <div class="progress-section">
+      <div class="section-label">Achievements</div>
+      <div id="progressAchievements"></div>
+    </div>
+    <div class="progress-section">
+      <div class="section-label">Insights</div>
+      <div id="progressInsights"></div>
+    </div>
+  `;
+  renderCalendarHero();
+  renderStreakCard();
+  renderWeeklyReview();
+  renderMonthlyReview();
+  renderRecentAchievements();
+  renderProgressInsights();
 }
 
-function renderCoachInsights() {
-  const container = document.getElementById("coachInsights");
-  const insights = [];
+function renderStreakCard() {
+  const container = document.getElementById("progressStreak");
+  if (!container) return;
+  const streak = getStreak();
+  const longest = getLongestStreak();
+  const totalWorkouts = state.sessions.filter((s) => s.finishedAt).length;
+  container.innerHTML = `
+    <div class="ps-item"><div class="ps-value">${streak}</div><div class="ps-label">Current Streak</div></div>
+    <div class="ps-item"><div class="ps-value">${longest}</div><div class="ps-label">Longest</div></div>
+    <div class="ps-item"><div class="ps-value">${totalWorkouts}</div><div class="ps-label">Total Workouts</div></div>`;
+}
 
-  // Insight 1: Weight trend vs goal
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  if (log.length >= 4 && goal) {
-    const now = new Date();
-    const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-    const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
-    const recent = log.filter((e) => e.date >= weekAgo);
-    const prev = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-    if (recent.length >= 2 && prev.length >= 2) {
-      const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
-      const avgPrev = prev.reduce((s, e) => s + e.weight, 0) / prev.length;
-      const change = avgRecent - avgPrev;
-      const direction = change > 0 ? "increased" : "decreased";
-      const absChange = Math.abs(change).toFixed(1);
-      insights.push({
-        icon: "⚖️",
-        text: `Weight <strong>${direction} ${absChange}kg</strong> this week. ${goal.id === "fat-loss" && change < 0 ? "On track for fat loss." : goal.id === "lean-bulk" && change > 0 ? "Good progress on bulk." : goal.id === "recomp" && Math.abs(change) < 0.3 ? "Stable weight — recomp on target." : `Goal expects ${goal.expectedWeekly > 0 ? "+" : ""}${goal.expectedWeekly}kg/week.`}`,
+function renderWeeklyReview() {
+  const container = document.getElementById("progressWeekly");
+  if (!container) return;
+  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
+  if (!weekSessions.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">This Week</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Complete a workout this week to see stats.</div></div>`;
+    return;
+  }
+  let totalSets = 0;
+  let totalVol = 0;
+  let weeklyPRCount = 0;
+  const trainedDays = new Set();
+  for (const ses of weekSessions) {
+    trainedDays.add(ses.dateKey);
+    for (const ex of ses.exercises) {
+      for (const set of ex.sets) {
+        if (set.done) totalSets++;
+        if (set.done && Number(set.weight) > 0) totalVol += Number(set.weight) * (Number(set.reps) || 0);
+      }
+    }
+  }
+  // Count PRs this week
+  if (state.prs) {
+    for (const [, data] of Object.entries(state.prs)) {
+      (data.history || []).forEach((h) => {
+        if (h.date && h.date >= weekAgo) weeklyPRCount++;
       });
     }
   }
-
-  // Insight 2: Strength change
-  const strengthPct = getWeeklyStrengthChange();
-  if (strengthPct !== null) {
-    const dir = strengthPct > 0 ? "increased" : "decreased";
-    insights.push({
-      icon: "💪",
-      text: `Overall strength <strong>${dir} ${Math.abs(strengthPct).toFixed(0)}%</strong> this week. ${strengthPct > 5 ? "Excellent progress." : strengthPct > 0 ? "Moderate improvement." : strengthPct < -5 ? "Consider a deload or rest week." : "Stable."}`,
-    });
-  }
-
-  // Insight 3: Protein adherence
-  const protPct = getWeeklyProteinAdherence();
-  if (protPct !== null) {
-    insights.push({
-      icon: "🥩",
-      text: `Protein target <strong>${Math.round(protPct)}%</strong> achieved this week. ${protPct >= 90 ? "Great consistency." : protPct >= 80 ? "Good, but room for improvement." : "Needs attention — try meal prepping."}`,
-    });
-  }
-
-  // Insight 4: Training consistency
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  insights.push({
-    icon: "📅",
-    text: `Trained <strong>${weekSessions.length}/6</strong> sessions this week. ${weekSessions.length >= 5 ? "Excellent consistency." : weekSessions.length >= 3 ? "Building momentum." : "Try to increase frequency."}`,
-  });
-
-  // Progress suggestions
-  if (state.progressSuggestions !== false) {
-    const prs = loadPRs();
-    const suggestions = [];
-    Object.entries(prs).forEach(([name, data]) => {
-      if (!data.weight || data.weight <= 0) return;
-      const last = getLastExerciseSession(name);
-      if (!last || !last.daysAgo || last.daysAgo < 7) return;
-      if (last.daysAgo >= 14) {
-        suggestions.push(name.replace(/([A-Z])/g, " $1").trim() + " hasn't been trained in " + last.daysAgo + " days — consider adding it back.");
-      }
-    });
-    suggestions.slice(0, 2).forEach((text) => {
-      insights.push({ icon: "💡", text: text });
-    });
-  }
-
-  // Insight 5: Warmup & stretch compliance
-  const warmupComp = getWarmupCompliance();
-  const stretchComp = getStretchCompliance();
-  if (warmupComp.total > 0) {
-    insights.push({
-      icon: "🔥",
-      text: `Warm-Up <strong>${warmupComp.pct}%</strong> compliance (${warmupComp.done}/${warmupComp.total} sessions). ${warmupComp.pct >= 80 ? "Great habit!" : warmupComp.pct >= 50 ? "Room to improve." : "Try warming up more consistently."}`,
-    });
-    insights.push({
-      icon: "🧘",
-      text: `Stretching <strong>${stretchComp.pct}%</strong> compliance (${stretchComp.done}/${stretchComp.total} sessions). ${stretchComp.pct >= 80 ? "Excellent recovery habit!" : stretchComp.pct >= 50 ? "Keep building the habit." : "Post-workout stretching helps recovery."}`,
-    });
-  }
-
-  // Insight 6: Muscle coverage & insights
-  if (weekSessions.length > 0) {
-    const muscleSum = computeMuscleSummary();
-    const muscleInsights = generateMuscleInsights(muscleSum);
-    muscleInsights.slice(0, 3).forEach((ins) => {
-      insights.push({ icon: ins.icon, text: ins.text });
-    });
-    if (state.muscleCoverage !== false) {
-      const trained = MUSCLE_GROUPS.filter((mg) => {
-        const data = muscleSum[mg.id];
-        return data && data.weeklySets > 0;
-      }).slice(0, 6);
-      if (trained.length > 0) {
-        const breakdown = trained.map((mg) => {
-          const data = muscleSum[mg.id];
-          return mg.label + ": " + data.weeklySets + " sets";
-        }).join(", ");
-        insights.push({ icon: "🎯", text: "Muscle coverage this week: " + breakdown });
-      }
-    }
-  }
-
-  container.innerHTML = insights.slice(0, 7).map((insight) =>
-    `<div class="insight-item">${insight.icon} ${insight.text}</div>`
-  ).join("");
-
-  if (insights.length === 0) {
-    container.innerHTML = `<p class="empty-state">Log workouts and nutrition to get coaching insights.</p>`;
-  }
-}
-
-function renderRecovery() {
-  const container = document.getElementById("recoveryContent");
-  const dot = document.getElementById("recoveryDot");
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  if (weekSessions.length === 0) {
-    container.innerHTML = `<p class="empty-state">Complete sessions to assess recovery.</p>`;
-    dot.className = "recovery-dot";
-    return;
-  }
-  const strengthPct = getWeeklyStrengthChange();
-  const sessionCount = weekSessions.length;
-  const avgSetsPerSession = weekSessions.length > 0
-    ? Math.round(weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0) / weekSessions.length)
-    : 0;
-  const performanceScore = strengthPct !== null ? (strengthPct > 3 ? 90 : strengthPct > -3 ? 70 : 40) : 50;
-  const volumeScore = Math.min(sessionCount * 15, 100);
-  const recoveryScore = Math.round((performanceScore + volumeScore) / 2);
-  let status = "Good";
-  let cls = "is-green";
-  if (recoveryScore < 50) { status = "Poor"; cls = "is-red"; }
-  else if (recoveryScore < 70) { status = "Fair"; cls = "is-yellow"; }
-  dot.className = `recovery-dot ${cls}`;
-
-  // Per-muscle recovery breakdown
-  const summary = computeMuscleSummary();
-  const muscleRows = MUSCLE_GROUPS.filter((mg) => {
-    const data = summary[mg.id];
-    return data && data.weeklySets > 0;
-  }).slice(0, 8).map((mg) => {
-    const data = summary[mg.id];
-    const days = data ? getRecoveryDays(data.lastTrained) : 99;
-    const status2 = getRecoveryStatus(days);
-    const pct = status2 === "trained" ? 20 : status2 === "low" ? 40 : status2 === "recovering" ? 75 : 100;
-    const color = pct >= 80 ? "var(--accent)" : pct >= 60 ? "var(--yellow)" : "var(--red)";
-    return `<div class="rec-row"><span>${mg.label}</span><span style="color:${color};font-weight:600">${Math.round(pct)}%</span></div>`;
-  }).join("");
-
-  container.innerHTML = `
-    <div class="rec-row"><span>Sessions</span><span>${sessionCount}/6</span></div>
-    <div class="rec-row"><span>Avg sets/session</span><span>${avgSetsPerSession}</span></div>
-    <div class="rec-row"><span>Performance</span><span>${performanceScore}%</span></div>
-    <div class="rec-row"><span>Recovery</span><span style="font-weight:800;color:var(--${recoveryScore >= 70 ? 'accent' : recoveryScore >= 50 ? 'yellow' : 'red'})">${recoveryScore}% — ${status}</span></div>
-    ${muscleRows ? `<div style="margin-top:0.5rem;padding-top:0.5rem;border-top:1px solid var(--border)">${muscleRows}</div>` : ""}
-  `;
-}
-
-// ===== BODY TAB =====
-let weightChartInstance = null;
-let weightHistoryChartInstance = null;
-let historyFilterDays = 30;
-
-function renderBodyTab() {
-  renderWeighIn();
-  renderTrendAverages();
-  renderWeightChart();
-  renderGoalPrediction();
-  renderBodyAnalysis();
-}
-
-function renderGoalSelector() {
-  const container = document.getElementById("goalSelector");
-  const current = state.bodyGoal || "recomp";
-  container.innerHTML = GOALS.map((g) =>
-    `<button class="goal-btn ${g.id === current ? "is-active" : ""}" data-goal="${g.id}">${g.label}</button>`
-  ).join("");
-  container.querySelectorAll("[data-goal]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.bodyGoal = btn.dataset.goal;
-      saveState();
-      renderBodyTab();
-    });
-  });
-}
-
-function renderWeighIn() {
-  const container = document.getElementById("weighInCard");
-  const log = loadBodyLog();
-  const today = getDateKey();
-  const entry = log.find((e) => e.date === today);
-  if (entry) {
-    container.innerHTML = `
-      <div class="weigh-in-current">${displayWeight(entry.weight)}</div>
-      <div class="weigh-in-changes">
-        ${entry.bf ? `<span>BF: ${entry.bf}%</span>` : ""}
-      </div>
-      <button class="btn-text" id="editWeighInBtn">Edit</button>
-    `;
-    document.getElementById("editWeighInBtn")?.addEventListener("click", () => { container.innerHTML = buildWeighInForm(entry.weight, entry.bf); attachWeighInListener(); });
-  } else {
-    container.innerHTML = buildWeighInForm("", "");
-    attachWeighInListener();
-  }
-}
-
-function buildWeighInForm(w, bf) {
-  return `<div class="weigh-in-form">
-    <label>Weight (kg) <input type="number" step="0.1" id="weightInput" value="${w}" placeholder="e.g. 67" /></label>
-    <label>BF % <input type="number" step="0.1" id="bfInput" value="${bf || ""}" placeholder="optional" /></label>
-  </div>
-  <button class="btn-primary" id="saveWeighInBtn">Save</button>`;
-}
-
-function attachWeighInListener() {
-  document.getElementById("saveWeighInBtn")?.addEventListener("click", () => {
-    const w = Number(document.getElementById("weightInput").value);
-    const bf = document.getElementById("bfInput").value ? Number(document.getElementById("bfInput").value) : null;
-    if (!w) return;
-    saveBodyLogEntry({ date: getDateKey(), weight: w, bf });
-    renderBodyTab();
-  });
-}
-
-function renderTrendAverages() {
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const container = document.getElementById("trendAverages");
-  if (log.length < 2) {
-    container.innerHTML = "";
-    return;
-  }
-  const now = new Date();
-  const avg = (days) => {
-    const cutoff = getDateKey(new Date(now.getTime() - days * 86400000));
-    const entries = log.filter((e) => e.date >= cutoff);
-    if (entries.length < 2) return null;
-    return entries.reduce((s, e) => s + e.weight, 0) / entries.length;
-  };
-  const a7 = avg(7);
-  const a14 = avg(14);
-  const a30 = avg(30);
-  container.innerHTML = `
-    <div class="trend-avg"><strong>${a7 ? a7.toFixed(1) : "--"}</strong><small>7-day avg</small></div>
-    <div class="trend-avg"><strong>${a14 ? a14.toFixed(1) : "--"}</strong><small>14-day avg</small></div>
-    <div class="trend-avg"><strong>${a30 ? a30.toFixed(1) : "--"}</strong><small>30-day avg</small></div>
-  `;
-  const badge = document.getElementById("trendBadge");
-  if (a7 && a14) {
-    const diff = a7 - a14;
-    const goal = GOALS.find((g) => g.id === state.bodyGoal);
-    const expected = goal ? goal.expectedWeekly : 0;
-    if (Math.abs(diff) < 0.2) {
-      badge.textContent = "Stable";
-      badge.className = "trend-badge is-green";
-    } else if (expected <= 0 && diff > 0.3) {
-      badge.textContent = "↑ Increasing";
-      badge.className = "trend-badge is-yellow";
-    } else if (expected >= 0 && diff < -0.3) {
-      badge.textContent = "↓ Decreasing";
-      badge.className = "trend-badge is-yellow";
-    } else {
-      badge.textContent = diff > 0 ? "↑ Rising" : "↓ Falling";
-      badge.className = "trend-badge " + (Math.abs(diff) > 0.5 ? "is-red" : "is-green");
-    }
-  } else {
-    badge.textContent = "Need more data";
-    badge.className = "trend-badge is-blue";
-  }
-}
-
-function renderWeightChart() {
-  if (weightChartInstance) { weightChartInstance.destroy(); weightChartInstance = null; }
-  const canvas = document.getElementById("weightChart");
-  if (!canvas) return;
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const recent = log.slice(-30);
-  if (recent.length < 3) return;
-  const labels = recent.map((e) => formatReadableDate(parseDateKey(e.date)));
-  const data = recent.map((e) => e.weight);
-  const ctx = canvas.getContext("2d");
-  weightChartInstance = new Chart(ctx, {
-    type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.4, pointRadius: 2, fill: false }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
-  });
-}
-
-function renderGoalPrediction() {
-  const container = document.getElementById("goalPredictionContent");
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  if (log.length < 4 || !goal) {
-    container.innerHTML = `<p class="empty-state">More data needed for prediction.</p>`;
-    return;
-  }
-  const current = log[log.length - 1].weight;
-  const recent = log.slice(-7);
-  const avgRecent = recent.length >= 2 ? recent.reduce((s, e) => s + e.weight, 0) / recent.length : current;
-  const weeklyRate = goal.expectedWeekly;
-  const goalWeight = (goal.id === "fat-loss") ? current - 5 : current + 5;
-  const diff = goalWeight - avgRecent;
-  const weeksNeeded = weeklyRate !== 0 ? Math.abs(diff / weeklyRate) : 0;
-  const targetDate = new Date(Date.now() + weeksNeeded * 7 * 86400000);
-  const estDate = weeksNeeded > 0 ? targetDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "--";
-  container.innerHTML = `
-    <div class="prediction-grid">
-      <div class="prediction-row"><span>Current</span><span>${displayWeight(avgRecent)}</span></div>
-      <div class="prediction-row"><span>Target</span><span>~${displayWeight(goalWeight)}</span></div>
-      <div class="prediction-row"><span>Rate</span><span>${weeklyRate > 0 ? "+" : ""}${weeklyRate} kg/week</span></div>
-      ${weeksNeeded > 0 ? `<div class="prediction-highlight">Goal by ${estDate} (${Math.ceil(weeksNeeded)} weeks)</div>` : `<div class="prediction-highlight">Maintaining current phase.</div>`}
+  const consistency = Math.min(100, Math.round((trainedDays.size / 7) * 100));
+  const volStr = totalVol >= 1000 ? (totalVol / 1000).toFixed(1) + "k" : totalVol;
+  container.innerHTML = `<div class="progress-card">
+    <div class="progress-card-title">This Week</div>
+    <div class="monthly-grid">
+      <div class="monthly-item"><strong>${weekSessions.length}</strong><small>Sessions</small></div>
+      <div class="monthly-item"><strong>${volStr}</strong><small>Volume</small></div>
+      <div class="monthly-item"><strong>${weeklyPRCount}</strong><small>PRs</small></div>
+      <div class="monthly-item"><strong>${consistency}%</strong><small>Consistency</small></div>
     </div>
-  `;
+  </div>`;
 }
 
-function renderBodyAnalysis() {
-  const container = document.getElementById("bodyAnalysis");
-  computeMuscleSummary();
-  const summary = bodyMapCache ? bodyMapCache.summary : computeMuscleSummary();
-  const coverageScore = getMuscleCoverageScore(summary);
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-
-  const statusLabels = { untrained: "Not trained", undertrained: "Undertrained", optimal: "Optimal", high: "High volume", overtrained: "Overtrained" };
-  const modeLabels = { today: "Trained Today", weekly: "Weekly Coverage", recovery: "Recovery", strength: "Strength Trend" };
-
-  // Mode selector
-  let html = `<div class="bm-mode-row">
-    ${Object.entries(modeLabels).map(([key, label]) =>
-      `<button class="bm-mode-btn${bodyMapMode === key ? " is-active" : ""}" data-mode="${key}">${label}</button>`
-    ).join("")}
-  </div>`;
-
-  // Body map container
-  html += `<div id="bmContainer" class="bm-container"></div>`;
-
-  // Coverage + insights
-  html += `<div class="bm-stats">
-    <div class="bm-coverage"><span class="bm-coverage-pct">${coverageScore}%</span> Coverage</div>
-    <div class="bm-trained">${Object.values(summary).filter((m) => m.weeklySets > 0).length}/${Object.keys(summary).length} trained</div>
-  </div>`;
-
-  const sorted = MUSCLE_GROUPS.map((mg) => ({
-    ...mg,
-    ...summary[mg.id],
-    sets: summary[mg.id] ? summary[mg.id].weeklySets : 0,
-  }));
-
-  // Muscle list
-  html += `<div class="bm-muscle-list">`;
-  sorted.forEach((mg) => {
-    const color = getBodyMapColor(mg.id, bodyMapMode, summary);
-    const sets = mg.sets || 0;
-    html += `<div class="bm-muscle-row" data-muscle="${mg.id}">
-      <span class="bm-muscle-dot" style="background:${color};opacity:${sets > 0 ? 1 : 0.3}"></span>
-      <span class="bm-muscle-name">${mg.label}</span>
-      <span class="bm-muscle-sets">${sets} sets</span>
-      <span class="bm-muscle-chevron">›</span>
-    </div>`;
-  });
-  html += `</div>`;
-
-  // Generate insights
-  const insights = generateMuscleInsights(summary);
-  if (insights.length > 0) {
-    html += `<div class="bm-insights">`;
-    insights.slice(0, 4).forEach((ins) => {
-      html += `<div class="alert-item is-${ins.severity}"><span class="alert-icon">${ins.icon}</span><div class="alert-body">${ins.text}</div></div>`;
-    });
-    html += `</div>`;
+function renderMonthlyReview() {
+  const container = document.getElementById("progressMonthly");
+  if (!container) return;
+  const now = new Date();
+  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+  const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey.startsWith(prefix));
+  if (!monthSessions.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Monthly</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Complete workouts to see monthly stats.</div></div>`;
+    return;
   }
+  let bestLift = { name: "", vol: 0 };
+  const groupCount = {};
+  let totalDuration = 0;
+  for (const ses of monthSessions) {
+    if (ses.duration) totalDuration += ses.duration;
+    let sv = 0;
+    for (const ex of ses.exercises) {
+      for (const set of ex.sets) {
+        if (set.done && Number(set.weight) > 0) sv += Number(set.weight) * (Number(set.reps) || 0);
+      }
+    }
+    if (sv > bestLift.vol) bestLift = { name: ses.workoutName || "Workout", vol: sv };
+    groupCount[ses.workoutName || "Workout"] = (groupCount[ses.workoutName || "Workout"] || 0) + 1;
+  }
+  const mostTrained = Object.entries(groupCount).sort((a, b) => b[1] - a[1])[0];
+  const avgDuration = Math.round(totalDuration / monthSessions.length);
+  container.innerHTML = `<div class="progress-card">
+    <div class="progress-card-title">Monthly</div>
+    <div class="monthly-grid">
+      <div class="monthly-item"><strong>${monthSessions.length}</strong><small>Workouts</small></div>
+      <div class="monthly-item"><strong>${bestLift.name.replace(/([A-Z])/g, " $1").trim() || "—"}</strong><small>Best Lift</small></div>
+      <div class="monthly-item"><strong>${mostTrained ? mostTrained[0].replace(/([A-Z])/g, " $1").trim() : "—"}</strong><small>Most Trained</small></div>
+      <div class="monthly-item"><strong>${avgDuration > 0 ? avgDuration + "m" : "—"}</strong><small>Avg Duration</small></div>
+    </div>
+  </div>`;
+}
+
+function renderRecentAchievements() {
+  const container = document.getElementById("progressAchievements");
+  if (!container) return;
+  const allPRs = getAllPRs();
+  const items = [];
+  for (const [exName, data] of Object.entries(allPRs)) {
+    (data.history || []).forEach((h) => items.push({ ...h, exerciseName: exName }));
+  }
+  items.sort((a, b) => b.date.localeCompare(a.date));
+  const recent = items.slice(0, 5);
+  if (!recent.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Achievements</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Set personal records to see achievements here.</div></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="progress-card">
+    <div class="progress-card-title">Recent Achievements</div>
+    <div class="ach-list">${recent.map((pr) => {
+      const name = pr.exerciseName.replace(/([A-Z])/g, " $1").trim();
+      const date = formatReadableDate(parseDateKey(pr.date));
+      const icon = pr.type === "weight" ? "🏋️" : pr.type === "reps" ? "🔁" : "📊";
+      return `<div class="ach-item"><span class="ach-icon">${icon}</span>${name} · ${displayWeight(pr.weight)} × ${pr.reps}<span class="ach-date">${date}</span></div>`;
+    }).join("")}</div>
+  </div>`;
+}
+
+function renderProgressInsights() {
+  const container = document.getElementById("progressInsights");
+  if (!container) return;
+  const sessions = state.sessions.filter((s) => s.finishedAt);
+  const now = new Date();
+  const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
+  const weekSessions = sessions.filter((s) => s.dateKey >= weekAgo);
+  const insp = [];
+  const prevWeek = sessions.filter((s) => s.dateKey >= getDateKey(new Date(now.getTime() - 14 * 86400000)) && s.dateKey < weekAgo).length;
+
+  if (weekSessions.length >= 3) insp.push({ icon: "✅", text: `Trained ${weekSessions.length}x this week` });
+  if (prevWeek > 0 && weekSessions.length > prevWeek) insp.push({ icon: "📈", text: `${weekSessions.length - prevWeek} more than last week` });
+  if (prevWeek > 0 && weekSessions.length < prevWeek) insp.push({ icon: "⚠️", text: `Missed ${prevWeek - weekSessions.length} vs last week` });
+  const streak = getStreak();
+  if (streak >= 3) insp.push({ icon: "🔥", text: `On a ${streak}-day streak` });
+  const totalVol = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter(st => st.done && st.weight).reduce((s3, st) => s3 + Number(st.weight) * (st.reps || 0), 0), 0), 0);
+  if (totalVol > 0) insp.push({ icon: "💪", text: `${totalVol >= 1000 ? (totalVol / 1000).toFixed(1) + "k" : totalVol} volume this week` });
+
+  if (!insp.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Insights</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">More data needed for insights.</div></div>`;
+    return;
+  }
+  container.innerHTML = `<div class="progress-card">
+    <div class="progress-card-title">Insights</div>
+    <div class="ach-list">${insp.slice(0, 4).map((i) =>
+      `<div class="ach-item"><span class="ach-icon">${i.icon}</span>${i.text}</div>`
+    ).join("")}</div>
+  </div>`;
+}
+
+function renderCalendarHero() {
+  const container = document.getElementById("progressCalendarHero");
+  if (!container) return;
+
+  const sessions = state.sessions.filter((s) => s.finishedAt);
+  const trainedDays = new Set(sessions.map((s) => s.dateKey));
+
+  const today = new Date();
+  const firstDay = new Date(calendarYear, calendarMonth, 1);
+  const lastDay = new Date(calendarYear, calendarMonth + 1, 0);
+  const startPad = firstDay.getDay();
+  const totalDays = lastDay.getDate();
+  const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
+  const todayKey = getDateKey(today);
+
+  let html = `<div class="calendar-wrap">`;
+
+  // Navigation header (no streak stats)
+  html += `<div class="cal-header">
+    <button class="cal-nav-btn" data-cal-dir="-1">←</button>
+    <span class="cal-title">${monthNames[calendarMonth]} ${calendarYear}</span>
+    <button class="cal-nav-btn" data-cal-dir="1">→</button>
+  </div>`;
+
+  // Simplified legend
+  html += `<div class="cal-legend">
+    <span><span class="cal-legend-dot is-empty"></span> Rest</span>
+    <span><span class="cal-legend-dot is-green"></span> Workout</span>
+    ${trainedDays.has(todayKey) ? "" : `<span style="outline:1px solid var(--text);outline-offset:2px;border-radius:50%">Today</span>`}
+  </div>`;
+
+  // Weekday headers
+  html += `<div class="cal-weekdays">
+    ${["S", "M", "T", "W", "T", "F", "S"].map((d) => `<span>${d}</span>`).join("")}
+  </div>`;
+
+  // Grid
+  html += `<div class="cal-grid">`;
+
+  for (let i = 0; i < startPad; i++) {
+    html += `<div class="cal-cell cal-other"></div>`;
+  }
+
+  for (let d = 1; d <= totalDays; d++) {
+    const date = new Date(calendarYear, calendarMonth, d);
+    const key = getDateKey(date);
+    const isToday = key === todayKey;
+    const isFuture = date > today;
+    const isTrained = trainedDays.has(key);
+
+    let cls = "cal-cell";
+    if (isFuture) cls += " cal-future";
+    else if (isTrained) cls += " cal-trained";
+    else if (!isToday) cls += " cal-empty";
+
+    if (isToday) cls += " cal-today";
+    if (isTrained && !isFuture) cls += " is-clickable";
+
+    html += `<div class="${cls}" data-date-key="${key}">${d}</div>`;
+  }
+
+  html += `</div>`;
+  html += `</div>`;
 
   container.innerHTML = html;
 
-  // Bind body map
-  renderBodyMuscleMap(document.getElementById("bmContainer"), summary);
-
-  // Bind mode buttons
-  container.querySelectorAll(".bm-mode-btn").forEach((btn) => {
+  // Calendar nav
+  container.querySelectorAll("[data-cal-dir]").forEach((btn) => {
     btn.addEventListener("click", () => {
-      bodyMapMode = btn.dataset.mode;
-      renderBodyAnalysis();
+      const dir = Number(btn.dataset.calDir);
+      calendarMonth += dir;
+      if (calendarMonth < 0) { calendarMonth = 11; calendarYear--; }
+      if (calendarMonth > 11) { calendarMonth = 0; calendarYear++; }
+      renderCalendarHero();
     });
   });
 
-  // Bind muscle row clicks
-  container.querySelectorAll(".bm-muscle-row").forEach((row) => {
-    row.addEventListener("click", () => {
-      showMuscleSheet(row.dataset.muscle, summary);
+  // Click handlers on trained days → bottom sheet
+  container.querySelectorAll(".cal-cell.is-clickable").forEach((cell) => {
+    cell.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const key = cell.dataset.dateKey;
+      if (!key) return;
+      const session = sessions.find((s) => s.dateKey === key);
+      if (!session) return;
+      openCalendarDateSheet(session);
     });
   });
 }
 
+function openCalendarDateSheet(session) {
+  const sheet = document.getElementById("calendarDateSheet");
+  if (!sheet) return;
+  const activePlan = loadCustomProgram() || plan;
+  const workout = activePlan.find((w) => w.id === session.workoutId);
+  const workoutName = workout ? workout.name : session.workoutName || "Workout";
+
+  const muscles = getSessionMuscles(session);
+  const date = parseDateKey(session.dateKey);
+  const dateStr = formatReadableDate(date);
+  const duration = session.duration || 0;
+  const durStr = duration > 0 ? `${Math.round(duration / 60)} min` : "—";
+
+  let totalSets = 0;
+  for (const ex of session.exercises) {
+    for (const set of ex.sets) {
+      if (set.done) totalSets++;
+    }
+  }
+
+  const sessionPRs = getTodayPRs(session.dateKey);
+  const prCount = sessionPRs.length;
+
+  document.getElementById("cdsWorkout").textContent = `🔥 ${workoutName}`;
+  document.getElementById("cdsDate").textContent = dateStr + (muscles.length ? ` · ${muscles.join(" · ")}` : "");
+  document.getElementById("cdsDuration").textContent = durStr;
+  document.getElementById("cdsSets").textContent = totalSets;
+  document.getElementById("cdsPRs").textContent = prCount;
+  document.getElementById("cdsCompletion").textContent = "✓ Completed";
+
+  const prList = document.getElementById("cdsPRList");
+  if (prCount > 0) {
+    prList.style.display = "block";
+    prList.innerHTML = sessionPRs.slice(0, 5).map((pr) => {
+      const name = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
+      return `<div class="cal-date-pr-item">🏆 ${name} · ${displayWeight(pr.weight)} × ${pr.reps}</div>`;
+    }).join("");
+  } else {
+    prList.style.display = "none";
+  }
+
+  const detailBtn = document.getElementById("cdsDetailBtn");
+  const newBtn = detailBtn.cloneNode(true);
+  detailBtn.parentNode.replaceChild(newBtn, detailBtn);
+  newBtn.addEventListener("click", () => {
+    sheet.classList.add("is-hidden");
+    openWorkoutReport(session);
+  });
+
+  sheet.classList.remove("is-hidden");
+}
+
+function getSessionMuscles(session) {
+  const activePlan = loadCustomProgram() || plan;
+  const workout = activePlan.find((w) => w.id === session.workoutId);
+  if (workout && workout.muscles && workout.muscles.length) {
+    return workout.muscles.map((id) => {
+      const mg = MUSCLE_GROUPS.find((g) => g.id === id);
+      return mg ? mg.label : id;
+    });
+  }
+  if (workout && workout.focus) {
+    return [workout.focus];
+  }
+  return [];
+}
+
+function openWorkoutReport(session) {
+  const activePlan = loadCustomProgram() || plan;
+  const workout = activePlan.find((w) => w.id === session.workoutId);
+  const workoutName = workout ? workout.name : session.workoutName || "Workout";
+  const date = parseDateKey(session.dateKey);
+  const dateStr = formatReadableDate(date);
+
+  // Compute totals
+  let totalVolume = 0;
+  let totalSets = 0;
+  let totalExercises = 0;
+  for (const ex of session.exercises) {
+    let exHasWorking = false;
+    for (const set of ex.sets) {
+      if (set.done && Number(set.weight) > 0) {
+        totalVolume += Number(set.weight) * (Number(set.reps) || 0);
+        totalSets++;
+        exHasWorking = true;
+      } else if (set.done) {
+        totalSets++;
+        exHasWorking = true;
+      }
+    }
+    if (exHasWorking) totalExercises++;
+  }
+  const duration = session.duration || 0;
+  const durMin = Math.round(duration / 60);
+  const volStr = totalVolume >= 1000 ? `${(totalVolume / 1000).toFixed(1)}k kg` : `${totalVolume} kg`;
+  const sessionPRs = getTodayPRs(session.dateKey);
+  const muscles = getSessionMuscles(session);
+  const notes = session.notes || "";
+
+  // Build exercises HTML
+  let exercisesHtml = "";
+  for (const ex of session.exercises) {
+    const workingSets = ex.sets.filter((s) => s.done);
+    if (!workingSets.length) continue;
+    let exVolume = 0;
+    let setsHtml = "";
+    for (const set of workingSets) {
+      const w = Number(set.weight);
+      const r = set.reps || 0;
+      if (w > 0) exVolume += w * r;
+      const weightStr = w > 0 ? displayWeight(w) : "bodyweight";
+      setsHtml += `<div class="wr-ex-set"><span>${weightStr} × ${r}</span></div>`;
+    }
+    const exVolStr = exVolume > 0 ? `Volume: ${exVolume >= 1000 ? (exVolume / 1000).toFixed(1) + "k" : exVolume} kg` : "";
+    const exName = ex.name.replace(/([A-Z])/g, " $1").trim();
+    exercisesHtml += `<div class="wr-exercise">
+      <div class="wr-ex-name">${exName}</div>
+      ${setsHtml}
+      ${exVolStr ? `<div class="wr-ex-volume">${exVolStr}</div>` : ""}
+    </div>`;
+  }
+
+  // PRs
+  let prHtml = "";
+  if (sessionPRs.length > 0) {
+    const seen = new Set();
+    const unique = sessionPRs.filter((pr) => {
+      const key = pr.exerciseName + pr.type;
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+    prHtml = `<div class="wr-pr-block">
+      <div class="wr-pr-title">🏆 Personal Records</div>
+      ${unique.map((pr) => {
+        const name = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
+        const typeLabel = pr.type === "weight" ? "New Weight PR" : pr.type === "reps" ? "New Rep PR" : "New Volume PR";
+        return `<div class="wr-pr-item">${name}: ${displayWeight(pr.weight)} × ${pr.reps} — ${typeLabel}</div>`;
+      }).join("")}
+    </div>`;
+  }
+
+  // Notes
+  const notesHtml = notes ? `<div class="wr-notes-block"><div class="wr-section-title">Session Notes</div><div class="wr-notes-text">${notes}</div></div>` : "";
+
+  // Muscle chips
+  const musclesHtml = muscles.length > 0
+    ? `<div class="wr-section">
+        <div class="wr-section-title">Muscles Trained</div>
+        <div class="wr-muscles">${muscles.map((m) => `<span class="wr-muscle-chip">${m}</span>`).join("")}</div>
+      </div>`
+    : "";
+
+  // Find prev session with same workoutId
+  const prevSession = state.sessions.filter((s) => s.finishedAt && s.workoutId === session.workoutId && s.dateKey < session.dateKey).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
+
+  const overlay = document.createElement("div");
+  overlay.className = "wr-overlay";
+  overlay.id = "workoutReport";
+
+  overlay.innerHTML = `
+    <div class="wr-header">
+      <button class="wr-back-btn" id="wrBackBtn">←</button>
+      <div class="wr-header-info">
+        <div class="wr-header-name">${workoutName}</div>
+        <div class="wr-header-date">${dateStr}</div>
+      </div>
+    </div>
+    <div class="wr-body">
+      <div class="wr-overview-grid">
+        <div class="wr-ov-item"><span class="wr-ov-value">${durMin}</span><span class="wr-ov-label">min</span></div>
+        <div class="wr-ov-item"><span class="wr-ov-value">${totalExercises}</span><span class="wr-ov-label">Ex</span></div>
+        <div class="wr-ov-item"><span class="wr-ov-value">${totalSets}</span><span class="wr-ov-label">Sets</span></div>
+        <div class="wr-ov-item"><span class="wr-ov-value">${totalVolume >= 1000 ? (totalVolume / 1000).toFixed(1) + "k" : totalVolume}</span><span class="wr-ov-label">Vol</span></div>
+        <div class="wr-ov-item"><span class="wr-ov-value">${sessionPRs.length}</span><span class="wr-ov-label">PRs</span></div>
+      </div>
+
+      <div class="wr-section">
+        <div class="wr-section-title">Exercises Completed</div>
+        ${exercisesHtml}
+      </div>
+
+      ${musclesHtml}
+      ${prHtml}
+      ${notesHtml}
+
+      <div class="wr-actions">
+        ${prevSession ? `<button class="wr-action-btn" id="wrCompareBtn">Compare Last Session</button>` : ""}
+        <button class="wr-action-btn" id="wrRepeatBtn">Repeat Workout</button>
+        <button class="wr-action-btn" id="wrBackToCalBtn">Back To Calendar</button>
+      </div>
+    </div>
+  `;
+
+  document.body.appendChild(overlay);
+  document.body.style.overflow = "hidden";
+
+  overlay.querySelector("#wrBackBtn").addEventListener("click", closeWorkoutReport);
+  overlay.querySelector("#wrBackToCalBtn").addEventListener("click", closeWorkoutReport);
+
+  if (prevSession) {
+    overlay.querySelector("#wrCompareBtn").addEventListener("click", () => {
+      closeWorkoutReport();
+      openWorkoutReport(prevSession);
+    });
+  }
+
+  overlay.querySelector("#wrRepeatBtn").addEventListener("click", () => {
+    closeWorkoutReport();
+    startSessionForWorkout(session.workoutId);
+    activateTab("sets");
+  });
+}
+
+function closeWorkoutReport() {
+  const overlay = document.getElementById("workoutReport");
+  if (overlay) overlay.remove();
+  document.body.style.overflow = "";
+}
+
+
+
+// ===== BODY TAB =====
+let bodyChartInstance = null;
+
+function renderBodyTab() {
+  renderBodySnapshot();
+  renderWeightTrend();
+  renderMuscleCoverageCompact();
+  renderNeedsAttention();
+  renderRecoverySummary();
+  renderBodyGoals();
+  renderBodyInsights();
+}
+
+function latestWeight() {
+  const log = loadBodyLog().sort((a, b) => b.date.localeCompare(a.date));
+  return log.length > 0 ? log[0] : null;
+}
+
+function weeklyWeightChange() {
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  if (log.length < 2) return null;
+  const now = new Date();
+  const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
+  const recent = log.filter((e) => e.date >= weekAgo);
+  const before = log.filter((e) => e.date < weekAgo);
+  if (recent.length === 0 || before.length === 0) return null;
+  const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
+  const avgBefore = before.slice(-7).reduce((s, e) => s + e.weight, 0) / Math.min(before.length, 7);
+  return avgRecent - avgBefore;
+}
+
+// --- SECTION 1: Body Snapshot ---
+function renderBodySnapshot() {
+  const container = document.getElementById("bodyPageContent");
+  const u = state.user || {};
+  const entry = latestWeight();
+  const weight = entry ? entry.weight : null;
+  const bmi = u.height && weight ? (weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
+  const updatedStr = entry ? (() => {
+    const days = Math.floor((Date.now() - parseDateKey(entry.date).getTime()) / 86400000);
+    return days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`;
+  })() : null;
+
+  const existing = container.querySelector(".body-snapshot");
+  if (existing) existing.remove();
+
+  const div = document.createElement("div");
+  div.className = "body-snapshot";
+  div.innerHTML = `
+    <div class="bs-grid">
+      <div class="bs-item"><span class="bs-label">Weight</span><span class="bs-value">${weight ? displayWeight(weight) : "—"}</span></div>
+      <div class="bs-item"><span class="bs-label">Height</span><span class="bs-value">${u.height ? displayHeight(u.height) : "—"}</span></div>
+      <div class="bs-item"><span class="bs-label">BMI</span><span class="bs-value">${bmi || "—"}</span></div>
+      <div class="bs-item"><span class="bs-label">Last Updated</span><span class="bs-value">${updatedStr || "—"}</span></div>
+    </div>
+    <div class="bs-footer">
+      <span class="bs-updated">${entry ? "Updated " + updatedStr : "No weigh-ins yet"}</span>
+      <button class="bs-edit-btn" id="snapshotEditBtn" aria-label="Log weigh-in">✎</button>
+    </div>`;
+  container.prepend(div);
+}
+
+// --- SECTION 2: Weight Trend ---
+function monthlyWeightChange() {
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  if (log.length < 2) return null;
+  const now = new Date();
+  const monthAgo = getDateKey(new Date(now.getTime() - 30 * 86400000));
+  const recent = log.filter((e) => e.date >= monthAgo);
+  const before = log.filter((e) => e.date < monthAgo);
+  if (recent.length === 0 || before.length === 0) return null;
+  const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
+  const avgBefore = before.slice(-30).reduce((s, e) => s + e.weight, 0) / Math.min(before.length, 30);
+  return avgRecent - avgBefore;
+}
+
+function renderWeightTrend() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-weight-trend");
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const change = weeklyWeightChange();
+  const monthlyChange = monthlyWeightChange();
+
+  if (existing) existing.remove();
+
+  const div = document.createElement("div");
+  div.className = "body-weight-trend";
+  const changeCls = (val) => val !== null && val !== 0 ? (val > 0 ? " is-up" : " is-down") : "";
+  const fmtChange = (val) => val !== null ? (val > 0 ? "+" : "") + val.toFixed(1) + " kg" : "—";
+  div.innerHTML = `
+    <div class="bw-header">
+      <div class="bw-stat"><span class="bw-stat-label">Current</span><span class="bw-stat-value">${log.length > 0 ? displayWeight(log[log.length - 1].weight) : "—"}</span></div>
+      <div class="bw-stat${changeCls(change)}"><span class="bw-stat-label">Weekly</span><span class="bw-stat-value">${fmtChange(change)}</span></div>
+      <div class="bw-stat${changeCls(monthlyChange)}"><span class="bw-stat-label">Monthly</span><span class="bw-stat-value">${fmtChange(monthlyChange)}</span></div>
+    </div>
+    <div class="bw-chart-wrap"><canvas id="bodyWeightChart" style="width:100%;height:200px"></canvas></div>`;
+
+  const snapshot = container.querySelector(".body-snapshot");
+  if (snapshot) snapshot.after(div);
+  else container.prepend(div);
+
+  if (bodyChartInstance) { bodyChartInstance.destroy(); bodyChartInstance = null; }
+  const canvas = document.getElementById("bodyWeightChart");
+  if (log.length < 2) {
+    canvas.style.display = "none";
+    div.querySelector(".bw-chart-wrap").innerHTML = '<div class="bw-skeleton"><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-text">Track your weight to unlock trends</div></div>';
+    return;
+  }
+  canvas.style.display = "block";
+  const recent = log.slice(-30);
+  const labels = recent.map((e) => {
+    const d = parseDateKey(e.date);
+    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
+  });
+  const data = recent.map((e) => e.weight);
+  const ctx = canvas.getContext("2d");
+  bodyChartInstance = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.4, pointRadius: 2, pointBackgroundColor: "#00d26a", fill: { target: "origin", above: "rgba(0, 210, 106, 0.08)" } }] },
+    options: {
+      plugins: { legend: { display: false }, tooltip: { enabled: true } },
+      scales: {
+        x: { ticks: { maxTicksLimit: 6, color: "#737373", font: { size: 10 } }, grid: { display: false } },
+        y: { ticks: { color: "#737373", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.04)" } },
+      },
+      maintainAspectRatio: false,
+    },
+  });
+}
+
+// --- SECTION 3: Muscle Coverage (Compact) ---
+function renderMuscleCoverageCompact() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-coverage-compact");
+  if (existing) existing.remove();
+
+  const summary = computeMuscleSummary(bodyMapMode);
+  const coverageScore = getMuscleCoverageScore(summary);
+  const trained = Object.values(summary).filter((m) => m.weeklySets > 0).length;
+  const total = Object.keys(summary).length;
+  const modeLabels = { today: "Today", week: "Week", month: "Month" };
+
+  const div = document.createElement("div");
+  div.className = "body-coverage-compact";
+  div.innerHTML = `
+    <div class="bc-ring" style="background: conic-gradient(var(--accent) ${coverageScore * 3.6}deg, var(--surface-2) 0deg)">
+      <div class="bc-ring-inner">${coverageScore}%</div>
+    </div>
+    <div class="bc-info">
+      <div class="bc-info-label">Muscle Coverage</div>
+      <div class="bc-info-value">${trained} / ${total} muscles trained</div>
+      <div class="bc-tabs-row">
+        ${Object.entries(modeLabels).map(([key, label]) =>
+          `<button class="bc-tab-sm${bodyMapMode === key ? " is-active" : ""}" data-mode="${key}">${label}</button>`
+        ).join("")}
+      </div>
+    </div>`;
+
+  const trend = container.querySelector(".body-weight-trend");
+  if (trend) trend.after(div);
+  else container.prepend(div);
+
+  div.querySelectorAll(".bc-tab-sm").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      bodyMapMode = btn.dataset.mode;
+      renderMuscleCoverageCompact();
+    });
+  });
+}
+
+// --- SECTION 4: Needs Attention ---
+function renderNeedsAttention() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-needs");
+  const summary = computeMuscleSummary(bodyMapMode);
+  const needs = getBodyNeedsAttention(summary).slice(0, 3);
+
+  if (existing) existing.remove();
+
+  const div = document.createElement("div");
+  div.className = "body-needs";
+
+  if (needs.length === 0) {
+    div.innerHTML = `<div class="body-needs-all">All muscles trained this week</div>`;
+  } else {
+    div.innerHTML = `<div class="bn-label">Needs Attention</div><div class="bn-list">
+      ${needs.map((m) => {
+        const recovery = state.recoveryAnalysis !== false ? getRecoveryLevel(m.days, m.sets) : null;
+        const recConfig = {
+          fatigued: { color: "var(--red)", label: "Fatigued" },
+          recovering: { color: "var(--yellow)", label: "Recovering" },
+          recovered: { color: "var(--accent)", label: "Recovered" },
+        };
+        const badge = recovery ? recConfig[recovery] : null;
+        return `<div class="bn-card" data-muscle="${m.id}">
+          <div class="bn-left">
+            <div class="bn-name">${m.label}</div>
+            <div class="bn-meta">Last trained ${m.days >= 99 ? "never" : m.days === 0 ? "today" : m.days === 1 ? "yesterday" : m.days + " days ago"}</div>
+          </div>
+          ${badge ? `<div class="bn-badge" style="color:${badge.color};border-color:${badge.color}"><span class="bn-dot" style="background:${badge.color}"></span>${badge.label}</div>` : ""}
+        </div>`;
+      }).join("")}
+    </div>`;
+  }
+
+  const coverage = container.querySelector(".body-coverage");
+  if (coverage) coverage.after(div);
+  else container.prepend(div);
+
+  // Tap to show bottom sheet
+  div.querySelectorAll(".bn-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      showMuscleSheet(card.dataset.muscle, summary);
+    });
+  });
+}
+
+// --- SECTION 5: Recovery Summary ---
+function renderRecoverySummary() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-recovery");
+  if (existing) existing.remove();
+
+  const summary = computeMuscleSummary(bodyMapMode);
+  const groups = { fatigued: [], recovering: [], recovered: [] };
+  for (const [id, data] of Object.entries(summary)) {
+    if (data.weeklySets === 0) continue;
+    const mg = MUSCLE_GROUPS.find((m) => m.id === id);
+    if (!mg) continue;
+    const daysSince = typeof data.daysSince === "number" ? data.daysSince : (data.lastTrained ? getRecoveryDays(data.lastTrained) : 99);
+    const level = getRecoveryLevel(daysSince, data.weeklySets);
+    if (level && groups[level]) groups[level].push(mg.label);
+  }
+
+  const div = document.createElement("div");
+  div.className = "body-recovery";
+  const hasAny = Object.values(groups).some((g) => g.length > 0);
+  if (!hasAny) {
+    div.innerHTML = `<div class="br-label">Recovery Status</div><div class="br-empty">No recovery data yet</div>`;
+  } else {
+    div.innerHTML = `<div class="br-label">Recovery Status</div><div class="br-list">
+      ${groups.recovered.length ? `<div class="br-item"><span class="br-item-icon">🟢</span><span class="br-item-label">Ready</span><span class="br-item-muscles">${groups.recovered.join(", ")}</span></div>` : ""}
+      ${groups.recovering.length ? `<div class="br-item"><span class="br-item-icon">🟡</span><span class="br-item-label">Recovering</span><span class="br-item-muscles">${groups.recovering.join(", ")}</span></div>` : ""}
+      ${groups.fatigued.length ? `<div class="br-item"><span class="br-item-icon">🔴</span><span class="br-item-label">Fatigued</span><span class="br-item-muscles">${groups.fatigued.join(", ")}</span></div>` : ""}
+    </div>`;
+  }
+
+  const goals = container.querySelector(".body-goals");
+  if (goals) goals.before(div);
+  else container.prepend(div);
+}
+
+// --- SECTION 6: Goals ---
+function renderBodyGoals() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-goals");
+  if (existing) existing.remove();
+
+  const goals = (state.goals || []).filter((g) => {
+    if (g.type === "weight") return true;
+    if (g.type === "bench" || g.type === "squat" || g.type === "deadlift" || g.type === "custom") return true;
+    return false;
+  });
+
+  const div = document.createElement("div");
+  div.className = "body-goals";
+
+  if (goals.length === 0) {
+    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Active Goals</div><p class="body-empty-text">Create your first goal</p></div>`;
+  } else {
+    const visible = goals.slice(0, 3);
+    div.innerHTML = `<div class="bg-label">Goals</div><div class="bg-list">
+      ${visible.map((g) => {
+        const pct = typeof getGoalProgress === "function" ? getGoalProgress(g) : 0;
+        const val = typeof getGoalValue === "function" ? getGoalValue(g) : "—";
+        const target = g.target || g.value || "—";
+        return `<div class="bg-card">
+          <div class="bg-header"><span class="bg-name">${g.name}</span><span class="bg-pct">${pct}%</span></div>
+          <div class="bg-bar-wrap"><div class="bg-bar" style="width:${Math.min(pct, 100)}%"></div></div>
+          <div class="bg-meta">${typeof val === "string" ? val : displayWeight ? displayWeight(Number(val)) : val} / ${typeof target === "string" ? target : displayWeight ? displayWeight(Number(target)) : target}</div>
+        </div>`;
+      }).join("")}
+      ${goals.length > 3 ? '<button class="bg-view-all">View All</button>' : ""}
+    </div>`;
+  }
+
+  const needs = container.querySelector(".body-needs");
+  if (needs) needs.after(div);
+  else container.prepend(div);
+}
+
+// --- SECTION 6: Insights ---
+function renderBodyInsights() {
+  const container = document.getElementById("bodyPageContent");
+  const existing = container.querySelector(".body-insights");
+  if (existing) existing.remove();
+
+  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
+  const summary = computeMuscleSummary(bodyMapMode);
+
+  const div = document.createElement("div");
+  div.className = "body-insights";
+
+  if (weekSessions.length === 0) {
+    div.innerHTML = `<div class="body-empty-insights"><p class="body-empty-text">Insights will appear after your first week of training</p></div>`;
+  } else {
+    const insp = [];
+    const coverage = getMuscleCoverageScore(summary);
+    const neglected = MUSCLE_GROUPS.filter((mg) => {
+      const d = summary[mg.id];
+      return !d || d.weeklySets === 0;
+    }).slice(0, 3);
+    if (neglected.length > 0) {
+      insp.push({ icon: "⚠️", text: `${neglected.map((m) => m.label).join(", ")} not trained this week`, severity: "yellow" });
+    }
+    const undertrained = MUSCLE_GROUPS.filter((mg) => {
+      const d = summary[mg.id];
+      return d && d.weeklySets > 0 && d.weeklySets < 5;
+    }).slice(0, 2);
+    if (undertrained.length > 0) {
+      insp.push({ icon: "🎯", text: `${undertrained.map((m) => m.label).join(", ")} need more volume (<5 weekly sets)`, severity: "yellow" });
+    }
+    const weekCount = weekSessions.length;
+    const prevWeek = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000))).length;
+    if (weekCount >= 3) {
+      insp.push({ icon: "✅", text: `Trained ${weekCount}x this week — great consistency`, severity: "green" });
+    }
+    if (prevWeek > 0 && weekCount > prevWeek) {
+      insp.push({ icon: "📈", text: `${weekCount - prevWeek} more workout${weekCount - prevWeek > 1 ? "s" : ""} than last week`, severity: "green" });
+    }
+    const change = weeklyWeightChange();
+    if (change !== null) {
+      insp.push({ icon: change >= 0 ? "📊" : "📊", text: `Weight ${change > 0 ? "increased" : change < 0 ? "decreased" : "stable"} ${Math.abs(change).toFixed(1)}kg this week`, severity: change === 0 ? "blue" : "blue" });
+    }
+    const recovering = MUSCLE_GROUPS.filter((mg) => {
+      const d = summary[mg.id];
+      return d && d.weeklySets > 0 && getRecoveryDays(d.lastTrained) <= 1;
+    }).slice(0, 2);
+    if (recovering.length > 0) {
+      insp.push({ icon: "🔄", text: `${recovering.map((m) => m.label).join(", ")} recovering — prioritize sleep & nutrition`, severity: "blue" });
+    }
+    const optimal = MUSCLE_GROUPS.filter((mg) => {
+      const d = summary[mg.id];
+      return d && d.weeklySets >= 5 && d.weeklySets <= 14;
+    }).length;
+    if (optimal >= 8) {
+      insp.push({ icon: "💪", text: `${optimal} muscle groups in optimal training range`, severity: "green" });
+    }
+
+    div.innerHTML = `<div class="bi-label">Insights</div><div class="bi-list">
+      ${insp.slice(0, 4).map((i) => `<div class="bi-item is-${i.severity}"><span class="bi-icon">${i.icon}</span><span class="bi-text">${i.text}</span></div>`).join("")}
+    </div>`;
+  }
+
+  const goals = container.querySelector(".body-goals");
+  if (goals) goals.after(div);
+  else container.prepend(div);
+}
+
+let weightHistoryChartInstance = null;
+let historyFilterDays = 30;
+
 function renderWeightHistoryChart() {
-  if (weightHistoryChartInstance) { weightHistoryChartInstance.destroy(); weightHistoryChartInstance = null; }
-  const canvas = document.getElementById("weightHistoryChart");
-  if (!canvas) return;
   const container = document.getElementById("historyFilterChips");
-  container.innerHTML = [7, 30, 90, 365, 0].map((d) =>
-    `<button class="filter-chip ${historyFilterDays === d ? "is-active" : ""}" data-days="${d}">${d === 0 ? "All" : d === 365 ? "1y" : d + "d"}</button>`
-  ).join("");
+  container.innerHTML = [7, 30, 90, 365, 0]
+    .map(
+      (d) =>
+        `<button class="filter-chip ${historyFilterDays === d ? "is-active" : ""}" data-days="${d}">${d === 0 ? "All" : d === 365 ? "1y" : d + "d"}</button>`,
+    )
+    .join("");
   container.querySelectorAll("[data-days]").forEach((btn) => {
     btn.addEventListener("click", () => {
       historyFilterDays = Number(btn.dataset.days);
@@ -4672,18 +6051,26 @@ document.getElementById("myExercisesBtn")?.addEventListener("click", () => {
   const allExercises = activePlan.flatMap((w) => w.exercises.map((e) => e.name));
   container.textContent = `All Exercises (${allExercises.length})`;
 
-  if (exerciseDetailChartInstance) { exerciseDetailChartInstance.destroy(); exerciseDetailChartInstance = null; }
+  if (exerciseDetailChartInstance) {
+    exerciseDetailChartInstance.destroy();
+    exerciseDetailChartInstance = null;
+  }
   const canvas = document.getElementById("exerciseDetailChart");
   if (canvas) {
     const ctx = canvas.getContext("2d");
     const counts = {};
-    allExercises.forEach((name) => { counts[name] = (counts[name] || 0) + 1; });
+    allExercises.forEach((name) => {
+      counts[name] = (counts[name] || 0) + 1;
+    });
     const labels = Object.keys(counts);
     const data = Object.values(counts);
     exerciseDetailChartInstance = new Chart(ctx, {
       type: "bar",
       data: { labels, datasets: [{ data, backgroundColor: "#00d26a", borderRadius: 4 }] },
-      options: { plugins: { legend: { display: false } }, scales: { y: { ticks: { stepSize: 1, color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 8 } } } } },
+      options: {
+        plugins: { legend: { display: false } },
+        scales: { y: { ticks: { stepSize: 1, color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 8 } } } },
+      },
     });
   }
 
@@ -4692,7 +6079,10 @@ document.getElementById("myExercisesBtn")?.addEventListener("click", () => {
 
 document.getElementById("exerciseDetailClose")?.addEventListener("click", () => {
   document.getElementById("exerciseDetailModal").classList.add("is-hidden");
-  if (exerciseDetailChartInstance) { exerciseDetailChartInstance.destroy(); exerciseDetailChartInstance = null; }
+  if (exerciseDetailChartInstance) {
+    exerciseDetailChartInstance.destroy();
+    exerciseDetailChartInstance = null;
+  }
 });
 
 // ===== LOAD PROGRAM =====
@@ -4725,7 +6115,14 @@ document.getElementById("loadProgramConfirm")?.addEventListener("click", () => {
       }
       const sets = Number(setsStr) || 3;
       const reps = repsStr.includes("-") ? repsStr : Number(repsStr) || 8;
-      currentDay.exercises.push({ name: exName, sets, reps: typeof reps === "number" ? reps : 8, repTarget: typeof reps === "string" ? reps : String(reps), weight: "", tip: "" });
+      currentDay.exercises.push({
+        name: exName,
+        sets,
+        reps: typeof reps === "number" ? reps : 8,
+        repTarget: typeof reps === "string" ? reps : String(reps),
+        weight: "",
+        tip: "",
+      });
     }
   }
 
@@ -4738,7 +6135,9 @@ document.getElementById("loadProgramConfirm")?.addEventListener("click", () => {
   document.getElementById("confirmProgramModal").classList.remove("is-hidden");
   document.getElementById("confirmProgramText").textContent = `Replace current program with ${newPlan.length} days?`;
   document.getElementById("confirmProgramYes").onclick = () => {
-    try { localStorage.setItem("wl_custom_program", JSON.stringify(newPlan)); } catch {}
+    try {
+      localStorage.setItem("wl_custom_program", JSON.stringify(newPlan));
+    } catch {}
     document.getElementById("loadProgramModal").classList.add("is-hidden");
     document.getElementById("confirmProgramModal").classList.add("is-hidden");
     state.planOffset = 0;
@@ -4754,46 +6153,139 @@ document.getElementById("confirmProgramNo")?.addEventListener("click", () => {
   document.getElementById("confirmProgramModal").classList.add("is-hidden");
 });
 
-// ===== ONBOARDING =====
-document.getElementById("onboardName")?.addEventListener("input", validateOnboard);
-document.getElementById("onboardAge")?.addEventListener("input", validateOnboard);
-document.getElementById("onboardHeight")?.addEventListener("input", validateOnboard);
-document.getElementById("onboardWeight")?.addEventListener("input", validateOnboard);
-document.getElementById("onboardSaveBtn")?.addEventListener("click", () => {
-  const weight = Number(document.getElementById("onboardWeight").value);
-  state.user = {
-    name: document.getElementById("onboardName").value.trim(),
-    age: Number(document.getElementById("onboardAge").value),
-    height: Number(document.getElementById("onboardHeight").value),
-    weight,
-  };
-  // Log initial weight
-  if (!state.weightLog) state.weightLog = [];
-  state.weightLog.push({ weight, date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
-  saveState();
-  document.getElementById("onboardingModal").classList.add("is-hidden");
-  render();
+document.addEventListener("click", (e) => {
+  const banner = e.target.closest("#homeIncompleteBanner");
+  if (banner) {
+    e.preventDefault();
+    openOnboarding(true);
+  }
+  const profileCta = e.target.closest("#settingsCompleteProfile");
+  if (profileCta) {
+    e.preventDefault();
+    openOnboarding(true);
+  }
 });
-function validateOnboard() {
-  const name = document.getElementById("onboardName").value.trim();
+
+// ===== ONBOARDING =====
+
+function isProfileComplete() {
+  const u = state.user;
+  return !!(u && u.name && u.name !== "Athlete" && u.age && u.height && u.weight);
+}
+
+function openOnboarding(animateIn) {
+  const modal = document.getElementById("onboardingModal");
+  modal.classList.remove("is-hidden");
+  if (animateIn) {
+    modal.classList.add("animate-in");
+    const onAnimEnd = () => { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onAnimEnd); };
+    modal.addEventListener("animationend", onAnimEnd);
+  }
+  document.getElementById("onboardName").focus();
+}
+
+function closeOnboarding(animateOut, callback) {
+  const modal = document.getElementById("onboardingModal");
+  if (animateOut) {
+    modal.classList.add("animate-out");
+    const onAnimEnd = () => {
+      modal.classList.add("is-hidden");
+      modal.classList.remove("animate-out");
+      modal.removeEventListener("animationend", onAnimEnd);
+      if (callback) callback();
+    };
+    modal.addEventListener("animationend", onAnimEnd);
+  } else {
+    modal.classList.add("is-hidden");
+    if (callback) callback();
+  }
+}
+
+function saveOnboardData(name, age, height, weight) {
+  state.user = { name: name.trim() || "Athlete", age: Number(age) || 0, height: Number(height) || 0, weight: Number(weight) || 0 };
+  if (weight > 0) {
+    if (!state.weightLog) state.weightLog = [];
+    state.weightLog.push({ weight: Number(weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+  }
+  saveState();
+}
+
+// --- Living listeners ---
+document.addEventListener("input", (e) => {
+  if (["onboardName", "onboardAge", "onboardHeight", "onboardWeight"].includes(e.target.id)) {
+    const name = document.getElementById("onboardName").value.trim();
+    const age = document.getElementById("onboardAge").value;
+    const height = document.getElementById("onboardHeight").value;
+    const weight = document.getElementById("onboardWeight").value;
+    document.getElementById("onboardSaveBtn").disabled = !(name && Number(age) > 0 && Number(height) > 0 && Number(weight) > 0);
+  }
+});
+
+document.addEventListener("keydown", (e) => {
+  if (e.key !== "Enter") return;
+  const fieldMap = ["onboardName", "onboardAge", "onboardHeight", "onboardWeight"];
+  const idx = fieldMap.indexOf(e.target.id);
+  if (idx === -1) return;
+  e.preventDefault();
+  const next = fieldMap[idx + 1];
+  if (next) {
+    document.getElementById(next).focus();
+  } else {
+    document.getElementById("onboardSaveBtn").click();
+  }
+});
+
+document.getElementById("onboardSaveBtn")?.addEventListener("click", () => {
+  const name = document.getElementById("onboardName").value;
   const age = document.getElementById("onboardAge").value;
   const height = document.getElementById("onboardHeight").value;
   const weight = document.getElementById("onboardWeight").value;
-  document.getElementById("onboardSaveBtn").disabled = !(name && age > 0 && height > 0 && weight > 0);
-}
+  if (!(name.trim() && Number(age) > 0 && Number(height) > 0 && Number(weight) > 0)) return;
+  saveOnboardData(name, age, height, weight);
+  closeOnboarding(true, () => render());
+});
+
+// --- Skip ---
+document.getElementById("onboardSkipBtn")?.addEventListener("click", () => {
+  document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
+});
+document.getElementById("onboardConfirmCancel")?.addEventListener("click", () => {
+  document.getElementById("onboardConfirmModal").classList.add("is-hidden");
+});
+document.getElementById("onboardConfirmSkip")?.addEventListener("click", () => {
+  document.getElementById("onboardConfirmModal").classList.add("is-hidden");
+  saveOnboardData("Athlete", 0, 0, 0);
+  closeOnboarding(true, () => render());
+});
 
 // ===== EXERCISE LIBRARY =====
 let elActiveCategory = "";
 
 function loadFavorites() {
-  try { return JSON.parse(localStorage.getItem("wl_fav_exercises")) || []; } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("wl_fav_exercises")) || [];
+  } catch {
+    return [];
+  }
 }
-function saveFavorites(favs) { try { localStorage.setItem("wl_fav_exercises", JSON.stringify(favs)); } catch {} }
+function saveFavorites(favs) {
+  try {
+    localStorage.setItem("wl_fav_exercises", JSON.stringify(favs));
+  } catch {}
+}
 
 function loadRecentExercises() {
-  try { return JSON.parse(localStorage.getItem("wl_recent_exercises")) || []; } catch { return []; }
+  try {
+    return JSON.parse(localStorage.getItem("wl_recent_exercises")) || [];
+  } catch {
+    return [];
+  }
 }
-function saveRecentExercises(recents) { try { localStorage.setItem("wl_recent_exercises", JSON.stringify(recents)); } catch {} }
+function saveRecentExercises(recents) {
+  try {
+    localStorage.setItem("wl_recent_exercises", JSON.stringify(recents));
+  } catch {}
+}
 
 function addRecentExercise(exId) {
   let recents = loadRecentExercises();
@@ -4817,10 +6309,9 @@ function renderExerciseLibrary() {
 
   // Categories
   const catContainer = document.getElementById("elCategories");
-  catContainer.innerHTML = `<button class="el-cat-chip${!elActiveCategory ? " is-active" : ""}" data-cat="">All</button>`
-    + EXERCISE_CATEGORIES.map((c) =>
-        `<button class="el-cat-chip${elActiveCategory === c ? " is-active" : ""}" data-cat="${c}">${c}</button>`
-      ).join("");
+  catContainer.innerHTML =
+    `<button class="el-cat-chip${!elActiveCategory ? " is-active" : ""}" data-cat="">All</button>` +
+    EXERCISE_CATEGORIES.map((c) => `<button class="el-cat-chip${elActiveCategory === c ? " is-active" : ""}" data-cat="${c}">${c}</button>`).join("");
   catContainer.querySelectorAll(".el-cat-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       elActiveCategory = chip.dataset.cat;
@@ -4829,17 +6320,15 @@ function renderExerciseLibrary() {
   });
 
   const isSearching = !!search;
-  const allCustom = (state.customExercises || []);
+  const allCustom = state.customExercises || [];
 
   let filtered = EXERCISE_LIBRARY.concat(allCustom);
   if (elActiveCategory) {
     filtered = filtered.filter((ex) => ex.category === elActiveCategory);
   }
   if (search) {
-    filtered = filtered.filter((ex) =>
-      ex.name.toLowerCase().includes(search) ||
-      ex.primaryMuscle.toLowerCase().includes(search) ||
-      ex.equipment.toLowerCase().includes(search)
+    filtered = filtered.filter(
+      (ex) => ex.name.toLowerCase().includes(search) || ex.primaryMuscle.toLowerCase().includes(search) || ex.equipment.toLowerCase().includes(search),
     );
   }
 
@@ -4849,9 +6338,7 @@ function renderExerciseLibrary() {
     recentSection.style.display = "";
     const recentExs = recents.map((id) => filtered.find((ex) => ex.id === id)).filter(Boolean);
     const recentList = document.getElementById("elRecentList");
-    recentList.innerHTML = recentExs.length
-      ? recentExs.map((ex) => renderExerciseCard(ex, favs)).join("")
-      : "";
+    recentList.innerHTML = recentExs.length ? recentExs.map((ex) => renderExerciseCard(ex, favs)).join("") : "";
     bindExerciseCardClicks(recentList, favs);
   } else {
     recentSection.style.display = "none";
@@ -4860,9 +6347,7 @@ function renderExerciseLibrary() {
   // All / filtered list
   const allList = document.getElementById("elAllList");
   if (isSearching || !elActiveCategory) {
-    allList.innerHTML = filtered.length
-      ? filtered.map((ex) => renderExerciseCard(ex, favs)).join("")
-      : `<p class="el-empty">No exercises found.</p>`;
+    allList.innerHTML = filtered.length ? filtered.map((ex) => renderExerciseCard(ex, favs)).join("") : `<p class="el-empty">No exercises found.</p>`;
   } else {
     const activeExs = filtered;
     allList.innerHTML = activeExs.length
@@ -4907,7 +6392,7 @@ function bindExerciseCardClicks(container, favs) {
 }
 
 function addExerciseToWorkout(exId) {
-  const allCustom = (state.customExercises || []);
+  const allCustom = state.customExercises || [];
   const exDef = EXERCISE_LIBRARY.find((e) => e.id === exId) || allCustom.find((e) => e.id === exId);
   if (!exDef) return;
 
@@ -4991,14 +6476,16 @@ function showWorkoutPicker() {
 
   if (!state.favoriteWorkoutIds) state.favoriteWorkoutIds = [];
 
-  list.innerHTML = activePlan.map((w) => {
-    const isFav = favs.includes(w.id);
-    return `<label class="wp-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.65rem;background:var(--surface-2);border-radius:var(--radius-sm);cursor:pointer">
+  list.innerHTML = activePlan
+    .map((w) => {
+      const isFav = favs.includes(w.id);
+      return `<label class="wp-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.65rem;background:var(--surface-2);border-radius:var(--radius-sm);cursor:pointer">
       <input type="checkbox" class="wp-check" data-id="${w.id}" />
       <span style="flex:1;font-weight:600;font-size:0.85rem">${w.name}</span>
-      <span class="wp-fav" data-id="${w.id}" style="cursor:pointer;font-size:1.1rem;color:${isFav ? 'var(--accent)' : 'var(--text-secondary)'}">${isFav ? '★' : '☆'}</span>
+      <span class="wp-fav" data-id="${w.id}" style="cursor:pointer;font-size:1.1rem;color:${isFav ? "var(--accent)" : "var(--text-secondary)"}">${isFav ? "★" : "☆"}</span>
     </label>`;
-  }).join("");
+    })
+    .join("");
 
   document.getElementById("wpGroupName").value = "";
   document.getElementById("wpCreateBtn").disabled = true;
@@ -5011,8 +6498,15 @@ function showWorkoutPicker() {
       const id = star.dataset.id;
       const favs2 = state.favoriteWorkoutIds || [];
       const idx = favs2.indexOf(id);
-      if (idx >= 0) { favs2.splice(idx, 1); star.textContent = "☆"; star.style.color = "var(--text-secondary)"; }
-      else { favs2.push(id); star.textContent = "★"; star.style.color = "var(--accent)"; }
+      if (idx >= 0) {
+        favs2.splice(idx, 1);
+        star.textContent = "☆";
+        star.style.color = "var(--text-secondary)";
+      } else {
+        favs2.push(id);
+        star.textContent = "★";
+        star.style.color = "var(--accent)";
+      }
       state.favoriteWorkoutIds = favs2;
       saveState();
     });
@@ -5060,7 +6554,7 @@ function showNewWorkoutBuilder() {
 
 function renderNewWorkoutList() {
   const container = document.getElementById("nwList");
-  const cats = ["Chest","Shoulders","Back","Biceps","Triceps","Legs","Glutes","Calves","Abs","Forearms","Full Body"];
+  const cats = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"];
   let html = "";
   let total = 0;
   cats.forEach((cat) => {
@@ -5168,7 +6662,9 @@ document.getElementById("cwSaveBtn").addEventListener("click", () => {
     const group = (state.workoutGroups || []).find((g) => g.id === groupId);
     if (group) group.workoutIds.push(newWorkout.id);
   }
-  try { localStorage.setItem("wl_custom_program", JSON.stringify(activePlan)); } catch {}
+  try {
+    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+  } catch {}
   state.plan = activePlan;
   saveState();
   document.getElementById("createWorkoutModal").classList.add("is-hidden");
@@ -5248,7 +6744,13 @@ function createWorkoutMenu() {
     }
   });
   // Close on click outside
-  document.addEventListener("click", (ev) => { if (!d.contains(ev.target) && ev.target !== document.getElementById("wsMenuBtn")) d.classList.add("is-hidden"); }, { once: true });
+  document.addEventListener(
+    "click",
+    (ev) => {
+      if (!d.contains(ev.target) && ev.target !== document.getElementById("wsMenuBtn")) d.classList.add("is-hidden");
+    },
+    { once: true },
+  );
   return d;
 }
 document.getElementById("settingsBackBtn").addEventListener("click", () => {
@@ -5272,7 +6774,7 @@ function openProfileEditor() {
   document.getElementById("peGender").value = user.gender || "";
   document.getElementById("peHeight").value = user.height || "";
   document.getElementById("peWeight").value = user.weight || "";
-  document.getElementById("peGoal").value = user.goal || (state.bodyGoal || "recomp");
+  document.getElementById("peGoal").value = user.goal || state.bodyGoal || "recomp";
   document.getElementById("peActivity").value = user.activity || "";
   document.getElementById("profileEditorModal").classList.remove("is-hidden");
 }
@@ -5310,7 +6812,9 @@ function renderWeightLogList() {
     list.innerHTML = `<p class="empty-state" style="font-size:0.75rem;padding:0.5rem 0">No entries yet.</p>`;
     return;
   }
-  list.innerHTML = entries.map((e, i) => `
+  list.innerHTML = entries
+    .map(
+      (e, i) => `
     <div class="wl-entry-row" data-wl-idx="${i}">
       <span class="wl-entry-weight">${displayWeight(e.weight)}</span>
       <span class="wl-entry-date">${formatReadableDate(parseDateKey(e.date))}</span>
@@ -5318,7 +6822,9 @@ function renderWeightLogList() {
       <button class="wl-entry-edit" data-wl-edit="${i}">✎</button>
       <button class="wl-entry-del" data-wl-del="${i}">✕</button>
     </div>
-  `).join("");
+  `,
+    )
+    .join("");
   list.querySelectorAll("[data-wl-edit]").forEach((btn) => {
     btn.addEventListener("click", (ev) => {
       ev.stopPropagation();
@@ -5348,9 +6854,12 @@ function renderWeightLogList() {
 }
 
 function openWeightLogModal() {
-  const wlW = document.getElementById("wlWeight"); if (!wlW) return;
-  const wlD = document.getElementById("wlDate"); if (!wlD) return;
-  const wlN = document.getElementById("wlNotes"); if (!wlN) return;
+  const wlW = document.getElementById("wlWeight");
+  if (!wlW) return;
+  const wlD = document.getElementById("wlDate");
+  if (!wlD) return;
+  const wlN = document.getElementById("wlNotes");
+  if (!wlN) return;
   wlW.value = (state.user && state.user.weight) || "";
   wlD.value = getDateKey();
   wlN.value = "";
@@ -5374,10 +6883,14 @@ document.getElementById("wlDeleteBtn")?.addEventListener("click", () => {
   renderSettings();
 });
 document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
-  const wlW = document.getElementById("wlWeight"); if (!wlW) return;
-  const wlD = document.getElementById("wlDate"); if (!wlD) return;
-  const wlN = document.getElementById("wlNotes"); if (!wlN) return;
-  const w = wlW.value, d = wlD.value;
+  const wlW = document.getElementById("wlWeight");
+  if (!wlW) return;
+  const wlD = document.getElementById("wlDate");
+  if (!wlD) return;
+  const wlN = document.getElementById("wlNotes");
+  if (!wlN) return;
+  const w = wlW.value,
+    d = wlD.value;
   if (!w || !d) return;
   if (wlEntryId !== null) {
     if (!state.weightLog) state.weightLog = [];
@@ -5402,7 +6915,9 @@ function showDailyReminder(title, body) {
   const today = getDateKey();
   const key = "wl_reminder_" + title.replace(/\s+/g, "_").toLowerCase();
   if (localStorage.getItem(key) === today) return;
-  try { new Notification(title, { body, icon: "/assets/icons/favicon.svg" }); } catch {}
+  try {
+    new Notification(title, { body, icon: "/assets/icons/favicon.svg" });
+  } catch {}
   localStorage.setItem(key, today);
 }
 
@@ -5422,12 +6937,17 @@ async function requestWakeLock() {
   try {
     if (wakeLockSentinel) return;
     wakeLockSentinel = await navigator.wakeLock.request("screen");
-    wakeLockSentinel.addEventListener("release", () => { wakeLockSentinel = null; });
+    wakeLockSentinel.addEventListener("release", () => {
+      wakeLockSentinel = null;
+    });
   } catch {}
 }
 
 function releaseWakeLock() {
-  if (wakeLockSentinel) { wakeLockSentinel.release(); wakeLockSentinel = null; }
+  if (wakeLockSentinel) {
+    wakeLockSentinel.release();
+    wakeLockSentinel = null;
+  }
 }
 
 // ===== SETTINGS EVENT DELEGATION =====
@@ -5436,56 +6956,89 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
   if (!row) return;
   const setting = row.dataset.setting;
 
-  if (setting === "profile") { openProfileEditor(); return; }
+  if (setting === "profile") {
+    openProfileEditor();
+    return;
+  }
 
-  if (setting === "weight-log") { openWeightLogModal(); return; }
+  if (setting === "weight-log") {
+    openWeightLogModal();
+    return;
+  }
 
   if (setting === "rest-timer") {
     const opts = [30, 60, 90, 120, 180];
     const cur = state.restTimer || 90;
     const next = opts[(opts.indexOf(cur) + 1) % opts.length];
     state.restTimer = next;
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "weight-inc") {
     const opts = [0.5, 1, 1.25, 2.5, 5];
     const cur = state.weightInc || 1;
     const next = opts[(opts.indexOf(cur) + 1) % opts.length];
     state.weightInc = next;
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "rep-inc") {
     const cur = state.repInc || 1;
     state.repInc = cur === 1 ? 2 : 1;
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "warmup-style") {
     state.warmupStyle = state.warmupStyle === "advanced" ? "simple" : "advanced";
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
+  }
+  if (setting === "cool-down-duration") {
+    const opts = [3, 5, 8];
+    const cur = state.coolDownDuration || 5;
+    const next = opts[(opts.indexOf(cur) + 1) % opts.length];
+    state.coolDownDuration = next;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "weight-unit") {
     state.weightUnit = state.weightUnit === "kg" ? "lb" : "kg";
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "height-unit") {
     state.heightUnit = state.heightUnit === "cm" ? "ft/in" : "cm";
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
-  if (setting === "theme") {
+if (setting === "theme") {
     const vals = ["Dark", "Light", "System"];
     const cur = state.theme || "Dark";
     const next = vals[(vals.indexOf(cur) + 1) % vals.length];
     state.theme = next;
-    document.documentElement.setAttribute("data-theme", next.toLowerCase());
-    saveState(); renderSettings(); return;
-  }
+    let resolved = next.toLowerCase();
+    if (resolved === "system") resolved = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", resolved);
+    saveState();
+    renderSettings();
+    return;
+}
   if (setting === "accent") {
     const vals = ["Green", "Blue", "Orange", "Purple"];
     const cur = state.accent || "Green";
     const next = vals[(vals.indexOf(cur) + 1) % vals.length];
     state.accent = next;
     document.documentElement.setAttribute("data-accent", next.toLowerCase());
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "font-size") {
     const vals = ["Small", "Medium", "Large"];
@@ -5493,7 +7046,9 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     const next = vals[(vals.indexOf(cur) + 1) % vals.length];
     state.fontSize = next;
     document.documentElement.setAttribute("data-font-size", next.toLowerCase());
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "cal-goal" || setting === "protein-goal" || setting === "water-goal") {
     const val = prompt("Enter new value:", row.querySelector(".sg-row-val")?.textContent || "");
@@ -5503,7 +7058,9 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     if (setting === "cal-goal") state.calorieTarget = num;
     if (setting === "protein-goal") state.proteinGoal = num;
     if (setting === "water-goal") state.waterGoal = num;
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
   if (setting === "export-json") {
     const exportData = {
@@ -5548,17 +7105,24 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
       goalAnalysis: state.goalAnalysis !== false,
       muscleCoverage: state.muscleCoverage !== false,
       progressSuggestions: state.progressSuggestions !== false,
+      recoveryAnalysis: state.recoveryAnalysis !== false,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
-    const a = document.createElement("a"); a.href = url; a.download = `ironlog-export-${getDateKey()}.json`;
-    a.click(); URL.revokeObjectURL(url); return;
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `ironlog-export-${getDateKey()}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    return;
   }
   if (setting === "import-json") {
     const input = document.createElement("input");
-    input.type = "file"; input.accept = ".json";
+    input.type = "file";
+    input.accept = ".json";
     input.onchange = (e) => {
-      const file = e.target.files[0]; if (!file) return;
+      const file = e.target.files[0];
+      if (!file) return;
       const reader = new FileReader();
       reader.onload = (ev) => {
         try {
@@ -5568,16 +7132,23 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
             return;
           }
           Object.assign(state, data);
-          saveState(); render(); renderHome(); renderSettings();
+          saveState();
+          render();
+          renderHome();
+          renderSettings();
           alert("Data imported successfully!");
-        } catch { alert("Invalid file format."); }
+        } catch {
+          alert("Invalid file format.");
+        }
       };
       reader.readAsText(file);
     };
-    input.click(); return;
+    input.click();
+    return;
   }
   if (setting === "delete-all") {
-    document.getElementById("deleteDataModal").classList.remove("is-hidden"); return;
+    document.getElementById("deleteDataModal").classList.remove("is-hidden");
+    return;
   }
 
   // Goal radio change
@@ -5586,7 +7157,9 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     if (!sel) return;
     state.bodyGoal = sel.value;
     if (state.user) state.user.goal = sel.value;
-    saveState(); renderSettings(); return;
+    saveState();
+    renderSettings();
+    return;
   }
 });
 
@@ -5598,22 +7171,43 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
   const checked = e.target.checked;
 
   const map = {
-    "auto-rest": "autoRest", "auto-next": "autoNext", "focus-mode": "focusMode",
-    "screen-awake": "screenAwake", "weight-reminder": "weightReminder",
-    "show-7d": "show7dAvg", "show-30d": "show30dAvg",
-    "progress-photos": "progressPhotos", "body-measurements": "bodyMeasurements",
-    "nutrition-reminder": "nutritionReminder", "compact-mode": "compactMode",
-    "weekly-review": "weeklyReview", "goal-analysis": "goalAnalysis",
-    "muscle-coverage": "muscleCoverage", "progress-suggestions": "progressSuggestions",
-    "auto-warmup": "autoWarmup", "warmup-reminder": "warmupReminder", "stretch-reminder": "stretchReminder",
+    "auto-rest": "autoRest",
+    "auto-next": "autoNext",
+    "focus-mode": "focusMode",
+    "screen-awake": "screenAwake",
+    "weight-reminder": "weightReminder",
+    "show-7d": "show7dAvg",
+    "show-30d": "show30dAvg",
+    "progress-photos": "progressPhotos",
+    "body-measurements": "bodyMeasurements",
+    "nutrition-reminder": "nutritionReminder",
+    "compact-mode": "compactMode",
+    "weekly-review": "weeklyReview",
+    "goal-analysis": "goalAnalysis",
+    "muscle-coverage": "muscleCoverage",
+    "progress-suggestions": "progressSuggestions",
+    "auto-warmup": "autoWarmup",
+    "warmup-reminder": "warmupReminder",
+    "stretch-reminder": "stretchReminder",
+    "auto-summary": "autoSummary",
+    "auto-cooldown": "autoCooldown",
+    "auto-advance-stretches": "autoAdvanceStretches",
+    "show-workout-progress": "showWorkoutProgress",
+    "show-tomorrow": "showTomorrowPreview",
+    "show-recovery": "showRecoveryAdvice",
+    "recovery-analysis": "recoveryAnalysis",
   };
-  if (map[setting] !== undefined) { state[map[setting]] = checked; saveState(); }
+  if (map[setting] !== undefined) {
+    state[map[setting]] = checked;
+    saveState();
+  }
 
   if (setting === "focus-mode") {
     document.documentElement.classList.toggle("focus-mode", checked);
   }
   if (setting === "screen-awake") {
-    if (checked) requestWakeLock(); else releaseWakeLock();
+    if (checked) requestWakeLock();
+    else releaseWakeLock();
   }
 });
 
@@ -5672,7 +7266,9 @@ document.getElementById("builderGenerateBtn").addEventListener("click", () => {
       if (!confirm("Replace your current program?")) return;
     }
     state.plan = program;
-    try { localStorage.setItem("wl_custom_program", JSON.stringify(program)); } catch {}
+    try {
+      localStorage.setItem("wl_custom_program", JSON.stringify(program));
+    } catch {}
     saveState();
     document.getElementById("builderModal").classList.add("is-hidden");
     result.innerHTML = "";
@@ -5696,9 +7292,9 @@ document.getElementById("warmupGenerateBtn").addEventListener("click", () => {
   let html = `<p style="font-size:0.78rem;color:var(--accent);font-weight:700;margin-bottom:0.5rem">Warmup for ${displayWeight(weight)}</p>`;
   sets.forEach((s) => {
     const isWorking = s.pct === "Working";
-    html += `<div class="wu-set" style="${isWorking ? 'background:var(--surface-2);border-radius:6px;padding:0.5rem 0.4rem;margin-top:0.35rem' : ''}">
+    html += `<div class="wu-set" style="${isWorking ? "background:var(--surface-2);border-radius:6px;padding:0.5rem 0.4rem;margin-top:0.35rem" : ""}">
       <div><span class="wu-set-value">${displayWeight(s.bar)}</span><span class="wu-set-label"> × ${s.reps}</span></div>
-      <div><span class="wu-set-label">${s.pct}</span>${isWorking ? '<span style="color:var(--accent);font-size:0.68rem;margin-left:0.35rem">⬅ Working Set</span>' : ''}</div>
+      <div><span class="wu-set-label">${s.pct}</span>${isWorking ? '<span style="color:var(--accent);font-size:0.68rem;margin-left:0.35rem">⬅ Working Set</span>' : ""}</div>
     </div>`;
   });
   result.innerHTML = html;
@@ -5721,19 +7317,19 @@ document.getElementById("sessionSummaryOverlay")?.addEventListener("click", (e) 
 
 // ===== WARMUP / STRETCH SYSTEM =====
 const WARMUP_ROUTINES = {
-  "Push": [
+  Push: [
     { name: "Arm Circles", reps: "20 reps" },
     { name: "Band Pull Aparts", reps: "15 reps" },
     { name: "Push-Ups", reps: "10 reps" },
     { name: "Light Bench Press", reps: "10 reps" },
   ],
-  "Pull": [
+  Pull: [
     { name: "Arm Circles", reps: "20 reps" },
     { name: "Band Rows", reps: "15 reps" },
     { name: "Scapular Pull-Ups", reps: "10 reps" },
     { name: "Light Rows", reps: "10 reps" },
   ],
-  "Legs": [
+  Legs: [
     { name: "Leg Swings", reps: "20 reps" },
     { name: "Bodyweight Squats", reps: "15 reps" },
     { name: "Hip Openers", reps: "10 reps" },
@@ -5748,31 +7344,32 @@ const WARMUP_ROUTINES = {
 };
 
 const STRETCH_ROUTINES = {
-  "Push": [
-    { name: "Chest Stretch", duration: 30 },
-    { name: "Shoulder Stretch", duration: 30 },
-    { name: "Triceps Stretch", duration: 30 },
-    { name: "Doorway Stretch", duration: 30 },
+  Push: [
+    { name: "Chest Stretch", duration: 45 },
+    { name: "Shoulder Stretch", duration: 45 },
+    { name: "Triceps Stretch", duration: 45 },
+    { name: "Doorway Stretch", duration: 45 },
+    { name: "Wrist Flexor Stretch", duration: 45 },
   ],
-  "Pull": [
-    { name: "Lat Stretch", duration: 30 },
-    { name: "Upper Back Stretch", duration: 30 },
-    { name: "Biceps Stretch", duration: 30 },
-    { name: "Neck Stretch", duration: 30 },
+  Pull: [
+    { name: "Lat Stretch", duration: 45 },
+    { name: "Upper Back Stretch", duration: 45 },
+    { name: "Biceps Stretch", duration: 45 },
+    { name: "Neck Stretch", duration: 45 },
+    { name: "Forearm Stretch", duration: 45 },
+    { name: "Cat-Cow", duration: 45 },
   ],
-  "Legs": [
-    { name: "Quad Stretch", duration: 30 },
-    { name: "Hamstring Stretch", duration: 30 },
-    { name: "Calf Stretch", duration: 30 },
-    { name: "Hip Flexor Stretch", duration: 30 },
-  ],
-  "Full Body": [
-    { name: "Quad Stretch", duration: 30 },
-    { name: "Hamstring Stretch", duration: 30 },
-    { name: "Chest Stretch", duration: 30 },
-    { name: "Lat Stretch", duration: 30 },
+  Legs: [
+    { name: "Quad Stretch", duration: 45 },
+    { name: "Hamstring Stretch", duration: 45 },
+    { name: "Calf Stretch", duration: 45 },
+    { name: "Hip Flexor Stretch", duration: 45 },
+    { name: "Glute Stretch", duration: 45 },
+    { name: "Adductor Stretch", duration: 45 },
   ],
 };
+
+const BREATHING_RESET = { name: "Breathing Reset", duration: 60 };
 
 let warmupTimerInterval = null;
 let warmupTimerSeconds = 0;
@@ -5780,8 +7377,126 @@ let stretchTimerInterval = null;
 let stretchTimerSeconds = 0;
 let stretchCurrentIndex = 0;
 
-function detectWorkoutType() {
+function detectCoolDownType() {
   const session = getTodaySession();
+  if (!session || !session.workoutName) return "Push";
+  const name = session.workoutName.toLowerCase();
+  if (name.includes("push") || name.includes("chest") || name.includes("shoulder") || name.includes("triceps")) return "Push";
+  if (name.includes("pull") || name.includes("back") || name.includes("biceps")) return "Pull";
+  if (name.includes("leg") || name.includes("squat") || name.includes("lower")) return "Legs";
+  return "Push";
+}
+
+function getCoolDownRoutine() {
+  const type = detectCoolDownType();
+  const base = STRETCH_ROUTINES[type] || STRETCH_ROUTINES["Push"];
+  return [...base, BREATHING_RESET];
+}
+
+function openCoolDown() {
+  const routine = getCoolDownRoutine();
+  stretchCurrentIndex = 0;
+  showStretchExercise(routine);
+  document.getElementById("stretchTimerModal").classList.remove("is-hidden");
+
+  document.getElementById("stCloseBtn").onclick = () => {
+    stopStretchTimer();
+    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    finishWorkoutComplete();
+  };
+  document.getElementById("stPrevBtn").onclick = () => {
+    if (stretchCurrentIndex > 0) {
+      stopStretchTimer();
+      stretchCurrentIndex--;
+      showStretchExercise(routine);
+    }
+  };
+  document.getElementById("stNextBtn").onclick = () => {
+    stopStretchTimer();
+    stretchCurrentIndex++;
+    showStretchExercise(routine);
+  };
+  document.getElementById("stSkipBtn").onclick = () => {
+    stopStretchTimer();
+    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    finishWorkoutComplete();
+  };
+}
+
+function showStretchExercise(routine) {
+  if (stretchCurrentIndex >= routine.length) {
+    stopStretchTimer();
+    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    finishWorkoutComplete();
+    return;
+  }
+  const ex = routine[stretchCurrentIndex];
+  document.getElementById("stExName").textContent = ex.name;
+  stretchTimerSeconds = ex.duration;
+  updateStretchTimerDisplay();
+  renderStretchDots(routine);
+  document.getElementById("stPrevBtn").style.visibility = stretchCurrentIndex > 0 ? "visible" : "hidden";
+  document.getElementById("stNextBtn").textContent = stretchCurrentIndex < routine.length - 1 ? "Next ›" : "✓ Done";
+  if (state.autoAdvanceStretches !== false) {
+    startStretchTimer(routine);
+  } else {
+    stopStretchTimer();
+  }
+}
+
+function renderStretchDots(routine) {
+  const container = document.getElementById("stProgressDots");
+  container.innerHTML = routine.map((_, i) =>
+    `<span class="st-dot ${i === stretchCurrentIndex ? "is-active" : i < stretchCurrentIndex ? "is-done" : ""}"></span>`
+  ).join("");
+}
+
+function startStretchTimer(routine) {
+  if (stretchTimerInterval) clearInterval(stretchTimerInterval);
+  stretchTimerInterval = setInterval(() => {
+    stretchTimerSeconds--;
+    if (stretchTimerSeconds <= 0) {
+      if (state.autoAdvanceStretches !== false) {
+        stretchCurrentIndex++;
+        showStretchExercise(routine);
+        return;
+      } else {
+        stretchTimerSeconds = 0;
+        stopStretchTimer();
+        updateStretchTimerDisplay();
+        return;
+      }
+    }
+    updateStretchTimerDisplay();
+  }, 1000);
+}
+
+function stopStretchTimer() {
+  if (stretchTimerInterval) {
+    clearInterval(stretchTimerInterval);
+    stretchTimerInterval = null;
+  }
+}
+
+function updateStretchTimerDisplay() {
+  const s = Math.max(0, stretchTimerSeconds);
+  const m = Math.floor(s / 60);
+  const sec = s % 60;
+  document.getElementById("stTimer").textContent = `${m}:${String(sec).padStart(2, "0")}`;
+}
+
+function finishWorkoutComplete() {
+  const session = getTodaySession();
+  if (session) {
+    session.notes = document.getElementById("ssNotesInput")?.value || session.notes || "";
+    saveState();
+  }
+  // Data systems update here
+  renderHome();
+}
+
+function detectWorkoutType(sessionOverride) {
+  const session = sessionOverride || getTodaySession();
   if (!session || !session.workoutName) return "Full Body";
   const name = session.workoutName.toLowerCase();
   if (name.includes("push") || name.includes("chest") || name.includes("shoulder") || name.includes("triceps")) return "Push";
@@ -5791,24 +7506,39 @@ function detectWorkoutType() {
 }
 
 function openWarmupReminder() {
-  if (!state.warmupReminder) { startWorkoutDirectly(); return; }
+  if (!state.warmupReminder) {
+    startWorkoutDirectly();
+    return;
+  }
   const session = getTodaySession();
-  if (!session) { startWorkoutDirectly(); return; }
-  if (session.warmupDone) { startWorkoutDirectly(); return; }
+  if (!session) {
+    startWorkoutDirectly();
+    return;
+  }
+  if (session.warmupDone) {
+    startWorkoutDirectly();
+    return;
+  }
   const type = detectWorkoutType();
   const routine = WARMUP_ROUTINES[type] || WARMUP_ROUTINES["Full Body"];
   document.getElementById("wrmWorkoutInfo").textContent = `${session.workoutName || "Workout"} · ${session.exercises.length} exercises`;
   document.getElementById("wrmRoutineTitle").textContent = `Recommended Warm-Up (${type})`;
-  document.getElementById("wrmRoutineList").innerHTML = routine.map((ex) =>
-    `<div style="display:flex;justify-content:space-between;padding:0.25rem 0"><span>${ex.name}</span><span style="color:var(--text-secondary)">${ex.reps}</span></div>`
-  ).join("");
+  document.getElementById("wrmRoutineList").innerHTML = routine
+    .map(
+      (ex) =>
+        `<div style="display:flex;justify-content:space-between;padding:0.25rem 0"><span>${ex.name}</span><span style="color:var(--text-secondary)">${ex.reps}</span></div>`,
+    )
+    .join("");
   document.getElementById("wrmStartBtn").onclick = () => {
     document.getElementById("warmupReminderModal").classList.add("is-hidden");
     openWarmupTimer(type);
   };
   document.getElementById("wrmSkipBtn").onclick = () => {
     document.getElementById("warmupReminderModal").classList.add("is-hidden");
-    if (session) { session.warmupDone = false; saveState(); }
+    if (session) {
+      session.warmupDone = false;
+      saveState();
+    }
     showScreen("screen-ws");
     renderWorkoutSession();
   };
@@ -5823,19 +7553,28 @@ function startWorkoutDirectly() {
 function openWarmupTimer(type) {
   const routine = WARMUP_ROUTINES[type] || WARMUP_ROUTINES["Full Body"];
   document.getElementById("wtExerciseList").textContent = routine.map((ex) => ex.name).join(" · ");
-  warmupTimerSeconds = 4 * 60; // 4 min default
+  warmupTimerSeconds = 4 * 60;
   updateWarmupTimerDisplay();
   document.getElementById("warmupTimerModal").classList.remove("is-hidden");
   startWarmupTimer();
   document.getElementById("wtPauseBtn").onclick = () => {
-    if (warmupTimerInterval) { clearInterval(warmupTimerInterval); warmupTimerInterval = null; document.getElementById("wtPauseBtn").textContent = "▶ Resume"; }
-    else { startWarmupTimer(); document.getElementById("wtPauseBtn").textContent = "⏸ Pause"; }
+    if (warmupTimerInterval) {
+      clearInterval(warmupTimerInterval);
+      warmupTimerInterval = null;
+      document.getElementById("wtPauseBtn").textContent = "▶ Resume";
+    } else {
+      startWarmupTimer();
+      document.getElementById("wtPauseBtn").textContent = "⏸ Pause";
+    }
   };
   document.getElementById("wtSkipBtn").onclick = () => {
     stopWarmupTimer();
     document.getElementById("warmupTimerModal").classList.add("is-hidden");
     const session = getTodaySession();
-    if (session) { session.warmupDone = false; saveState(); }
+    if (session) {
+      session.warmupDone = false;
+      saveState();
+    }
     showScreen("screen-ws");
     renderWorkoutSession();
   };
@@ -5843,7 +7582,10 @@ function openWarmupTimer(type) {
     stopWarmupTimer();
     document.getElementById("warmupTimerModal").classList.add("is-hidden");
     const session = getTodaySession();
-    if (session) { session.warmupDone = true; saveState(); }
+    if (session) {
+      session.warmupDone = true;
+      saveState();
+    }
     showScreen("screen-ws");
     renderWorkoutSession();
   };
@@ -5853,94 +7595,25 @@ function startWarmupTimer() {
   if (warmupTimerInterval) clearInterval(warmupTimerInterval);
   warmupTimerInterval = setInterval(() => {
     warmupTimerSeconds--;
-    if (warmupTimerSeconds <= 0) { warmupTimerSeconds = 0; stopWarmupTimer(); }
+    if (warmupTimerSeconds <= 0) {
+      warmupTimerSeconds = 0;
+      stopWarmupTimer();
+    }
     updateWarmupTimerDisplay();
   }, 1000);
 }
 
 function stopWarmupTimer() {
-  if (warmupTimerInterval) { clearInterval(warmupTimerInterval); warmupTimerInterval = null; }
+  if (warmupTimerInterval) {
+    clearInterval(warmupTimerInterval);
+    warmupTimerInterval = null;
+  }
 }
 
 function updateWarmupTimerDisplay() {
   const m = Math.floor(warmupTimerSeconds / 60);
   const s = warmupTimerSeconds % 60;
   document.getElementById("wtTimer").textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function openStretchTimer() {
-  if (!state.stretchReminder) { finishWorkoutComplete(); return; }
-  const session = getTodaySession();
-  if (session && session.stretchDone) { finishWorkoutComplete(); return; }
-  const type = detectWorkoutType();
-  const routine = STRETCH_ROUTINES[type] || STRETCH_ROUTINES["Full Body"];
-  stretchCurrentIndex = 0;
-  showStretchExercise(type);
-  document.getElementById("stretchTimerModal").classList.remove("is-hidden");
-  document.getElementById("stPauseBtn").onclick = () => {
-    if (stretchTimerInterval) { clearInterval(stretchTimerInterval); stretchTimerInterval = null; document.getElementById("stPauseBtn").textContent = "▶ Resume"; }
-    else { startStretchTimer(type); document.getElementById("stPauseBtn").textContent = "⏸ Pause"; }
-  };
-  document.getElementById("stSkipBtn").onclick = () => {
-    stopStretchTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
-    const s = getTodaySession();
-    if (s) { s.stretchDone = false; saveState(); }
-    finishWorkoutComplete();
-  };
-  document.getElementById("stFinishBtn").onclick = () => {
-    stopStretchTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
-    const s = getTodaySession();
-    if (s) { s.stretchDone = true; saveState(); }
-    finishWorkoutComplete();
-  };
-}
-
-function showStretchExercise(type) {
-  const routine = STRETCH_ROUTINES[type] || STRETCH_ROUTINES["Full Body"];
-  if (stretchCurrentIndex >= routine.length) {
-    stopStretchTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
-    const s = getTodaySession();
-    if (s) { s.stretchDone = true; saveState(); }
-    finishWorkoutComplete();
-    return;
-  }
-  const ex = routine[stretchCurrentIndex];
-  document.getElementById("stExName").textContent = ex.name;
-  document.getElementById("stProgress").textContent = `${stretchCurrentIndex + 1} / ${routine.length}`;
-  stretchTimerSeconds = ex.duration;
-  updateStretchTimerDisplay();
-  startStretchTimer(type);
-}
-
-function startStretchTimer(type) {
-  if (stretchTimerInterval) clearInterval(stretchTimerInterval);
-  stretchTimerInterval = setInterval(() => {
-    stretchTimerSeconds--;
-    if (stretchTimerSeconds <= 0) {
-      stretchCurrentIndex++;
-      showStretchExercise(type);
-      return;
-    }
-    updateStretchTimerDisplay();
-  }, 1000);
-}
-
-function stopStretchTimer() {
-  if (stretchTimerInterval) { clearInterval(stretchTimerInterval); stretchTimerInterval = null; }
-}
-
-function updateStretchTimerDisplay() {
-  const s = Math.max(0, stretchTimerSeconds);
-  document.getElementById("stTimer").textContent = `00:${String(s).padStart(2, "0")}`;
-}
-
-function finishWorkoutComplete() {
-  const session = getTodaySession();
-  if (session) { delete session.warmupDone; delete session.stretchDone; }
-  renderHome();
 }
 
 function getWarmupCompliance() {
@@ -5959,13 +7632,21 @@ function getStretchCompliance() {
 
 // ===== EVENT LISTENERS: EXERCISE ANALYTICS =====
 document.getElementById("eaBackBtn").addEventListener("click", () => {
-  if (analyticsChart) { analyticsChart.destroy(); analyticsChart = null; }
+  if (analyticsChart) {
+    analyticsChart.destroy();
+    analyticsChart = null;
+  }
   activateTab("sessions");
 });
 document.getElementById("eaTabs").addEventListener("click", (e) => {
   const tab = e.target.closest(".ea-tab");
   if (!tab) return;
   renderExerciseAnalyticsTab(tab.dataset.eaTab);
+});
+
+// ===== PR TOAST =====
+document.getElementById("prToastDismiss")?.addEventListener("click", () => {
+  document.getElementById("prToast").classList.add("is-hidden");
 });
 
 // ===== INIT =====
@@ -5980,7 +7661,7 @@ document.addEventListener("DOMContentLoaded", () => {
   render();
 
   if (!state.user) {
-    document.getElementById("onboardingModal").classList.remove("is-hidden");
+    openOnboarding(true);
   }
 
   const todaySession = getTodaySession();
@@ -5991,6 +7672,13 @@ document.addEventListener("DOMContentLoaded", () => {
   activateTab("sets");
 
   // Apply persisted settings
+  if (state.theme) {
+    let t = state.theme.toLowerCase();
+    if (t === "system") t = window.matchMedia("(prefers-color-scheme: light)").matches ? "light" : "dark";
+    document.documentElement.setAttribute("data-theme", t);
+  }
+  if (state.accent) document.documentElement.setAttribute("data-accent", state.accent.toLowerCase());
+  if (state.fontSize) document.documentElement.setAttribute("data-font-size", state.fontSize.toLowerCase());
   if (state.focusMode) document.documentElement.classList.add("focus-mode");
   if (state.screenAwake) requestWakeLock();
 
@@ -5998,19 +7686,52 @@ document.addEventListener("DOMContentLoaded", () => {
   checkReminders();
 });
 
-// ===== MUSCLE SEARCH =====
-document.addEventListener("input", (e) => {
-  if (e.target.id !== "muscleSearch") return;
-  const q = e.target.value.toLowerCase().trim();
-  document.querySelectorAll(".bm-muscle-row").forEach((row) => {
-    const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
-    row.classList.toggle("is-highlighted", q && name.includes(q));
-  });
-  document.querySelectorAll("[data-muscle]").forEach((path) => {
-    const label = (MUSCLE_LABEL_MAP[path.dataset.muscle] || "").toLowerCase();
-    const group = (MUSCLE_GROUP_MAP[path.dataset.muscle] || "").toLowerCase();
-    const match = q && (label.includes(q) || group.includes(q));
-    path.style.filter = q ? (match ? "brightness(1.4)" : "brightness(0.4)") : "";
-    path.style.opacity = q ? (match ? "1" : "0.3") : "";
-  });
+// ===== WEIGHT BOTTOM SHEET =====
+document.addEventListener("click", (e) => {
+  const editBtn = e.target.closest("#snapshotEditBtn");
+  if (editBtn) {
+    const entry = latestWeight();
+    document.getElementById("wlWeight").value = entry ? entry.weight : "";
+    document.getElementById("wlSave").disabled = !(entry && entry.weight > 0);
+    document.getElementById("weightLogSheet").classList.remove("is-hidden");
+    setTimeout(() => document.getElementById("wlWeight").focus(), 150);
+  }
 });
+document.getElementById("wlOverlay")?.addEventListener("click", () => {
+  document.getElementById("weightLogSheet").classList.add("is-hidden");
+});
+document.getElementById("wlCancel")?.addEventListener("click", () => {
+  document.getElementById("weightLogSheet").classList.add("is-hidden");
+});
+document.getElementById("wlSave")?.addEventListener("click", () => {
+  const w = Number(document.getElementById("wlWeight").value);
+  if (!w) return;
+  saveBodyLogEntry({ date: getDateKey(), weight: w });
+  document.getElementById("weightLogSheet").classList.add("is-hidden");
+  renderHome();
+  renderBodyTab();
+});
+document.getElementById("wlWeight")?.addEventListener("input", (e) => {
+  document.getElementById("wlSave").disabled = !(Number(e.target.value) > 0);
+});
+document.getElementById("wlWeight")?.addEventListener("keydown", (e) => {
+  if (e.key === "Enter") document.getElementById("wlSave").click();
+});
+
+// ===== STREAK DRAWER =====
+document.getElementById("sdOverlay")?.addEventListener("click", () => {
+  document.getElementById("streakDrawer").classList.add("is-hidden");
+});
+document.getElementById("sdClose")?.addEventListener("click", () => {
+  document.getElementById("streakDrawer").classList.add("is-hidden");
+});
+
+// ===== CALENDAR DATE SHEET =====
+document.getElementById("cdsOverlay")?.addEventListener("click", () => {
+  document.getElementById("calendarDateSheet").classList.add("is-hidden");
+});
+document.getElementById("cdsCloseBtn")?.addEventListener("click", () => {
+  document.getElementById("calendarDateSheet").classList.add("is-hidden");
+});
+
+// (Muscle search removed — no longer needed)
