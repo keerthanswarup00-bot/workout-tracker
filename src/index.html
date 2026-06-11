@@ -46,7 +46,7 @@
         <!-- ===== SETS PANEL ===== -->
         <section class="panel is-active" id="panel-sets">
           <!-- Home Dashboard Screen -->
-          <div id="screen-home" class="screen is-active">
+          <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
             <div id="homeInsights"></div>
 
@@ -527,26 +527,26 @@
 
         <!-- ===== SESSIONS PANEL ===== -->
         <section class="panel" id="panel-sessions">
-          <div class="section-label">Session Log</div>
-          <div class="session-log" id="sessionLog"></div>
-          <div class="section-label" style="margin-top: 1.25rem">Personal Records</div>
-          <div class="pr-grid" id="prGrid"></div>
-          <div class="section-label" style="margin-top: 1.25rem">Weekly Review</div>
-          <div id="weeklyReviewCard" class="card-content"></div>
-          <div class="section-label" style="margin-top: 1.25rem">Monthly Report</div>
-          <div id="monthlyReportContent" class="card-content"></div>
-          <div class="section-label" style="margin-top: 1.25rem">Adherence</div>
-          <div id="adherenceCard" class="card-content"></div>
+          <div class="page-container">
+            <div class="section-label">Session Log</div>
+            <div class="session-log" id="sessionLog"></div>
+            <div class="section-label">Personal Records</div>
+            <div class="pr-grid" id="prGrid"></div>
+            <div class="section-label">Weekly Review</div>
+            <div id="weeklyReviewCard"></div>
+            <div class="section-label">Monthly Report</div>
+            <div id="monthlyReportContent"></div>
+          </div>
         </section>
 
         <!-- ===== PROGRESS PANEL ===== -->
         <section class="panel" id="panel-progress">
-          <div id="progressPageContent"></div>
+          <div id="progressPageContent" class="page-container"></div>
         </section>
 
         <!-- ===== BODY PANEL ===== -->
         <section class="panel" id="panel-body">
-          <div id="bodyPageContent"></div>
+          <div id="bodyPageContent" class="page-container"></div>
         </section>
       </main>
     </div>
@@ -705,12 +705,11 @@
           <h2>🧘 Cool Down</h2>
           <button class="st-close" id="stCloseBtn">✕</button>
         </div>
-        <div class="st-exercise-name" id="stExName">Chest Stretch</div>
-        <div class="st-timer" id="stTimer">0:00</div>
-        <div class="st-progress-dots" id="stProgressDots"></div>
+        <div class="st-hint">Hold each stretch for ~30-60s</div>
+        <div class="st-total-timer" id="stTimer">5:00</div>
+        <div class="st-exercise-list" id="stExerciseList"></div>
         <div class="st-actions">
-          <button class="btn-secondary" id="stPrevBtn">‹ Prev</button>
-          <button class="btn-primary" id="stNextBtn">Next ›</button>
+          <button class="btn-primary" id="stDoneBtn">✓ Done</button>
         </div>
         <button class="st-skip-btn" id="stSkipBtn">Skip Cool Down</button>
       </div>
@@ -728,13 +727,7 @@
     </div>
 
     <!-- MUSCLE DETAIL BOTTOM SHEET -->
-    <div class="muscle-sheet is-hidden" id="muscleSheet">
-      <div class="muscle-sheet-overlay" id="muscleSheetOverlay"></div>
-      <div class="muscle-sheet-card">
-        <div class="muscle-sheet-handle"></div>
-        <div class="muscle-sheet-body" id="muscleSheetBody"></div>
-      </div>
-    </div>
+
 
     <!-- ONBOARDING MODAL -->
     <div class="modal-overlay is-hidden" id="onboardingModal">
@@ -972,7 +965,7 @@
     </div>
 
   <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
-  <script src="js/body-map-svg.js"></script>
+
   <script src="js/data/prs.js"></script>
   <script src="js/script.js"></script>
   <script>

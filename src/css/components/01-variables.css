@@ -16,10 +16,31 @@
   --protein: #00d26a;
   --carbs: #3b82f6;
   --fat: #ff9f0a;
+
+  /* === Spacing Scale === */
+  --space-xs: 8px;
+  --space-sm: 16px;
+  --space-md: 24px;
+  --space-lg: 32px;
+
+  /* === Typography Scale === */
+  --text-page-title: 32px;
+  --text-section-title: 20px;
+  --text-card-title: 16px;
+  --text-metric-primary: 28px;
+  --text-metric-secondary: 14px;
+  --text-body: 14px;
+  --text-caption: 12px;
+
+  /* === Radius === */
+  --radius-card: 16px;
   --radius: 12px;
   --radius-sm: 8px;
-  --radius-lg: 20px;
+
+  /* === Layout === */
   --sidebar-w: 220px;
+
+  /* === BMI Colors === */
   --bmi-underweight: #3b82f6;
   --bmi-normal: #00d26a;
   --bmi-overweight: #ff9f0a;

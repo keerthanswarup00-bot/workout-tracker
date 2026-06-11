@@ -1619,19 +1619,6 @@ function computeMuscleSummary(mode) {
   return summary;
 }
 
-function getMuscleCoverageScore(summary) {
-  const active = Object.values(summary).filter((m) => m.weeklySets > 0).length;
-  return Math.round((active / Object.keys(summary).length) * 100);
-}
-
-function getMuscleStatus(weeklySets) {
-  if (weeklySets === 0) return "untrained";
-  if (weeklySets < 6) return "undertrained";
-  if (weeklySets <= 12) return "optimal";
-  if (weeklySets <= 18) return "high";
-  return "overtrained";
-}
-
 function getRecoveryDays(lastTrained) {
   if (!lastTrained) return 99;
   const today = new Date();
@@ -1646,118 +1633,6 @@ function getRecoveryLevel(daysAgo, weeklySets) {
   if (daysAgo <= 3) return "recovering";
   return "recovered";
 }
-
-function getRecoveryStatus(daysAgo) {
-  if (daysAgo === 0) return "trained";
-  if (daysAgo <= 1) return "low";
-  if (daysAgo <= 3) return "recovering";
-  return "recovered";
-}
-
-function getStrengthTrend(muscleId) {
-  // Look at exercises targeting this muscle across last 2 session pairs
-  const exercises = MUSCLE_GROUPS.filter((m) => m.id === muscleId).flatMap((m) =>
-    Object.entries(EXERCISE_MUSCLE_CONTRIBUTION)
-      .filter(([, c]) => c.some((x) => x.id === m.id))
-      .map(([name]) => name),
-  );
-  const allSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  const recentSessions = allSessions.slice(0, 6);
-  const weights = [];
-  for (const exName of [...new Set(exercises)]) {
-    for (const s of recentSessions) {
-      const ex = s.exercises.find((e) => e.name === exName);
-      if (!ex) continue;
-      const done = ex.sets.filter((x) => x.done && Number(x.weight) > 0);
-      if (done.length === 0) continue;
-      const avgWeight = done.reduce((sum, x) => sum + Number(x.weight), 0) / done.length;
-      weights.push({ weight: avgWeight, reps: done[0].reps || 0, date: s.dateKey });
-    }
-  }
-  if (weights.length < 4) return null;
-  const half = Math.floor(weights.length / 2);
-  const recentAvg = weights.slice(0, half).reduce((s, w) => s + w.weight, 0) / half;
-  const earlierAvg = weights.slice(half).reduce((s, w) => s + w.weight, 0) / (weights.length - half);
-  if (earlierAvg === 0) return null;
-  return ((recentAvg - earlierAvg) / earlierAvg) * 100;
-}
-
-function getCoverageColor(muscleId, mode, summary) {
-  const data = summary[muscleId];
-  const sets = data ? data.weeklySets : 0;
-  if (mode === "today") return data && data.doneToday ? "#00d26a" : "#3a3a3a";
-  if (mode === "month") return sets === 0 ? "#3a3a3a" : `hsl(140, 70%, ${30 + Math.min(sets / 12, 1) * 30}%)`;
-  if (sets === 0) return "#3a3a3a";
-  return `hsl(140, 70%, ${30 + Math.min(sets / 12, 1) * 30}%)`;
-}
-
-let bodyMapMode = "week";
-
-// ===== SVG BODY MAP RENDERER =====
-function renderBodyMuscleMap(container, summary) {
-  container.innerHTML = `<div class="body-map-layout"><div class="body-view">${BODY_MAP_SVG}</div></div>`;
-
-  container.querySelectorAll("[data-muscle]").forEach((path) => {
-    const detailedId = path.dataset.muscle;
-    const groupId = MUSCLE_GROUP_MAP[detailedId] || detailedId;
-    const color = getCoverageColor(groupId, bodyMapMode, summary);
-    const data = summary[groupId];
-    const sets = data ? data.weeklySets : 0;
-    path.setAttribute("fill", color);
-    path.setAttribute("fill-opacity", sets > 0 ? "0.85" : "0.3");
-    path.style.cursor = "pointer";
-    path.addEventListener("click", (e) => {
-      e.stopPropagation();
-      showMuscleSheet(detailedId, summary);
-    });
-  });
-}
-
-// ===== BOTTOM SHEET =====
-function showMuscleSheet(muscleId, summary) {
-  const groupId = MUSCLE_GROUP_MAP[muscleId] || muscleId;
-  const mg = MUSCLE_GROUPS.find((m) => m.id === groupId);
-  if (!mg) return;
-  const label = mg.label;
-  const data = summary[groupId] || { weeklySets: 0, weeklyVolume: 0, lastTrained: null, exercises: [] };
-  const days = getRecoveryDays(data.lastTrained);
-  const lastTrainedStr = data.lastTrained ? (days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`) : "Not trained";
-  const recovery = state.recoveryAnalysis !== false ? getRecoveryLevel(days, data.weeklySets) : null;
-  const recConfig = {
-    fatigued: { label: "Fatigued", color: "var(--red)" },
-    recovering: { label: "Recovering", color: "var(--yellow)" },
-    recovered: { label: "Recovered", color: "var(--accent)" },
-  };
-  const recBadge = recovery ? recConfig[recovery] : null;
-
-  const sheet = document.getElementById("muscleSheet");
-  const body = document.getElementById("muscleSheetBody");
-  body.innerHTML = `
-    <div class="ms-header">${label.toUpperCase()}</div>
-    <div class="ms-grid-2col">
-      <div class="ms-item"><span class="ms-label-sm">Weekly Sets</span><span class="ms-value">${data.weeklySets}</span></div>
-      <div class="ms-item"><span class="ms-label-sm">Last Trained</span><span class="ms-value">${lastTrainedStr}</span></div>
-      <div class="ms-item"><span class="ms-label-sm">Recovery</span><span class="ms-value">${recBadge ? `<span class="ms-rec-badge" style="color:${recBadge.color}"><span class="ms-rec-dot" style="background:${recBadge.color}"></span>${recBadge.label}</span>` : `<span style="color:var(--text-secondary)">—</span>`}</span></div>
-      <div class="ms-item"><span class="ms-label-sm">Volume</span><span class="ms-value">${Math.round(data.weeklyVolume / 100) / 10 || 0}k kg</span></div>
-    </div>
-    ${data.exercises.length > 0 ? `<div class="ms-exercises-label">Exercises</div><div class="ms-exercises">${data.exercises.map((ex) => `<span class="ms-ex-chip">${ex.replace(/([A-Z])/g, " $1").trim()}</span>`).join("")}</div>` : ""}
-    ${data.exercises.length === 0 ? '<div class="ms-empty-exercises">No exercises targeting this muscle</div>' : ""}`;
-  sheet.classList.remove("is-hidden");
-}
-
-function getBodyNeedsAttention(summary) {
-  return MUSCLE_GROUPS.map((mg) => ({
-    ...mg,
-    sets: summary[mg.id] ? summary[mg.id].weeklySets : 0,
-    lastTrained: summary[mg.id] ? summary[mg.id].lastTrained : null,
-    days: summary[mg.id] ? getRecoveryDays(summary[mg.id].lastTrained) : 99,
-  }))
-    .filter((m) => m.sets === 0 || m.days >= 5)
-    .sort((a, b) => (a.days !== b.days ? b.days - a.days : a.sets - b.sets))
-    .slice(0, 3);
-}
-
-// ===== COACH INSIGHTS HELPER =====
 
 // ===== CALENDAR STATE =====
 let calendarYear = new Date().getFullYear();
@@ -2056,9 +1931,7 @@ function renderSettings() {
   <div class="sg">
     <div class="sg-label">COACH</div>
     <label class="sg-row sg-toggle"><span>Weekly Review</span><input type="checkbox" ${state.weeklyReview !== false ? "checked" : ""} data-setting="weekly-review" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Goal Analysis</span><input type="checkbox" ${state.goalAnalysis !== false ? "checked" : ""} data-setting="goal-analysis" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Muscle Coverage Analysis</span><input type="checkbox" ${state.muscleCoverage !== false ? "checked" : ""} data-setting="muscle-coverage" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Progress Suggestions</span><input type="checkbox" ${state.progressSuggestions !== false ? "checked" : ""} data-setting="progress-suggestions" /><span class="sg-toggle-track"></span></label>
+
     <label class="sg-row sg-toggle"><span>Warm-Up Reminders</span><input type="checkbox" ${state.warmupReminder !== false ? "checked" : ""} data-setting="warmup-reminder" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Stretch Reminders</span><input type="checkbox" ${state.stretchReminder !== false ? "checked" : ""} data-setting="stretch-reminder" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Recovery Analysis</span><input type="checkbox" ${state.recoveryAnalysis !== false ? "checked" : ""} data-setting="recovery-analysis" /><span class="sg-toggle-track"></span></label>
@@ -2195,9 +2068,9 @@ function renderHome() {
   const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
   const weight = latestLog ? latestLog.weight : user ? user.weight : null;
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
   const profileComplete = isProfileComplete();
   const hasWeight = weight !== null && weight !== undefined;
+  const longestStreak = getLongestStreak();
   document.getElementById("homeGreeting").innerHTML = `
     <div class="hero-greeting">${g.text} ${g.emoji}</div>
     <div class="hero-name">${name}</div>
@@ -2207,8 +2080,8 @@ function renderHome() {
       <div class="hero-streak-card" id="heroStreakCard">
         <div class="hc-header"><span>🔥</span>STREAK</div>
         <div class="hc-value">${streak} Day${streak !== 1 ? "s" : ""}</div>
-        <div class="hc-sub">Gym visits in a row</div>
-        ${lastSession ? `<div class="hc-last">Last workout: ${lastSession.workoutName}</div>` : ""}
+        <div class="hc-sub">Longest: ${longestStreak} days</div>
+        ${lastSession ? `<div class="hc-last">Last: ${lastSession.workoutName}</div>` : ""}
       </div>
       <div class="hero-weight-card" id="heroWeightCard">
         <div class="hc-header"><span>⚖</span>WEIGHT</div>
@@ -2217,57 +2090,7 @@ function renderHome() {
       </div>
     </div>`;
 
-  let wsHtml = "";
-
-  if (state.weeklyReview !== false && weekSessions.length > 0) {
-    const totalSets = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter((st) => st.done).length, 0), 0);
-    const totalVol = weekSessions.reduce(
-      (s, ses) =>
-        s +
-        ses.exercises.reduce(
-          (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
-          0,
-        ),
-      0,
-    );
-    const prevWeekSessions = state.sessions.filter(
-      (s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)),
-    );
-    const prevCount = prevWeekSessions.length;
-    wsHtml += `<div class="home-weekly-review"><div class="wr-grid" style="grid-template-columns:repeat(4,1fr);gap:0.3rem;padding:0.5rem 0">
-      <div class="wr-item" style="text-align:center"><strong>${weekSessions.length}</strong><small>Workouts</small></div>
-      <div class="wr-item" style="text-align:center"><strong>${totalSets}</strong><small>Sets</small></div>
-      <div class="wr-item" style="text-align:center"><strong>${Math.round(totalVol / 1000)}k</strong><small>Volume</small></div>
-      <div class="wr-item" style="text-align:center"><strong>${prevCount > 0 ? (weekSessions.length > prevCount ? "↑" : weekSessions.length < prevCount ? "↓" : "—") : "—"}</strong><small>vs Last Wk</small></div>
-    </div></div>`;
-  }
-
-  document.getElementById("homeInsights").innerHTML = wsHtml;
-
-  if (state.goalAnalysis !== false) {
-    const goals = state.goals || [];
-    if (goals.length > 0) {
-      let gaHtml = goals
-        .slice(0, 3)
-        .map((g) => {
-          const pct = getGoalProgress(g);
-          return `<div class="goal-card" style="background:var(--surface-2);border-radius:var(--radius-sm);padding:0.4rem 0.5rem;font-size:0.75rem">
-          <div style="display:flex;justify-content:space-between;margin-bottom:0.2rem">
-            <span style="font-weight:600">${g.name}</span>
-            <span>${pct}%</span>
-          </div>
-          <div class="goal-bar-wrap" style="height:4px;background:var(--border);border-radius:2px;overflow:hidden">
-            <div class="goal-bar-fill" style="width:${pct}%;height:100%;background:var(--accent);border-radius:2px"></div>
-          </div>
-        </div>`;
-        })
-        .join("");
-      if (gaHtml) {
-        document.getElementById("homeInsights").innerHTML +=
-          `<div class="home-goal-analysis" style="margin-top:0.35rem;display:flex;flex-direction:column;gap:0.3rem">${gaHtml}</div>`;
-      }
-    }
-  }
+  document.getElementById("homeInsights").innerHTML = "";
 
   // Workout groups + ungrouped
   const activePlan = loadCustomProgram() || plan;
@@ -2309,7 +2132,7 @@ function renderHome() {
   }
 
   if (!html) {
-    html = `<p class="empty-state">No workouts yet. Create one to get started.</p>`;
+    html = `<div class="empty-card"><div class="empty-card-content">No workouts yet. Create one to get started.</div></div>`;
   }
 
   container.innerHTML = html;
@@ -2899,24 +2722,6 @@ function repeatLastSet() {
   renderExerciseDetail();
 }
 
-function addEmptySet() {
-  const session = getTodaySession();
-  if (!session) return;
-  const ex = session.exercises.find((e) => e.name === currentExName);
-  if (!ex) return;
-  ex.sets.push({
-    id: crypto.randomUUID(),
-    reps: 0,
-    weight: "",
-    notes: "",
-    label: "",
-    done: true,
-    isWarmup: false,
-    loggedAt: new Date().toISOString(),
-  });
-  saveState();
-  renderExerciseDetail();
-}
 
 function duplicateSet(setId) {
   const session = getTodaySession();
@@ -3012,14 +2817,6 @@ function renderSetRows(exercise) {
   return html;
 }
 
-function formatSetTime(iso) {
-  try {
-    const d = new Date(iso);
-    return d.toLocaleTimeString("en-US", { hour: "numeric", minute: "2-digit", hour12: true });
-  } catch {
-    return "";
-  }
-}
 
 // ===== LEVEL 3A: ADD SET =====
 function openAddSetModal() {
@@ -3153,8 +2950,8 @@ function completeSetFromSheet() {
   if (state.autoNext) {
     const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
     if (pending.length === 0) navigateToNextExercise(ex);
+    if (isWorkoutComplete()) triggerWorkoutComplete();
   }
-  if (isWorkoutComplete()) triggerWorkoutComplete();
 }
 
 function deleteSetFromSheet() {
@@ -3167,11 +2964,6 @@ function deleteSetFromSheet() {
   saveState();
   closeEditBottomSheet();
   renderExerciseDetail();
-}
-
-// Old edit set functions (kept for backward compatibility via screen-es)
-function openEditSet(setId) {
-  openEditBottomSheet(setId);
 }
 
 // ===== WORKOUT COMPLETION (V2 Unified) =====
@@ -3344,48 +3136,6 @@ function showEnhancedSummary(newPRs) {
         openCoolDown();
       }
     }, 2000);
-  }
-}
-
-function buildRecoveryAdvice(session) {
-  if (state.showRecoveryAdvice === false) return;
-  const container = document.getElementById("ssRecovery");
-  const content = document.getElementById("ssRecoveryContent");
-  if (!container || !content) return;
-  const exNames = session.exercises.filter((ex) => ex.sets.some((s) => s.done)).map((ex) => ex.name);
-  const knownRecovery = {
-    Chest: 48, Shoulders: 48, "Rear Delts": 24, Back: 48,
-    Biceps: 24, Triceps: 24, Quads: 48, Legs: 48, Calves: 24,
-  };
-  const trained = new Set();
-  const knownMap = {
-    "bench press":"Chest", push:"Chest", press:"Shoulders", "dumbbell press":"Chest",
-    deadlift:"Back", row:"Back", pulldown:"Back", pull:"Back", "face pull":"Rear Delts",
-    curl:"Biceps", tricep:"Triceps", squat:"Quads", leg:"Legs", lunge:"Legs",
-    calf:"Calves", raise:"Shoulders", fly:"Chest", extension:"Triceps",
-  };
-  for (const name of exNames) {
-    const lower = name.toLowerCase();
-    for (const [keyword, muscle] of Object.entries(knownMap)) {
-      if (lower.includes(keyword)) trained.add(muscle);
-    }
-  }
-  const items = [...trained].map((muscle) => {
-    const hours = knownRecovery[muscle] || 24;
-    const now = Date.now();
-    const sessionTime = session.finishedAt ? new Date(session.finishedAt).getTime() : now;
-    const elapsed = Math.max(0, Math.floor((now - sessionTime) / 3600000));
-    const remaining = Math.max(0, hours - elapsed);
-    const pct = Math.min(100, Math.round((elapsed / hours) * 100));
-    const color = remaining > 24 ? "var(--red)" : remaining > 12 ? "var(--accent)" : "var(--green)";
-    return `<div class="ss-recovery-item"><span class="ss-recovery-muscle">${muscle}</span><span class="ss-recovery-hours">${remaining}h remaining</span></div>
-      <div class="ss-recovery-bar-wrap"><div class="ss-recovery-bar-fill" style="width:${pct}%;background:${color}"></div></div>`;
-  }).join("");
-  if (items) {
-    container.style.display = "block";
-    content.innerHTML = items;
-  } else {
-    container.style.display = "none";
   }
 }
 
@@ -4271,9 +4021,9 @@ function renderExerciseCompletion(ex) {
   const autoNext = state.autoNext;
   return `<div class="ed-ex-complete" id="edExComplete">
     <span class="ed-ex-complete-icon">✓</span>
-    <span class="ed-ex-complete-label">Exercise Complete</span>
+    <span class="ed-ex-complete-label">${isLastExercise && !autoNext ? "All Exercises Complete" : "Exercise Complete"}</span>
     ${hasNext ? (autoNext ? "" : `<button class="ed-ex-complete-btn" id="edNextExBtn">Open Next Exercise</button>`) : ""}
-    ${isLastExercise ? `<button class="ed-ex-complete-btn ed-finish-btn" id="edFinishBtn">Finish Workout</button>` : ""}
+    ${isLastExercise && !autoNext ? `<button class="ed-ex-complete-btn ed-finish-btn" id="edFinishBtn">Finish Workout</button>` : ""}
   </div>`;
 }
 
@@ -4291,33 +4041,6 @@ function renderWarmupStatus(ex) {
   return `<div class="ed-wu-status">
     <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
   </div>`;
-}
-
-// ===== COPY LAST SESSION =====
-function copyLastSession() {
-  const session = getTodaySession();
-  if (!session) return;
-  const ex = session.exercises.find((e) => e.name === currentExName);
-  if (!ex) return;
-  const last = getLastExerciseSession(currentExName);
-  if (!last || last.sets.length === 0) return;
-  ex.sets = ex.sets.filter((s) => s.isWarmup || s.done);
-  last.sets.forEach((s) => {
-    ex.sets.push({
-      id: crypto.randomUUID(),
-      reps: s.reps,
-      weight: s.weight,
-      notes: s.notes || "",
-      label: "",
-      done: false,
-      isWarmup: false,
-      loggedAt: null,
-    });
-  });
-  ex.warmupGenerated = false;
-  autoGenerateWarmups(ex, last.sets[0].weight);
-  saveState();
-  renderExerciseDetail();
 }
 
 // ===== ANALYZE TAB =====
@@ -4372,7 +4095,6 @@ function renderSessionsTab() {
   renderPRBoard();
   renderWeeklyReview();
   renderMonthlyReport();
-  renderAdherenceGrid();
 }
 
 function renderSessionLog() {
@@ -4390,7 +4112,7 @@ function renderSessionLog() {
           return `<div class="log-item"><div><strong>${s.workoutName}</strong><span>${formatReadableDate(parseDateKey(s.dateKey))}</span></div><span>${d ? d + " · " : ""}${c.done}/${c.total}</span></div>`;
         })
         .join("")
-    : `<p class="empty-state">No finished sessions yet.</p>`;
+    : `<div class="empty-card"><div class="empty-card-content">No finished sessions yet.</div></div>`;
 }
 
 function renderPRBoard() {
@@ -4403,28 +4125,22 @@ function renderPRBoard() {
   });
   container.innerHTML = entries.length
     ? entries
-        .slice(0, 8)
+        .slice(0, 4)
         .map(([name, data]) => {
           const wLabel = data.weightPR ? displayWeight(data.weightPR.value) : "—";
           const rLabel = data.repPR ? `${data.repPR.value} reps` : data.weightPR ? `${data.weightPR.reps} reps` : "—";
-          const volLabel = data.volumePR ? displayWeight(data.volumePR.value) : "—";
           const estLabel = data.est1RM ? displayWeight(data.est1RM.value) : "—";
           return `<div class="pr-card" onclick="showExerciseAnalytics('${name.replace(/'/g, "\\'")}')">
           <strong>${name.replace(/([A-Z])/g, " $1").trim()}</strong>
           <div class="pr-stats">
             <span class="pr-stat"><span class="pr-stat-val">${wLabel}</span><span class="pr-stat-lbl">Best</span></span>
             <span class="pr-stat"><span class="pr-stat-val">${rLabel}</span><span class="pr-stat-lbl">Reps</span></span>
-            <span class="pr-stat"><span class="pr-stat-val">${colLabel(estLabel)}</span><span class="pr-stat-lbl">e1RM</span></span>
-            <span class="pr-stat"><span class="pr-stat-val">${colLabel(volLabel)}</span><span class="pr-stat-lbl">Set Vol</span></span>
+            <span class="pr-stat"><span class="pr-stat-val">${estLabel}</span><span class="pr-stat-lbl">e1RM</span></span>
           </div>
         </div>`;
         })
         .join("")
-    : `<p class="empty-state">Set a PR to see it here.</p>`;
-}
-
-function colLabel(v) {
-  return v === "—" ? v : v;
+    : `<div class="empty-card"><div class="empty-card-content">Set a PR to see it here.</div></div>`;
 }
 
 function renderWeeklyReview() {
@@ -4432,7 +4148,7 @@ function renderWeeklyReview() {
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
 
   if (weekSessions.length === 0) {
-    container.innerHTML = `<p class="empty-state">Complete a session to see your weekly review.</p>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete a session to see your weekly review.</div></div>`;
     return;
   }
 
@@ -4446,72 +4162,28 @@ function renderWeeklyReview() {
       ),
     0,
   );
-  const prCount = getPRCount();
   const sessionsCount = weekSessions.length;
-  const proteinPct = getWeeklyProteinAdherence();
-
-  const strengthPct = getWeeklyStrengthChange();
-  const strengthLabel = strengthPct !== null ? (strengthPct > 0 ? `+${strengthPct.toFixed(0)}%` : `${strengthPct.toFixed(0)}%`) : "--";
-
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const now = new Date();
-  const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-  const twoWeeksAgo = getDateKey(new Date(now.getTime() - 14 * 86400000));
-  const recentWeek = log.filter((e) => e.date >= weekAgo);
-  const prevWeek = log.filter((e) => e.date >= twoWeeksAgo && e.date < weekAgo);
-  const bwChange =
-    recentWeek.length >= 2 && prevWeek.length >= 2
-      ? (recentWeek.reduce((s, e) => s + e.weight, 0) / recentWeek.length - prevWeek.reduce((s, e) => s + e.weight, 0) / prevWeek.length).toFixed(1)
-      : "--";
+  const trainedDays = new Set(weekSessions.map((s) => s.dateKey));
+  const consistency = Math.min(100, Math.round((trainedDays.size / 7) * 100));
+  let weeklyPRCount = 0;
+  if (state.prs) {
+    const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
+    for (const [, data] of Object.entries(state.prs)) {
+      (data.history || []).forEach((h) => {
+        if (h.date && h.date >= weekAgo) weeklyPRCount++;
+      });
+    }
+  }
 
   container.innerHTML = `
-    <div class="wr-grid">
-      <div class="wr-item"><strong>${sessionsCount}</strong><small>Sessions</small></div>
-      <div class="wr-item"><strong>${totalSets}</strong><small>Sets</small></div>
-      <div class="wr-item"><strong>${Math.round(totalKg / 1000)}k</strong><small>kg lifted</small></div>
-      <div class="wr-item"><strong>${prCount}</strong><small>PRs</small></div>
+    <div class="review-card">
+      <div class="review-grid">
+        <div class="review-item"><div class="text-metric-primary">${sessionsCount}</div><div class="text-caption">Sessions</div></div>
+        <div class="review-item"><div class="text-metric-primary">${Math.round(totalKg / 1000)}k</div><div class="text-caption">Volume</div></div>
+        <div class="review-item"><div class="text-metric-primary">${weeklyPRCount}</div><div class="text-caption">PRs</div></div>
+        <div class="review-item"><div class="text-metric-primary">${consistency}%</div><div class="text-caption">Consistency</div></div>
+      </div>
     </div>
-    <div class="wr-grid">
-      <div class="wr-item"><strong>${strengthLabel}</strong><small>Strength</small></div>
-      <div class="wr-item"><strong>${bwChange !== "--" ? (Number(bwChange) > 0 ? "+" : "") + bwChange + "kg" : "--"}</strong><small>Bodyweight</small></div>
-      <div class="wr-item"><strong>${proteinPct !== null ? Math.round(proteinPct) + "%" : "--"}</strong><small>Protein</small></div>
-      <div class="wr-item"><strong>—</strong><small></small></div>
-    </div>
-    ${(() => {
-      const summary = computeMuscleSummary("week");
-      const entries = Object.entries(summary).map(([id, m]) => ({ id, ...m })).sort((a, b) => b.weeklySets - a.weeklySets);
-      const mostTrained = entries.length > 0 && entries[0].weeklySets > 0 ? entries[0].id : null;
-      const mostTrainedLabel = mostTrained ? (mostTrained.charAt(0).toUpperCase() + mostTrained.slice(1)) : "—";
-      const missed = entries.filter((m) => m.weeklySets === 0).length;
-      return `<div class="wr-grid">
-        <div class="wr-item"><strong>${mostTrainedLabel}</strong><small>Most Trained</small></div>
-        <div class="wr-item"><strong>${missed}</strong><small>Missed Muscles</small></div>
-        <div class="wr-item"><strong>${getMuscleCoverageScore(summary)}%</strong><small>Coverage</small></div>
-        <div class="wr-item"><strong>${Math.round(totalKg / (sessionsCount || 1) / 100) / 10 || "--"}</strong><small>Avg/Session</small></div>
-      </div>`;
-    })()}
-    ${state.recoveryAnalysis !== false ? (() => {
-      const summary = computeMuscleSummary("week");
-      const entries = Object.entries(summary).map(([id, m]) => ({ id, ...m }));
-      let fatigued = 0, recovering = 0, recovered = 0;
-      for (const e of entries) {
-        const days = getRecoveryDays(e.lastTrained);
-        const level = getRecoveryLevel(days, e.weeklySets);
-        if (level === "fatigued") fatigued++;
-        else if (level === "recovering") recovering++;
-        else recovered++;
-      }
-      const total = fatigued + recovering + recovered;
-      if (total === 0) return "";
-      return `<div class="wr-rec-balance"><span class="wr-rec-dot wr-rec-fatigued" style="background:var(--red)"></span>${fatigued} Fatigued <span class="wr-rec-dot wr-rec-recovering" style="background:var(--yellow)"></span>${recovering} Recovering <span class="wr-rec-dot wr-rec-recovered" style="background:var(--accent)"></span>${recovered} Recovered</div>`;
-    })() : ""}
-    <div class="wr-note">${getWeeklyNote(strengthPct, bwChange, sessionsCount, proteinPct)}</div>
-    ${(() => {
-      const as = getGoalAlignmentScore();
-      return as !== null
-        ? `<div style="font-size:0.72rem;font-weight:700;color:var(--text-secondary);text-align:center;padding-top:0.35rem;border-top:1px solid var(--border)">Goal Alignment: <span style="color:var(--accent)">${as}/10</span></div>`
-        : "";
-    })()}
   `;
 }
 
@@ -4527,11 +4199,8 @@ function getWeeklyNote(strengthPct, bwChange, sessions, proteinPct) {
 function renderMonthlyReport() {
   const container = document.getElementById("monthlyReportContent");
   const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 30 * 86400000)));
-  const prevMonthSessions = state.sessions.filter(
-    (s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 60 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 30 * 86400000)),
-  );
   if (monthSessions.length === 0) {
-    container.innerHTML = `<p class="empty-state">Complete sessions to see your monthly report.</p>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete sessions to see your monthly report.</div></div>`;
     return;
   }
   const sessionsCount = monthSessions.length;
@@ -4545,528 +4214,21 @@ function renderMonthlyReport() {
       ),
     0,
   );
-  const prevKg = prevMonthSessions.reduce(
-    (s, ses) =>
-      s +
-      ses.exercises.reduce(
-        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
-        0,
-      ),
-    0,
-  );
-  const volumeChange = prevKg > 0 ? Math.round(((totalKg - prevKg) / prevKg) * 100) : null;
   const prCount = getPRCount();
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const recentLog = log.filter((e) => e.date >= getDateKey(new Date(Date.now() - 30 * 86400000)));
-  const prevLog = log.filter((e) => e.date >= getDateKey(new Date(Date.now() - 60 * 86400000)) && e.date < getDateKey(new Date(Date.now() - 30 * 86400000)));
-  let bwChange = "--";
-  if (recentLog.length >= 2 && prevLog.length >= 2) {
-    const avgR = recentLog.reduce((s, e) => s + e.weight, 0) / recentLog.length;
-    const avgP = prevLog.reduce((s, e) => s + e.weight, 0) / prevLog.length;
-    bwChange = (avgR - avgP).toFixed(1);
-  }
-  const weeklyAvg = getWeeklyMacroAvg();
-  const proteinPct = weeklyAvg ? Math.round((weeklyAvg.p / PROTEIN_GOAL) * 100) : null;
-  let rec = "Continue your current approach. Results are on track.";
-  if (volumeChange !== null && volumeChange < -10) rec = "Volume has decreased this month. Consider increasing sets or frequency.";
-  if (proteinPct !== null && proteinPct < 75) rec = "Protein intake is consistently low. Aim for protein at every meal to support recovery.";
-  if (bwChange !== "--" && Number(bwChange) > 0.5 && state.bodyGoal === "fat-loss")
-    rec = "Weight is increasing on a fat-loss goal. Review calorie tracking and weekend intake.";
-  container.innerHTML = `
-    <div class="mr-grid">
-      <div class="mr-item"><strong>${sessionsCount}</strong><small>Sessions</small></div>
-      <div class="mr-item"><strong>${totalSets}</strong><small>Sets</small></div>
-      <div class="mr-item"><strong>${Math.round(totalKg / 1000)}k</strong><small>Volume</small></div>
-      <div class="mr-item"><strong>${volumeChange !== null ? (volumeChange > 0 ? "+" : "") + volumeChange + "%" : "--"}</strong><small>Vol Change</small></div>
-      <div class="mr-item"><strong>${prCount}</strong><small>PRs</small></div>
-      <div class="mr-item"><strong>${bwChange !== "--" ? (Number(bwChange) > 0 ? "+" : "") + bwChange + " kg" : "--"}</strong><small>Weight Δ</small></div>
-      <div class="mr-item"><strong>${proteinPct !== null ? proteinPct + "%" : "--"}</strong><small>Protein</small></div>
-      <div class="mr-item"><strong>${Math.round(totalKg / (sessionsCount || 1) / 100) / 10 || "--"}</strong><small>Avg/Session</small></div>
-    </div>
-    <div class="mr-rec">${rec}</div>
-  `;
-}
-
-function renderAdherenceGrid() {
-  const container = document.getElementById("adherenceCard");
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  const today = new Date();
-  let streak = 0;
-  for (let i = 0; ; i++) {
-    const d = new Date(today);
-    d.setDate(d.getDate() - i);
-    if (sessions.find((s) => s.dateKey === getDateKey(d))) streak++;
-    else break;
-  }
-  let html = `<div class="adherence-header"><span class="streak-label">Streak: ${streak} days</span></div><div class="adherence-grid">`;
-  for (let w = 0; w < 12; w++) {
-    html += `<div class="adherence-week">`;
-    for (let d = 6; d >= 0; d--) {
-      const offset = w * 7 + d;
-      const date = new Date(today);
-      date.setDate(date.getDate() - offset);
-      const key = getDateKey(date);
-      const isToday = offset === 0;
-      const isFuture = date > today;
-      const hasSession = sessions.find((s) => s.dateKey === key);
-      let cls = "adherence-day";
-      if (isFuture) cls += " cell-future";
-      else if (hasSession) cls += " cell-trained";
-      else if (date.getDay() === 0) cls += " cell-rest";
-      if (isToday) cls += " cell-today";
-      html += `<div class="${cls}"></div>`;
-    }
-    html += `</div>`;
-  }
-  html += `</div>`;
-  container.innerHTML = html;
-}
-
-// ===== NUTRITION (moved from Today) =====
-function renderTodayStatus() {
-  const container = document.getElementById("todayStatusContent");
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-
-  let weightOk = true;
-  let weightStatus = "On Track";
-  let weightCls = "is-green";
-  if (log.length >= 4 && goal) {
-    const now = new Date();
-    const wa = getDateKey(new Date(now.getTime() - 7 * 86400000));
-    const twa = getDateKey(new Date(now.getTime() - 14 * 86400000));
-    const r = log.filter((e) => e.date >= wa);
-    const p = log.filter((e) => e.date >= twa && e.date < wa);
-    if (r.length >= 2 && p.length >= 2) {
-      const avgR = r.reduce((s, e) => s + e.weight, 0) / r.length;
-      const avgP = p.reduce((s, e) => s + e.weight, 0) / p.length;
-      const change = avgR - avgP;
-      if (goal.id === "fat-loss" && change > 0.3) {
-        weightOk = false;
-        weightStatus = "⚠ Off Track";
-        weightCls = "is-red";
-      } else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change < -0.3) {
-        weightOk = false;
-        weightStatus = "⚠ Off Track";
-        weightCls = "is-yellow";
-      } else if (goal.id === "recomp" && Math.abs(change) > 0.5) {
-        weightOk = false;
-        weightStatus = "⚠ Needs Attention";
-        weightCls = "is-yellow";
-      }
-    }
-  }
-
-  const strengthPct = getWeeklyStrengthChange();
-  let strengthStatus = "Improving";
-  let strengthCls = "is-green";
-  if (strengthPct === null) {
-    strengthStatus = "Need data";
-    strengthCls = "is-yellow";
-  } else if (strengthPct < -3) {
-    strengthStatus = "Declining";
-    strengthCls = "is-red";
-  } else if (strengthPct < 2) {
-    strengthStatus = "Stable";
-    strengthCls = "is-yellow";
-  }
-
-  const today = getDateKey();
-  const todayMeals = loadMeals(today);
-  const todayProtein = todayMeals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const proteinPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
-  let proteinStatus = `${todayProtein}g / ${PROTEIN_GOAL}g`;
-  let proteinCls = proteinPct >= 80 ? "is-green" : proteinPct >= 50 ? "is-yellow" : "is-red";
-
-  const todayCal = todayMeals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  let calStatus = "On Target";
-  let calCls = "is-green";
-  if (goal && goal.id === "fat-loss" && todayCal > CAL_GOAL * 1.05) {
-    calStatus = "Over Target";
-    calCls = "is-yellow";
-  } else if (goal && goal.id !== "fat-loss" && todayCal < CAL_GOAL * 0.85) {
-    calStatus = "Under Target";
-    calCls = "is-yellow";
-  }
-
-  let score = 0;
-  if (strengthPct !== null && strengthPct > 3) score += 3;
-  else if (strengthPct !== null && strengthPct > -3) score += 1.5;
-  if (proteinPct >= 80) score += 1.5;
-  else if (proteinPct >= 50) score += 0.5;
-  if (goal && ((goal.id === "fat-loss" && todayCal <= CAL_GOAL * 1.05) || (goal.id !== "fat-loss" && todayCal >= CAL_GOAL * 0.85))) score += 1.5;
-  else if (todayCal > 0) score += 0.5;
-  if (weightOk) score += 2;
-  if (weekSessions.length >= 5) score += 2;
-  else if (weekSessions.length >= 3) score += 1;
-  else if (weekSessions.length > 0) score += 0.5;
-  score = Math.round(score * 10) / 10;
-  const maxScore = 10;
-
-  let recTitle = "";
-  let recBody = "";
-  if (proteinPct < 80) {
-    const remaining = PROTEIN_GOAL - todayProtein;
-    recTitle = "Increase Protein";
-    recBody = `Add ${Math.ceil(remaining)}g protein — shake, eggs, or chicken before bed.`;
-  } else if (!weightOk && goal && goal.id === "fat-loss") {
-    recTitle = "Calories May Be Too High";
-    recBody = "Weight is trending up on a fat-loss goal. Track accurately, watch weekend intake.";
-  } else if (!weightOk && goal && (goal.id === "lean-bulk" || goal.id === "aggressive-bulk")) {
-    recTitle = "Increase Calories";
-    recBody = "Weight is dropping on a bulk goal. Add 150-250 calories daily.";
-  } else if (strengthPct !== null && strengthPct < -5) {
-    recTitle = "Check Recovery";
-    recBody = "Strength is declining. Prioritize sleep (7-9h), nutrition, and consider a deload.";
-  } else if (weekSessions.length < 4) {
-    recTitle = "Increase Training Frequency";
-    recBody = `Only ${weekSessions.length} sessions this week. Aim for 6 for consistent progress.`;
-  } else {
-    recTitle = "Continue Current Strategy";
-    recBody = "Everything is on track. Keep showing up and results will follow.";
-  }
 
   container.innerHTML = `
-    <div class="status-row"><span class="status-label">Goal</span><span class="status-value">${goal ? goal.label : "Not set"}</span></div>
-    <div class="status-row"><span class="status-label">Weight Trend</span><span class="status-value ${weightCls}">${weightStatus}</span></div>
-    <div class="status-row"><span class="status-label">Strength Trend</span><span class="status-value ${strengthCls}">${strengthStatus}</span></div>
-    <div class="status-row"><span class="status-label">Protein</span><span class="status-value ${proteinCls}">${proteinStatus}</span></div>
-    <div class="status-row"><span class="status-label">Calories</span><span class="status-value ${calCls}">${calStatus}</span></div>
-    <div class="status-score">
-      <div class="status-score-num">${score}</div>
-      <div class="status-score-label">out of ${maxScore}</div>
-    </div>
-    <div class="status-rec"><strong>${recTitle}</strong>${recBody}</div>
-  `;
-}
-
-function renderMacroSummary() {
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  document.getElementById("macroSummary").innerHTML = `
-    <div class="macro-stat"><strong class="label-cal">${cal}</strong><small>Cal</small></div>
-    <div class="macro-stat"><strong class="label-protein">${p}g</strong><small>Protein</small></div>
-    <div class="macro-stat"><strong class="label-carbs">${c}g</strong><small>Carbs</small></div>
-    <div class="macro-stat"><strong class="label-fat">${f}g</strong><small>Fat</small></div>
-  `;
-  document.getElementById("macroProgress").innerHTML = `
-    <div class="macro-bar"><span class="bar-label">Protein</span><div class="bar-track"><span style="width:${Math.min((p / PROTEIN_GOAL) * 100, 100)}%;background:var(--accent)"></span></div><span class="bar-value">${p}/${PROTEIN_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Carbs</span><div class="bar-track"><span style="width:${Math.min((c / CARBS_GOAL) * 100, 100)}%;background:var(--blue)"></span></div><span class="bar-value">${c}/${CARBS_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Fat</span><div class="bar-track"><span style="width:${Math.min((f / FAT_GOAL) * 100, 100)}%;background:var(--orange)"></span></div><span class="bar-value">${f}/${FAT_GOAL}g</span></div>
-    <div class="macro-bar"><span class="bar-label">Calories</span><div class="bar-track"><span style="width:${Math.min((cal / CAL_GOAL) * 100, 100)}%;background:var(--text)"></span></div><span class="bar-value">${cal}/${CAL_GOAL}</span></div>
-  `;
-}
-
-function renderProteinScore() {
-  const container = document.getElementById("proteinScoreContent");
-  const badge = document.getElementById("proteinScoreBadge");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const todayProtein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const weekly = getWeeklyMacroAvg();
-  const monthly = getMonthlyMacroAvg();
-  const todayPct = Math.round((todayProtein / PROTEIN_GOAL) * 100);
-  const weeklyPct = weekly ? Math.round((weekly.p / PROTEIN_GOAL) * 100) : null;
-  const monthlyPct = monthly ? Math.round((monthly.p / PROTEIN_GOAL) * 100) : null;
-  const score = todayPct;
-  badge.textContent = `${score}%`;
-  badge.className = `score-pill is-${score >= 90 ? "green" : score >= 70 ? "yellow" : "red"}`;
-  container.innerHTML = `
-    <div class="ns-row"><span>Today</span><span>${todayProtein}g / ${PROTEIN_GOAL}g (${todayPct}%)</span></div>
-    <div class="ns-row"><span>Weekly avg</span><span>${weeklyPct !== null ? weeklyPct + "%" : "--"}</span></div>
-    <div class="ns-row"><span>Monthly avg</span><span>${monthlyPct !== null ? monthlyPct + "%" : "--"}</span></div>
-  `;
-}
-
-function renderNutritionTargets() {
-  const container = document.getElementById("nutritionTargetsCard");
-  if (!container) return;
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const water = meals.reduce((s, m) => s + (Number(m.water) || 0), 0);
-  const calTarget = state.calorieTarget || CAL_GOAL;
-  const protTarget = state.proteinGoal || PROTEIN_GOAL;
-  const waterTarget = state.waterGoal || WATER_TARGET;
-  const calCls = cal >= calTarget ? "is-met" : cal >= calTarget * 0.75 ? "is-partial" : "is-miss";
-  const protCls = p >= protTarget ? "is-met" : p >= protTarget * 0.75 ? "is-partial" : "is-miss";
-  const waterCls = water >= waterTarget ? "is-met" : water >= waterTarget * 0.75 ? "is-partial" : "is-miss";
-  container.innerHTML = `
-    <div class="nut-targets">
-      <div class="nut-target-row"><span class="nut-target-label">Calories</span><span class="nut-target-value ${calCls}">${Math.round(cal)} / ${calTarget} kcal</span></div>
-      <div class="nut-target-row"><span class="nut-target-label">Protein</span><span class="nut-target-value ${protCls}">${Math.round(p)} / ${protTarget} g</span></div>
-      <div class="nut-target-row"><span class="nut-target-label">Water</span><span class="nut-target-value ${waterCls}">${Math.round(water)} / ${waterTarget} ml</span></div>
-    </div>`;
-}
-
-function renderNutritionCompliance() {
-  const container = document.getElementById("nutritionComplianceContent");
-  if (!container) return;
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const p = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const c = meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-  const f = meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-  const cal = meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-  const pTarget = state.proteinGoal || PROTEIN_GOAL;
-  const calTarget = state.calorieTarget || CAL_GOAL;
-  const cPct = Math.min(Math.round((c / CARBS_GOAL) * 100), 100);
-  const fPct = Math.min(Math.round((f / FAT_GOAL) * 100), 100);
-  const pPct = Math.min(Math.round((p / pTarget) * 100), 100);
-  const calPct = Math.min(Math.round((cal / calTarget) * 100), 100);
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  let resultText = "Nutrition looks good today.";
-  let resultCls = "is-green";
-  if (goal && goal.id === "fat-loss" && calPct > 100) {
-    resultText = "Calories exceed target — fat loss may slow.";
-    resultCls = "is-yellow";
-  }
-  if (pPct < 70) {
-    resultText = "Protein too low — prioritize protein at meals.";
-    resultCls = "is-yellow";
-  }
-  if (goal && goal.id !== "fat-loss" && calPct < 80) {
-    resultText = "Calories too low for growth phase — increase intake.";
-    resultCls = "is-yellow";
-  }
-  let html = `<div class="nc-grid">`;
-  html += `<div class="nc-row"><span class="nc-label">Protein</span><div class="nc-track"><span style="width:${pPct}%;background:var(--accent)"></span></div><span class="nc-pct">${pPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Carbs</span><div class="nc-track"><span style="width:${cPct}%;background:var(--blue)"></span></div><span class="nc-pct">${cPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Fat</span><div class="nc-track"><span style="width:${fPct}%;background:var(--orange)"></span></div><span class="nc-pct">${fPct}%</span></div>`;
-  html += `<div class="nc-row"><span class="nc-label">Calories</span><div class="nc-track"><span style="width:${calPct}%;background:var(--text)"></span></div><span class="nc-pct">${calPct}%</span></div>`;
-  html += `</div><div class="nc-result ${resultCls}">${resultText}</div>`;
-  container.innerHTML = html;
-}
-
-function renderSmartSuggestions() {
-  const container = document.getElementById("smartSuggestionsContent");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-  const protGoal = state.proteinGoal || PROTEIN_GOAL;
-  const remaining = Math.max(0, protGoal - protein);
-  if (remaining < 10) {
-    container.innerHTML = `<p class="empty-state">Protein target met. Great work.</p>`;
-    return;
-  }
-  const suggestions = curatedFoods
-    .filter((f) => f.name !== "Custom Entry" && f.protein > 5)
-    .sort((a, b) => b.protein / b.cal - a.protein / a.cal)
-    .slice(0, 5);
-  container.innerHTML = suggestions
-    .map((f) => {
-      const needed = Math.ceil(remaining / f.protein);
-      return `<button class="suggestion-chip" data-food="${f.name}">${f.name} ×${needed}</button>`;
-    })
-    .join("");
-  container.querySelectorAll("[data-food]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
-      if (!food) return;
-      const needed = Math.ceil(remaining / food.protein);
-      const meals = loadMeals(today);
-      meals.push({
-        type: "Quick",
-        food: food.name,
-        qty: needed,
-        protein: food.protein * needed,
-        carbs: food.carbs * needed,
-        fat: food.fat * needed,
-        cal: food.cal * needed,
-      });
-      saveMeals(today, meals);
-      saveRecentFoods(food.name);
-      renderSessionsTab();
-    });
-  });
-}
-
-function renderFavoriteMeals() {
-  const container = document.getElementById("favoriteMealsList");
-  const favorites = loadFavoriteMeals();
-  const today = getDateKey();
-  if (favorites.length === 0) {
-    container.innerHTML = `<p class="empty-state">Save meal combos you eat often for one-tap logging.</p>`;
-    return;
-  }
-  container.innerHTML = favorites
-    .map((meal, i) => {
-      const totalP = meal.items.reduce((s, m) => s + (Number(m.protein) || 0) * (Number(m.qty) || 1), 0);
-      const totalCal = meal.items.reduce((s, m) => s + (Number(m.cal) || 0) * (Number(m.qty) || 1), 0);
-      return `<div class="fav-meal-row">
-      <button class="fav-btn" data-fav-idx="${i}">
-        <span class="fav-name">${meal.name}</span>
-        <span class="fav-macros">${Math.round(totalP)}g P · ${Math.round(totalCal)} cal</span>
-      </button>
-      <button class="fav-delete" data-del-idx="${i}">✕</button>
-    </div>`;
-    })
-    .join("");
-  container.querySelectorAll("[data-fav-idx]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const meal = favorites[Number(btn.dataset.favIdx)];
-      if (!meal) return;
-      const meals = loadMeals(today);
-      for (const item of meal.items) {
-        meals.push({
-          type: "Fav",
-          food: item.food,
-          qty: item.qty,
-          protein: Number(item.protein) * Number(item.qty),
-          carbs: Number(item.carbs) * Number(item.qty),
-          fat: Number(item.fat) * Number(item.qty),
-          cal: Number(item.cal) * Number(item.qty),
-        });
-      }
-      saveMeals(today, meals);
-      renderSessionsTab();
-    });
-  });
-  container.querySelectorAll("[data-del-idx]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const idx = Number(btn.dataset.delIdx);
-      const favs = loadFavoriteMeals();
-      favs.splice(idx, 1);
-      saveFavoriteMeals(favs);
-      renderFavoriteMeals();
-    });
-  });
-}
-
-document.getElementById("saveFavoriteMealBtn")?.addEventListener("click", () => {
-  const items = getTodayMealsSnapshot();
-  if (items.length === 0) return;
-  const name = prompt("Name this meal:", "Favorites");
-  if (!name) return;
-  const favorites = loadFavoriteMeals();
-  favorites.push({ name: name.trim(), items });
-  saveFavoriteMeals(favorites);
-  renderFavoriteMeals();
-});
-
-function renderQuickFoods() {
-  const container = document.getElementById("quickFoods");
-  const recent = loadRecentFoods();
-  const foods = [...new Set([...recent.filter((f) => f), ...curatedFoods.map((f) => f.name)])].slice(0, 10);
-  container.innerHTML = foods.map((name) => `<button class="food-btn" data-food="${name}">${name}</button>`).join("");
-  container.querySelectorAll("[data-food]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const food = curatedFoods.find((f) => f.name === btn.dataset.food);
-      if (!food) return;
-      const today = getDateKey();
-      const meals = loadMeals(today);
-      meals.push({ type: "Quick", food: food.name, qty: 1, protein: food.protein, carbs: food.carbs, fat: food.fat, cal: food.cal });
-      saveMeals(today, meals);
-      saveRecentFoods(food.name);
-      renderSessionsTab();
-    });
-  });
-}
-
-function renderMealLog() {
-  const container = document.getElementById("mealLog");
-  const today = getDateKey();
-  const meals = loadMeals(today);
-  container.innerHTML = meals.length
-    ? meals
-        .map(
-          (m, i) =>
-            `<div class="meal-item"><div><strong>${m.food}</strong>${m.qty ? ` ×${m.qty}` : ""} <span class="meal-macros">${m.protein || 0}g P · ${m.carbs || 0}g C · ${m.fat || 0}g F · ${m.cal || 0} cal</span></div><button class="meal-delete" data-idx="${i}">✕</button></div>`,
-        )
-        .join("")
-    : `<p class="empty-state">No meals logged. Tap a food above.</p>`;
-  container.querySelectorAll(".meal-delete").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const idx = Number(btn.dataset.idx);
-      const meals = loadMeals(today);
-      meals.splice(idx, 1);
-      saveMeals(today, meals);
-      renderSessionsTab();
-    });
-  });
-}
-
-function renderWaterTracker() {
-  const container = document.getElementById("waterTracker");
-  const today = getDateKey();
-  const current = loadWater(today);
-  const remaining = Math.max(0, WATER_TARGET - current);
-  const pct = Math.min(current / WATER_TARGET, 1);
-  const circumference = 198;
-  const offset = circumference * (1 - pct);
-  const hoursRemaining = Math.ceil(remaining / 200);
-  const now = new Date();
-  const endHour = now.getHours() + hoursRemaining;
-  const predText =
-    hoursRemaining > 0 && endHour <= 23
-      ? `Drink 200ml every hour — done by ${endHour}:00`
-      : remaining > 0
-        ? `${Math.ceil(remaining / 300)} more glasses`
-        : "Hydration target met!";
-  container.innerHTML = `
-    <div class="water-ring">
-      <svg viewBox="0 0 72 72">
-        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--surface)" stroke-width="6"/>
-        <circle cx="36" cy="36" r="31.5" fill="none" stroke="var(--blue)" stroke-width="6" stroke-linecap="round" transform="rotate(-90 36 36)" stroke-dasharray="${circumference}" stroke-dashoffset="${offset}"/>
-      </svg>
-      <div class="water-ring-text">${current}<br><small>ml</small></div>
-    </div>
-    <div style="flex:1">
-      <div class="water-controls">
-        <button class="water-btn" data-water="250">250ml</button>
-        <button class="water-btn" data-water="500">500ml</button>
-        <button class="water-btn" data-water="750">750ml</button>
-        <button class="water-btn" data-water="1000">1L</button>
+    <div class="review-card">
+      <div class="review-grid">
+        <div class="review-item"><div class="text-metric-primary">${sessionsCount}</div><div class="text-caption">Sessions</div></div>
+        <div class="review-item"><div class="text-metric-primary">${totalSets}</div><div class="text-caption">Sets</div></div>
+        <div class="review-item"><div class="text-metric-primary">${Math.round(totalKg / 1000)}k</div><div class="text-caption">Volume</div></div>
+        <div class="review-item"><div class="text-metric-primary">${prCount}</div><div class="text-caption">PRs</div></div>
       </div>
-      <div class="water-prediction">Remaining: ${remaining}ml — ${predText}</div>
     </div>
   `;
-  container.querySelectorAll("[data-water]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      const amount = Number(btn.dataset.water);
-      saveWater(today, loadWater(today) + amount);
-      renderWaterTracker();
-    });
-  });
 }
 
-function renderWeeklyNutritionReview() {
-  const container = document.getElementById("weeklyNutritionContent");
-  const weekly = getWeeklyMacroAvg();
-  if (!weekly) {
-    container.innerHTML = `<p class="empty-state">Log meals to see your weekly review.</p>`;
-    return;
-  }
-  const pPct = Math.round((weekly.p / PROTEIN_GOAL) * 100);
-  const calPct = Math.round((weekly.cal / CAL_GOAL) * 100);
-  const waterDays = 7;
-  let totalWaterPct = 0;
-  let waterDaysCount = 0;
-  for (let i = 0; i < waterDays; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const w = loadWater(getDateKey(d));
-    if (w > 0) {
-      totalWaterPct += Math.min(w / WATER_TARGET, 1);
-      waterDaysCount++;
-    }
-  }
-  const waterPct = waterDaysCount > 0 ? Math.round((totalWaterPct / waterDaysCount) * 100) : 0;
-  const overall = Math.round((pPct + Math.min(calPct, 100) + waterPct) / 3);
-  container.innerHTML = `
-    <div class="wn-row"><span>Protein</span><span>${pPct}%</span></div>
-    <div class="wn-row"><span>Calories</span><span>${calPct}%</span></div>
-    <div class="wn-row"><span>Water</span><span>${waterPct}%</span></div>
-    <div class="wn-score"><div class="wn-score-num">${overall}%</div><div class="wn-score-label">Overall Nutrition Score</div></div>
-  `;
-}
+
 
 // ===== TRAINING CALENDAR =====
 function renderTrainingCalendar() {
@@ -5159,10 +4321,8 @@ function renderProgressPage() {
     return;
   }
   container.innerHTML = `
-    <div id="progressCalendarHero"></div>
-    <div class="progress-section">
-      <div class="section-label">Streak</div>
-      <div id="progressStreak" class="progress-streak-card"></div>
+    <div class="progress-card">
+      <div id="progressCalendarHero"></div>
     </div>
     <div class="progress-section">
       <div class="section-label">This Week</div>
@@ -5176,29 +4336,11 @@ function renderProgressPage() {
       <div class="section-label">Achievements</div>
       <div id="progressAchievements"></div>
     </div>
-    <div class="progress-section">
-      <div class="section-label">Insights</div>
-      <div id="progressInsights"></div>
-    </div>
   `;
   renderCalendarHero();
-  renderStreakCard();
   renderWeeklyReview();
   renderMonthlyReview();
   renderRecentAchievements();
-  renderProgressInsights();
-}
-
-function renderStreakCard() {
-  const container = document.getElementById("progressStreak");
-  if (!container) return;
-  const streak = getStreak();
-  const longest = getLongestStreak();
-  const totalWorkouts = state.sessions.filter((s) => s.finishedAt).length;
-  container.innerHTML = `
-    <div class="ps-item"><div class="ps-value">${streak}</div><div class="ps-label">Current Streak</div></div>
-    <div class="ps-item"><div class="ps-value">${longest}</div><div class="ps-label">Longest</div></div>
-    <div class="ps-item"><div class="ps-value">${totalWorkouts}</div><div class="ps-label">Total Workouts</div></div>`;
 }
 
 function renderWeeklyReview() {
@@ -5207,7 +4349,7 @@ function renderWeeklyReview() {
   const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
   if (!weekSessions.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">This Week</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Complete a workout this week to see stats.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete a workout this week to see stats.</div></div>`;
     return;
   }
   let totalSets = 0;
@@ -5251,7 +4393,7 @@ function renderMonthlyReview() {
   const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey.startsWith(prefix));
   if (!monthSessions.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Monthly</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Complete workouts to see monthly stats.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see monthly stats.</div></div>`;
     return;
   }
   let bestLift = { name: "", vol: 0 };
@@ -5292,7 +4434,7 @@ function renderRecentAchievements() {
   items.sort((a, b) => b.date.localeCompare(a.date));
   const recent = items.slice(0, 5);
   if (!recent.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Achievements</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">Set personal records to see achievements here.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Set personal records to see achievements here.</div></div>`;
     return;
   }
   container.innerHTML = `<div class="progress-card">
@@ -5303,36 +4445,6 @@ function renderRecentAchievements() {
       const icon = pr.type === "weight" ? "🏋️" : pr.type === "reps" ? "🔁" : "📊";
       return `<div class="ach-item"><span class="ach-icon">${icon}</span>${name} · ${displayWeight(pr.weight)} × ${pr.reps}<span class="ach-date">${date}</span></div>`;
     }).join("")}</div>
-  </div>`;
-}
-
-function renderProgressInsights() {
-  const container = document.getElementById("progressInsights");
-  if (!container) return;
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  const now = new Date();
-  const weekAgo = getDateKey(new Date(now.getTime() - 7 * 86400000));
-  const weekSessions = sessions.filter((s) => s.dateKey >= weekAgo);
-  const insp = [];
-  const prevWeek = sessions.filter((s) => s.dateKey >= getDateKey(new Date(now.getTime() - 14 * 86400000)) && s.dateKey < weekAgo).length;
-
-  if (weekSessions.length >= 3) insp.push({ icon: "✅", text: `Trained ${weekSessions.length}x this week` });
-  if (prevWeek > 0 && weekSessions.length > prevWeek) insp.push({ icon: "📈", text: `${weekSessions.length - prevWeek} more than last week` });
-  if (prevWeek > 0 && weekSessions.length < prevWeek) insp.push({ icon: "⚠️", text: `Missed ${prevWeek - weekSessions.length} vs last week` });
-  const streak = getStreak();
-  if (streak >= 3) insp.push({ icon: "🔥", text: `On a ${streak}-day streak` });
-  const totalVol = weekSessions.reduce((s, ses) => s + ses.exercises.reduce((s2, ex) => s2 + ex.sets.filter(st => st.done && st.weight).reduce((s3, st) => s3 + Number(st.weight) * (st.reps || 0), 0), 0), 0);
-  if (totalVol > 0) insp.push({ icon: "💪", text: `${totalVol >= 1000 ? (totalVol / 1000).toFixed(1) + "k" : totalVol} volume this week` });
-
-  if (!insp.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Insights</div><div class="strength-sub" style="color:var(--text-tertiary);font-size:0.72rem">More data needed for insights.</div></div>`;
-    return;
-  }
-  container.innerHTML = `<div class="progress-card">
-    <div class="progress-card-title">Insights</div>
-    <div class="ach-list">${insp.slice(0, 4).map((i) =>
-      `<div class="ach-item"><span class="ach-icon">${i.icon}</span>${i.text}</div>`
-    ).join("")}</div>
   </div>`;
 }
 
@@ -5654,11 +4766,7 @@ let bodyChartInstance = null;
 function renderBodyTab() {
   renderBodySnapshot();
   renderWeightTrend();
-  renderMuscleCoverageCompact();
-  renderNeedsAttention();
-  renderRecoverySummary();
   renderBodyGoals();
-  renderBodyInsights();
 }
 
 function latestWeight() {
@@ -5778,129 +4886,7 @@ function renderWeightTrend() {
   });
 }
 
-// --- SECTION 3: Muscle Coverage (Compact) ---
-function renderMuscleCoverageCompact() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-coverage-compact");
-  if (existing) existing.remove();
-
-  const summary = computeMuscleSummary(bodyMapMode);
-  const coverageScore = getMuscleCoverageScore(summary);
-  const trained = Object.values(summary).filter((m) => m.weeklySets > 0).length;
-  const total = Object.keys(summary).length;
-  const modeLabels = { today: "Today", week: "Week", month: "Month" };
-
-  const div = document.createElement("div");
-  div.className = "body-coverage-compact";
-  div.innerHTML = `
-    <div class="bc-ring" style="background: conic-gradient(var(--accent) ${coverageScore * 3.6}deg, var(--surface-2) 0deg)">
-      <div class="bc-ring-inner">${coverageScore}%</div>
-    </div>
-    <div class="bc-info">
-      <div class="bc-info-label">Muscle Coverage</div>
-      <div class="bc-info-value">${trained} / ${total} muscles trained</div>
-      <div class="bc-tabs-row">
-        ${Object.entries(modeLabels).map(([key, label]) =>
-          `<button class="bc-tab-sm${bodyMapMode === key ? " is-active" : ""}" data-mode="${key}">${label}</button>`
-        ).join("")}
-      </div>
-    </div>`;
-
-  const trend = container.querySelector(".body-weight-trend");
-  if (trend) trend.after(div);
-  else container.prepend(div);
-
-  div.querySelectorAll(".bc-tab-sm").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      bodyMapMode = btn.dataset.mode;
-      renderMuscleCoverageCompact();
-    });
-  });
-}
-
-// --- SECTION 4: Needs Attention ---
-function renderNeedsAttention() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-needs");
-  const summary = computeMuscleSummary(bodyMapMode);
-  const needs = getBodyNeedsAttention(summary).slice(0, 3);
-
-  if (existing) existing.remove();
-
-  const div = document.createElement("div");
-  div.className = "body-needs";
-
-  if (needs.length === 0) {
-    div.innerHTML = `<div class="body-needs-all">All muscles trained this week</div>`;
-  } else {
-    div.innerHTML = `<div class="bn-label">Needs Attention</div><div class="bn-list">
-      ${needs.map((m) => {
-        const recovery = state.recoveryAnalysis !== false ? getRecoveryLevel(m.days, m.sets) : null;
-        const recConfig = {
-          fatigued: { color: "var(--red)", label: "Fatigued" },
-          recovering: { color: "var(--yellow)", label: "Recovering" },
-          recovered: { color: "var(--accent)", label: "Recovered" },
-        };
-        const badge = recovery ? recConfig[recovery] : null;
-        return `<div class="bn-card" data-muscle="${m.id}">
-          <div class="bn-left">
-            <div class="bn-name">${m.label}</div>
-            <div class="bn-meta">Last trained ${m.days >= 99 ? "never" : m.days === 0 ? "today" : m.days === 1 ? "yesterday" : m.days + " days ago"}</div>
-          </div>
-          ${badge ? `<div class="bn-badge" style="color:${badge.color};border-color:${badge.color}"><span class="bn-dot" style="background:${badge.color}"></span>${badge.label}</div>` : ""}
-        </div>`;
-      }).join("")}
-    </div>`;
-  }
-
-  const coverage = container.querySelector(".body-coverage");
-  if (coverage) coverage.after(div);
-  else container.prepend(div);
-
-  // Tap to show bottom sheet
-  div.querySelectorAll(".bn-card").forEach((card) => {
-    card.addEventListener("click", () => {
-      showMuscleSheet(card.dataset.muscle, summary);
-    });
-  });
-}
-
-// --- SECTION 5: Recovery Summary ---
-function renderRecoverySummary() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-recovery");
-  if (existing) existing.remove();
-
-  const summary = computeMuscleSummary(bodyMapMode);
-  const groups = { fatigued: [], recovering: [], recovered: [] };
-  for (const [id, data] of Object.entries(summary)) {
-    if (data.weeklySets === 0) continue;
-    const mg = MUSCLE_GROUPS.find((m) => m.id === id);
-    if (!mg) continue;
-    const daysSince = typeof data.daysSince === "number" ? data.daysSince : (data.lastTrained ? getRecoveryDays(data.lastTrained) : 99);
-    const level = getRecoveryLevel(daysSince, data.weeklySets);
-    if (level && groups[level]) groups[level].push(mg.label);
-  }
-
-  const div = document.createElement("div");
-  div.className = "body-recovery";
-  const hasAny = Object.values(groups).some((g) => g.length > 0);
-  if (!hasAny) {
-    div.innerHTML = `<div class="br-label">Recovery Status</div><div class="br-empty">No recovery data yet</div>`;
-  } else {
-    div.innerHTML = `<div class="br-label">Recovery Status</div><div class="br-list">
-      ${groups.recovered.length ? `<div class="br-item"><span class="br-item-icon">🟢</span><span class="br-item-label">Ready</span><span class="br-item-muscles">${groups.recovered.join(", ")}</span></div>` : ""}
-      ${groups.recovering.length ? `<div class="br-item"><span class="br-item-icon">🟡</span><span class="br-item-label">Recovering</span><span class="br-item-muscles">${groups.recovering.join(", ")}</span></div>` : ""}
-      ${groups.fatigued.length ? `<div class="br-item"><span class="br-item-icon">🔴</span><span class="br-item-label">Fatigued</span><span class="br-item-muscles">${groups.fatigued.join(", ")}</span></div>` : ""}
-    </div>`;
-  }
-
-  const goals = container.querySelector(".body-goals");
-  if (goals) goals.before(div);
-  else container.prepend(div);
-}
-
-// --- SECTION 6: Goals ---
+// --- SECTION 3: Goals ---
 function renderBodyGoals() {
   const container = document.getElementById("bodyPageContent");
   const existing = container.querySelector(".body-goals");
@@ -5939,108 +4925,7 @@ function renderBodyGoals() {
   else container.prepend(div);
 }
 
-// --- SECTION 6: Insights ---
-function renderBodyInsights() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-insights");
-  if (existing) existing.remove();
 
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  const summary = computeMuscleSummary(bodyMapMode);
-
-  const div = document.createElement("div");
-  div.className = "body-insights";
-
-  if (weekSessions.length === 0) {
-    div.innerHTML = `<div class="body-empty-insights"><p class="body-empty-text">Insights will appear after your first week of training</p></div>`;
-  } else {
-    const insp = [];
-    const coverage = getMuscleCoverageScore(summary);
-    const neglected = MUSCLE_GROUPS.filter((mg) => {
-      const d = summary[mg.id];
-      return !d || d.weeklySets === 0;
-    }).slice(0, 3);
-    if (neglected.length > 0) {
-      insp.push({ icon: "⚠️", text: `${neglected.map((m) => m.label).join(", ")} not trained this week`, severity: "yellow" });
-    }
-    const undertrained = MUSCLE_GROUPS.filter((mg) => {
-      const d = summary[mg.id];
-      return d && d.weeklySets > 0 && d.weeklySets < 5;
-    }).slice(0, 2);
-    if (undertrained.length > 0) {
-      insp.push({ icon: "🎯", text: `${undertrained.map((m) => m.label).join(", ")} need more volume (<5 weekly sets)`, severity: "yellow" });
-    }
-    const weekCount = weekSessions.length;
-    const prevWeek = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)) && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000))).length;
-    if (weekCount >= 3) {
-      insp.push({ icon: "✅", text: `Trained ${weekCount}x this week — great consistency`, severity: "green" });
-    }
-    if (prevWeek > 0 && weekCount > prevWeek) {
-      insp.push({ icon: "📈", text: `${weekCount - prevWeek} more workout${weekCount - prevWeek > 1 ? "s" : ""} than last week`, severity: "green" });
-    }
-    const change = weeklyWeightChange();
-    if (change !== null) {
-      insp.push({ icon: change >= 0 ? "📊" : "📊", text: `Weight ${change > 0 ? "increased" : change < 0 ? "decreased" : "stable"} ${Math.abs(change).toFixed(1)}kg this week`, severity: change === 0 ? "blue" : "blue" });
-    }
-    const recovering = MUSCLE_GROUPS.filter((mg) => {
-      const d = summary[mg.id];
-      return d && d.weeklySets > 0 && getRecoveryDays(d.lastTrained) <= 1;
-    }).slice(0, 2);
-    if (recovering.length > 0) {
-      insp.push({ icon: "🔄", text: `${recovering.map((m) => m.label).join(", ")} recovering — prioritize sleep & nutrition`, severity: "blue" });
-    }
-    const optimal = MUSCLE_GROUPS.filter((mg) => {
-      const d = summary[mg.id];
-      return d && d.weeklySets >= 5 && d.weeklySets <= 14;
-    }).length;
-    if (optimal >= 8) {
-      insp.push({ icon: "💪", text: `${optimal} muscle groups in optimal training range`, severity: "green" });
-    }
-
-    div.innerHTML = `<div class="bi-label">Insights</div><div class="bi-list">
-      ${insp.slice(0, 4).map((i) => `<div class="bi-item is-${i.severity}"><span class="bi-icon">${i.icon}</span><span class="bi-text">${i.text}</span></div>`).join("")}
-    </div>`;
-  }
-
-  const goals = container.querySelector(".body-goals");
-  if (goals) goals.after(div);
-  else container.prepend(div);
-}
-
-let weightHistoryChartInstance = null;
-let historyFilterDays = 30;
-
-function renderWeightHistoryChart() {
-  const container = document.getElementById("historyFilterChips");
-  container.innerHTML = [7, 30, 90, 365, 0]
-    .map(
-      (d) =>
-        `<button class="filter-chip ${historyFilterDays === d ? "is-active" : ""}" data-days="${d}">${d === 0 ? "All" : d === 365 ? "1y" : d + "d"}</button>`,
-    )
-    .join("");
-  container.querySelectorAll("[data-days]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      historyFilterDays = Number(btn.dataset.days);
-      renderWeightHistoryChart();
-    });
-  });
-
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  let filtered = log;
-  if (historyFilterDays > 0) {
-    const cutoff = getDateKey(new Date(Date.now() - historyFilterDays * 86400000));
-    filtered = log.filter((e) => e.date >= cutoff);
-  }
-  if (filtered.length < 3) return;
-  const labels = filtered.map((e) => formatReadableDate(parseDateKey(e.date)));
-  const data = filtered.map((e) => e.weight);
-  const ctx = canvas.getContext("2d");
-  weightHistoryChartInstance = new Chart(ctx, {
-    type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.3, pointRadius: 2, fill: false }] },
-    options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
-  });
-}
 
 // ===== MODALS =====
 let exerciseDetailChartInstance = null;
@@ -7102,9 +5987,6 @@ if (setting === "theme") {
       weightReminder: !!state.weightReminder,
       nutritionReminder: !!state.nutritionReminder,
       weeklyReview: state.weeklyReview !== false,
-      goalAnalysis: state.goalAnalysis !== false,
-      muscleCoverage: state.muscleCoverage !== false,
-      progressSuggestions: state.progressSuggestions !== false,
       recoveryAnalysis: state.recoveryAnalysis !== false,
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
@@ -7183,9 +6065,6 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
     "nutrition-reminder": "nutritionReminder",
     "compact-mode": "compactMode",
     "weekly-review": "weeklyReview",
-    "goal-analysis": "goalAnalysis",
-    "muscle-coverage": "muscleCoverage",
-    "progress-suggestions": "progressSuggestions",
     "auto-warmup": "autoWarmup",
     "warmup-reminder": "warmupReminder",
     "stretch-reminder": "stretchReminder",
@@ -7345,37 +6224,37 @@ const WARMUP_ROUTINES = {
 
 const STRETCH_ROUTINES = {
   Push: [
-    { name: "Chest Stretch", duration: 45 },
-    { name: "Shoulder Stretch", duration: 45 },
-    { name: "Triceps Stretch", duration: 45 },
-    { name: "Doorway Stretch", duration: 45 },
-    { name: "Wrist Flexor Stretch", duration: 45 },
+    "Chest Stretch",
+    "Shoulder Stretch",
+    "Triceps Stretch",
+    "Doorway Stretch",
+    "Wrist Flexor Stretch",
   ],
   Pull: [
-    { name: "Lat Stretch", duration: 45 },
-    { name: "Upper Back Stretch", duration: 45 },
-    { name: "Biceps Stretch", duration: 45 },
-    { name: "Neck Stretch", duration: 45 },
-    { name: "Forearm Stretch", duration: 45 },
-    { name: "Cat-Cow", duration: 45 },
+    "Lat Stretch",
+    "Upper Back Stretch",
+    "Biceps Stretch",
+    "Neck Stretch",
+    "Forearm Stretch",
+    "Cat-Cow",
   ],
   Legs: [
-    { name: "Quad Stretch", duration: 45 },
-    { name: "Hamstring Stretch", duration: 45 },
-    { name: "Calf Stretch", duration: 45 },
-    { name: "Hip Flexor Stretch", duration: 45 },
-    { name: "Glute Stretch", duration: 45 },
-    { name: "Adductor Stretch", duration: 45 },
+    "Quad Stretch",
+    "Hamstring Stretch",
+    "Calf Stretch",
+    "Hip Flexor Stretch",
+    "Glute Stretch",
+    "Adductor Stretch",
   ],
 };
 
-const BREATHING_RESET = { name: "Breathing Reset", duration: 60 };
+const BREATHING_RESET = "Breathing Reset";
+const COOLDOWN_TOTAL = 300; // 5 minutes
 
 let warmupTimerInterval = null;
 let warmupTimerSeconds = 0;
-let stretchTimerInterval = null;
-let stretchTimerSeconds = 0;
-let stretchCurrentIndex = 0;
+let cooldownTimerInterval = null;
+let cooldownTimerSeconds = 0;
 
 function detectCoolDownType() {
   const session = getTodaySession();
@@ -7395,94 +6274,77 @@ function getCoolDownRoutine() {
 
 function openCoolDown() {
   const routine = getCoolDownRoutine();
-  stretchCurrentIndex = 0;
-  showStretchExercise(routine);
+  cooldownTimerSeconds = COOLDOWN_TOTAL;
+  renderStretchList(routine);
+  updateCooldownTimerDisplay();
+  startCooldownTimer(routine);
   document.getElementById("stretchTimerModal").classList.remove("is-hidden");
 
   document.getElementById("stCloseBtn").onclick = () => {
-    stopStretchTimer();
+    stopCooldownTimer();
     document.getElementById("stretchTimerModal").classList.add("is-hidden");
     finishWorkoutComplete();
   };
-  document.getElementById("stPrevBtn").onclick = () => {
-    if (stretchCurrentIndex > 0) {
-      stopStretchTimer();
-      stretchCurrentIndex--;
-      showStretchExercise(routine);
-    }
-  };
-  document.getElementById("stNextBtn").onclick = () => {
-    stopStretchTimer();
-    stretchCurrentIndex++;
-    showStretchExercise(routine);
+  document.getElementById("stDoneBtn").onclick = () => {
+    stopCooldownTimer();
+    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    finishWorkoutComplete();
   };
   document.getElementById("stSkipBtn").onclick = () => {
-    stopStretchTimer();
+    stopCooldownTimer();
     document.getElementById("stretchTimerModal").classList.add("is-hidden");
     finishWorkoutComplete();
   };
 }
 
-function showStretchExercise(routine) {
-  if (stretchCurrentIndex >= routine.length) {
-    stopStretchTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
-    finishWorkoutComplete();
-    return;
-  }
-  const ex = routine[stretchCurrentIndex];
-  document.getElementById("stExName").textContent = ex.name;
-  stretchTimerSeconds = ex.duration;
-  updateStretchTimerDisplay();
-  renderStretchDots(routine);
-  document.getElementById("stPrevBtn").style.visibility = stretchCurrentIndex > 0 ? "visible" : "hidden";
-  document.getElementById("stNextBtn").textContent = stretchCurrentIndex < routine.length - 1 ? "Next ›" : "✓ Done";
-  if (state.autoAdvanceStretches !== false) {
-    startStretchTimer(routine);
-  } else {
-    stopStretchTimer();
-  }
-}
-
-function renderStretchDots(routine) {
-  const container = document.getElementById("stProgressDots");
-  container.innerHTML = routine.map((_, i) =>
-    `<span class="st-dot ${i === stretchCurrentIndex ? "is-active" : i < stretchCurrentIndex ? "is-done" : ""}"></span>`
+function renderStretchList(routine) {
+  const container = document.getElementById("stExerciseList");
+  container.innerHTML = routine.map((name, i) =>
+    `<label class="st-item" data-index="${i}">
+      <input type="checkbox" class="st-checkbox" />
+      <span class="st-item-name">${name}</span>
+    </label>`
   ).join("");
+  container.querySelectorAll(".st-item").forEach((item) => {
+    item.addEventListener("click", (e) => {
+      if (e.target.tagName !== "INPUT") {
+        const cb = item.querySelector(".st-checkbox");
+        if (cb) cb.checked = !cb.checked;
+        item.classList.toggle("is-checked", cb.checked);
+      }
+    });
+  });
 }
 
-function startStretchTimer(routine) {
-  if (stretchTimerInterval) clearInterval(stretchTimerInterval);
-  stretchTimerInterval = setInterval(() => {
-    stretchTimerSeconds--;
-    if (stretchTimerSeconds <= 0) {
-      if (state.autoAdvanceStretches !== false) {
-        stretchCurrentIndex++;
-        showStretchExercise(routine);
-        return;
-      } else {
-        stretchTimerSeconds = 0;
-        stopStretchTimer();
-        updateStretchTimerDisplay();
-        return;
-      }
+function startCooldownTimer(routine) {
+  if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
+  cooldownTimerInterval = setInterval(() => {
+    cooldownTimerSeconds--;
+    if (cooldownTimerSeconds <= 0) {
+      cooldownTimerSeconds = 0;
+      updateCooldownTimerDisplay();
+      stopCooldownTimer();
+      document.getElementById("stretchTimerModal").classList.add("is-hidden");
+      finishWorkoutComplete();
+      return;
     }
-    updateStretchTimerDisplay();
+    updateCooldownTimerDisplay();
   }, 1000);
 }
 
-function stopStretchTimer() {
-  if (stretchTimerInterval) {
-    clearInterval(stretchTimerInterval);
-    stretchTimerInterval = null;
+function stopCooldownTimer() {
+  if (cooldownTimerInterval) {
+    clearInterval(cooldownTimerInterval);
+    cooldownTimerInterval = null;
   }
 }
 
-function updateStretchTimerDisplay() {
-  const s = Math.max(0, stretchTimerSeconds);
+function updateCooldownTimerDisplay() {
+  const s = Math.max(0, cooldownTimerSeconds);
   const m = Math.floor(s / 60);
   const sec = s % 60;
-  document.getElementById("stTimer").textContent = `${m}:${String(sec).padStart(2, "0")}`;
+  const el = document.getElementById("stTimer");
+  if (el) el.textContent = `${m}:${String(sec).padStart(2, "0")}`;
 }
 
 function finishWorkoutComplete() {
@@ -7491,7 +6353,6 @@ function finishWorkoutComplete() {
     session.notes = document.getElementById("ssNotesInput")?.value || session.notes || "";
     saveState();
   }
-  // Data systems update here
   renderHome();
 }
 
@@ -7614,20 +6475,6 @@ function updateWarmupTimerDisplay() {
   const m = Math.floor(warmupTimerSeconds / 60);
   const s = warmupTimerSeconds % 60;
   document.getElementById("wtTimer").textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-}
-
-function getWarmupCompliance() {
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  if (sessions.length === 0) return { pct: 0, done: 0, total: 0 };
-  const done = sessions.filter((s) => s.warmupDone).length;
-  return { pct: Math.round((done / sessions.length) * 100), done, total: sessions.length };
-}
-
-function getStretchCompliance() {
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  if (sessions.length === 0) return { pct: 0, done: 0, total: 0 };
-  const done = sessions.filter((s) => s.stretchDone).length;
-  return { pct: Math.round((done / sessions.length) * 100), done, total: sessions.length };
 }
 
 // ===== EVENT LISTENERS: EXERCISE ANALYTICS =====
