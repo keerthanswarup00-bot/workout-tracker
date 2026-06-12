@@ -94,53 +94,6 @@
   gap: 0.4rem;
 }
 
-.home-group-card {
-  background: var(--surface);
-  border-radius: var(--radius);
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-
-.home-group-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
-  min-height: 48px;
-}
-
-.home-group-header {
-  transition: background 0.15s ease;
-}
-.home-group-header:active {
-  background: var(--surface-2);
-}
-
-.home-group-name {
-  flex: 1;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.home-group-chevron {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  transition: transform 0.2s ease;
-}
-
-.home-group-card.is-collapsed .home-group-chevron {
-  transform: rotate(-90deg);
-}
-.home-group-card.is-collapsed .home-group-body {
-  display: none;
-}
-
-.home-group-body {
-  display: grid;
-}
-
 .home-wo-card {
   display: flex;
   align-items: center;
@@ -179,31 +132,6 @@
   flex-shrink: 0;
 }
 
-.home-wo-open-btn {
-  min-height: 30px;
-  padding: 0 0.65rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #0a0a0a;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.home-wo-open-btn:active {
-  opacity: 0.85;
-}
-
-.home-wo-open-btn.is-resume {
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.home-ungrouped {
-  margin-top: 0.25rem;
-}
-
 .home-recent-card {
   display: flex;
   align-items: center;
@@ -232,20 +160,6 @@
   font-size: 0.6rem;
   color: var(--text-secondary);
   font-weight: 500;
-}
-
-/* ===== HOME INSIGHTS ===== */
-.home-insights {
-  display: flex;
-  flex-direction: column;
-  gap: 0.3rem;
-  padding: 0.5rem 0;
-}
-.insight-item {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  line-height: 1.4;
 }
 
 /* ===== HOME SCREEN COACH CARDS ===== */
@@ -448,27 +362,10 @@
   line-height: 1.4;
 }
 
-.home-wo-open-btn {
-  min-height: 32px;
-  padding: 0 0.75rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #0a0a0a;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  border: 0;
-  cursor: pointer;
-  transition: transform 0.15s ease, opacity 0.15s ease;
-}
-.home-wo-open-btn:active {
-  opacity: 0.85;
-  transform: scale(0.95);
-}
-.home-wo-open-btn.is-resume {
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--border);
+.wo-card-chevron {
+  font-size: 1.2rem;
+  color: var(--text-secondary);
+  margin-left: 0.25rem;
 }
 .home-wo-menu-btn {
   background: none;
@@ -519,8 +416,7 @@
 }
 
 /* ===== HOME CARD DROPDOWN MENU ===== */
-.home-wo-menu-btn,
-.home-group-menu-btn {
+.home-wo-menu-btn {
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -530,8 +426,7 @@
   letter-spacing: 1px;
   border-radius: var(--radius-sm);
 }
-.home-wo-menu-btn:active,
-.home-group-menu-btn:active {
+.home-wo-menu-btn:active {
   background: var(--surface-2);
 }
 .home-dropdown {
@@ -561,7 +456,6 @@
 .home-dropdown-item:active {
   background: var(--surface-2);
 }
-.home-wo-card,
-.home-group-header {
+.home-wo-card {
   position: relative;
 }

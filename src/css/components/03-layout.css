@@ -72,7 +72,7 @@
   flex: 1;
   max-width: 1200px;
   margin: 0 auto;
-  padding: env(safe-area-inset-top, 8px) var(--space-sm) calc(100px + env(safe-area-inset-bottom, 16px));
+  padding: env(safe-area-inset-top, 8px) var(--space-sm) calc(var(--bottom-nav-height) + var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
   width: 100%;
 }
 
@@ -188,7 +188,7 @@
   display: none;
 }
 
-/* ===== FORM BOTTOM SPACING ===== */
+/* ===== BOTTOM SCROLL BUFFER ===== */
 .screen {
-  padding-bottom: 0;
+  padding-bottom: calc(var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
 }

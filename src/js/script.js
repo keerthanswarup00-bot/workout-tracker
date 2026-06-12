@@ -5,7 +5,7 @@ const FAT_GOAL = 65;
 const CAL_GOAL = 2100;
 const WATER_TARGET = 3000;
 const DEFAULT_REST = 90;
-let nwPendingExercises = [];
+
 
 function isWorkingSet(s) {
   return s.done && !s.isWarmup && Number(s.weight) > 0;
@@ -641,6 +641,14 @@ function parseWeight(val) {
   if (state.weightUnit === "lb") return Math.round(((Number(val) || 0) / 2.20462) * 10) / 10;
   return Number(val) || 0;
 }
+function showToast(msg) {
+  const t = document.getElementById("prToast");
+  if (t) {
+    document.getElementById("prToastMsg").textContent = msg;
+    t.classList.remove("is-hidden");
+    setTimeout(() => t.classList.add("is-hidden"), 3000);
+  }
+}
 function displayHeight(cm) {
   const n = Number(cm) || 0;
   if (state.heightUnit === "ft/in") {
@@ -1174,7 +1182,6 @@ function loadState() {
     fatTarget: FAT_GOAL,
     user: null,
     plan: null,
-    workoutGroups: [],
     weightLog: [],
     goals: [],
     autoWarmup: true,
@@ -1197,6 +1204,17 @@ function loadState() {
         const legacy = JSON.parse(localStorage.getItem("wl_bodylog"));
         if (legacy && legacy.length) loaded.weightLog = legacy;
       } catch {}
+    }
+    // Migrate legacy workoutGroups: flatten into plan
+    if (loaded.workoutGroups && loaded.workoutGroups.length && Array.isArray(loaded.plan)) {
+      const groupWids = new Set();
+      for (const g of loaded.workoutGroups) {
+        if (g.workoutIds) g.workoutIds.forEach((id) => groupWids.add(id));
+      }
+      // Remove any workouts that are already in a group (they were already shown in the group)
+      // We do NOT remove them; groups just organized existing workouts visually.
+      // All workouts remain in the plan. Groups are simply discarded.
+      delete loaded.workoutGroups;
     }
     return loaded;
   } catch {
@@ -2051,85 +2069,6 @@ function getDailyMessage() {
   return "Focus on today's workout.";
 }
 
-function generateInsights() {
-  const insights = [];
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  const weekSessions = sessions.filter((s) => s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  const todayKey = getDateKey();
-
-  // No workouts logged
-  if (!sessions.length) {
-    insights.push("No workouts logged yet. Start your first session!");
-    return insights.map((t) => `<div class="insight-item">${t}</div>`).join("");
-  }
-
-  // Workout consistency
-  const weekCount = weekSessions.length;
-  if (weekCount === 0) {
-    insights.push("No workouts this week. Get back on track!");
-  } else if (weekCount >= 4) {
-    insights.push("Excellent consistency this week! Keep it up.");
-  } else if (weekCount >= 2) {
-    insights.push("Good consistency this week. Try for more sessions.");
-  }
-
-  // PR streak
-  if (state.prs) {
-    const recentPRs = [];
-    for (const [, data] of Object.entries(state.prs)) {
-      (data.history || []).forEach((h) => {
-        if (h.date && h.date >= getDateKey(new Date(Date.now() - 14 * 86400000))) recentPRs.push(h);
-      });
-    }
-    if (recentPRs.length >= 3) {
-      insights.push(`${recentPRs.length} PRs in the last 2 weeks! You're crushing it.`);
-    } else if (recentPRs.length >= 1) {
-      insights.push(`New PR set recently. Keep pushing!`);
-    }
-  }
-
-  // Weight trend
-  const weightLog = state.weightLog || [];
-  if (weightLog.length >= 2) {
-    const sorted = weightLog.slice().sort((a, b) => b.date.localeCompare(a.date));
-    const latest = sorted[0].weight;
-    const prev = sorted[1].weight;
-    const diff = latest - prev;
-    if (Math.abs(diff) > 0.5) {
-      insights.push(diff > 0 ? `Weight increased ${diff.toFixed(1)} kg this period.` : `Weight decreased ${Math.abs(diff).toFixed(1)} kg this period.`);
-    } else {
-      insights.push("Bodyweight stable. No significant change.");
-    }
-  }
-
-  // Last session
-  const lastSession = sessions.sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
-  if (lastSession) {
-    const daysSince = Math.round((Date.now() - parseDateKey(lastSession.dateKey).getTime()) / 86400000);
-    if (daysSince === 0) insights.push(`Trained today: ${lastSession.workoutName}. Great work!`);
-    else if (daysSince === 1) insights.push(`Last trained yesterday: ${lastSession.workoutName}.`);
-  }
-
-  // Most trained muscle (in last 30 days)
-  const monthSessions = sessions.filter((s) => s.dateKey >= getDateKey(new Date(Date.now() - 30 * 86400000)));
-  const muscleCount = {};
-  for (const ses of monthSessions) {
-    for (const ex of ses.exercises) {
-      const muscle = getKnownMuscle(ex.name);
-      if (muscle) muscleCount[muscle] = (muscleCount[muscle] || 0) + 1;
-    }
-  }
-  const sortedMuscles = Object.entries(muscleCount).sort((a, b) => b[1] - a[1]);
-  if (sortedMuscles.length) {
-    insights.push(`Most trained: ${sortedMuscles[0][0]} (${sortedMuscles[0][1]}x this month).`);
-  }
-
-  if (!insights.length) {
-    insights.push("Keep showing up. Consistency wins.");
-  }
-
-  return `<div class="home-insights">${insights.map((t) => `<div class="insight-item">${t}</div>`).join("")}</div>`;
-}
 
 function renderHome() {
   const user = state.user;
@@ -2161,46 +2100,17 @@ function renderHome() {
       </div>
     </div>`;
 
-  document.getElementById("homeInsights").innerHTML = generateInsights();
-
-  // Workout groups + ungrouped
+  // Flat workout list (no groups)
   const activePlan = loadCustomProgram() || plan;
-  const groups = state.workoutGroups || [];
   const todaySession = getTodaySession();
   const container = document.getElementById("homeWorkoutList");
   let html = "";
 
-  // Render groups
-  groups.forEach((group) => {
-    const groupWorkouts = activePlan.filter((w) => group.workoutIds.includes(w.id));
-    if (!groupWorkouts.length) return;
-    html += `<div class="home-group-card" data-group-id="${group.id}">
-      <div class="home-group-header">
-        <span class="home-group-name">${group.name}</span>
-        <span style="display:flex;align-items:center;gap:0.25rem">
-          <span class="home-group-chevron">⌄</span>
-          <button class="home-group-menu-btn" data-group-menu="${group.id}">•••</button>
-        </span>
-      </div>
-      <div class="home-group-body">`;
-    groupWorkouts.forEach((w) => {
-      html += renderWorkoutCard(w, todaySession);
-    });
-    html += `</div></div>`;
-  });
-
-  // Ungrouped workouts
-  const groupedIds = new Set(groups.flatMap((g) => g.workoutIds));
-  const ungrouped = activePlan.filter((w) => !groupedIds.has(w.id));
-  if (ungrouped.length > 0) {
-    html += `<div class="home-ungrouped">`;
-    ungrouped.forEach((w) => {
-      html += `<div class="home-wo-card">`;
-      html += renderWorkoutCardInner(w, todaySession);
-      html += `</div>`;
-    });
+  activePlan.forEach((w) => {
+    html += `<div class="home-wo-card" data-workout-id="${w.id}">`;
+    html += renderWorkoutCardInner(w, todaySession);
     html += `</div>`;
-  }
+  });
 
   if (!html) {
     html = `<div class="empty-card"><div class="empty-card-content">No workouts yet. Create one to get started.</div></div>`;
@@ -2208,19 +2118,10 @@ function renderHome() {
 
   container.innerHTML = html;
 
-  // Bind group toggle
-  container.querySelectorAll(".home-group-header").forEach((header) => {
-    header.addEventListener("click", () => {
-      const card = header.closest(".home-group-card");
-      card.classList.toggle("is-collapsed");
-    });
-  });
-
-  // Bind open buttons
-  container.querySelectorAll("[data-open-workout]").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      openWorkout(btn.dataset.openWorkout);
+  // Bind clickable card
+  container.querySelectorAll(".home-wo-card").forEach((card) => {
+    card.addEventListener("click", () => {
+      openWorkout(card.dataset.workoutId);
     });
   });
 
@@ -2245,9 +2146,6 @@ function renderHome() {
             activePlan.splice(idx, 1);
             localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
             state.plan = activePlan;
-            (state.workoutGroups || []).forEach((g) => {
-              g.workoutIds = g.workoutIds.filter((i) => i !== wid);
-            });
             saveState();
           }
           closeAllMenus();
@@ -2280,42 +2178,6 @@ function renderHome() {
     });
   });
 
-  // Bind group menu buttons
-  container.querySelectorAll(".home-group-menu-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.groupMenu;
-      closeAllMenus();
-      const menu = document.createElement("div");
-      menu.className = "home-dropdown";
-      menu.innerHTML = `<button class="home-dropdown-item" data-action="rename-group" data-id="${id}">Rename Group</button><button class="home-dropdown-item" data-action="delete-group" data-id="${id}">Delete Group</button>`;
-      btn.parentElement.appendChild(menu);
-      menu.addEventListener("click", (ev) => {
-        const a = ev.target.dataset.action;
-        const gid = ev.target.dataset.id;
-        if (a === "delete-group") {
-          if (!confirm("Delete this group? Workouts will be ungrouped.")) return;
-          state.workoutGroups = (state.workoutGroups || []).filter((g) => g.id !== gid);
-          saveState();
-          closeAllMenus();
-          renderHome();
-        }
-        if (a === "rename-group") {
-          const g = (state.workoutGroups || []).find((g2) => g2.id === gid);
-          if (g) {
-            const n = prompt("New name:", g.name);
-            if (n && n.trim()) {
-              g.name = n.trim();
-              saveState();
-              closeAllMenus();
-              renderHome();
-            }
-          }
-        }
-      });
-    });
-  });
-
   // Bind hero cards
   document.getElementById("heroStreakCard")?.addEventListener("click", openStreakDrawer);
   document.getElementById("heroWeightCard")?.addEventListener("click", () => {
@@ -2334,12 +2196,6 @@ function closeAllMenus() {
   document.querySelectorAll(".home-dropdown").forEach((m) => m.remove());
 }
 
-function renderWorkoutCard(workout, todaySession) {
-  return `<div class="home-wo-card" data-open-workout="${workout.id}">
-    ${renderWorkoutCardInner(workout, todaySession)}
-  </div>`;
-}
-
 function renderWorkoutCardInner(workout, todaySession) {
   const inProgress = todaySession && todaySession.workoutId === workout.id;
   const sessionCount = workout.exercises.length;
@@ -2347,10 +2203,10 @@ function renderWorkoutCardInner(workout, todaySession) {
   const lastLabel = lastPerf ? formatRelativeDate(lastPerf.dateKey) : "Never";
   const duration = workout.duration || "—";
   return `<div class="wo-card-header">
-    <div class="wo-card-title">${workout.name}</div>
+    <div class="wo-card-title">${workout.name} ${inProgress ? "(In Progress)" : ""}</div>
     <div class="wo-card-actions">
-      <button class="home-wo-open-btn ${inProgress ? "is-resume" : ""}" data-open-workout="${workout.id}">${inProgress ? "Resume" : "Open"}</button>
       <button class="home-wo-menu-btn" data-wo-menu="${workout.id}">•••</button>
+      <span class="wo-card-chevron">›</span>
     </div>
   </div>
   <div class="wo-card-meta">${sessionCount} exercises · ${lastLabel} · ${duration}</div>`;
@@ -2966,7 +2822,7 @@ function saveAddSet() {
 // ===== LEVEL 3C: EDIT SET BOTTOM SHEET =====
 let editSetReps = 10;
 let editSetWeight = 0;
-let editSetRpe = null;
+
 let editSetId = null;
 
 function openEditBottomSheet(setId) {
@@ -2980,24 +2836,18 @@ function openEditBottomSheet(setId) {
   editSetId = setId;
   editSetReps = Number(set.reps) || 10;
   editSetWeight = Number(set.weight) || 0;
-  editSetRpe = set.rpe || null;
 
   document.getElementById("esExName").textContent = currentExName.replace(/([A-Z])/g, " $1").trim();
   updateEditSetRepsDisplay();
   updateEditSetWeightDisplay();
-  updateEditSetRpeDisplay();
-  document.getElementById("esNoteInput").value = set.note || "";
   document.getElementById("bsEditSet").classList.remove("is-hidden");
 }
 
 function updateEditSetRepsDisplay() {
-  document.getElementById("esRepsValue").innerHTML = `${editSetReps} <span class="as-unit-inline">reps</span>`;
+  document.getElementById("esRepsValue").textContent = editSetReps;
 }
 function updateEditSetWeightDisplay() {
-  document.getElementById("esWeightValue").innerHTML = `${editSetWeight} <span class="as-unit-inline">kg</span>`;
-}
-function updateEditSetRpeDisplay() {
-  document.getElementById("esRpeValue").textContent = editSetRpe !== null ? "RPE " + editSetRpe : "—";
+  document.getElementById("esWeightValue").textContent = editSetWeight;
 }
 
 function closeEditBottomSheet() {
@@ -3015,8 +2865,6 @@ function completeSetFromSheet() {
 
   set.reps = editSetReps;
   set.weight = editSetWeight;
-  set.rpe = editSetRpe;
-  set.note = document.getElementById("esNoteInput").value.trim() || "";
   set.done = true;
   set.loggedAt = set.loggedAt || new Date().toISOString();
   if (Number(set.weight) > 0 && !session.duration) startStopwatch();
@@ -3215,18 +3063,6 @@ function showEnhancedSummary(newPRs) {
   };
 
   document.getElementById("sessionSummaryOverlay").classList.remove("is-hidden");
-
-  // Auto-start cool down if enabled (2s delay)
-  if (state.autoCooldown) {
-    setTimeout(() => {
-      if (!document.getElementById("sessionSummaryOverlay").classList.contains("is-hidden")) {
-        session.notes = document.getElementById("ssNotesInput").value || "";
-        saveState();
-        document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
-        openCoolDown();
-      }
-    }, 2000);
-  }
 }
 
 
@@ -3903,11 +3739,6 @@ document.getElementById("esWeightMinus5").addEventListener("click", () => {
   editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
   updateEditSetWeightDisplay();
 });
-document.getElementById("esWeightMinus2").addEventListener("click", () => {
-  const step = (state.weightInc || 1) * 2.5;
-  editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
-  updateEditSetWeightDisplay();
-});
 document.getElementById("esWeightMinus1").addEventListener("click", () => {
   const step = state.weightInc || 1;
   editSetWeight = Math.max(0, parseFloat((editSetWeight - step).toFixed(2)));
@@ -3918,26 +3749,10 @@ document.getElementById("esWeightPlus1").addEventListener("click", () => {
   editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
   updateEditSetWeightDisplay();
 });
-document.getElementById("esWeightPlus2").addEventListener("click", () => {
-  const step = (state.weightInc || 1) * 2.5;
-  editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
-  updateEditSetWeightDisplay();
-});
 document.getElementById("esWeightPlus5").addEventListener("click", () => {
   const step = (state.weightInc || 1) * 5;
   editSetWeight = Math.min(500, parseFloat((editSetWeight + step).toFixed(2)));
   updateEditSetWeightDisplay();
-});
-
-document.getElementById("esRpeMinus").addEventListener("click", () => {
-  const cur = editSetRpe !== null ? editSetRpe : 11;
-  editSetRpe = Math.max(0, cur - 0.5);
-  updateEditSetRpeDisplay();
-});
-document.getElementById("esRpePlus").addEventListener("click", () => {
-  const cur = editSetRpe !== null ? editSetRpe : 0;
-  editSetRpe = Math.min(10, cur + 0.5);
-  updateEditSetRpeDisplay();
 });
 
 document.getElementById("esCompleteBtn").addEventListener("click", completeSetFromSheet);
@@ -5611,86 +5426,11 @@ document.getElementById("homeNewWorkout").addEventListener("click", () => {
   showNewWorkoutBuilder();
 });
 
-document.getElementById("homeNewGroup").addEventListener("click", () => {
-  showWorkoutPicker();
-});
-function showWorkoutPicker() {
-  const activePlan = loadCustomProgram() || plan;
-  const list = document.getElementById("wpWorkoutList");
-  const favs = state.favoriteWorkoutIds || [];
 
-  if (!state.favoriteWorkoutIds) state.favoriteWorkoutIds = [];
-
-  list.innerHTML = activePlan
-    .map((w) => {
-      const isFav = favs.includes(w.id);
-      return `<label class="wp-row" style="display:flex;align-items:center;gap:0.5rem;padding:0.5rem 0.65rem;background:var(--surface-2);border-radius:var(--radius-sm);cursor:pointer">
-      <input type="checkbox" class="wp-check" data-id="${w.id}" />
-      <span style="flex:1;font-weight:600;font-size:0.85rem">${w.name}</span>
-      <span class="wp-fav" data-id="${w.id}" style="cursor:pointer;font-size:1.1rem;color:${isFav ? "var(--accent)" : "var(--text-secondary)"}">${isFav ? "★" : "☆"}</span>
-    </label>`;
-    })
-    .join("");
-
-  document.getElementById("wpGroupName").value = "";
-  document.getElementById("wpCreateBtn").disabled = true;
-  document.getElementById("workoutPickerModal").classList.remove("is-hidden");
-
-  // Bind favorite toggles
-  list.querySelectorAll(".wp-fav").forEach((star) => {
-    star.addEventListener("click", (e) => {
-      e.preventDefault();
-      const id = star.dataset.id;
-      const favs2 = state.favoriteWorkoutIds || [];
-      const idx = favs2.indexOf(id);
-      if (idx >= 0) {
-        favs2.splice(idx, 1);
-        star.textContent = "☆";
-        star.style.color = "var(--text-secondary)";
-      } else {
-        favs2.push(id);
-        star.textContent = "★";
-        star.style.color = "var(--accent)";
-      }
-      state.favoriteWorkoutIds = favs2;
-      saveState();
-    });
-  });
-
-  // Bind checkbox changes
-  list.querySelectorAll(".wp-check").forEach((cb) => {
-    cb.addEventListener("change", () => {
-      const checked = list.querySelectorAll(".wp-check:checked").length;
-      document.getElementById("wpCreateBtn").disabled = checked === 0 || !document.getElementById("wpGroupName").value.trim();
-    });
-  });
-}
-
-document.getElementById("wpClose").addEventListener("click", () => {
-  document.getElementById("workoutPickerModal").classList.add("is-hidden");
-});
-document.getElementById("wpGroupName").addEventListener("input", () => {
-  const checked = document.getElementById("wpWorkoutList").querySelectorAll(".wp-check:checked").length;
-  document.getElementById("wpCreateBtn").disabled = checked === 0 || !document.getElementById("wpGroupName").value.trim();
-});
-document.getElementById("wpCreateBtn").addEventListener("click", () => {
-  const name = document.getElementById("wpGroupName").value.trim();
-  if (!name) return;
-  const checked = [...document.getElementById("wpWorkoutList").querySelectorAll(".wp-check:checked")];
-  const ids = checked.map((cb) => cb.dataset.id);
-  if (!ids.length) return;
-
-  const group = { id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6), name, workoutIds: ids };
-  if (!state.workoutGroups) state.workoutGroups = [];
-  state.workoutGroups.push(group);
-  saveState();
-  document.getElementById("workoutPickerModal").classList.add("is-hidden");
-  renderHome();
-});
 
 // ===== NEW WORKOUT BUILDER SCREEN =====
 function showNewWorkoutBuilder() {
-  document.getElementById("nwGroupName").value = "";
+  document.getElementById("nwName").value = "";
   document.getElementById("nwCreateBtn").disabled = true;
   document.getElementById("nwFooter").style.display = "none";
   renderNewWorkoutList();
@@ -5731,19 +5471,25 @@ function updateNwState() {
 }
 function updateNwCreateBtn() {
   const checked = document.querySelectorAll(".nw-check:checked").length;
-  const name = document.getElementById("nwGroupName").value.trim();
+  const name = document.getElementById("nwName").value.trim();
   document.getElementById("nwCreateBtn").disabled = !checked || !name;
 }
 
 document.getElementById("nwBackBtn").addEventListener("click", () => {
   showScreen("screen-home");
 });
-document.getElementById("nwGroupName").addEventListener("input", updateNwCreateBtn);
+document.getElementById("nwName").addEventListener("input", updateNwCreateBtn);
 document.getElementById("nwCreateBtn").addEventListener("click", () => {
-  const groupName = document.getElementById("nwGroupName").value.trim();
-  if (!groupName) return;
+  const workoutName = document.getElementById("nwName").value.trim();
+  if (!workoutName) {
+    showToast("Please name your workout");
+    return;
+  }
   const checked = [...document.querySelectorAll(".nw-check:checked")];
-  if (!checked.length) return;
+  if (!checked.length) {
+    showToast("Select at least one exercise");
+    return;
+  }
 
   const exercises = checked.map((cb) => {
     const ex = EXERCISE_LIBRARY.find((e) => e.id === cb.dataset.id);
@@ -5758,16 +5504,12 @@ document.getElementById("nwCreateBtn").addEventListener("click", () => {
   }
   const workout = {
     id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    name: groupName + " Workout",
+    name: workoutName,
     exercises,
   };
   activePlan.push(workout);
   localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
-
-  // Create group
-  if (!state.workoutGroups) state.workoutGroups = [];
-  const groupId2 = crypto.randomUUID ? crypto.randomUUID().slice(0, 12) : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  state.workoutGroups.push({ id: groupId2, name: groupName, workoutIds: [workout.id] });
+  state.plan = activePlan;
   saveState();
 
   showScreen("screen-home");
@@ -5802,11 +5544,6 @@ document.getElementById("cwSaveBtn").addEventListener("click", () => {
     exercises: [],
   };
   activePlan.push(newWorkout);
-  const groupId = document.getElementById("cwGroup").value;
-  if (groupId) {
-    const group = (state.workoutGroups || []).find((g) => g.id === groupId);
-    if (group) group.workoutIds.push(newWorkout.id);
-  }
   try {
     localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
   } catch {}
@@ -5816,45 +5553,7 @@ document.getElementById("cwSaveBtn").addEventListener("click", () => {
   renderHome();
 });
 
-// ===== EVENT LISTENERS: CREATE GROUP =====
-document.getElementById("cgClose").addEventListener("click", () => {
-  nwPendingExercises = [];
-  document.getElementById("createGroupModal").classList.add("is-hidden");
-});
-document.getElementById("cgSaveBtn").addEventListener("click", () => {
-  const name = document.getElementById("cgName").value.trim();
-  if (!name) return;
-  if (!state.workoutGroups) state.workoutGroups = [];
-  const groupId = crypto.randomUUID ? crypto.randomUUID().slice(0, 12) : Date.now().toString(36);
-  const workoutIds = [];
 
-  // If coming from the new workout builder, create the workout first
-  if (nwPendingExercises.length) {
-    const workoutName = name + " Workout";
-    let activePlan = loadCustomProgram();
-    if (!activePlan) {
-      activePlan = [...plan];
-      state.plan = activePlan;
-    }
-    const workout = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name: workoutName,
-      exercises: nwPendingExercises,
-    };
-    activePlan.push(workout);
-    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
-    saveState();
-    workoutIds.push(workout.id);
-    nwPendingExercises = [];
-    document.getElementById("screen-new-workout").classList.add("is-hidden");
-  }
-
-  state.workoutGroups.push({ id: groupId, name, workoutIds });
-  saveState();
-  if (document.getElementById("screen-home")) showScreen("screen-home");
-  document.getElementById("createGroupModal").classList.add("is-hidden");
-  renderHome();
-});
 
 // ===== EVENT LISTENERS: SETTINGS =====
 document.getElementById("wsMenuBtn").addEventListener("click", () => {
@@ -6351,7 +6050,7 @@ if (setting === "theme") {
       nutrition: state.nutrition || {},
       user: state.user || null,
       plan: state.plan || null,
-      workoutGroups: state.workoutGroups || [],
+
       weightLog: state.weightLog || [],
       goals: state.goals || [],
       recoveryLog: state.recoveryLog || [],
@@ -6412,8 +6111,8 @@ if (setting === "theme") {
             return;
           }
           // Whitelist allowed keys and validate types
-          const allowedKeys = new Set(["sessions", "plan", "workoutGroups", "customExercises", "user", "weightLog", "goals", "recoveryLog", "recoveryAnalysis", "warmupReminder", "showRecoveryAdvice"]);
-          const arrayKeys = new Set(["sessions", "plan", "workoutGroups", "customExercises", "weightLog", "goals", "recoveryLog"]);
+          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "recoveryAnalysis", "warmupReminder", "showRecoveryAdvice"]);
+          const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog"]);
           const objKeys = new Set(["user", "recoveryAnalysis"]);
           const boolKeys = new Set(["warmupReminder", "showRecoveryAdvice"]);
           for (const key of Object.keys(data)) {
@@ -6639,34 +6338,34 @@ const WARMUP_ROUTINES = {
   ],
 };
 
-const STRETCH_ROUTINES = {
+const COOLDOWN_ROUTINES = {
   Push: [
-    "Chest Stretch",
-    "Shoulder Stretch",
-    "Triceps Stretch",
-    "Doorway Stretch",
-    "Wrist Flexor Stretch",
+    { name: "Chest Stretch", reps: "30 sec each" },
+    { name: "Shoulder Stretch", reps: "30 sec each" },
+    { name: "Triceps Stretch", reps: "30 sec each" },
+    { name: "Doorway Stretch", reps: "30 sec" },
+    { name: "Wrist Flexor Stretch", reps: "20 sec each" },
+    { name: "Deep Breathing Reset", reps: "10 breaths" },
   ],
   Pull: [
-    "Lat Stretch",
-    "Upper Back Stretch",
-    "Biceps Stretch",
-    "Neck Stretch",
-    "Forearm Stretch",
-    "Cat-Cow",
+    { name: "Lat Stretch", reps: "30 sec each" },
+    { name: "Upper Back Stretch", reps: "30 sec" },
+    { name: "Biceps Stretch", reps: "30 sec each" },
+    { name: "Neck Stretch", reps: "20 sec each" },
+    { name: "Forearm Stretch", reps: "20 sec each" },
+    { name: "Cat-Cow", reps: "10 reps" },
+    { name: "Deep Breathing Reset", reps: "10 breaths" },
   ],
   Legs: [
-    "Quad Stretch",
-    "Hamstring Stretch",
-    "Calf Stretch",
-    "Hip Flexor Stretch",
-    "Glute Stretch",
-    "Adductor Stretch",
+    { name: "Quad Stretch", reps: "30 sec each" },
+    { name: "Hamstring Stretch", reps: "30 sec each" },
+    { name: "Calf Stretch", reps: "30 sec each" },
+    { name: "Hip Flexor Stretch", reps: "30 sec each" },
+    { name: "Glute Stretch", reps: "30 sec each" },
+    { name: "Adductor Stretch", reps: "30 sec each" },
+    { name: "Deep Breathing Reset", reps: "10 breaths" },
   ],
 };
-
-const BREATHING_RESET = "Breathing Reset";
-const COOLDOWN_TOTAL = 300; // 5 minutes
 
 let warmupTimerInterval = null;
 let warmupTimerSeconds = 0;
@@ -6685,65 +6384,68 @@ function detectCoolDownType() {
 
 function getCoolDownRoutine() {
   const type = detectCoolDownType();
-  const base = STRETCH_ROUTINES[type] || STRETCH_ROUTINES["Push"];
-  return [...base, BREATHING_RESET];
+  return COOLDOWN_ROUTINES[type] || COOLDOWN_ROUTINES["Push"];
 }
 
 function openCoolDown() {
+  const type = detectCoolDownType();
   const routine = getCoolDownRoutine();
-  cooldownTimerSeconds = COOLDOWN_TOTAL;
-  renderStretchList(routine);
+  const session = getTodaySession();
+  document.getElementById("cdWorkoutInfo").textContent = session ? `${session.workoutName || "Workout"} · ${session.exercises.length} exercises` : "";
+  document.getElementById("cdRoutineTitle").textContent = `Cool Down (${type})`;
+  document.getElementById("cdRoutineList").innerHTML = routine
+    .map(
+      (ex) =>
+        `<div style="display:flex;justify-content:space-between;padding:0.25rem 0"><span>${ex.name}</span><span style="color:var(--text-secondary)">${ex.reps}</span></div>`,
+    )
+    .join("");
+  document.getElementById("cdStartBtn").onclick = () => {
+    document.getElementById("cooldownReminderModal").classList.add("is-hidden");
+    openCooldownTimer(type);
+  };
+  document.getElementById("cdSkipBtn").onclick = () => {
+    document.getElementById("cooldownReminderModal").classList.add("is-hidden");
+    finishWorkoutComplete();
+  };
+  document.getElementById("cooldownReminderModal").classList.remove("is-hidden");
+}
+
+function openCooldownTimer(type) {
+  const routine = COOLDOWN_ROUTINES[type] || COOLDOWN_ROUTINES["Push"];
+  document.getElementById("ctExerciseList").textContent = routine.map((ex) => ex.name).join(" · ");
+  cooldownTimerSeconds = 5 * 60;
   updateCooldownTimerDisplay();
-  startCooldownTimer(routine);
-  document.getElementById("stretchTimerModal").classList.remove("is-hidden");
-
-  document.getElementById("stCloseBtn").onclick = () => {
+  document.getElementById("cooldownTimerModal").classList.remove("is-hidden");
+  startCooldownTimer();
+  document.getElementById("ctPauseBtn").onclick = () => {
+    if (cooldownTimerInterval) {
+      clearInterval(cooldownTimerInterval);
+      cooldownTimerInterval = null;
+      document.getElementById("ctPauseBtn").textContent = "▶ Resume";
+    } else {
+      startCooldownTimer();
+      document.getElementById("ctPauseBtn").textContent = "⏸ Pause";
+    }
+  };
+  document.getElementById("ctSkipBtn").onclick = () => {
     stopCooldownTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    document.getElementById("cooldownTimerModal").classList.add("is-hidden");
     finishWorkoutComplete();
   };
-  document.getElementById("stDoneBtn").onclick = () => {
+  document.getElementById("ctFinishBtn").onclick = () => {
     stopCooldownTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
-    finishWorkoutComplete();
-  };
-  document.getElementById("stSkipBtn").onclick = () => {
-    stopCooldownTimer();
-    document.getElementById("stretchTimerModal").classList.add("is-hidden");
+    document.getElementById("cooldownTimerModal").classList.add("is-hidden");
     finishWorkoutComplete();
   };
 }
 
-function renderStretchList(routine) {
-  const container = document.getElementById("stExerciseList");
-  container.innerHTML = routine.map((name, i) =>
-    `<label class="st-item" data-index="${i}">
-      <input type="checkbox" class="st-checkbox" />
-      <span class="st-item-name">${name}</span>
-    </label>`
-  ).join("");
-  container.querySelectorAll(".st-item").forEach((item) => {
-    item.addEventListener("click", (e) => {
-      if (e.target.tagName !== "INPUT") {
-        const cb = item.querySelector(".st-checkbox");
-        if (cb) cb.checked = !cb.checked;
-        item.classList.toggle("is-checked", cb.checked);
-      }
-    });
-  });
-}
-
-function startCooldownTimer(routine) {
+function startCooldownTimer() {
   if (cooldownTimerInterval) clearInterval(cooldownTimerInterval);
   cooldownTimerInterval = setInterval(() => {
     cooldownTimerSeconds--;
     if (cooldownTimerSeconds <= 0) {
       cooldownTimerSeconds = 0;
-      updateCooldownTimerDisplay();
       stopCooldownTimer();
-      document.getElementById("stretchTimerModal").classList.add("is-hidden");
-      finishWorkoutComplete();
-      return;
     }
     updateCooldownTimerDisplay();
   }, 1000);
@@ -6757,11 +6459,10 @@ function stopCooldownTimer() {
 }
 
 function updateCooldownTimerDisplay() {
-  const s = Math.max(0, cooldownTimerSeconds);
-  const m = Math.floor(s / 60);
-  const sec = s % 60;
-  const el = document.getElementById("stTimer");
-  if (el) el.textContent = `${m}:${String(sec).padStart(2, "0")}`;
+  const m = Math.floor(cooldownTimerSeconds / 60);
+  const s = cooldownTimerSeconds % 60;
+  const el = document.getElementById("ctTimer");
+  if (el) el.textContent = `${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
 }
 
 function finishWorkoutComplete() {

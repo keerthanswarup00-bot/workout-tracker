@@ -4028,50 +4028,6 @@ textarea:focus {
   gap: 0.4rem;
 }
 
-.home-group-card {
-  background: var(--surface);
-  border-radius: var(--radius-card);
-  border: 1px solid var(--border);
-  overflow: hidden;
-}
-
-.home-group-header {
-  display: flex;
-  align-items: center;
-  gap: 0.5rem;
-  padding: 0.75rem;
-  cursor: pointer;
-  min-height: 48px;
-}
-
-.home-group-header:active {
-  background: var(--surface-2);
-}
-
-.home-group-name {
-  flex: 1;
-  font-size: 0.85rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.home-group-chevron {
-  font-size: 0.85rem;
-  color: var(--text-secondary);
-  transition: transform 0.2s ease;
-}
-
-.home-group-card.is-collapsed .home-group-chevron {
-  transform: rotate(-90deg);
-}
-.home-group-card.is-collapsed .home-group-body {
-  display: none;
-}
-
-.home-group-body {
-  display: grid;
-}
-
 .home-wo-card {
   display: flex;
   align-items: center;
@@ -4108,31 +4064,6 @@ textarea:focus {
   display: flex;
   gap: 0.35rem;
   flex-shrink: 0;
-}
-
-.home-wo-open-btn {
-  min-height: 30px;
-  padding: 0 0.65rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #0a0a0a;
-  font-size: 0.65rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-}
-
-.home-wo-open-btn:active {
-  opacity: 0.85;
-}
-
-.home-wo-open-btn.is-resume {
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-
-.home-ungrouped {
-  margin-top: 0.25rem;
 }
 
 .home-recent-card {
@@ -5267,8 +5198,7 @@ textarea:focus {
 }
 
 /* ===== HOME CARD DROPDOWN MENU ===== */
-.home-wo-menu-btn,
-.home-group-menu-btn {
+.home-wo-menu-btn {
   background: none;
   border: none;
   color: var(--text-secondary);
@@ -5278,8 +5208,7 @@ textarea:focus {
   letter-spacing: 1px;
   border-radius: var(--radius-sm);
 }
-.home-wo-menu-btn:active,
-.home-group-menu-btn:active {
+.home-wo-menu-btn:active {
   background: var(--surface-2);
 }
 .home-dropdown {
@@ -5309,8 +5238,7 @@ textarea:focus {
 .home-dropdown-item:active {
   background: var(--surface-2);
 }
-.home-wo-card,
-.home-group-header {
+.home-wo-card {
   position: relative;
 }
 
@@ -5545,100 +5473,6 @@ textarea:focus {
 }
 
 /* ===== COOL DOWN TIMER ===== */
-.st-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  max-width: 340px;
-  width: 100%;
-  padding: var(--space-sm);
-  position: relative;
-}
-.st-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: var(--space-xs);
-}
-.st-header h2 {
-  font-size: var(--text-lg);
-  font-weight: 700;
-  margin: 0;
-}
-.st-close {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: 1.1rem;
-  cursor: pointer;
-  padding: 0.25rem;
-}
-.st-hint {
-  font-size: var(--text-caption);
-  color: var(--text-secondary);
-  text-align: center;
-  margin-bottom: var(--space-xs);
-}
-.st-total-timer {
-  text-align: center;
-  font-size: 2.6rem;
-  font-weight: 800;
-  margin-bottom: var(--space-sm);
-  font-variant-numeric: tabular-nums;
-}
-.st-exercise-list {
-  margin-bottom: var(--space-sm);
-  max-height: 260px;
-  overflow-y: auto;
-}
-.st-item {
-  display: flex;
-  align-items: center;
-  gap: var(--space-xs);
-  padding: var(--space-xs) 0;
-  border-bottom: 1px solid var(--border);
-  cursor: pointer;
-  -webkit-tap-highlight-color: transparent;
-}
-.st-item:last-child {
-  border-bottom: none;
-}
-.st-checkbox {
-  width: 18px;
-  height: 18px;
-  accent-color: var(--accent);
-  flex-shrink: 0;
-}
-.st-item-name {
-  font-size: var(--text-base);
-  font-weight: 500;
-}
-.st-item.is-checked .st-item-name {
-  text-decoration: line-through;
-  color: var(--text-secondary);
-}
-.st-actions {
-  margin-bottom: var(--space-xs);
-}
-.st-actions .btn-primary {
-  width: 100%;
-  min-height: 44px;
-}
-.st-skip-btn {
-  background: none;
-  border: none;
-  color: var(--text-secondary);
-  font-size: var(--text-caption);
-  cursor: pointer;
-  padding: var(--space-xs);
-  width: 100%;
-  text-align: center;
-  display: block;
-}
-.st-skip-btn:active {
-  color: var(--text);
-}
-
 /* ===== REST TIMER V2 ===== */
 .rest-timer {
   position: fixed;
@@ -6263,26 +6097,6 @@ h4,
   line-height: 1.4;
 }
 
-.home-wo-open-btn {
-  min-height: 32px;
-  padding: 0 0.75rem;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #0a0a0a;
-  font-size: 0.7rem;
-  font-weight: 700;
-  letter-spacing: 0.02em;
-  border: 0;
-  cursor: pointer;
-}
-.home-wo-open-btn.is-resume {
-  background: var(--surface-2);
-  color: var(--text);
-  border: 1px solid var(--border);
-}
-.home-wo-open-btn:active {
-  opacity: 0.85;
-}
 .home-wo-menu-btn {
   background: none;
   border: 0;

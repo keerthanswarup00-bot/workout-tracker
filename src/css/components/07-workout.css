@@ -830,7 +830,7 @@
 .ed-set-list {
   display: grid;
   gap: 0.35rem;
-  padding-bottom: 5rem;
+  padding-bottom: calc(var(--bottom-nav-height) + var(--scroll-buffer));
 }
 
 .ed-set-row {
@@ -1023,7 +1023,7 @@
 .el-content {
   display: grid;
   gap: 1rem;
-  padding-bottom: 2rem;
+  padding-bottom: calc(var(--bottom-nav-height) + var(--scroll-buffer));
 }
 
 .el-section {
@@ -1133,7 +1133,7 @@
   display: flex;
   gap: 0.35rem;
   margin-top: 0.75rem;
-  padding-bottom: 5rem;
+  padding-bottom: calc(var(--bottom-nav-height) + var(--scroll-buffer));
 }
 
 .qa-btn {
@@ -1737,13 +1737,13 @@
 
 /* ===== FORM BOTTOM SPACING ===== */
 .ws-exercises {
-  padding-bottom: 1rem;
+  padding-bottom: calc(var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
 }
 .ws-actions {
-  padding-bottom: env(safe-area-inset-bottom, 16px);
+  padding-bottom: calc(var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
 }
 .nw-footer {
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 16px));
+  padding-bottom: calc(var(--bottom-nav-height) + var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
 }
 
 /* ===== WORKOUT DROPDOWN MENU ===== */

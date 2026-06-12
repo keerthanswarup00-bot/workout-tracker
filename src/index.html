@@ -48,14 +48,11 @@
           <!-- Home Dashboard Screen -->
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
-            <div id="homeInsights"></div>
-
             <div class="home-section">
               <div class="home-section-header">
                 <span class="home-section-label">My Workouts</span>
                 <div class="home-section-actions">
                   <button class="home-action-btn" id="homeNewWorkout">+ New</button>
-                  <button class="home-action-btn" id="homeNewGroup">+ Group</button>
                   <button class="home-action-btn" id="homeBuilderBtn">Build</button>
                 </div>
               </div>
@@ -81,14 +78,14 @@
             <div class="nw-footer" id="nwFooter" style="display: none">
               <input
                 type="text"
-                id="nwGroupName"
+                id="nwName"
                 class="modal-input"
                 style="min-height: 44px"
-                placeholder="Name your group..."
+                placeholder="Name your workout..."
                 maxlength="30"
                 autocomplete="off"
               />
-              <button class="btn-primary" id="nwCreateBtn" disabled style="width: 100%; margin-top: 0.5rem">Create Group</button>
+              <button class="btn-primary" id="nwCreateBtn" disabled style="width: 100%; margin-top: 0.5rem">Create Workout</button>
             </div>
           </div>
 
@@ -206,7 +203,7 @@
             </div>
           </div>
 
-          <!-- Level 3C: Edit Set Bottom Sheet -->
+          <!-- Level 3C: Edit Set Bottom Sheet (compact) -->
           <div class="bottom-sheet is-hidden" id="bsEditSet">
             <div class="bottom-sheet-overlay" id="bsEditOverlay"></div>
             <div class="bottom-sheet-card">
@@ -216,50 +213,34 @@
                 <div class="as-ex-name" id="esExName"></div>
 
                 <div class="as-field">
-                  <div class="as-label">Repetitions</div>
-                  <div class="es-rep-row">
-                    <button class="as-btn es-rep-btn" id="esRepsMinus">−</button>
-                    <span class="as-value" id="esRepsValue">10 <span class="as-unit-inline">reps</span></span>
-                    <button class="as-btn es-rep-btn" id="esRepsPlus">+</button>
-                  </div>
-                </div>
-
-                <div class="as-field">
                   <div class="as-label">Weight</div>
-                  <div class="es-weight-rows">
-                    <div class="es-weight-row">
-                      <button class="as-btn es-w-btn" id="esWeightMinus5">−5</button>
-                      <button class="as-btn es-w-btn" id="esWeightMinus2">−2.5</button>
-                      <button class="as-btn es-w-btn" id="esWeightMinus1">−1</button>
+                  <div class="as-number-wrap">
+                    <div class="as-number-input">
+                      <button class="as-btn" id="esWeightMinus5">−5</button>
+                      <button class="as-btn" id="esWeightMinus1">−1</button>
+                      <span class="as-value" id="esWeightValue">0</span>
+                      <button class="as-btn" id="esWeightPlus1">+1</button>
+                      <button class="as-btn" id="esWeightPlus5">+5</button>
                     </div>
-                    <div class="es-weight-val-wrap">
-                      <span class="as-value es-weight-val" id="esWeightValue">0 <span class="as-unit-inline">kg</span></span>
-                    </div>
-                    <div class="es-weight-row">
-                      <button class="as-btn es-w-btn" id="esWeightPlus1">+1</button>
-                      <button class="as-btn es-w-btn" id="esWeightPlus2">+2.5</button>
-                      <button class="as-btn es-w-btn" id="esWeightPlus5">+5</button>
-                    </div>
+                    <span class="as-unit">kg</span>
                   </div>
                 </div>
 
                 <div class="as-field">
-                  <div class="as-label">RPE</div>
-                  <div class="es-rep-row">
-                    <button class="as-btn es-rep-btn" id="esRpeMinus">−</button>
-                    <span class="as-value" id="esRpeValue">—</span>
-                    <button class="as-btn es-rep-btn" id="esRpePlus">+</button>
+                  <div class="as-label">Reps</div>
+                  <div class="as-number-wrap">
+                    <div class="as-number-input">
+                      <button class="as-btn" id="esRepsMinus">−</button>
+                      <span class="as-value" id="esRepsValue">10</span>
+                      <button class="as-btn" id="esRepsPlus">+</button>
+                    </div>
+                    <span class="as-unit">rep</span>
                   </div>
                 </div>
 
-                <div class="as-field">
-                  <div class="as-label">Notes</div>
-                  <input type="text" id="esNoteInput" class="modal-input" placeholder="e.g. slow eccentrics" maxlength="60" autocomplete="off" />
-                </div>
-
-                <div class="es-edit-actions">
-                  <button class="es-edit-del" id="esEditDeleteBtn">Delete</button>
-                  <button class="as-save" id="esCompleteBtn">Complete Set</button>
+                <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
+                  <button class="btn-secondary" id="esEditDeleteBtn" style="flex:1">Delete</button>
+                  <button class="btn-primary" id="esCompleteBtn" style="flex:1">Save</button>
                 </div>
               </div>
             </div>
@@ -353,9 +334,6 @@
                   maxlength="100"
                   autocomplete="off"
                 />
-                <select id="cwGroup" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
-                  <option value="">No group</option>
-                </select>
                 <input
                   type="text"
                   id="cwDuration"
@@ -411,30 +389,6 @@
               <div class="modal-actions">
                 <button class="btn-secondary" id="ewCancel">Cancel</button>
                 <button class="btn-primary" id="ewSaveBtn">Save Changes</button>
-              </div>
-            </div>
-          </div>
-
-          <!-- Create Group Modal -->
-          <div class="modal-overlay is-hidden" id="createGroupModal">
-            <div class="modal-card">
-              <div class="modal-header">
-                <h2>New Workout Group</h2>
-                <button class="modal-close" id="cgClose">✕</button>
-              </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
-                <input
-                  type="text"
-                  id="cgName"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Group name"
-                  maxlength="30"
-                  autocomplete="off"
-                />
-              </div>
-              <div class="modal-actions">
-                <button class="btn-primary" id="cgSaveBtn">Create Group</button>
               </div>
             </div>
           </div>
@@ -746,20 +700,46 @@
       </div>
     </div>
 
-    <!-- POST-WORKOUT COOL DOWN -->
-    <div class="modal-overlay is-hidden" id="stretchTimerModal">
-      <div class="st-card">
-        <div class="st-header">
+    <!-- POST-WORKOUT COOL DOWN INTRO (warm-up style) -->
+    <div class="modal-overlay is-hidden" id="cooldownReminderModal">
+      <div class="modal-card" style="max-width: 380px">
+        <div class="modal-header">
           <h2>🧘 Cool Down</h2>
-          <button class="st-close" id="stCloseBtn">✕</button>
         </div>
-        <div class="st-hint">Hold each stretch for ~30-60s</div>
-        <div class="st-total-timer" id="stTimer">5:00</div>
-        <div class="st-exercise-list" id="stExerciseList"></div>
-        <div class="st-actions">
-          <button class="btn-primary" id="stDoneBtn">✓ Done</button>
+        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem" id="cdWorkoutInfo"></p>
+        <div
+          style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.78rem; line-height: 1.5"
+        >
+          <strong>Benefits</strong><br />
+          • Faster recovery<br />
+          • Reduced soreness<br />
+          • Better mobility<br />
+          • Improved flexibility
         </div>
-        <button class="st-skip-btn" id="stSkipBtn">Skip Cool Down</button>
+        <div id="cdRoutine" style="margin-bottom: 0.75rem">
+          <div style="font-size: 0.72rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem" id="cdRoutineTitle">Cool Down</div>
+          <div id="cdRoutineList" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.25rem"></div>
+        </div>
+        <div class="modal-actions" style="flex-direction: column; gap: 0.4rem">
+          <button class="btn-primary" id="cdStartBtn" style="width: 100%">🧘 Start Cool Down</button>
+          <button class="btn-secondary" id="cdSkipBtn" style="width: 100%">Skip — Back Home</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- COOL DOWN TIMER (warm-up style) -->
+    <div class="modal-overlay is-hidden" id="cooldownTimerModal">
+      <div class="modal-card" style="max-width: 320px; text-align: center">
+        <div class="modal-header" style="justify-content: center">
+          <h2>🧘 Cool Down</h2>
+        </div>
+        <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="ctTimer">05:00</div>
+        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="ctExerciseList"></p>
+        <div class="modal-actions" style="justify-content: center; gap: 0.5rem">
+          <button class="btn-secondary" id="ctPauseBtn">⏸ Pause</button>
+          <button class="btn-secondary" id="ctSkipBtn">⏭ Skip</button>
+          <button class="btn-primary" id="ctFinishBtn">✓ Done</button>
+        </div>
       </div>
     </div>
 
@@ -912,29 +892,6 @@
           <button class="btn-primary" id="warmupGenerateBtn">Generate</button>
         </div>
         <div id="warmupResult" style="margin-top: 0.5rem"></div>
-      </div>
-    </div>
-
-    <!-- CREATE GROUP FROM WORKOUTS MODAL -->
-    <div class="modal-overlay is-hidden" id="workoutPickerModal">
-      <div class="modal-card" style="max-width: 400px">
-        <div class="modal-header">
-          <h2 id="wpTitle">Create Group</h2>
-          <button class="modal-close" id="wpClose">✕</button>
-        </div>
-        <input
-          type="text"
-          id="wpGroupName"
-          class="modal-input"
-          style="min-height: 44px; margin-bottom: 0.75rem"
-          placeholder="Group name"
-          maxlength="30"
-          autocomplete="off"
-        />
-        <div id="wpWorkoutList" style="max-height: 50vh; overflow-y: auto; display: flex; flex-direction: column; gap: 0.35rem"></div>
-        <div class="modal-actions" style="margin-top: 0.75rem">
-          <button class="btn-primary" id="wpCreateBtn" disabled>Create Group</button>
-        </div>
       </div>
     </div>
 

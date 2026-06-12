@@ -40,6 +40,10 @@
   /* === Layout === */
   --sidebar-w: 220px;
 
+  /* === Bottom Nav Safe Area === */
+  --bottom-nav-height: 80px;
+  --scroll-buffer: 60px;
+
   /* === BMI Colors === */
   --bmi-underweight: #3b82f6;
   --bmi-normal: #00d26a;
