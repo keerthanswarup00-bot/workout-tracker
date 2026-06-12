@@ -56,7 +56,7 @@
                 <div class="home-section-actions">
                   <button class="home-action-btn" id="homeNewWorkout">+ New</button>
                   <button class="home-action-btn" id="homeNewGroup">+ Group</button>
-                  <button class="home-action-btn" id="homeBuilderBtn">⚡ Build</button>
+                  <button class="home-action-btn" id="homeBuilderBtn">Build</button>
                 </div>
               </div>
               <div id="homeWorkoutList" class="home-workout-list"></div>
@@ -243,9 +243,23 @@
                   </div>
                 </div>
 
+                <div class="as-field">
+                  <div class="as-label">RPE</div>
+                  <div class="es-rep-row">
+                    <button class="as-btn es-rep-btn" id="esRpeMinus">−</button>
+                    <span class="as-value" id="esRpeValue">—</span>
+                    <button class="as-btn es-rep-btn" id="esRpePlus">+</button>
+                  </div>
+                </div>
+
+                <div class="as-field">
+                  <div class="as-label">Notes</div>
+                  <input type="text" id="esNoteInput" class="modal-input" placeholder="e.g. slow eccentrics" maxlength="60" autocomplete="off" />
+                </div>
+
                 <div class="es-edit-actions">
                   <button class="es-edit-del" id="esEditDeleteBtn">Delete</button>
-                  <button class="as-save" id="esCompleteBtn">✓ Complete Set</button>
+                  <button class="as-save" id="esCompleteBtn">Complete Set</button>
                 </div>
               </div>
             </div>
@@ -363,6 +377,40 @@
               </div>
               <div class="modal-actions">
                 <button class="btn-primary" id="cwSaveBtn">Create Workout</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- Edit Workout Modal -->
+          <div class="modal-overlay is-hidden" id="editWorkoutModal">
+            <div class="modal-card">
+              <div class="modal-header">
+                <h2>Edit Workout</h2>
+                <button class="modal-close" id="ewClose">✕</button>
+              </div>
+              <div style="display: flex; flex-direction: column; gap: 0.6rem">
+                <input
+                  type="text"
+                  id="ewName"
+                  class="modal-input"
+                  style="min-height: 44px; resize: none"
+                  placeholder="Workout name"
+                  maxlength="40"
+                  autocomplete="off"
+                />
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                  <span class="section-label" style="margin:0">Exercises</span>
+                  <button class="btn-secondary" id="ewAddExercise" style="font-size:0.72rem;min-height:30px;padding:0 0.65rem">+ Add</button>
+                </div>
+                <div id="ewExerciseList" class="edit-ex-list"></div>
+                <div id="ewAddPicker" class="is-hidden" style="display:none;flex-direction:column;gap:0.4rem;padding:0.5rem;background:var(--surface-2);border-radius:var(--radius-sm)">
+                  <input type="text" id="ewSearch" class="modal-input" style="min-height:36px;font-size:0.82rem;resize:none" placeholder="Search exercise..." autocomplete="off" />
+                  <div id="ewSearchResults" style="display:flex;flex-direction:column;gap:0.2rem;max-height:200px;overflow-y:auto"></div>
+                </div>
+              </div>
+              <div class="modal-actions">
+                <button class="btn-secondary" id="ewCancel">Cancel</button>
+                <button class="btn-primary" id="ewSaveBtn">Save Changes</button>
               </div>
             </div>
           </div>
@@ -914,7 +962,7 @@
         <div class="bottom-sheet-body">
           <div class="as-title">Log Today's Weight</div>
           <div style="padding:1rem 0">
-            <input type="number" id="wlWeight" class="wl-input" placeholder="71" inputmode="decimal" step="0.1" min="20" max="500" autofocus />
+            <input type="number" id="wlSheetWeight" class="wl-input" placeholder="71" inputmode="decimal" step="0.1" min="20" max="500" autofocus />
           </div>
           <div style="display:flex;gap:0.75rem">
             <button class="btn-secondary" id="wlCancel" style="flex:1">Cancel</button>

@@ -234,20 +234,18 @@
   font-weight: 500;
 }
 
-/* ===== HOME METRICS CARD ===== */
-.home-metrics-card {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: var(--space-sm);
+/* ===== HOME INSIGHTS ===== */
+.home-insights {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem 0;
 }
-.home-metrics-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: var(--space-xs);
-}
-.home-metrics-item {
-  text-align: center;
+.insight-item {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  line-height: 1.4;
 }
 
 /* ===== HOME SCREEN COACH CARDS ===== */

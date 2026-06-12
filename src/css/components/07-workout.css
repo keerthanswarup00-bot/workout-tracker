@@ -1093,6 +1093,21 @@
   color: var(--yellow);
 }
 
+.el-ex-edit,
+.el-ex-del {
+  width: 36px;
+  height: 30px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  flex-shrink: 0;
+  border: none;
+  background: var(--surface-2);
+  color: var(--text-secondary);
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+}
+.el-ex-del { color: var(--red); }
+
 .el-ex-add {
   width: 30px;
   height: 30px;

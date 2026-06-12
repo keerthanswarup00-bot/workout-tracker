@@ -21,6 +21,18 @@
   color: var(--text);
 }
 
+.cal-streak-row {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+}
+.cal-streak-item strong {
+  font-weight: 800;
+  color: var(--text);
+}
+
 .cal-nav {
   display: flex;
   gap: 0.25rem;
@@ -86,20 +98,6 @@
   background: #00e676;
   color: #0a0a0a;
   font-weight: 700;
-}
-
-.cal-cell.cal-pr-day {
-  background: var(--accent);
-  color: #0a0a0a;
-  font-weight: 700;
-}
-
-.cal-cell.cal-pr-day::after {
-  content: "🏆";
-  position: absolute;
-  top: -2px;
-  right: -2px;
-  font-size: 0.45rem;
 }
 
 .cal-cell.cal-today {
