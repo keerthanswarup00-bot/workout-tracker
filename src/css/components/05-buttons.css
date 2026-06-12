@@ -87,12 +87,19 @@
   transform: translateX(-50%);
   display: flex;
   align-items: center;
-  background: var(--surface-2);
+  background: color-mix(in srgb, var(--surface-2) 85%, transparent);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
   border-radius: 999px;
   padding: 6px;
   border: 1px solid var(--border);
   z-index: 100;
   width: min(360px, calc(100vw - 32px));
+}
+.focus-mode .bottom-nav,
+.bottom-nav.is-locked {
+  opacity: 0.3;
+  pointer-events: none;
 }
 
 .nav-indicator {
@@ -154,6 +161,22 @@
 .nav-tab:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
+}
+
+/* ===== ADAPTIVE NAV (compact on scroll) ===== */
+.nav-tab span {
+  transition: opacity 0.2s, max-height 0.2s, margin 0.2s;
+  max-height: 2em;
+  overflow: hidden;
+}
+.nav-is-compact .nav-tab {
+  padding-top: 6px;
+  padding-bottom: 6px;
+}
+.nav-is-compact .nav-tab span {
+  max-height: 0;
+  opacity: 0;
+  margin: 0;
 }
 
 /* ===== TOPBAR ICON BUTTON ===== */

@@ -459,3 +459,232 @@
 .home-wo-card {
   position: relative;
 }
+
+/* ===== FAB ===== */
+.fab {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom) + 5rem);
+  right: 1.25rem;
+  width: 3.25rem;
+  height: 3.25rem;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  font-size: 1.6rem;
+  font-weight: 300;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  cursor: pointer;
+  z-index: 50;
+  transition: transform 0.2s, opacity 0.2s;
+}
+.fab:active {
+  transform: scale(0.92);
+}
+.fab.is-hidden {
+  opacity: 0;
+  pointer-events: none;
+}
+
+/* ===== WORKOUT CARD ITEMS ===== */
+.wo-card-item {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  padding: 0.75rem 0.85rem;
+  background: var(--surface);
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  margin-bottom: 0.4rem;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.wo-card-item:active {
+  background: var(--surface-2);
+}
+.wo-card-item.is-active {
+  border-color: var(--accent);
+  background: linear-gradient(135deg, color-mix(in srgb, var(--accent) 6%, var(--surface)), var(--surface));
+}
+.wo-card-item-row1 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.wo-card-item-name {
+  flex: 1;
+  min-width: 0;
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.wo-card-item-badge {
+  font-size: 0.55rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 0.15rem 0.45rem;
+  border-radius: 99px;
+  background: var(--accent);
+  color: #fff;
+}
+.wo-card-item-badge.is-idle {
+  background: var(--surface-2);
+  color: var(--text-secondary);
+}
+.wo-card-item-row2 {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  justify-content: space-between;
+}
+.wo-card-item-meta {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+}
+.wo-card-item-btn {
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 0.3rem 0.85rem;
+  border-radius: 99px;
+  border: none;
+  cursor: pointer;
+  background: var(--accent);
+  color: #fff;
+  flex-shrink: 0;
+  transition: opacity 0.15s;
+}
+.wo-card-item-btn:active {
+  opacity: 0.7;
+}
+.wo-card-item-btn.is-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+}
+.wo-card-item-menu {
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  cursor: pointer;
+  padding: 0.15rem 0.3rem;
+  letter-spacing: 1px;
+  flex-shrink: 0;
+}
+
+/* ===== EMPTY STATE ===== */
+.empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 2.5rem 1.5rem;
+  text-align: center;
+}
+.empty-state-icon {
+  font-size: 2.5rem;
+  opacity: 0.4;
+}
+.empty-state-text {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+.empty-state-btn {
+  margin-top: 0.5rem;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 0.45rem 1.2rem;
+  border-radius: 99px;
+  border: none;
+  background: var(--accent);
+  color: #fff;
+  cursor: pointer;
+}
+
+/* ===== WORKOUT DETAILS SHEET ===== */
+.wo-details-exercise {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.55rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.8rem;
+}
+.wo-details-exercise:last-child {
+  border-bottom: none;
+}
+.wo-details-ex-name {
+  font-weight: 600;
+  color: var(--text);
+}
+.wo-details-ex-meta {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+}
+
+/* ===== START CONFIRMATION OVERLAY ===== */
+.confirm-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.5);
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1rem;
+}
+.confirm-card {
+  background: var(--surface);
+  border-radius: var(--radius);
+  padding: 1.25rem;
+  max-width: 320px;
+  width: 100%;
+}
+.confirm-title {
+  font-size: 1rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+}
+.confirm-text {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 1rem;
+  line-height: 1.5;
+}
+.confirm-actions {
+  display: flex;
+  gap: 0.5rem;
+  justify-content: flex-end;
+}
+
+/* ===== PREMIUM MOTION POLISH ===== */
+.wo-card-item {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s;
+}
+.wo-card-item:active {
+  transform: scale(0.98);
+}
+.fab {
+  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
+}
+.fab:hover {
+  transform: scale(1.05);
+  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
+}
+.wo-card-item-btn {
+  transition: opacity 0.15s, transform 0.15s;
+}
+.wo-card-item-btn:active {
+  transform: scale(0.95);
+}
+.confirm-card {
+  animation: confirmIn 0.2s ease;
+}
+@keyframes confirmIn {
+  from { opacity: 0; transform: scale(0.92); }
+  to { opacity: 1; transform: scale(1); }
+}

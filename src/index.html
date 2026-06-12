@@ -49,13 +49,6 @@
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
             <div class="home-section">
-              <div class="home-section-header">
-                <span class="home-section-label">My Workouts</span>
-                <div class="home-section-actions">
-                  <button class="home-action-btn" id="homeNewWorkout">+ New</button>
-                  <button class="home-action-btn" id="homeBuilderBtn">Build</button>
-                </div>
-              </div>
               <div id="homeWorkoutList" class="home-workout-list"></div>
             </div>
 
@@ -64,6 +57,19 @@
                 <span class="home-section-label">Recent Workouts</span>
               </div>
               <div id="homeRecentList"></div>
+            </div>
+          </div>
+
+          <!-- Workout Details Screen -->
+          <div id="screen-wo-details" class="screen is-hidden">
+            <div class="nw-header">
+              <button class="btn-back" id="woDetailsBackBtn">←</button>
+              <span style="flex: 1; font-weight: 700; font-size: 0.9rem" id="woDetailsTitle">Workout</span>
+              <button class="btn-back" id="woDetailsMenuBtn" style="position:static">•••</button>
+            </div>
+            <div style="padding: 0.75rem;overflow-y:auto">
+              <div id="woDetailsBody"></div>
+              <button class="btn-primary" id="woDetailsStartBtn" style="width:100%;margin-top:0.75rem">Start Workout</button>
             </div>
           </div>
 
@@ -582,7 +588,9 @@
       </button>
       <button class="nav-tab" data-tab="body">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
+          <circle cx="12" cy="5" r="3" />
+          <path d="M5 21c0-3.866 3.134-7 7-7s7 3.134 7 7" />
+          <path d="M7 10c0-2.76 2.24-5 5-5s5 2.24 5 5" />
         </svg>
         <span>Body</span>
       </button>
@@ -615,6 +623,22 @@
           <button class="rt-chip" id="rtAdd30">+30s</button>
           <button class="rt-chip" id="rtReset">Reset</button>
           <button class="rt-chip" id="rtSkip">Skip</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- FLOATING ACTION BUTTON -->
+    <button class="fab" id="fabBtn" aria-label="Add">+</button>
+
+    <!-- FAB MENU BOTTOM SHEET -->
+    <div class="bottom-sheet is-hidden" id="fabMenuSheet">
+      <div class="bottom-sheet-overlay" id="fabOverlay"></div>
+      <div class="bottom-sheet-card" style="max-width:360px">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-body">
+          <div class="as-title">Create</div>
+          <div class="wa-list" id="fabMenuList"></div>
+          <button class="btn-secondary" id="fabCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
         </div>
       </div>
     </div>
