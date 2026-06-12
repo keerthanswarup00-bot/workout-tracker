@@ -49,6 +49,10 @@
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
             <div class="home-section">
+              <div class="home-section-header">
+                <span class="home-section-label">My Workouts</span>
+                <button class="home-action-btn" id="homeNewWorkout">+ New</button>
+              </div>
               <div id="homeWorkoutList" class="home-workout-list"></div>
             </div>
 
@@ -79,11 +83,13 @@
               <button class="btn-back" id="nwBackBtn">←</button>
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
             </div>
-            <div class="nw-counter" id="nwCounter">0 exercises selected</div>
-            <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
-            <div class="nw-filter-bar" id="nwFilterBar"></div>
-            <div class="nw-list" id="nwList"></div>
-            <div class="nw-footer" id="nwFooter" style="display: none">
+            <div class="nw-scroll">
+              <div class="nw-counter" id="nwCounter">0 exercises selected</div>
+              <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
+              <div class="nw-filter-bar" id="nwFilterBar"></div>
+              <div class="nw-list" id="nwList"></div>
+            </div>
+            <div class="nw-sticky-footer" id="nwFooter">
               <input
                 type="text"
                 id="nwName"
@@ -627,19 +633,61 @@
       </div>
     </div>
 
-    <!-- FLOATING ACTION BUTTON -->
-    <button class="fab" id="fabBtn" aria-label="Add">+</button>
-
-    <!-- FAB MENU BOTTOM SHEET -->
-    <div class="bottom-sheet is-hidden" id="fabMenuSheet">
-      <div class="bottom-sheet-overlay" id="fabOverlay"></div>
+    <!-- NEW WORKOUT BOTTOM SHEET -->
+    <div class="bottom-sheet is-hidden" id="newWoSheet">
+      <div class="bottom-sheet-overlay" id="newWoOverlay"></div>
       <div class="bottom-sheet-card" style="max-width:360px">
         <div class="bottom-sheet-handle"></div>
         <div class="bottom-sheet-body">
-          <div class="as-title">Create</div>
-          <div class="wa-list" id="fabMenuList"></div>
-          <button class="btn-secondary" id="fabCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
+          <button class="new-wo-option primary" id="newWoBuild">
+            <span class="new-wo-option-title">Build Workout</span>
+            <span class="new-wo-option-desc">Create a workout manually by selecting exercises</span>
+          </button>
+          <button class="new-wo-option" id="newWoGenerate">
+            <span class="new-wo-option-title">Generate Workout</span>
+            <span class="new-wo-option-desc">Let the system build a workout automatically</span>
+          </button>
+          <button class="btn-secondary" id="newWoCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
         </div>
+      </div>
+    </div>
+
+    <!-- GENERATE WORKOUT MODAL -->
+    <div class="modal-overlay is-hidden" id="generateModal">
+      <div class="modal-card gm-card">
+        <div class="gm-header">Generate Workout</div>
+        <div class="gm-section">
+          <div class="gm-label">Goal</div>
+          <div class="gm-options" id="gmGoal">
+            <button class="gm-chip" data-value="Strength">Strength</button>
+            <button class="gm-chip" data-value="Muscle Gain">Muscle Gain</button>
+            <button class="gm-chip" data-value="Fat Loss">Fat Loss</button>
+            <button class="gm-chip" data-value="Endurance">Endurance</button>
+            <button class="gm-chip" data-value="General Fitness">General Fitness</button>
+          </div>
+        </div>
+        <div class="gm-section">
+          <div class="gm-label">Workout Split</div>
+          <div class="gm-options" id="gmSplit">
+            <button class="gm-chip" data-value="Push">Push</button>
+            <button class="gm-chip" data-value="Pull">Pull</button>
+            <button class="gm-chip" data-value="Legs">Legs</button>
+            <button class="gm-chip" data-value="Upper">Upper</button>
+            <button class="gm-chip" data-value="Lower">Lower</button>
+            <button class="gm-chip" data-value="Full Body">Full Body</button>
+          </div>
+        </div>
+        <div class="gm-section">
+          <div class="gm-label">Experience</div>
+          <div class="gm-options" id="gmExp">
+            <button class="gm-chip" data-value="Beginner">Beginner</button>
+            <button class="gm-chip" data-value="Intermediate">Intermediate</button>
+            <button class="gm-chip" data-value="Advanced">Advanced</button>
+          </div>
+        </div>
+        <button class="btn-primary" id="gmGenerateBtn" disabled style="width:100%">Generate Workout</button>
+        <button class="btn-secondary" id="gmCancelBtn" style="width:100%;margin-top:0.4rem">Cancel</button>
+        <div id="gmResult" style="margin-top:0.75rem"></div>
       </div>
     </div>
 

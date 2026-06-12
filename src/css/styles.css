@@ -2738,6 +2738,7 @@ textarea:focus {
   display: flex;
   flex-direction: column;
   height: 100%;
+  overflow: hidden;
 }
 .nw-header {
   display: flex;
@@ -7137,33 +7138,140 @@ h4,
   font-weight: 600;
 }
 
-/* ===== FAB ===== */
-.fab {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom) + 5rem);
-  right: 1.25rem;
-  width: 3.25rem;
-  height: 3.25rem;
-  border-radius: 50%;
+/* ===== NEW WORKOUT BOTTOM SHEET ===== */
+.new-wo-option {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.2rem;
+  width: 100%;
+  padding: 1rem;
+  border: none;
+  border-radius: var(--radius);
+  background: var(--surface-2);
+  color: var(--text);
+  cursor: pointer;
+  text-align: left;
+  margin-bottom: 0.4rem;
+  -webkit-tap-highlight-color: transparent;
+}
+.new-wo-option:active {
+  background: var(--surface-3);
+}
+.new-wo-option.primary {
   background: var(--accent);
   color: #fff;
-  border: none;
-  font-size: 1.6rem;
-  font-weight: 300;
+}
+.new-wo-option.primary:active {
+  opacity: 0.85;
+}
+.new-wo-option-title {
+  font-size: 1rem;
+  font-weight: 700;
+}
+.new-wo-option-desc {
+  font-size: 0.72rem;
+  opacity: 0.7;
+}
+.new-wo-option.primary .new-wo-option-desc {
+  opacity: 0.8;
+}
+/* ===== GENERATE WORKOUT MODAL ===== */
+.gm-card {
+  max-width: 400px;
+  max-height: 90vh;
+  overflow-y: auto;
+  padding: 1.25rem;
+}
+.gm-header {
+  font-size: 1.1rem;
+  font-weight: 800;
+  margin-bottom: 1rem;
+}
+.gm-section {
+  margin-bottom: 1rem;
+}
+.gm-label {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.4rem;
+}
+.gm-options {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 4px 16px rgba(0,0,0,0.3);
+  flex-wrap: wrap;
+  gap: 0.35rem;
+}
+.gm-chip {
+  padding: 0.4rem 0.75rem;
+  border-radius: 99px;
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.78rem;
+  font-weight: 600;
   cursor: pointer;
-  z-index: 50;
-  transition: transform 0.2s, opacity 0.2s;
+  -webkit-tap-highlight-color: transparent;
+  transition: background 0.15s, border-color 0.15s;
 }
-.fab:active {
-  transform: scale(0.92);
+.gm-chip.is-active {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
 }
-.fab.is-hidden {
-  opacity: 0;
-  pointer-events: none;
+.gm-chip:active {
+  opacity: 0.7;
+}
+.gm-ex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  border-bottom: 1px solid var(--border);
+  font-size: 0.85rem;
+}
+.gm-ex:last-child {
+  border-bottom: none;
+}
+.gm-ex-meta {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+/* ===== STICKY FOOTER FOR BUILDER ===== */
+.nw-scroll {
+  flex: 1;
+  overflow-y: auto;
+  padding: 0.75rem;
+  padding-bottom: 0;
+}
+.nw-sticky-footer {
+  padding: 0.75rem;
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 8px));
+  border-top: 1px solid var(--border);
+  background: var(--surface);
+  flex-shrink: 0;
+}
+/* ===== EMPTY STATE ===== */
+.empty-state-icon {
+  font-size: 3rem;
+  margin-bottom: 0.25rem;
+}
+.empty-state-title {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+.empty-state-text {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 260px;
+}
+.empty-state-btn.secondary {
+  background: var(--surface-2);
+  color: var(--text);
 }
 /* ===== WORKOUT CARD ITEMS ===== */
 .wo-card-item {
@@ -7340,13 +7448,6 @@ h4,
 }
 .wo-card-item:active {
   transform: scale(0.98);
-}
-.fab {
-  transition: transform 0.2s ease, box-shadow 0.2s ease, opacity 0.2s;
-}
-.fab:hover {
-  transform: scale(1.05);
-  box-shadow: 0 6px 20px rgba(0,0,0,0.35);
 }
 .wo-card-item-btn {
   transition: opacity 0.15s, transform 0.15s;

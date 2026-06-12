@@ -104,214 +104,7 @@ const curatedFoods = [
   { name: "Custom Entry", protein: 0, carbs: 0, fat: 0, cal: 0, unit: "", qty: 1, step: 1, min: 1, max: 1 },
 ];
 
-const plan = [
-  {
-    id: "push-heavy",
-    name: "Push (Heavy)",
-    focus: "Heavy pressing with focused triceps and lateral delt work.",
-    day: "Day 1",
-    duration: "75-80 min",
-    rest: "3-4 min on big presses, 60 sec between triceps superset pairs.",
-    exercises: [
-      {
-        name: "Flat Barbell Bench Press",
-        sets: 4,
-        reps: 6,
-        repTarget: "4-6",
-        weight: "",
-        priority: true,
-        tip: "Scapula retracted, slight arch, feet flat, 3 sec negative.",
-      },
-      { name: "Incline Dumbbell Press", sets: 3, reps: 8, repTarget: "6-8", weight: "", tip: "Use a 30 degree incline, pause in the bottom stretch." },
-      { name: "Landmine Press", sets: 3, reps: 8, repTarget: "8", weight: "", tip: "Shoulder-safe press, one arm at a time, drive through heel of palm." },
-      { name: "Cable Lateral Raise", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Low pulley behind body, lead with elbow, use full range." },
-      {
-        name: "Cable Overhead Tricep Extension",
-        sets: 3,
-        reps: 10,
-        repTarget: "10",
-        weight: "",
-        superset: "Pair with rope pushdown.",
-        tip: "Full long-head stretch at the top, 3 sec negative.",
-      },
-      {
-        name: "Tricep Rope Pushdown",
-        sets: 3,
-        reps: 12,
-        repTarget: "12",
-        weight: "",
-        superset: "Pair with overhead extension.",
-        tip: "Elbows pinned, full lockout, 60 sec rest after the pair.",
-      },
-    ],
-  },
-  {
-    id: "pull-heavy",
-    name: "Pull (Heavy)",
-    focus: "Heavy deadlift and vertical pull work with rear delt volume.",
-    day: "Day 2",
-    duration: "80-85 min",
-    rest: "3-4 min on deadlift and heavy pulls.",
-    exercises: [
-      {
-        name: "Conventional Deadlift",
-        sets: 4,
-        reps: 5,
-        repTarget: "3-5",
-        weight: "",
-        priority: true,
-        tip: "First exercise. Brace 360, lats engaged, drive the floor away.",
-      },
-      {
-        name: "Weighted Pull-Up / Lat Pulldown",
-        sets: 4,
-        reps: 6,
-        repTarget: "4-6",
-        weight: "",
-        priority: true,
-        tip: "Pull elbows to hips, 3 sec negative, lat width is priority.",
-      },
-      { name: "Chest-Supported Dumbbell Row", sets: 3, reps: 10, repTarget: "8-10", weight: "", tip: "Bench at 30 degrees, drive elbows past torso." },
-      {
-        name: "Face Pulls",
-        sets: 4,
-        reps: 15,
-        repTarget: "15",
-        weight: "",
-        priority: true,
-        tip: "Every pull session. Rope to forehead with external rotation.",
-      },
-      { name: "Incline Dumbbell Curl", sets: 3, reps: 10, repTarget: "8-10", weight: "", tip: "Full stretch at bottom, slow negative." },
-      {
-        name: "Farmer's Carry",
-        sets: 3,
-        reps: 1,
-        repTarget: "20-30m length",
-        weight: "",
-        priority: true,
-        tip: "Heaviest dumbbells, locked wrists, grip and forearm finisher.",
-      },
-    ],
-  },
-  {
-    id: "legs-quad",
-    name: "Legs (Quad Focus)",
-    focus: "Quad-biased squatting and leg press with hamstring support.",
-    day: "Day 3",
-    duration: "75-80 min",
-    rest: "3-4 min on box squat, controlled tempo on accessories.",
-    exercises: [
-      {
-        name: "Box Squat to Parallel",
-        sets: 4,
-        reps: 6,
-        repTarget: "4-6",
-        weight: "",
-        priority: true,
-        tip: "To bench only, not below parallel until knee is pain-free 4+ weeks.",
-      },
-      { name: "Romanian Deadlift", sets: 3, reps: 10, repTarget: "10", weight: "", tip: "Lighter than Pull A, hamstring stretch, 1 sec pause." },
-      { name: "Leg Press (Feet High)", sets: 3, reps: 12, repTarget: "10-12", weight: "", tip: "High foot placement, do not lock out at top." },
-      { name: "Seated Leg Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Slow negative, full stretch at bottom." },
-      { name: "Standing Calf Raise", sets: 4, reps: 20, repTarget: "20", weight: "", tip: "Full range, 2 sec stretch pause, 4 sec negative." },
-    ],
-  },
-  {
-    id: "push-volume",
-    name: "Push (Volume)",
-    focus: "Higher-rep pressing volume with shoulder and triceps finishers.",
-    day: "Day 4",
-    duration: "80-85 min",
-    rest: "60-90 sec on isolations, 60 sec between triceps superset pairs.",
-    exercises: [
-      {
-        name: "Flat Barbell Bench Press",
-        sets: 4,
-        reps: 10,
-        repTarget: "8-10",
-        weight: "",
-        priority: true,
-        tip: "Same movement as A day, more reps, harder negative.",
-      },
-      { name: "Incline Dumbbell Press", sets: 3, reps: 12, repTarget: "10-12", weight: "", tip: "Pause at bottom stretch 1 sec." },
-      { name: "Cable Lateral Raise", sets: 4, reps: 15, repTarget: "15", weight: "", tip: "Constant tension, 3 sec negative, burn them out." },
-      {
-        name: "Seated Dumbbell Shoulder Press",
-        sets: 3,
-        reps: 12,
-        repTarget: "12",
-        weight: "",
-        tip: "Neutral grip, elbows slightly in front for shoulder safety.",
-      },
-      {
-        name: "Cable Overhead Tricep Extension",
-        sets: 3,
-        reps: 15,
-        repTarget: "12-15",
-        weight: "",
-        superset: "Pair with rope pushdown.",
-        tip: "Higher-rep long-head triceps work.",
-      },
-      {
-        name: "Tricep Rope Pushdown",
-        sets: 3,
-        reps: 15,
-        repTarget: "15",
-        weight: "",
-        superset: "Pair with overhead extension.",
-        tip: "Elbows pinned, chase the pump.",
-      },
-    ],
-  },
-  {
-    id: "pull-volume",
-    name: "Pull (Volume)",
-    focus: "Back volume, traps, rear delts, and layered biceps work.",
-    day: "Day 5",
-    duration: "85-90 min",
-    rest: "60-90 sec on volume pulls and arms.",
-    exercises: [
-      {
-        name: "Lat Pulldown / Pull-Up",
-        sets: 4,
-        reps: 10,
-        repTarget: "8-10",
-        weight: "",
-        priority: true,
-        tip: "Full range, 3 sec negative, squeeze at bottom.",
-      },
-      { name: "Seated Cable Row", sets: 4, reps: 12, repTarget: "12", weight: "", tip: "Narrow grip, hard squeeze at end range." },
-      { name: "Face Pulls", sets: 4, reps: 15, repTarget: "15", weight: "", priority: true, tip: "Shoulder health. Light and controlled." },
-      { name: "Barbell Shrug", sets: 4, reps: 12, repTarget: "12", weight: "", priority: true, tip: "Straight up, hold 1 sec, straight down. Never roll." },
-      { name: "Hammer Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Brachialis and arm thickness, no swinging." },
-      { name: "Incline Dumbbell Curl", sets: 3, reps: 12, repTarget: "12", weight: "", tip: "Extra arm volume, full stretch, slow negative." },
-      { name: "Reverse Curl", sets: 3, reps: 15, repTarget: "15", weight: "", tip: "Overhand grip, brachioradialis and forearm extensor finisher." },
-    ],
-  },
-  {
-    id: "legs-hamstring",
-    name: "Legs (Hamstring Focus)",
-    focus: "Heavy hinge work with hamstring volume and lighter squat practice.",
-    day: "Day 6",
-    duration: "75-80 min",
-    rest: "3-4 min on heavy RDL, controlled tempo on hamstring work.",
-    exercises: [
-      {
-        name: "Romanian Deadlift (Heavy)",
-        sets: 4,
-        reps: 8,
-        repTarget: "6-8",
-        weight: "",
-        priority: true,
-        tip: "Primary movement today, heavier than Wednesday.",
-      },
-      { name: "Leg Press (Feet High)", sets: 4, reps: 15, repTarget: "12-15", weight: "", tip: "Pause at bottom for glute stretch." },
-      { name: "Seated Leg Curl", sets: 4, reps: 12, repTarget: "10-12", weight: "", tip: "Heavier than Wednesday, 4 sec negative." },
-      { name: "Box Squat (Light)", sets: 3, reps: 10, repTarget: "10", weight: "", tip: "Volume-focused second squat exposure." },
-      { name: "Standing Calf Raise", sets: 4, reps: 20, repTarget: "20", weight: "", tip: "Full range, 2 sec stretch pause, 4 sec negative." },
-    ],
-  },
-];
+const plan = [];
 
 const EXERCISE_LIBRARY = [
   // CHEST
@@ -2069,7 +1862,6 @@ function showScreen(screenId) {
   } else {
     nav.classList.remove("is-locked");
   }
-  updateFabVisibility();
 }
 
 // ===== HOME DASHBOARD =====
@@ -2128,13 +1920,14 @@ function renderHome() {
   if (!sorted.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">+</div>
-        <div class="empty-state-text">No workouts yet. Create your first workout to get started.</div>
+        <div class="empty-state-icon">💪</div>
+        <div class="empty-state-title">Create Your First Workout</div>
+        <div class="empty-state-text">Build a workout manually or generate one automatically.</div>
         <button class="empty-state-btn" id="emptyStateBuildBtn">Build Workout</button>
+        <button class="empty-state-btn secondary" id="emptyStateGenerateBtn">Generate Workout</button>
       </div>`;
-    document.getElementById("emptyStateBuildBtn")?.addEventListener("click", () => {
-      document.getElementById("fabBtn").click();
-    });
+    document.getElementById("emptyStateBuildBtn")?.addEventListener("click", showNewWorkoutBuilder);
+    document.getElementById("emptyStateGenerateBtn")?.addEventListener("click", openGenerateWorkout);
   } else {
     container.innerHTML = sorted.map((w) => renderWorkoutCardItem(w, todaySession)).join("");
   }
@@ -2196,7 +1989,6 @@ function renderHome() {
   }
 
   renderRecentWorkouts();
-  updateFabVisibility();
 }
 
 function renderWorkoutCardItem(workout, todaySession) {
@@ -2270,49 +2062,8 @@ function renderRecentWorkouts() {
   });
 }
 
-// ===== FAB =====
-function updateFabVisibility() {
-  const fab = document.getElementById("fabBtn");
-  const showingHome = document.getElementById("screen-home") && !document.getElementById("screen-home").classList.contains("is-hidden");
-  const workoutActive = !!getTodaySession();
-  if (showingHome && !workoutActive) {
-    fab.classList.remove("is-hidden");
-  } else {
-    fab.classList.add("is-hidden");
-  }
-}
 
-document.getElementById("fabBtn")?.addEventListener("click", () => {
-  const list = document.getElementById("fabMenuList");
-  const actions = [
-    { label: "New Workout", action: "new-workout", icon: "+" },
-    { label: "Build Custom", action: "open-builder", icon: "→" },
-  ];
-  list.innerHTML = actions
-    .map(
-      (a) =>
-        `<button class="wa-item" data-action="${a.action}"><span class="wa-item-icon">${a.icon}</span>${a.label}</button>`
-    )
-    .join("");
-  document.getElementById("fabMenuSheet").classList.remove("is-hidden");
-});
 
-document.getElementById("fabOverlay")?.addEventListener("click", () => {
-  document.getElementById("fabMenuSheet").classList.add("is-hidden");
-});
-document.getElementById("fabCancel")?.addEventListener("click", () => {
-  document.getElementById("fabMenuSheet").classList.add("is-hidden");
-});
-document.getElementById("fabMenuList")?.addEventListener("click", (e) => {
-  const btn = e.target.closest(".wa-item");
-  if (!btn) return;
-  document.getElementById("fabMenuSheet").classList.add("is-hidden");
-  if (btn.dataset.action === "new-workout") {
-    openNewWorkout();
-  } else if (btn.dataset.action === "open-builder") {
-    openWorkoutBuilder();
-  }
-});
 
 // ===== START / CONTINUE WORKOUT =====
 function handleStartWorkout(workoutId) {
@@ -2611,7 +2362,7 @@ function renderWorkoutSession() {
     if (!session) return;
     stopStopwatch();
     session.finishedAt = new Date().toISOString();
-    state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+    state.planOffset = ((state.planOffset + 1) % ((loadCustomProgram() || plan).length || 1));
     currentWorkoutId = null;
     const todayPRs = getTodayPRs(session.dateKey || getDateKey());
     saveAndRender();
@@ -3149,7 +2900,7 @@ function triggerWorkoutComplete() {
   }
   stopStopwatch();
   session.finishedAt = new Date().toISOString();
-  state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  state.planOffset = ((state.planOffset + 1) % ((loadCustomProgram() || plan).length || 1));
   currentWorkoutId = null;
   saveAndRender();
   const todayPRs = getTodayPRs(session.dateKey || getDateKey());
@@ -3163,7 +2914,7 @@ function finishWorkout() {
   if (completion.done === 0) return;
   stopStopwatch();
   session.finishedAt = new Date().toISOString();
-  state.planOffset = (state.planOffset + 1) % (loadCustomProgram() || plan).length;
+  state.planOffset = ((state.planOffset + 1) % ((loadCustomProgram() || plan).length || 1));
   currentWorkoutId = null;
   saveAndRender();
   const todayPRs = getTodayPRs(session.dateKey || getDateKey());
@@ -5645,18 +5396,24 @@ document.getElementById("customExSave").addEventListener("click", saveCustomExer
 document.getElementById("wsAddExBtn").addEventListener("click", openExerciseLibrary);
 
 // ===== EVENT LISTENERS: HOME =====
-function openNewWorkout() {
+document.getElementById("homeNewWorkout")?.addEventListener("click", () => {
+  document.getElementById("newWoSheet").classList.remove("is-hidden");
+});
+
+document.getElementById("newWoOverlay")?.addEventListener("click", () => {
+  document.getElementById("newWoSheet").classList.add("is-hidden");
+});
+document.getElementById("newWoCancel")?.addEventListener("click", () => {
+  document.getElementById("newWoSheet").classList.add("is-hidden");
+});
+document.getElementById("newWoBuild")?.addEventListener("click", () => {
+  document.getElementById("newWoSheet").classList.add("is-hidden");
   showNewWorkoutBuilder();
-}
-function openWorkoutBuilder() {
-  document.getElementById("builderGoal").value = "";
-  document.getElementById("builderDays").value = "";
-  document.getElementById("builderEquipment").value = "";
-  document.getElementById("builderDuration").value = "";
-  document.getElementById("builderResult").innerHTML = "";
-  document.getElementById("builderGenerateBtn").disabled = true;
-  document.getElementById("builderModal").classList.remove("is-hidden");
-}
+});
+document.getElementById("newWoGenerate")?.addEventListener("click", () => {
+  document.getElementById("newWoSheet").classList.add("is-hidden");
+  openGenerateWorkout();
+});
 
 
 
@@ -5667,7 +5424,6 @@ let nwActiveFilters = [];
 function showNewWorkoutBuilder() {
   document.getElementById("nwName").value = "";
   document.getElementById("nwCreateBtn").disabled = true;
-  document.getElementById("nwFooter").style.display = "none";
   document.getElementById("nwSearch").value = "";
   nwSearchTerm = "";
   nwActiveFilters = [];
@@ -5730,7 +5486,6 @@ function renderNewWorkoutList() {
 function updateNwState() {
   const checked = document.querySelectorAll(".nw-check:checked");
   document.getElementById("nwCounter").textContent = `${checked.length} exercises selected`;
-  document.getElementById("nwFooter").style.display = checked.length ? "block" : "none";
   updateNwCreateBtn();
 }
 function updateNwCreateBtn() {
@@ -5766,11 +5521,8 @@ document.getElementById("nwCreateBtn").addEventListener("click", () => {
   });
 
   // Create workout
-  let activePlan = loadCustomProgram();
-  if (!activePlan) {
-    activePlan = [...plan];
-    state.plan = activePlan;
-  }
+  let activePlan = loadCustomProgram() || [];
+  if (!activePlan.length) activePlan = [];
   const workout = {
     id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     name: workoutName,
@@ -5794,7 +5546,7 @@ document.getElementById("cwClose").addEventListener("click", () => {
 document.getElementById("cwSaveBtn").addEventListener("click", () => {
   const name = document.getElementById("cwName").value.trim();
   if (!name) return;
-  const activePlan = loadCustomProgram() || plan;
+  const activePlan = loadCustomProgram() || [];
   const newWorkout = {
     id: "custom-" + crypto.randomUUID().slice(0, 8),
     name,
@@ -7018,3 +6770,109 @@ document.getElementById("cdsCloseBtn")?.addEventListener("click", () => {
 });
 
 // (Muscle search removed — no longer needed)
+
+// ===== GENERATE WORKOUT =====
+function openGenerateWorkout() {
+  document.querySelectorAll(".gm-chip").forEach((c) => c.classList.remove("is-active"));
+  document.getElementById("gmGenerateBtn").disabled = true;
+  document.getElementById("gmResult").innerHTML = "";
+  document.getElementById("generateModal").classList.remove("is-hidden");
+}
+
+let gmSelections = { goal: "", split: "", experience: "" };
+
+document.querySelectorAll(".gm-chip").forEach((chip) => {
+  chip.addEventListener("click", () => {
+    const section = chip.closest(".gm-options");
+    section.querySelectorAll(".gm-chip").forEach((c) => c.classList.remove("is-active"));
+    chip.classList.add("is-active");
+    const key = chip.closest(".gm-section").querySelector(".gm-label").textContent.trim().toLowerCase();
+    if (key === "goal") gmSelections.goal = chip.dataset.value;
+    else if (key === "workout split") gmSelections.split = chip.dataset.value;
+    else if (key === "experience") gmSelections.experience = chip.dataset.value;
+    document.getElementById("gmGenerateBtn").disabled = !gmSelections.goal || !gmSelections.split || !gmSelections.experience;
+  });
+});
+
+document.getElementById("gmGenerateBtn")?.addEventListener("click", generateWorkout);
+document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
+  document.getElementById("generateModal").classList.add("is-hidden");
+});
+
+function generateWorkout() {
+  const { goal, split, experience } = gmSelections;
+  if (!goal || !split || !experience) return;
+
+  const categoryMap = {
+    Push: ["Chest", "Shoulders", "Triceps"],
+    Pull: ["Back", "Biceps"],
+    Legs: ["Legs", "Glutes", "Calves"],
+    Upper: ["Chest", "Shoulders", "Back", "Biceps", "Triceps"],
+    Lower: ["Legs", "Glutes", "Calves"],
+    "Full Body": ["Chest", "Shoulders", "Back", "Legs", "Glutes"],
+  };
+
+  const categories = categoryMap[split] || ["Full Body"];
+  let candidates = EXERCISE_LIBRARY.filter((e) => categories.includes(e.category));
+
+  // Filter by experience
+  if (experience === "Beginner") {
+    candidates = candidates.filter((e) => !["Barbell", "Kettlebell"].includes(e.equipment) || ["Barbell Row", "Deadlift", "Barbell Curl", "Barbell Bench Press"].includes(e.name));
+  } else if (experience === "Advanced") {
+    // include everything
+  }
+
+  // Shuffle and pick
+  for (let i = candidates.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
+  }
+
+  const count = experience === "Beginner" ? 4 : experience === "Intermediate" ? 5 : 6;
+  const selected = candidates.slice(0, count);
+
+  const setRepsMap = {
+    Strength: { sets: 4, reps: 6 },
+    "Muscle Gain": { sets: 3, reps: 10 },
+    "Fat Loss": { sets: 3, reps: 12 },
+    Endurance: { sets: 3, reps: 15 },
+    "General Fitness": { sets: 3, reps: 10 },
+  };
+
+  const sr = setRepsMap[goal] || { sets: 3, reps: 10 };
+
+  const exercises = selected.map((ex) => ({
+    name: ex.name,
+    sets: sr.sets,
+    reps: sr.reps,
+    weight: "",
+  }));
+
+  // Show preview
+  const resultDiv = document.getElementById("gmResult");
+  let html = `<div style="font-weight:700;margin-bottom:0.5rem">Generated Workout</div>`;
+  html += exercises.map((ex) => `<div class="gm-ex">${ex.name} <span class="gm-ex-meta">${ex.sets}×${ex.reps}</span></div>`).join("");
+  html += `<div style="display:flex;gap:0.5rem;margin-top:0.75rem">
+    <button class="btn-primary" id="gmSaveBtn" style="flex:1">Save Workout</button>
+    <button class="btn-secondary" id="gmRegenBtn">Regenerate</button>
+  </div>`;
+  resultDiv.innerHTML = html;
+  document.getElementById("gmSaveBtn")?.addEventListener("click", () => {
+    const name = `${split} (${goal})`;
+    let activePlan = loadCustomProgram() || [];
+    const workout = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name,
+      exercises: exercises.map((ex) => ({ name: ex.name, sets: [], notes: "" })),
+    };
+    activePlan.push(workout);
+    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+    state.plan = activePlan;
+    saveState();
+    document.getElementById("generateModal").classList.add("is-hidden");
+    showScreen("screen-home");
+    renderHome();
+    showToast(`"${name}" created`);
+  });
+  document.getElementById("gmRegenBtn")?.addEventListener("click", generateWorkout);
+}
