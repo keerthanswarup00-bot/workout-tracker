@@ -74,6 +74,8 @@
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
             </div>
             <div class="nw-counter" id="nwCounter">0 exercises selected</div>
+            <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
+            <div class="nw-filter-bar" id="nwFilterBar"></div>
             <div class="nw-list" id="nwList"></div>
             <div class="nw-footer" id="nwFooter" style="display: none">
               <input
@@ -693,9 +695,9 @@
         <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="wtTimer">04:00</div>
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="wtExerciseList"></p>
         <div class="modal-actions" style="justify-content: center; gap: 0.5rem">
-          <button class="btn-secondary" id="wtPauseBtn">⏸ Pause</button>
-          <button class="btn-secondary" id="wtSkipBtn">⏭ Skip</button>
-          <button class="btn-primary" id="wtFinishBtn">✓ Done</button>
+          <button class="btn-secondary" id="wtPauseBtn">Pause</button>
+          <button class="btn-secondary" id="wtSkipBtn">Skip</button>
+          <button class="btn-primary" id="wtFinishBtn">Done</button>
         </div>
       </div>
     </div>
@@ -736,9 +738,9 @@
         <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="ctTimer">05:00</div>
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="ctExerciseList"></p>
         <div class="modal-actions" style="justify-content: center; gap: 0.5rem">
-          <button class="btn-secondary" id="ctPauseBtn">⏸ Pause</button>
-          <button class="btn-secondary" id="ctSkipBtn">⏭ Skip</button>
-          <button class="btn-primary" id="ctFinishBtn">✓ Done</button>
+          <button class="btn-secondary" id="ctPauseBtn">Pause</button>
+          <button class="btn-secondary" id="ctSkipBtn">Skip</button>
+          <button class="btn-primary" id="ctFinishBtn">Done</button>
         </div>
       </div>
     </div>
@@ -916,12 +918,17 @@
       <div class="bottom-sheet-overlay" id="wlOverlay"></div>
       <div class="bottom-sheet-card" style="max-width:360px">
         <div class="bottom-sheet-handle"></div>
-        <div class="bottom-sheet-body">
-          <div class="as-title">Log Today's Weight</div>
-          <div style="padding:1rem 0">
-            <input type="number" id="wlSheetWeight" class="wl-input" placeholder="71" inputmode="decimal" step="0.1" min="20" max="500" autofocus />
+        <div class="bottom-sheet-body" style="text-align:center">
+          <div class="wl-title">Log Today's Weight</div>
+          <div class="wl-display-wrap">
+            <button class="wl-btn" id="wlMinus">−</button>
+            <div class="wl-value-wrap">
+              <div class="wl-value" id="wlDisplay">70 kg</div>
+              <input type="number" id="wlSheetWeight" class="wl-input-hidden" inputmode="decimal" step="0.1" min="20" max="500" />
+            </div>
+            <button class="wl-btn" id="wlPlus">+</button>
           </div>
-          <div style="display:flex;gap:0.75rem">
+          <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
             <button class="btn-secondary" id="wlCancel" style="flex:1">Cancel</button>
             <button class="btn-primary" id="wlSave" style="flex:1" disabled>Save</button>
           </div>
@@ -965,6 +972,19 @@
             <button class="cal-date-close-btn" id="cdsCloseBtn">Close</button>
             <button class="cal-date-detail-btn" id="cdsDetailBtn">View Details</button>
           </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKOUT ACTIONS BOTTOM SHEET -->
+    <div class="bottom-sheet is-hidden" id="workoutActionsSheet">
+      <div class="bottom-sheet-overlay" id="waOverlay"></div>
+      <div class="bottom-sheet-card" style="max-width:360px">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-body">
+          <div class="as-title" id="waTitle">Workout Actions</div>
+          <div class="wa-list" id="waList"></div>
+          <button class="btn-secondary" id="waCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
         </div>
       </div>
     </div>
