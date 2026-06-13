@@ -7734,9 +7734,11 @@ function renderStep4() {
     const recommended = s.name === bestName ? " is-recommended" : "";
     const badge = s.name === bestName ? '<span class="gw-split-badge">⭐ Recommended</span>' : "";
     const note = s.name === bestName ? '<div class="gw-split-note">Best match for your goal.</div>' : "";
+    const check = active ? '<span class="gw-split-check">✓ Selected</span>' : "";
     html += `<div class="gw-split-card${active}${recommended}" data-gw-split="${s.name}">
       <div class="gw-split-top">
         <span class="gw-split-name">${s.name}</span>
+        ${check}
         <span class="gw-split-pct">${s.score}% match</span>
       </div>
       <div class="gw-split-desc">${s.rec.desc}</div>
@@ -7831,9 +7833,24 @@ function prevStep() {
 // --- Open / Cancel ---
 function openGenerateWorkout() {
   const u = state.user;
+  const goalMap = {
+    "build-muscle": "Muscle Gain",
+    "lose-fat": "Fat Loss",
+    "fat-loss": "Fat Loss",
+    "recomp": "General Fitness",
+    "strength": "Strength",
+    "general": "General Fitness",
+    "athletic": "General Fitness",
+    "custom": "General Fitness",
+  };
+  const expMap = {
+    "beginner": "Beginner",
+    "intermediate": "Intermediate",
+    "advanced": "Advanced",
+  };
   genState.step = 1;
-  genState.goal = (u && u.goal) || null;
-  genState.experience = (u && u.experience) || null;
+  genState.goal = (u && goalMap[u.goal]) || null;
+  genState.experience = (u && expMap[u.experience]) || null;
   genState.days = (u && u.trainingDays) || null;
   genState.split = null;
   genState.schedule = null;
