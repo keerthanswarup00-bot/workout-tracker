@@ -7316,7 +7316,8 @@ h4,
   background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
 }
 .gw-split-card.is-recommended {
-  border-color: #22c55e;
+  border-color: var(--border);
+  background: var(--surface);
 }
 .gw-split-top {
   display: flex;
@@ -7339,14 +7340,55 @@ h4,
   font-weight: 700;
   padding: 0.15rem 0.4rem;
   border-radius: 99px;
-  background: #22c55e;
-  color: #fff;
+  background: var(--surface-2);
+  color: var(--yellow);
+  border: 1px solid rgba(234, 179, 8, 0.3);
   text-transform: uppercase;
 }
 .gw-split-desc {
   font-size: 0.72rem;
   color: var(--text-secondary);
   line-height: 1.35;
+}
+.gw-split-note {
+  font-size: 0.65rem;
+  color: var(--yellow);
+  margin-top: 0.3rem;
+}
+
+/* Profile banner */
+.gw-profile-banner {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-bottom: 1rem;
+}
+.gw-profile-banner-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  margin-bottom: 0.4rem;
+  color: var(--yellow);
+}
+.gw-profile-banner-row {
+  font-size: 0.72rem;
+  display: flex;
+  gap: 0.5rem;
+  line-height: 1.6;
+  color: var(--text-secondary);
+}
+.gw-profile-label {
+  color: var(--text-tertiary);
+  min-width: 5rem;
+}
+.gw-profile-empty {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  text-align: center;
+  padding: 1rem;
+  margin-bottom: 0.5rem;
+  border: 1px dashed var(--border);
+  border-radius: 10px;
 }
 
 /* Review screen */

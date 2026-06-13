@@ -7281,47 +7281,32 @@ function getTrainingDayIndices(totalDays) {
   return map[totalDays] || [0, 2, 4];
 }
 
-// --- Exercise Goal Priority ---
-const GOAL_PRIORITY = {
-  Strength: { compound: 10, barbell: 5, dumbbell: 3, isolation: -2, bodyweight: -1 },
-  "Muscle Gain": { compound: 7, barbell: 4, dumbbell: 4, cable: 3, isolation: 2, bodyweight: 0 },
-  "Fat Loss": { compound: 8, bodyweight: 5, kettlebell: 3, dumbbell: 2, barbell: 1, isolation: 0 },
-  Endurance: { bodyweight: 6, compound: 5, kettlebell: 4, dumbbell: 2, barbell: 1, isolation: 0 },
-  "General Fitness": { compound: 6, dumbbell: 4, barbell: 3, bodyweight: 3, cable: 2, isolation: 1 },
-};
-
 const EX_COUNT_RANGE = {
   Beginner: { min: 4, max: 5 },
   Intermediate: { min: 5, max: 7 },
   Advanced: { min: 6, max: 8 },
 };
 
-const SET_REP_BY_GOAL_EXP = {
-  Strength: {
-    Beginner: { sets: 3, reps: "6-8" },
-    Intermediate: { sets: 4, reps: "4-6" },
-    Advanced: { sets: 5, reps: "3-5" },
-  },
-  "Muscle Gain": {
-    Beginner: { sets: 3, reps: "10-12" },
-    Intermediate: { sets: 4, reps: "8-12" },
-    Advanced: { sets: 4, reps: "8-10" },
-  },
-  "Fat Loss": {
-    Beginner: { sets: 3, reps: "12-15" },
-    Intermediate: { sets: 3, reps: "12-15" },
-    Advanced: { sets: 4, reps: "10-12" },
-  },
-  Endurance: {
-    Beginner: { sets: 2, reps: "15-20" },
-    Intermediate: { sets: 3, reps: "15-20" },
-    Advanced: { sets: 3, reps: "12-15" },
-  },
-  "General Fitness": {
-    Beginner: { sets: 2, reps: "10-12" },
-    Intermediate: { sets: 3, reps: "10-12" },
-    Advanced: { sets: 3, reps: "8-12" },
-  },
+const EXP_SETS = {
+  Beginner: 3,
+  Intermediate: 4,
+  Advanced: 5,
+};
+
+const GOAL_REPS = {
+  "Muscle Gain": { compound: 8, isolation: 12 },
+  "Fat Loss": 12,
+  Strength: 5,
+  "General Fitness": 10,
+  Endurance: 15,
+};
+
+const GOAL_RATIOS = {
+  "Muscle Gain": { compound: 0.6, isolation: 0.4, conditioning: 0 },
+  "Fat Loss": { compound: 0.8, isolation: 0.2, conditioning: 0 },
+  Strength: { compound: 0.9, isolation: 0.1, conditioning: 0 },
+  "General Fitness": { compound: 0.5, isolation: 0.3, conditioning: 0.2 },
+  Endurance: { compound: 0.4, isolation: 0, conditioning: 0.6 },
 };
 
 const RECOVERY_TIPS = [
@@ -7349,39 +7334,6 @@ const CATEGORY_MAP = {
   Lower: ["Legs", "Glutes", "Calves"],
 };
 
-// --- Generator State ---
-const genState = { step: 1, goal: null, experience: null, days: null, split: null };
-
-// --- Helpers ---
-function shuffleArr(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
-}
-
-function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-
-function scoreExerciseForGoal(ex, goal) {
-  const pri = GOAL_PRIORITY[goal] || GOAL_PRIORITY["General Fitness"];
-  let score = 0;
-  const isCompound = COMPOUND_EXERCISE_NAMES.has(ex.name);
-  if (isCompound) score += pri.compound;
-  if (pri[ex.equipment.toLowerCase()] !== undefined) score += pri[ex.equipment.toLowerCase()];
-  if (ex.equipment === "Bodyweight") score += pri.bodyweight;
-  if (ex.tags && ex.tags.includes("isolation")) score += pri.isolation;
-  return Math.max(0, score);
-}
-
-function filterByExperience(candidates, experience) {
-  if (experience === "Beginner") {
-    return candidates.filter(e =>
-      !["Barbell", "Kettlebell"].includes(e.equipment) ||
-      ["Barbell Row", "Deadlift", "Barbell Curl", "Barbell Bench Press"].includes(e.name)
-    );
-  }
-  return candidates;
-}
-
 const SPLIT_ROTATION = {
   "Push Pull Legs": ["Push", "Pull", "Legs"],
   "Upper Lower": ["Upper", "Lower"],
@@ -7402,27 +7354,165 @@ function getCategoriesForDay(splitDay) {
   return FULL_BODY_CATEGORIES[idx] || FULL_BODY_CATEGORIES[0];
 }
 
-function selectExercisesForDay(goal, experience, splitDay) {
+// --- Generator State ---
+const genState = { step: 1, goal: null, experience: null, days: null, split: null };
+
+// --- Helpers ---
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function isCompound(exName) {
+  return COMPOUND_EXERCISE_NAMES.has(exName);
+}
+
+function isConditioning(ex) {
+  return ex.tags && (ex.tags.includes("conditioning") || ex.tags.includes("cardio") || ex.tags.includes("bodyweight") && !isCompound(ex.name));
+}
+
+function getRepTarget(goal, exName) {
+  const reps = GOAL_REPS[goal];
+  if (!reps) return 10;
+  if (typeof reps === "number") return reps;
+  if (isCompound(exName)) return reps.compound || 8;
+  return reps.isolation || 12;
+}
+
+function scoreExercise(ex, goal, usedInCycle) {
+  const isComp = isCompound(ex.name);
+  const isCond = isConditioning(ex);
+  const equipment = ex.equipment.toLowerCase();
+  let score = 0;
+
+  switch (goal) {
+    case "Muscle Gain":
+      if (isComp) score += 50;
+      else score += 30;
+      if (equipment === "barbell") score += 20;
+      else if (equipment === "dumbbell") score += 18;
+      else if (equipment === "cable") score += 15;
+      else if (equipment === "machine") score += 12;
+      if (ex.tags && ex.tags.includes("compound")) score += 15;
+      if (isCond) score -= 30;
+      break;
+    case "Strength":
+      if (isComp) score += 60;
+      else score += 5;
+      if (equipment === "barbell") score += 25;
+      else if (equipment === "dumbbell") score += 10;
+      if (ex.tags && ex.tags.includes("compound")) score += 20;
+      if (isCond) score -= 50;
+      break;
+    case "Fat Loss":
+      if (isComp) score += 40;
+      else score += 20;
+      if (equipment === "bodyweight") score += 25;
+      else if (equipment === "kettlebell") score += 20;
+      else if (equipment === "dumbbell") score += 15;
+      else if (equipment === "barbell") score += 10;
+      if (ex.tags && ex.tags.includes("compound")) score += 10;
+      if (isCond) score += 15;
+      break;
+    case "Endurance":
+      if (isComp) score += 20;
+      else score += 30;
+      if (equipment === "bodyweight") score += 30;
+      else if (equipment === "kettlebell") score += 20;
+      if (isCond) score += 30;
+      break;
+    default: // General Fitness
+      if (isComp) score += 35;
+      else score += 25;
+      if (equipment === "dumbbell") score += 15;
+      else if (equipment === "bodyweight") score += 15;
+      else if (equipment === "barbell") score += 10;
+      if (isCond) score += 10;
+  }
+
+  if (usedInCycle && usedInCycle.has(ex.name)) score -= 40;
+  return Math.max(0, score);
+}
+
+function filterByExperience(candidates, experience) {
+  if (experience === "Beginner") {
+    return candidates.filter(e => {
+      if (["Deadlift", "Power Clean", "Snatch", "Clean and Press", "Barbell Squat"].includes(e.name)) return false;
+      if (e.equipment === "Barbell" && !["Barbell Row", "Barbell Curl", "Barbell Bench Press", "Overhead Press"].includes(e.name)) return false;
+      return true;
+    });
+  }
+  if (experience === "Advanced") {
+    return candidates;
+  }
+  // Intermediate: exclude only the most complex
+  return candidates.filter(e => !["Power Clean", "Snatch"].includes(e.name));
+}
+
+function selectExercisesForDay(goal, experience, splitDay, usedInCycle) {
   const categories = getCategoriesForDay(splitDay);
   let candidates = EXERCISE_LIBRARY.filter(e => categories.includes(e.category));
   candidates = filterByExperience(candidates, experience);
-  const scored = candidates.map(e => ({ exercise: e, score: scoreExerciseForGoal(e, goal) }));
+  const scored = candidates.map(e => ({ exercise: e, score: scoreExercise(e, goal, usedInCycle) }));
   scored.sort((a, b) => b.score - a.score || Math.random() - 0.5);
+
   const range = EX_COUNT_RANGE[experience] || EX_COUNT_RANGE.Intermediate;
   const count = Math.min(randInt(range.min, range.max), scored.length);
-  const selected = scored.slice(0, count);
-  const sr = SET_REP_BY_GOAL_EXP[goal]?.[experience] || SET_REP_BY_GOAL_EXP["General Fitness"].Intermediate;
-  return selected.map(s => ({ name: s.exercise.name, sets: sr.sets, reps: sr.reps, weight: "" }));
+  const ratios = GOAL_RATIOS[goal] || GOAL_RATIOS["General Fitness"];
+
+  let compounds = scored.filter(s => isCompound(s.exercise.name) && s.score > 0);
+  let isolations = scored.filter(s => !isCompound(s.exercise.name) && !isConditioning(s.exercise) && s.score > 0);
+  let conditioningPool = EXERCISE_LIBRARY.filter(e => isConditioning(e));
+  conditioningPool = filterByExperience(conditioningPool, experience);
+  let conditioning = conditioningPool
+    .map(e => ({ exercise: e, score: scoreExercise(e, goal, usedInCycle) }))
+    .filter(s => s.score > 0)
+    .sort((a, b) => b.score - a.score || Math.random() - 0.5);
+
+  const nComp = Math.round(count * ratios.compound);
+  const nIso = Math.round(count * ratios.isolation);
+  const nCond = count - nComp - nIso;
+
+  const pick = (arr, n) => {
+    const result = [];
+    const pool = [...arr];
+    for (let i = 0; i < n && pool.length > 0; i++) {
+      result.push(pool.shift());
+    }
+    return result;
+  };
+
+  const picked = [
+    ...pick(compounds, nComp),
+    ...pick(isolations, nIso),
+    ...pick(conditioning, nCond),
+  ];
+
+  const sets = EXP_SETS[experience] || EXP_SETS.Intermediate;
+  return picked.map(s => ({
+    name: s.exercise.name,
+    sets,
+    reps: getRepTarget(goal, s.exercise.name),
+    weight: "",
+  }));
 }
 
 function generateWeeklySchedule(goal, experience, split, days) {
   const indices = getTrainingDayIndices(days);
+  const cycle = split === "Push Pull Legs" ? ["Push", "Pull", "Legs"] : split === "Upper Lower" ? ["Upper", "Lower"] : [];
+  const usedInCycle = new Set();
   const schedule = [];
   for (let d = 0; d < 7; d++) {
     if (indices.includes(d)) {
       const dayIdx = indices.indexOf(d);
       const splitDay = getSplitDayName(split, dayIdx);
-      const exercises = selectExercisesForDay(goal, experience, splitDay);
+      // Reset usedInCycle when a new cycle begins
+      if (cycle.length > 0 && dayIdx > 0 && splitDay === cycle[0]) usedInCycle.clear();
+      const exercises = selectExercisesForDay(goal, experience, splitDay, usedInCycle);
+      exercises.forEach(ex => usedInCycle.add(ex.name));
       schedule.push({ day: d, type: "workout", name: splitDay, exercises });
     } else {
       const tip = RECOVERY_TIPS[d % RECOVERY_TIPS.length];
@@ -7454,7 +7544,18 @@ function getSortedSplits(goal) {
 function renderStep1() {
   const body = document.getElementById("gmBody");
   document.getElementById("gmStepTitle").textContent = "What's your goal?";
+  const u = state.user;
+  const hasProfile = u && u.goal && u.experience;
   let html = "";
+  if (hasProfile) {
+    html += `<div class="gw-profile-banner">
+      <div class="gw-profile-banner-title">⭐ Recommended for You</div>
+      <div class="gw-profile-banner-row"><span class="gw-profile-label">Goal</span><span>${u.goal}</span></div>
+      <div class="gw-profile-banner-row"><span class="gw-profile-label">Experience</span><span>${u.experience}</span></div>
+    </div>`;
+  } else {
+    html += `<div class="gw-profile-empty">Tell us about yourself first for better workout recommendations.</div>`;
+  }
   Object.entries(GOAL_META).forEach(([key, val]) => {
     const active = genState.goal === key ? " is-active" : "";
     html += `<div class="gw-option${active}" data-gw-goal="${key}">
@@ -7530,14 +7631,15 @@ function renderStep4() {
   sorted.forEach((s, i) => {
     const active = genState.split === s.name ? " is-active" : "";
     const recommended = s.name === bestName ? " is-recommended" : "";
-    const badge = s.name === bestName ? '<span class="gw-split-badge">Recommended</span>' : "";
+    const badge = s.name === bestName ? '<span class="gw-split-badge">⭐ Recommended</span>' : "";
+    const note = s.name === bestName ? '<div class="gw-split-note">Best match for your goal.</div>' : "";
     html += `<div class="gw-split-card${active}${recommended}" data-gw-split="${s.name}">
       <div class="gw-split-top">
         <span class="gw-split-name">${s.name}</span>
         <span class="gw-split-pct">${s.score}% match</span>
-        ${badge}
       </div>
       <div class="gw-split-desc">${s.rec.desc}</div>
+      ${badge}${note}
     </div>`;
   });
   body.innerHTML = html;
@@ -7556,11 +7658,9 @@ function renderStep5() {
   const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days);
   genState.schedule = schedule;
   const totWorkouts = schedule.filter(d => d.type === "workout").length;
-  const sr = SET_REP_BY_GOAL_EXP[genState.goal]?.[genState.experience] || SET_REP_BY_GOAL_EXP["General Fitness"].Intermediate;
   let html = `<div class="gw-review-summary">
     <strong>${genState.split}</strong> · ${totWorkouts} days/week · ${genState.experience} · ${genState.goal}<br>
-    Exercises per workout: ${EX_COUNT_RANGE[genState.experience].min}-${EX_COUNT_RANGE[genState.experience].max} ·
-    Sets: ${sr.sets} · Reps: ${sr.reps}
+    Exercises per workout: ${EX_COUNT_RANGE[genState.experience].min}-${EX_COUNT_RANGE[genState.experience].max}
   </div>`;
   schedule.forEach(d => {
     if (d.type === "workout") {
@@ -7629,9 +7729,10 @@ function prevStep() {
 
 // --- Open / Cancel ---
 function openGenerateWorkout() {
+  const u = state.user;
   genState.step = 1;
-  genState.goal = null;
-  genState.experience = null;
+  genState.goal = (u && u.goal) || null;
+  genState.experience = (u && u.experience) || null;
   genState.days = null;
   genState.split = null;
   genState.schedule = null;
