@@ -8173,15 +8173,14 @@ function renderStep8() {
   const body = document.getElementById("gmBody");
   document.getElementById("gmStepTitle").textContent = "Choose Your Split";
   const sorted = getSortedSplits(genState.goal);
-  const recName = getRecommendedSplit(genState.experience, genState.days);
-  const bestName = sorted[0].name;
+  const recommendedName = sorted[0].name;
+  if (!genState.split) genState.split = recommendedName;
   let html = "";
   sorted.forEach(function(s) {
     const active = genState.split === s.name ? " is-active" : "";
-    const recommended = s.name === recName ? " is-recommended" : "";
-    const badge = s.name === recName ? '<span class="gw-split-badge">&#11088; Recommended</span>' : '';
+    const badge = s.name === recommendedName ? '<span class="gw-split-badge gw-split-badge-rec">&#11088; Recommended</span>' : '';
     const check = active ? '<span class="gw-split-check">&#10003; Selected</span>' : '';
-    html += '<div class="gw-split-card' + active + recommended + '" data-gw-split="' + s.name + '">' +
+    html += '<div class="gw-split-card' + active + '" data-gw-split="' + s.name + '">' +
       '<div class="gw-split-top">' +
       '<span class="gw-split-name">' + s.name + '</span>' +
       check +

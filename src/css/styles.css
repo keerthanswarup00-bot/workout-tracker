@@ -7392,10 +7392,6 @@ h4,
 .gw-split-card:active {
   opacity: 0.7;
 }
-.gw-split-card.is-recommended {
-  border-color: var(--border);
-  background: var(--surface);
-}
 .gw-split-card.is-active {
   border-color: var(--accent);
   background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
