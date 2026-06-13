@@ -7544,18 +7544,7 @@ function getSortedSplits(goal) {
 function renderStep1() {
   const body = document.getElementById("gmBody");
   document.getElementById("gmStepTitle").textContent = "What's your goal?";
-  const u = state.user;
-  const hasProfile = u && u.goal && u.experience;
   let html = "";
-  if (hasProfile) {
-    html += `<div class="gw-profile-banner">
-      <div class="gw-profile-banner-title">⭐ Recommended for You</div>
-      <div class="gw-profile-banner-row"><span class="gw-profile-label">Goal</span><span>${u.goal}</span></div>
-      <div class="gw-profile-banner-row"><span class="gw-profile-label">Experience</span><span>${u.experience}</span></div>
-    </div>`;
-  } else {
-    html += `<div class="gw-profile-empty">Tell us about yourself first for better workout recommendations.</div>`;
-  }
   Object.entries(GOAL_META).forEach(([key, val]) => {
     const active = genState.goal === key ? " is-active" : "";
     html += `<div class="gw-option${active}" data-gw-goal="${key}">
@@ -7733,7 +7722,7 @@ function openGenerateWorkout() {
   genState.step = 1;
   genState.goal = (u && u.goal) || null;
   genState.experience = (u && u.experience) || null;
-  genState.days = null;
+  genState.days = (u && u.trainingDays) || null;
   genState.split = null;
   genState.schedule = null;
   document.getElementById("generateModal").classList.remove("is-hidden");

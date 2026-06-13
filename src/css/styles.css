@@ -7203,12 +7203,23 @@ h4,
   display: flex;
   gap: 0.5rem;
   padding: 0.75rem;
+  padding-bottom: 1.5rem;
   border-top: 1px solid var(--border);
   flex-shrink: 0;
+  position: relative;
 }
 .gm-footer .btn-primary,
 .gm-footer .btn-secondary {
   flex: 1;
+  text-align: center;
+}
+.gm-profile-note {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  position: absolute;
+  bottom: 0.3rem;
+  left: 0;
+  right: 0;
   text-align: center;
 }
 
@@ -7357,40 +7368,6 @@ h4,
 }
 
 /* Profile banner */
-.gw-profile-banner {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: 10px;
-  padding: 0.75rem;
-  margin-bottom: 1rem;
-}
-.gw-profile-banner-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  margin-bottom: 0.4rem;
-  color: var(--yellow);
-}
-.gw-profile-banner-row {
-  font-size: 0.72rem;
-  display: flex;
-  gap: 0.5rem;
-  line-height: 1.6;
-  color: var(--text-secondary);
-}
-.gw-profile-label {
-  color: var(--text-tertiary);
-  min-width: 5rem;
-}
-.gw-profile-empty {
-  font-size: 0.78rem;
-  color: var(--text-secondary);
-  text-align: center;
-  padding: 1rem;
-  margin-bottom: 0.5rem;
-  border: 1px dashed var(--border);
-  border-radius: 10px;
-}
-
 /* Review screen */
 .gw-review-day {
   border: 1px solid var(--border);
