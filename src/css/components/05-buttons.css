@@ -113,6 +113,10 @@
     left 0.25s ease,
     width 0.25s ease;
   z-index: 0;
+  opacity: 0;
+}
+.nav-indicator.is-visible {
+  opacity: 1;
 }
 
 .nav-tab {

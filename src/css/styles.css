@@ -42,6 +42,9 @@
   /* === Layout === */
   --sidebar-w: 220px;
 
+  /* === Prevent iOS Zoom === */
+  --ios-input-size: 16px;
+
   /* === BMI Colors === */
   --bmi-underweight: #3b82f6;
   --bmi-normal: #00d26a;
@@ -99,6 +102,12 @@ body {
   font-family: "Plus Jakarta Sans", sans-serif;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+  touch-action: pan-x pan-y;
+  -ms-touch-action: pan-x pan-y;
+}
+
+input, textarea, select {
+  font-size: 16px;
 }
 
 img,
@@ -154,14 +163,36 @@ h4 {
 }
 button,
 input,
-textarea {
+textarea,
+select {
   font: inherit;
   color: inherit;
+  touch-action: manipulation;
+  font-size: 16px;
 }
 button {
   cursor: pointer;
   border: 0;
   background: none;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+input, textarea, select {
+  touch-action: manipulation;
+}
+
+a, [data-action], [onclick], .clickable,
+.ws-exercise-card, .ed-set-row, .cal-cell.is-clickable,
+.log-item, .goal-card, .el-ex-card, .home-recent-card,
+.sg-radio, .sg-toggle, .nw-ex-row,
+.ed-notes-header, .ed-wu-status, .ed-setup-toggle,
+.wo-card-item, .confirm-overlay, .muscle-sheet,
+.hero-streak-card, .hero-weight-card,
+.nw-chip, .wl-btn, .wa-item, .new-wo-option,
+.gm-chip, .ex-weight-input {
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
 }
 a {
   color: var(--accent);
@@ -281,7 +312,9 @@ textarea:focus {
   display: none;
 }
 .panel.is-active {
-  display: block;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
 }
 
 .section-label {
@@ -2207,6 +2240,24 @@ textarea:focus {
   border-radius: var(--radius-card);
   padding: var(--space-sm);
 }
+.progress-stat {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  padding: 0.35rem 0;
+}
+.progress-stat + .progress-stat {
+  border-top: 1px solid var(--border);
+}
+.progress-label {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+}
+.progress-value {
+  font-size: 0.9rem;
+  font-weight: 700;
+  color: var(--text);
+}
 
 .progress-card-title {
   font-size: var(--text-caption);
@@ -2737,8 +2788,10 @@ textarea:focus {
 #screen-new-workout {
   display: flex;
   flex-direction: column;
-  height: 100%;
+  flex: 1;
+  min-height: 0;
   overflow: hidden;
+  padding-bottom: 0;
 }
 .nw-header {
   display: flex;
@@ -2754,7 +2807,7 @@ textarea:focus {
   border: 1px solid transparent;
   border-radius: var(--radius-sm);
   padding: 0.55rem 0.75rem;
-  font-size: 0.9rem;
+  font-size: 16px;
   font-weight: 600;
   color: var(--text);
   font-family: inherit;
@@ -2768,32 +2821,51 @@ textarea:focus {
   font-weight: 500;
 }
 .nw-search {
-  margin: 0 1rem;
+  margin: 0.75rem 1rem 0;
   padding: 0.6rem 0.75rem;
   border-radius: var(--radius-sm);
   border: 1px solid var(--border);
   background: var(--surface);
   color: var(--text);
-  font-size: 0.85rem;
+  font-size: 16px;
   font-family: inherit;
   outline: none;
+  flex-shrink: 0;
 }
 .nw-search:focus {
   border-color: var(--accent);
 }
 .nw-filter-bar {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.35rem;
+  flex-direction: column;
+  gap: 0.25rem;
   padding: 0.5rem 1rem 0.25rem;
 }
+.nw-filter-section {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+.nw-filter-label {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  min-width: 58px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.nw-filter-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.3rem;
+}
 .nw-chip {
-  padding: 0.3rem 0.6rem;
+  padding: 0.25rem 0.55rem;
   border-radius: 999px;
   border: 1px solid var(--border);
   background: var(--surface-2);
   color: var(--text-secondary);
-  font-size: 0.72rem;
+  font-size: 0.7rem;
   font-weight: 600;
   cursor: pointer;
   -webkit-tap-highlight-color: transparent;
@@ -2810,18 +2882,14 @@ textarea:focus {
 
 .nw-counter {
   padding: 0.5rem 1rem;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   color: var(--text-secondary);
-  position: sticky;
-  top: 52px;
   background: var(--bg);
-  z-index: 1;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .nw-list {
   padding: 0.5rem 1rem;
-  overflow-y: auto;
-  flex: 1;
 }
 .nw-footer {
   padding: 0.75rem 1rem;
@@ -2839,7 +2907,7 @@ textarea:focus {
   color: var(--accent);
   padding: 1rem 0 0.35rem;
   position: sticky;
-  top: 93px;
+  top: 0;
   background: var(--bg);
   z-index: 1;
 }
@@ -2964,6 +3032,34 @@ textarea:focus {
 .onboard-skip:hover {
   background: var(--surface-2);
   color: var(--text-secondary);
+}
+.onboard-options {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+.onboard-chip {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: var(--surface-2);
+  color: var(--text);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+.onboard-chip:active {
+  background: var(--surface-3);
+}
+.onboard-chip.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface));
+  color: var(--accent);
 }
 .onboard-skip:active {
   transform: scale(0.92);
@@ -3165,49 +3261,31 @@ textarea:focus {
   margin-top: 0.05rem;
 }
 
-/* ===== PROGRESS INDICATOR (V1.6) ===== */
-.pr-container {
-  margin-top: 8px;
-}
-.pr-counter {
-  font-size: 0.72rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-  margin-bottom: 6px;
-}
-.pr-dots {
+/* ===== PROGRESS BAR ===== */
+.pr-bar-wrap {
   display: flex;
-  gap: 6px;
-  overflow-x: auto;
-  -webkit-overflow-scrolling: touch;
-  scrollbar-width: none;
+  align-items: center;
+  gap: 0.5rem;
+  margin-top: 0.35rem;
 }
-.pr-dots::-webkit-scrollbar {
-  display: none;
+.pr-bar-track {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 99px;
+  overflow: hidden;
 }
-.pr-dot {
-  width: 10px;
-  height: 10px;
-  border-radius: 50%;
-  flex-shrink: 0;
-  transition: background 150ms, border-color 150ms, box-shadow 150ms;
-  cursor: default;
-}
-.pr-dot.is-completed {
+.pr-bar-fill {
+  height: 100%;
   background: var(--accent);
-  border: 2px solid var(--accent);
+  border-radius: 99px;
+  transition: width 0.35s ease;
 }
-.pr-dot.is-current {
-  background: var(--accent);
-  border: 2px solid var(--accent);
-  box-shadow: 0 0 0 2px var(--surface), 0 0 0 3px var(--accent);
-}
-.pr-dot.is-upcoming {
-  background: transparent;
-  border: 2px solid var(--border);
-}
-.pr-dot.is-upcoming {
-  cursor: default;
+.pr-bar-label {
+  font-size: 0.62rem;
+  color: var(--text-secondary);
+  font-weight: 600;
+  white-space: nowrap;
 }
 
 .ws-menu-btn {
@@ -3965,21 +4043,22 @@ textarea:focus {
 /* ===== HOME DASHBOARD ===== */
 /* ===== HERO ===== */
 .hero-greeting {
-  font-size: var(--text-metric-secondary);
+  font-size: 20px;
   color: var(--text-secondary);
-  font-weight: 500;
+  font-weight: 600;
+  line-height: 1.3;
 }
 .hero-name {
-  font-size: var(--text-page-title);
-  font-weight: 800;
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  font-size: 20px;
+  font-weight: 700;
   color: var(--text);
+  line-height: 1.3;
 }
 .hero-motivation {
-  font-size: var(--text-metric-secondary);
+  font-size: 14px;
   color: var(--text-secondary);
   font-weight: 500;
+  margin-top: 4px;
 }
 .hero-cards-row {
   display: flex;
@@ -4030,6 +4109,10 @@ textarea:focus {
   font-size: 0.55rem;
   color: var(--text-tertiary);
   margin-top: 2px;
+}
+
+.home-greeting-spacer {
+  height: 24px;
 }
 
 /* ===== HOME METRICS CARD ===== */
@@ -6474,417 +6557,15 @@ h4,
   display: flex;
   flex-direction: column;
   gap: 0.75rem;
-  padding-bottom: 100px;
+  padding-bottom: calc(var(--bottom-nav-height) + var(--scroll-buffer) + env(safe-area-inset-bottom, 16px));
 }
 
-/* --- SECTION 1: Body Snapshot --- */
-.body-snapshot {
+/* --- Shared card --- */
+.body-card {
   background: var(--surface);
   border: 1px solid var(--border);
   border-radius: var(--radius-card);
   padding: var(--space-sm);
-}
-
-.bs-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.4rem;
-}
-
-.bs-item {
-  display: flex;
-  flex-direction: column;
-  gap: 0.1rem;
-  padding: 0.35rem 0.4rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-}
-
-.bs-label {
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-}
-
-.bs-value {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1.05rem;
-  font-weight: 800;
-  color: var(--text);
-  line-height: 1.2;
-}
-
-.bs-dim {
-  font-size: 0.78rem;
-  font-weight: 500;
-  color: var(--text-tertiary);
-}
-
-.bs-footer {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-top: 0.4rem;
-  padding-top: 0.35rem;
-  border-top: 1px solid var(--border);
-}
-
-.bs-updated {
-  font-size: 0.62rem;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-
-.bs-edit-btn {
-  width: 30px;
-  height: 30px;
-  display: grid;
-  place-items: center;
-  border-radius: 50%;
-  background: var(--surface-2);
-  color: var(--text-secondary);
-  font-size: 0.85rem;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-.bs-edit-btn:hover {
-  background: var(--border);
-}
-
-.bs-edit-btn:active {
-  transform: scale(0.9);
-}
-
-/* --- SECTION 2: Weight Trend --- */
-.body-weight-trend {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: var(--space-sm);
-}
-
-.bw-header {
-  display: flex;
-  gap: 0.75rem;
-  margin-bottom: 0.5rem;
-}
-
-.bw-stat {
-  flex: 1;
-  text-align: center;
-  padding: 0.4rem 0.5rem;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-}
-
-.bw-stat-label {
-  display: block;
-  font-size: 0.6rem;
-  font-weight: 600;
-  color: var(--text-tertiary);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.15rem;
-}
-
-.bw-stat-value {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1.1rem;
-  font-weight: 800;
-  color: var(--text);
-}
-
-.bw-stat.is-up .bw-stat-value {
-  color: var(--accent);
-}
-
-.bw-stat.is-down .bw-stat-value {
-  color: var(--red);
-}
-
-.bw-chart-wrap {
-  width: 100%;
-  min-height: 180px;
-  max-height: 220px;
-  position: relative;
-}
-
-.bw-chart-wrap canvas {
-  width: 100% !important;
-  height: 100% !important;
-  max-height: 220px;
-}
-
-/* --- Empty Chart Placeholder --- */
-.body-empty-chart {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  height: 180px;
-  border: 1px dashed var(--border);
-  border-radius: var(--radius-sm);
-  padding: 1rem;
-}
-
-.body-empty-title {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text-tertiary);
-}
-
-.body-empty-line {
-  width: 80%;
-  height: 6px;
-  border-radius: 3px;
-  background: var(--border);
-  opacity: 0.4;
-}
-
-.body-empty-text {
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
-  text-align: center;
-  margin: 0.25rem 0 0;
-  line-height: 1.4;
-}
-
-/* --- SECTION 3: Muscle Coverage --- */
-.body-coverage {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius);
-  padding: 0.5rem 0.5rem 0.65rem;
-}
-
-.bc-tabs {
-  display: flex;
-  background: var(--surface-2);
-  border-radius: 999px;
-  border: 1px solid var(--border);
-  padding: 2px;
-  margin-bottom: 0.5rem;
-}
-
-.bc-tab {
-  flex: 1;
-  padding: 0.35rem 0.4rem;
-  border-radius: 999px;
-  border: none;
-  background: transparent;
-  color: var(--text-secondary);
-  font-size: 0.68rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: center;
-  transition: background 0.2s, color 0.2s;
-}
-
-.bc-tab.is-active {
-  background: var(--accent);
-  color: #0a0a0a;
-}
-
-.bc-map-wrap {
-  width: 100%;
-  min-height: 300px;
-  max-height: 350px;
-  overflow: hidden;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.bc-map-wrap .body-view {
-  width: 100%;
-  max-width: 480px;
-  max-height: 350px;
-  overflow: hidden;
-}
-
-.bc-map-wrap .body-view svg {
-  width: 100%;
-  height: auto;
-  display: block;
-}
-
-.bc-map-wrap [data-muscle] {
-  transition: fill 0.25s ease, fill-opacity 0.25s ease;
-}
-
-.bc-summary {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.5rem;
-  padding: 0.5rem;
-  margin-top: 0.4rem;
-  border-radius: var(--radius-sm);
-  background: var(--surface-2);
-}
-
-.bc-pct {
-  font-family: "Plus Jakarta Sans", sans-serif;
-  font-size: 1.2rem;
-  font-weight: 800;
-  color: var(--accent);
-  line-height: 1;
-}
-
-.bc-detail {
-  font-size: 0.68rem;
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* --- SECTION 4: Needs Attention --- */
-.body-needs {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: var(--space-sm);
-}
-
-.bn-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.bn-list {
-  display: grid;
-  gap: 0.4rem;
-}
-
-.bn-card {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 0.5rem 0.6rem;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-  cursor: pointer;
-  transition: transform 0.15s ease, background 0.15s ease;
-}
-
-.bn-card:active {
-  background: var(--border);
-  transform: scale(0.98);
-}
-
-.bn-name {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.bn-meta {
-  font-size: 0.62rem;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-
-.body-needs-all {
-  text-align: center;
-  font-size: 0.72rem;
-  color: var(--accent);
-  font-weight: 600;
-  padding: 0.3rem 0;
-}
-
-/* --- SECTION 5: Goals --- */
-.body-goals {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: var(--space-sm);
-}
-
-.bg-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-
-.bg-list {
-  display: grid;
-  gap: 0.5rem;
-}
-
-.bg-card {
-  padding: 0.55rem 0.6rem;
-  background: var(--surface-2);
-  border-radius: var(--radius-sm);
-}
-
-.bg-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 0.3rem;
-}
-
-.bg-name {
-  font-size: 0.78rem;
-  font-weight: 700;
-  color: var(--text);
-}
-
-.bg-pct {
-  font-size: 0.72rem;
-  font-weight: 700;
-  color: var(--accent);
-}
-
-.bg-bar-wrap {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-  margin-bottom: 0.3rem;
-}
-
-.bg-bar {
-  height: 100%;
-  border-radius: 2px;
-  background: var(--accent);
-  transition: width 0.4s ease;
-}
-
-.bg-meta {
-  font-size: 0.62rem;
-  color: var(--text-tertiary);
-  font-weight: 500;
-}
-
-.bg-view-all {
-  display: block;
-  width: 100%;
-  padding: 0.5rem;
-  margin-top: 0.3rem;
-  border-radius: var(--radius-sm);
-  background: transparent;
-  border: 1px dashed var(--border);
-  color: var(--text-secondary);
-  font-size: 0.72rem;
-  font-weight: 600;
-  font-family: inherit;
-  cursor: pointer;
-  text-align: center;
-}
-
-.bg-view-all:active {
-  background: var(--surface-2);
 }
 
 /* --- Empty Card (shared) --- */
@@ -6894,16 +6575,67 @@ h4,
   border: 1px dashed var(--border);
   border-radius: var(--radius-sm);
 }
-
-/* --- SECTION 6: Insights --- */
-.body-insights {
-  background: var(--surface);
-  border: 1px solid var(--border);
-  border-radius: var(--radius-card);
-  padding: var(--space-sm);
+.body-empty-title {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--text-tertiary);
+}
+.body-empty-text {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+  text-align: center;
+  margin: 0.25rem 0 0;
+  line-height: 1.4;
 }
 
-.bi-label {
+/* --- SECTION 1: Current Goal --- */
+.body-current-goal {
+  padding: var(--space-sm);
+}
+.bcg-header {
+  margin-bottom: 0.35rem;
+}
+.bcg-label {
+  font-size: 0.68rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bcg-name {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--accent);
+  margin-bottom: 0.15rem;
+}
+.bcg-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.5rem;
+  line-height: 1.4;
+}
+.bcg-progress {
+  margin-top: 0.3rem;
+}
+.bcg-bar-wrap {
+  height: 4px;
+  background: var(--border);
+  border-radius: 2px;
+  overflow: hidden;
+}
+.bcg-bar {
+  height: 100%;
+  border-radius: 2px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+
+/* --- SECTION 2: Weight Goal Progress --- */
+.body-weight-progress {
+  padding: var(--space-sm);
+}
+.bwpro-label {
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-secondary);
@@ -6911,107 +6643,296 @@ h4,
   letter-spacing: 0.05em;
   margin-bottom: 0.5rem;
 }
-
-.bi-list {
-  display: flex;
-  flex-direction: column;
-  gap: 0.35rem;
-}
-
-.bi-item {
-  display: flex;
-  align-items: flex-start;
+.bwpro-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
   gap: 0.4rem;
-  padding: 0.4rem 0.5rem;
-  border-radius: var(--radius-sm);
+  margin-bottom: 0.5rem;
+}
+.bwpro-stat {
+  text-align: center;
+  padding: 0.4rem 0.3rem;
   background: var(--surface-2);
-  font-size: 0.72rem;
-  line-height: 1.4;
+  border-radius: var(--radius-sm);
 }
-
-.bi-icon {
-  flex-shrink: 0;
-  font-size: 0.85rem;
-  margin-top: 0.05rem;
+.bwpro-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
 }
-
-.bi-text {
-  flex: 1;
+.bwpro-stat-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
   color: var(--text);
 }
-
-.bi-item.is-green .bi-text {
+.bwpro-bar-wrap {
+  height: 6px;
+  background: var(--border);
+  border-radius: 3px;
+  overflow: hidden;
+  margin-bottom: 0.25rem;
+}
+.bwpro-bar {
+  height: 100%;
+  border-radius: 3px;
+  background: var(--accent);
+  transition: width 0.4s ease;
+}
+.bwpro-pct {
+  text-align: right;
+  font-size: 0.72rem;
+  font-weight: 700;
   color: var(--accent);
 }
 
-.bi-item.is-yellow .bi-text {
-  color: var(--yellow);
+/* --- SECTION 3: Body Metrics --- */
+.body-metrics {
+  padding: var(--space-sm);
 }
-
-.bi-item.is-blue .bi-text {
-  color: var(--blue);
-}
-
-.body-empty-insights {
-  text-align: center;
-  padding: 0.5rem 0;
-}
-
-/* --- Bottom Sheet (updated) --- */
-.ms-grid-2col {
+.bm-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 0.5rem;
-  margin-bottom: 0.75rem;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
 }
-
-.ms-grid-2col .ms-item {
+.bm-item {
   display: flex;
   flex-direction: column;
+  align-items: center;
   gap: 0.15rem;
-  padding: 0.5rem;
+  padding: 0.5rem 0.3rem;
   background: var(--surface-2);
   border-radius: var(--radius-sm);
 }
-
-.ms-label-sm {
-  font-size: 0.62rem;
+.bm-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  text-align: center;
+}
+.bm-label {
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--text-tertiary);
   text-transform: uppercase;
   letter-spacing: 0.04em;
 }
 
-.ms-exercises-label {
+/* --- SECTION 4: Weight Trend (kept from old design) --- */
+.body-weight-trend {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-sm);
+}
+.bw-header {
+  display: flex;
+  gap: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+.bw-stat {
+  flex: 1;
+  text-align: center;
+  padding: 0.4rem 0.5rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.bw-stat-label {
+  display: block;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 0.15rem;
+}
+.bw-stat-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.bw-stat.is-up .bw-stat-value {
+  color: var(--accent);
+}
+.bw-stat.is-down .bw-stat-value {
+  color: var(--red);
+}
+.bw-chart-wrap {
+  width: 100%;
+  min-height: 140px;
+  max-height: 200px;
+  position: relative;
+}
+.bw-chart-wrap canvas {
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 200px;
+}
+.bw-skeleton {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  height: 120px;
+  padding: 1rem;
+}
+.bw-skel-line {
+  width: 80%;
+  height: 6px;
+  border-radius: 3px;
+  background: var(--border);
+  opacity: 0.3;
+}
+.bw-skel-line:nth-child(2) { width: 60%; }
+.bw-skel-line:nth-child(3) { width: 40%; }
+.bw-skel-text {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  margin-top: 0.25rem;
+}
+
+/* --- SECTION 5: Workout Streak --- */
+.body-streak {
+  padding: var(--space-sm);
+}
+.str-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.str-item {
+  text-align: center;
+  padding: 0.5rem 0.3rem;
+  background: var(--surface-2);
+  border-radius: var(--radius-sm);
+}
+.str-value {
+  display: block;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 1.5rem;
+  font-weight: 800;
+  color: var(--accent);
+  line-height: 1.2;
+}
+.str-label {
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* --- SECTION 6: Consistency --- */
+.body-consistency {
+  padding: var(--space-sm);
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+.cons-ring {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  flex-shrink: 0;
+  position: relative;
+  display: grid;
+  place-items: center;
+}
+.cons-ring-inner {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--surface);
+  display: grid;
+  place-items: center;
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
+  color: var(--accent);
+}
+.cons-info {
+  flex: 1;
+}
+.cons-label {
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.15rem;
+}
+.cons-sub {
+  font-size: 0.68rem;
+  color: var(--text-tertiary);
+}
+
+/* --- SECTION 7: Profile Summary --- */
+.body-profile-summary {
+  padding: var(--space-sm);
+}
+.bps-label {
   font-size: 0.68rem;
   font-weight: 700;
   color: var(--text-secondary);
   text-transform: uppercase;
-  letter-spacing: 0.04em;
-  margin-bottom: 0.35rem;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.5rem;
 }
-
-.ms-exercises {
+.bps-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+}
+.bps-item {
   display: flex;
-  flex-wrap: wrap;
-  gap: 0.3rem;
-}
-
-.ms-ex-chip {
-  padding: 0.2rem 0.45rem;
-  border-radius: 999px;
+  flex-direction: column;
+  gap: 0.1rem;
+  padding: 0.35rem 0.4rem;
+  border-radius: var(--radius-sm);
   background: var(--surface-2);
-  border: 1px solid var(--border);
-  font-size: 0.65rem;
+}
+.bps-item-label {
+  font-size: 0.6rem;
   font-weight: 600;
+  color: var(--text-tertiary);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.bps-item-value {
+  font-family: "Plus Jakarta Sans", sans-serif;
+  font-size: 0.95rem;
+  font-weight: 800;
   color: var(--text);
 }
 
-.ms-empty-exercises {
-  font-size: 0.68rem;
-  color: var(--text-tertiary);
+/* --- Edit Goal Button --- */
+.body-edit-goals {
+  padding: 0;
+}
+.beg-btn {
+  width: 100%;
+  padding: 0.75rem;
+  border: 1px dashed var(--border);
+  border-radius: var(--radius-sm);
+  background: transparent;
+  color: var(--text-secondary);
+  font-size: 0.82rem;
+  font-weight: 600;
+  font-family: inherit;
+  cursor: pointer;
   text-align: center;
-  padding: 0.5rem 0;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+.beg-btn:active {
+  background: var(--surface-2);
+  color: var(--text);
 }
 
 /* --- Weight Input --- */
@@ -7021,18 +6942,17 @@ h4,
 
 /* --- Responsive --- */
 @media (max-width: 400px) {
-  .bs-grid {
+  .bwpro-grid {
     gap: 0.3rem;
   }
-  .bs-value {
-    font-size: 0.95rem;
+  .bm-grid {
+    gap: 0.3rem;
   }
-  .bc-map-wrap {
-    min-height: 260px;
-    max-height: 300px;
+  .bm-value {
+    font-size: 0.85rem;
   }
-  .bc-map-wrap .body-view {
-    max-height: 300px;
+  .bps-grid {
+    gap: 0.3rem;
   }
 }
 
@@ -7088,14 +7008,33 @@ h4,
   position: relative;
   min-width: 100px;
 }
-.wl-input-hidden {
+.wl-input-edit {
+  display: none;
   position: absolute;
   inset: 0;
   width: 100%;
   height: 100%;
-  opacity: 0;
-  font-size: 16px;
-  cursor: text;
+  font-size: 2rem;
+  font-weight: 800;
+  text-align: center;
+  border: 2px solid var(--accent);
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  color: var(--text);
+  outline: none;
+  -moz-appearance: textfield;
+  padding: 0 0.5rem;
+}
+.wl-input-edit::-webkit-inner-spin-button,
+.wl-input-edit::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+.wl-input-edit.is-active {
+  display: block;
+}
+.wl-input-edit.is-active + .wl-value {
+  visibility: hidden;
 }
 
 /* ===== WORKOUT ACTIONS SHEET ===== */
@@ -7176,18 +7115,6 @@ h4,
 .new-wo-option.primary .new-wo-option-desc {
   opacity: 0.8;
 }
-/* ===== GENERATE WORKOUT MODAL ===== */
-.gm-card {
-  max-width: 400px;
-  max-height: 90vh;
-  overflow-y: auto;
-  padding: 1.25rem;
-}
-.gm-header {
-  font-size: 1.1rem;
-  font-weight: 800;
-  margin-bottom: 1rem;
-}
 .gm-section {
   margin-bottom: 1rem;
 }
@@ -7239,19 +7166,278 @@ h4,
   font-size: 0.72rem;
   color: var(--text-secondary);
 }
+
+/* ===== GENERATOR WIZARD ===== */
+.gm-card {
+  display: flex;
+  flex-direction: column;
+  max-height: 90vh;
+  overflow: hidden;
+  padding: 0;
+}
+.gm-header {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-bottom: 1px solid var(--border);
+  font-weight: 700;
+  font-size: 0.9rem;
+  flex-shrink: 0;
+}
+.gm-step {
+  font-size: 0.65rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  padding: 0.2rem 0.5rem;
+  border-radius: 99px;
+  white-space: nowrap;
+}
+.gm-body {
+  flex: 1;
+  overflow-y: auto;
+  padding: 1rem 0.75rem;
+}
+.gm-footer {
+  display: flex;
+  gap: 0.5rem;
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+  flex-shrink: 0;
+}
+.gm-footer .btn-primary,
+.gm-footer .btn-secondary {
+  flex: 1;
+  text-align: center;
+}
+
+/* Goal / Experience selection cards */
+.gw-option {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.gw-option:active {
+  opacity: 0.7;
+}
+.gw-option.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+.gw-option-icon {
+  flex-shrink: 0;
+  width: 2.2rem;
+  height: 2.2rem;
+  border-radius: 50%;
+  background: var(--surface-3);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+}
+.gw-option.is-active .gw-option-icon {
+  background: var(--accent);
+  color: #fff;
+}
+.gw-option-content {
+  flex: 1;
+  min-width: 0;
+}
+.gw-option-title {
+  font-weight: 700;
+  font-size: 0.88rem;
+  margin-bottom: 0.15rem;
+}
+.gw-option-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Days selector */
+.gw-days-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+.gw-day-card {
+  padding: 1rem 0.5rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  text-align: center;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.gw-day-card:active {
+  opacity: 0.7;
+}
+.gw-day-card.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+.gw-day-num {
+  font-size: 1.6rem;
+  font-weight: 800;
+  line-height: 1;
+}
+.gw-day-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  margin-top: 0.2rem;
+}
+
+/* Split recommendation cards */
+.gw-split-card {
+  padding: 0.85rem;
+  border-radius: 10px;
+  border: 1.5px solid var(--border);
+  background: var(--surface-2);
+  margin-bottom: 0.5rem;
+  cursor: pointer;
+  transition: border-color 0.15s, background 0.15s;
+  -webkit-tap-highlight-color: transparent;
+}
+.gw-split-card:active {
+  opacity: 0.7;
+}
+.gw-split-card.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface-2));
+}
+.gw-split-card.is-recommended {
+  border-color: #22c55e;
+}
+.gw-split-top {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.3rem;
+}
+.gw-split-name {
+  font-weight: 700;
+  font-size: 0.88rem;
+  flex: 1;
+}
+.gw-split-pct {
+  font-size: 0.78rem;
+  font-weight: 700;
+  color: var(--accent);
+}
+.gw-split-badge {
+  font-size: 0.6rem;
+  font-weight: 700;
+  padding: 0.15rem 0.4rem;
+  border-radius: 99px;
+  background: #22c55e;
+  color: #fff;
+  text-transform: uppercase;
+}
+.gw-split-desc {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+/* Review screen */
+.gw-review-day {
+  border: 1px solid var(--border);
+  border-radius: 10px;
+  margin-bottom: 0.75rem;
+  overflow: hidden;
+}
+.gw-review-day-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.6rem 0.75rem;
+  background: var(--surface-2);
+  font-weight: 700;
+  font-size: 0.82rem;
+}
+.gw-review-day-header .gw-day-tag {
+  font-size: 0.6rem;
+  font-weight: 600;
+  padding: 0.15rem 0.4rem;
+  border-radius: 99px;
+  background: var(--surface-3);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+}
+.gw-review-day-header .gw-day-tag.is-recovery {
+  background: color-mix(in srgb, var(--accent) 20%, var(--surface-3));
+  color: var(--accent);
+}
+.gw-review-ex {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.5rem 0.75rem;
+  border-top: 1px solid var(--border);
+  font-size: 0.78rem;
+}
+.gw-review-ex-name {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.gw-review-ex-meta {
+  color: var(--text-secondary);
+  font-size: 0.7rem;
+  white-space: nowrap;
+  margin-left: 0.5rem;
+}
+.gw-review-recovery {
+  padding: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+.gw-review-recovery-title {
+  font-weight: 700;
+  font-size: 0.78rem;
+  margin-bottom: 0.2rem;
+}
+.gw-review-recovery-desc {
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+.gw-review-summary {
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 0.75rem;
+  margin-bottom: 0.75rem;
+  font-size: 0.78rem;
+  line-height: 1.5;
+}
+.gw-review-summary strong {
+  color: var(--text);
+}
 /* ===== STICKY FOOTER FOR BUILDER ===== */
 .nw-scroll {
   flex: 1;
   overflow-y: auto;
-  padding: 0.75rem;
-  padding-bottom: 0;
+  min-height: 0;
+  padding: 0 0.75rem 0;
 }
 .nw-sticky-footer {
   padding: 0.75rem;
-  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 8px));
+  padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 16px));
   border-top: 1px solid var(--border);
   background: var(--surface);
   flex-shrink: 0;
+  z-index: 10;
 }
 /* ===== EMPTY STATE ===== */
 .empty-state-icon {

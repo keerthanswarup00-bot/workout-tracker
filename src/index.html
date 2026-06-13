@@ -2,7 +2,7 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover" />
     <meta name="theme-color" content="#0a0a0a" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
@@ -83,9 +83,9 @@
               <button class="btn-back" id="nwBackBtn">←</button>
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
             </div>
+            <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
+            <div class="nw-counter" id="nwCounter">0 exercises selected</div>
             <div class="nw-scroll">
-              <div class="nw-counter" id="nwCounter">0 exercises selected</div>
-              <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
               <div class="nw-filter-bar" id="nwFilterBar"></div>
               <div class="nw-list" id="nwList"></div>
             </div>
@@ -308,12 +308,20 @@
                   <option value="Forearms">Forearms</option>
                   <option value="Full Body">Full Body</option>
                 </select>
+                <select id="customExEquipment" class="modal-input">
+                  <option value="">Equipment</option>
+                  <option value="Barbell">Barbell</option>
+                  <option value="Dumbbell">Dumbbell</option>
+                  <option value="Cable">Cable</option>
+                  <option value="Machine">Machine</option>
+                  <option value="Bodyweight">Bodyweight</option>
+                </select>
                 <input
                   type="text"
-                  id="customExEquipment"
+                  id="customExTags"
                   class="modal-input"
-                  placeholder="Equipment (e.g. Barbell, Dumbbell)"
-                  maxlength="30"
+                  placeholder="Tags (comma-separated, e.g. push, compound)"
+                  maxlength="80"
                   autocomplete="off"
                 />
               </div>
@@ -548,10 +556,7 @@
             <div class="session-log" id="sessionLog"></div>
             <div class="section-label">Personal Records</div>
             <div class="pr-grid" id="prGrid"></div>
-            <div class="section-label">Weekly Review</div>
-            <div id="weeklyReviewCard"></div>
-            <div class="section-label">Monthly Report</div>
-            <div id="monthlyReportContent"></div>
+
           </div>
         </section>
 
@@ -594,9 +599,10 @@
       </button>
       <button class="nav-tab" data-tab="body">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="5" r="3" />
-          <path d="M5 21c0-3.866 3.134-7 7-7s7 3.134 7 7" />
-          <path d="M7 10c0-2.76 2.24-5 5-5s5 2.24 5 5" />
+          <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
+          <path d="M4 22c0-4.418 3.582-8 8-8s8 3.582 8 8" />
+          <path d="M6 12h12" />
+          <path d="M8 8c0 2.21 1.79 4 4 4s4-1.79 4-4" />
         </svg>
         <span>Body</span>
       </button>
@@ -655,39 +661,18 @@
     <!-- GENERATE WORKOUT MODAL -->
     <div class="modal-overlay is-hidden" id="generateModal">
       <div class="modal-card gm-card">
-        <div class="gm-header">Generate Workout</div>
-        <div class="gm-section">
-          <div class="gm-label">Goal</div>
-          <div class="gm-options" id="gmGoal">
-            <button class="gm-chip" data-value="Strength">Strength</button>
-            <button class="gm-chip" data-value="Muscle Gain">Muscle Gain</button>
-            <button class="gm-chip" data-value="Fat Loss">Fat Loss</button>
-            <button class="gm-chip" data-value="Endurance">Endurance</button>
-            <button class="gm-chip" data-value="General Fitness">General Fitness</button>
-          </div>
+        <div class="gm-header">
+          <span class="gm-step" id="gmStepBadge">Step 1 of 5</span>
+          <span id="gmStepTitle">What's your goal?</span>
         </div>
-        <div class="gm-section">
-          <div class="gm-label">Workout Split</div>
-          <div class="gm-options" id="gmSplit">
-            <button class="gm-chip" data-value="Push">Push</button>
-            <button class="gm-chip" data-value="Pull">Pull</button>
-            <button class="gm-chip" data-value="Legs">Legs</button>
-            <button class="gm-chip" data-value="Upper">Upper</button>
-            <button class="gm-chip" data-value="Lower">Lower</button>
-            <button class="gm-chip" data-value="Full Body">Full Body</button>
-          </div>
+        <div class="gm-body" id="gmBody">
+          <!-- Step content rendered dynamically -->
         </div>
-        <div class="gm-section">
-          <div class="gm-label">Experience</div>
-          <div class="gm-options" id="gmExp">
-            <button class="gm-chip" data-value="Beginner">Beginner</button>
-            <button class="gm-chip" data-value="Intermediate">Intermediate</button>
-            <button class="gm-chip" data-value="Advanced">Advanced</button>
-          </div>
+        <div class="gm-footer">
+          <button class="btn-secondary" id="gmBackBtn" style="display:none">Back</button>
+          <button class="btn-primary" id="gmNextBtn">Next</button>
+          <button class="btn-secondary" id="gmCancelBtn">Cancel</button>
         </div>
-        <button class="btn-primary" id="gmGenerateBtn" disabled style="width:100%">Generate Workout</button>
-        <button class="btn-secondary" id="gmCancelBtn" style="width:100%;margin-top:0.4rem">Cancel</button>
-        <div id="gmResult" style="margin-top:0.75rem"></div>
       </div>
     </div>
 
@@ -836,30 +821,89 @@
       <div class="modal-card" style="max-width: 380px; position: relative">
         <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">✕</button>
         <div class="modal-header">
-          <h2>Welcome to IronLog</h2>
+          <h2 id="onboardTitle">Welcome to IronLog</h2>
         </div>
-        <p class="onboard-sub">Let's get to know you.</p>
-        <div id="onboardForm">
-          <div class="onboard-field">
-            <label class="onboard-label" for="onboardName">Name</label>
-            <input type="text" id="onboardName" class="modal-input" placeholder="Your name" maxlength="30" autocomplete="name" autocapitalize="words" enterkeyhint="next" />
+        <p class="onboard-sub" id="onboardSub">Let's get to know you.</p>
+
+        <!-- STEP 1: Basic Info -->
+        <div id="onboardStep1">
+          <div id="onboardForm">
+            <div class="onboard-field">
+              <label class="onboard-label" for="onboardName">Name</label>
+              <input type="text" id="onboardName" class="modal-input" placeholder="Your name" maxlength="30" autocomplete="name" autocapitalize="words" enterkeyhint="next" />
+            </div>
+            <div class="onboard-field">
+              <label class="onboard-label" for="onboardAge">Age</label>
+              <input type="number" id="onboardAge" class="modal-input" placeholder="23" min="10" max="100" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
+            </div>
+            <div class="onboard-field">
+              <label class="onboard-label" for="onboardHeight">Height (cm)</label>
+              <input type="number" id="onboardHeight" class="modal-input" placeholder="175" min="100" max="250" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
+            </div>
+            <div class="onboard-field">
+              <label class="onboard-label" for="onboardWeight">Weight (kg)</label>
+              <input type="text" id="onboardWeight" class="modal-input" placeholder="71" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" enterkeyhint="done" />
+            </div>
           </div>
-          <div class="onboard-field">
-            <label class="onboard-label" for="onboardAge">Age</label>
-            <input type="number" id="onboardAge" class="modal-input" placeholder="23" min="10" max="100" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
-          </div>
-          <div class="onboard-field">
-            <label class="onboard-label" for="onboardHeight">Height (cm)</label>
-            <input type="number" id="onboardHeight" class="modal-input" placeholder="175" min="100" max="250" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
-          </div>
-          <div class="onboard-field">
-            <label class="onboard-label" for="onboardWeight">Weight (kg)</label>
-            <input type="text" id="onboardWeight" class="modal-input" placeholder="71" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" enterkeyhint="done" />
+          <div class="modal-actions" style="margin-top: 1rem">
+            <button class="btn-primary" id="onboardNextBtn">Next</button>
           </div>
         </div>
-        <div class="modal-actions" style="margin-top: 1rem">
-          <button class="btn-primary" id="onboardSaveBtn" disabled>Get Started</button>
+
+        <!-- STEP 2: Goal -->
+        <div id="onboardStep2" style="display:none">
+          <div class="onboard-field">
+            <label class="onboard-label">What Is Your Main Goal?</label>
+            <div class="onboard-options" id="onboardGoalOptions">
+              <button class="onboard-chip" data-value="build-muscle">Build Muscle</button>
+              <button class="onboard-chip" data-value="lose-fat">Lose Fat</button>
+              <button class="onboard-chip" data-value="strength">Increase Strength</button>
+              <button class="onboard-chip" data-value="general">General Fitness</button>
+              <button class="onboard-chip" data-value="athletic">Athletic Performance</button>
+            </div>
+          </div>
+          <div class="modal-actions" style="margin-top:1rem">
+            <button class="btn-secondary" id="onboardGoalBack" style="flex:1">Back</button>
+            <button class="btn-primary" id="onboardGoalNext" style="flex:1" disabled>Next</button>
+          </div>
         </div>
+
+        <!-- STEP 3: Experience -->
+        <div id="onboardStep3" style="display:none">
+          <div class="onboard-field">
+            <label class="onboard-label">Training Experience</label>
+            <div class="onboard-options" id="onboardExperienceOptions">
+              <button class="onboard-chip" data-value="beginner">Beginner</button>
+              <button class="onboard-chip" data-value="intermediate">Intermediate</button>
+              <button class="onboard-chip" data-value="advanced">Advanced</button>
+            </div>
+          </div>
+          <div class="modal-actions" style="margin-top:1rem">
+            <button class="btn-secondary" id="onboardExpBack" style="flex:1">Back</button>
+            <button class="btn-primary" id="onboardExpNext" style="flex:1" disabled>Next</button>
+          </div>
+        </div>
+
+        <!-- STEP 4: Location + Target Weight -->
+        <div id="onboardStep4" style="display:none">
+          <div class="onboard-field">
+            <label class="onboard-label">Where Do You Train?</label>
+            <div class="onboard-options" id="onboardLocationOptions">
+              <button class="onboard-chip" data-value="commercial">Commercial Gym</button>
+              <button class="onboard-chip" data-value="home-gym">Home Gym</button>
+              <button class="onboard-chip" data-value="home">Home</button>
+            </div>
+          </div>
+          <div class="onboard-field">
+            <label class="onboard-label" for="onboardTargetWeight">Target Weight (kg)</label>
+            <input type="text" id="onboardTargetWeight" class="modal-input" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" enterkeyhint="done" />
+          </div>
+          <div class="modal-actions" style="margin-top:1rem">
+            <button class="btn-secondary" id="onboardTargetBack" style="flex:1">Back</button>
+            <button class="btn-primary" id="onboardFinishBtn" style="flex:1" disabled>Get Started</button>
+          </div>
+        </div>
+
       </div>
     </div>
 
@@ -996,7 +1040,7 @@
             <button class="wl-btn" id="wlMinus">−</button>
             <div class="wl-value-wrap">
               <div class="wl-value" id="wlDisplay">70 kg</div>
-              <input type="number" id="wlSheetWeight" class="wl-input-hidden" inputmode="decimal" step="0.1" min="20" max="500" />
+              <input type="number" id="wlSheetWeight" class="modal-input wl-input-edit" inputmode="decimal" step="0.1" min="20" max="500" autocomplete="off" />
             </div>
             <button class="wl-btn" id="wlPlus">+</button>
           </div>

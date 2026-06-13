@@ -753,16 +753,12 @@
   padding: 0.5rem 1rem;
   font-size: 0.75rem;
   color: var(--text-secondary);
-  position: sticky;
-  top: 52px;
   background: var(--bg);
-  z-index: 1;
   border-bottom: 1px solid var(--border);
+  flex-shrink: 0;
 }
 .nw-list {
   padding: 0.5rem 1rem;
-  overflow-y: auto;
-  flex: 1;
 }
 .nw-footer {
   padding: 0.75rem 1rem;
@@ -778,10 +774,7 @@
   letter-spacing: 0.06em;
   color: var(--accent);
   padding: 1rem 0 0.35rem;
-  position: sticky;
-  top: 93px;
   background: var(--bg);
-  z-index: 1;
 }
 .nw-ex-row {
   display: flex;

@@ -115,6 +115,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Barbell",
+    tags: ["chest", "barbell", "compound", "push"],
   },
   {
     id: "incline-barbell-bench-press",
@@ -123,6 +124,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Barbell",
+    tags: ["chest", "barbell", "compound", "push"],
   },
   {
     id: "decline-bench-press",
@@ -131,6 +133,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Barbell",
+    tags: ["chest", "barbell", "compound", "push"],
   },
   {
     id: "dumbbell-bench-press",
@@ -139,6 +142,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Dumbbell",
+    tags: ["chest", "dumbbell", "compound", "push"],
   },
   {
     id: "incline-dumbbell-press",
@@ -147,6 +151,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Dumbbell",
+    tags: ["chest", "dumbbell", "compound", "push"],
   },
   {
     id: "decline-dumbbell-press",
@@ -155,11 +160,12 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Front Delts", "Triceps"],
     equipment: "Dumbbell",
+    tags: ["chest", "dumbbell", "compound", "push"],
   },
-  { id: "machine-chest-press", name: "Machine Chest Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps"], equipment: "Machine" },
-  { id: "chest-fly-machine", name: "Chest Fly Machine", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Machine" },
-  { id: "cable-fly", name: "Cable Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable" },
-  { id: "push-ups", name: "Push Ups", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight" },
+  { id: "machine-chest-press", name: "Machine Chest Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps"], equipment: "Machine", tags: ["chest", "machine", "compound", "push"] },
+  { id: "chest-fly-machine", name: "Chest Fly Machine", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Machine", tags: ["chest", "machine", "isolation", "push", "fly"] },
+  { id: "cable-fly", name: "Cable Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable", tags: ["chest", "cable", "isolation", "push", "fly"] },
+  { id: "push-ups", name: "Push Ups", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight", tags: ["chest", "bodyweight", "compound", "push"] },
   {
     id: "weighted-push-ups",
     name: "Weighted Push Ups",
@@ -167,8 +173,9 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Chest",
     secondaryMuscles: ["Triceps", "Front Delts"],
     equipment: "Bodyweight",
+    tags: ["chest", "bodyweight", "compound", "push"],
   },
-  { id: "dips", name: "Dips", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight" },
+  { id: "dips", name: "Dips", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps", "Front Delts"], equipment: "Bodyweight", tags: ["chest", "bodyweight", "compound", "push"] },
   // SHOULDERS
   {
     id: "overhead-press",
@@ -177,6 +184,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Front Delts",
     secondaryMuscles: ["Side Delts", "Triceps"],
     equipment: "Barbell",
+    tags: ["shoulders", "front delts", "barbell", "compound", "push"],
   },
   {
     id: "seated-dumbbell-press",
@@ -185,6 +193,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Front Delts",
     secondaryMuscles: ["Side Delts", "Triceps"],
     equipment: "Dumbbell",
+    tags: ["shoulders", "front delts", "dumbbell", "compound", "push"],
   },
   {
     id: "arnold-press",
@@ -193,12 +202,13 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Front Delts",
     secondaryMuscles: ["Side Delts", "Triceps"],
     equipment: "Dumbbell",
+    tags: ["shoulders", "front delts", "dumbbell", "compound", "push"],
   },
-  { id: "lateral-raises", name: "Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "cable-lateral-raises", name: "Cable Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Cable" },
-  { id: "front-raises", name: "Front Raises", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "rear-delt-fly", name: "Rear Delt Fly", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "face-pulls", name: "Face Pulls", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: ["Traps"], equipment: "Cable" },
+  { id: "lateral-raises", name: "Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Dumbbell", tags: ["shoulders", "side delts", "dumbbell", "isolation", "push"] },
+  { id: "cable-lateral-raises", name: "Cable Lateral Raises", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Cable", tags: ["shoulders", "side delts", "cable", "isolation", "push"] },
+  { id: "front-raises", name: "Front Raises", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: [], equipment: "Dumbbell", tags: ["shoulders", "front delts", "dumbbell", "isolation", "push"] },
+  { id: "rear-delt-fly", name: "Rear Delt Fly", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: [], equipment: "Dumbbell", tags: ["shoulders", "rear delts", "dumbbell", "isolation", "pull"] },
+  { id: "face-pulls", name: "Face Pulls", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: ["Traps"], equipment: "Cable", tags: ["shoulders", "rear delts", "traps", "cable", "compound", "pull"] },
   {
     id: "machine-shoulder-press",
     name: "Machine Shoulder Press",
@@ -206,18 +216,19 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Front Delts",
     secondaryMuscles: ["Triceps"],
     equipment: "Machine",
+    tags: ["shoulders", "front delts", "machine", "compound", "push"],
   },
-  { id: "upright-row", name: "Upright Row", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: ["Traps"], equipment: "Barbell" },
-  { id: "landmine-press", name: "Landmine Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Chest", "Triceps"], equipment: "Barbell" },
+  { id: "upright-row", name: "Upright Row", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: ["Traps"], equipment: "Barbell", tags: ["shoulders", "side delts", "traps", "barbell", "compound", "pull"] },
+  { id: "landmine-press", name: "Landmine Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Chest", "Triceps"], equipment: "Barbell", tags: ["shoulders", "front delts", "barbell", "compound", "push"] },
   // BACK
-  { id: "pull-ups", name: "Pull Ups", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Bodyweight" },
-  { id: "chin-ups", name: "Chin Ups", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Bodyweight" },
-  { id: "lat-pulldown", name: "Lat Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Cable" },
-  { id: "wide-grip-pulldown", name: "Wide Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable" },
-  { id: "close-grip-pulldown", name: "Close Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable" },
-  { id: "barbell-row", name: "Barbell Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell" },
-  { id: "pendlay-row", name: "Pendlay Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Barbell" },
-  { id: "t-bar-row", name: "T Bar Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell" },
+  { id: "pull-ups", name: "Pull Ups", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Bodyweight", tags: ["back", "lats", "bodyweight", "compound", "pull"] },
+  { id: "chin-ups", name: "Chin Ups", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Bodyweight", tags: ["back", "lats", "bodyweight", "compound", "pull"] },
+  { id: "lat-pulldown", name: "Lat Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps", "Rear Delts"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "wide-grip-pulldown", name: "Wide Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "close-grip-pulldown", name: "Close Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "barbell-row", name: "Barbell Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell", tags: ["back", "middle back", "barbell", "compound", "pull"] },
+  { id: "pendlay-row", name: "Pendlay Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Barbell", tags: ["back", "middle back", "barbell", "compound", "pull"] },
+  { id: "t-bar-row", name: "T Bar Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell", tags: ["back", "middle back", "barbell", "compound", "pull"] },
   {
     id: "seated-cable-row",
     name: "Seated Cable Row",
@@ -225,6 +236,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Middle Back",
     secondaryMuscles: ["Lats", "Biceps"],
     equipment: "Cable",
+    tags: ["back", "middle back", "cable", "compound", "pull"],
   },
   {
     id: "single-arm-dumbbell-row",
@@ -233,23 +245,24 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Lats",
     secondaryMuscles: ["Middle Back", "Biceps"],
     equipment: "Dumbbell",
+    tags: ["back", "lats", "dumbbell", "compound", "pull"],
   },
-  { id: "machine-row", name: "Machine Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Machine" },
-  { id: "straight-arm-pulldown", name: "Straight Arm Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Triceps"], equipment: "Cable" },
+  { id: "machine-row", name: "Machine Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats"], equipment: "Machine", tags: ["back", "middle back", "machine", "compound", "pull"] },
+  { id: "straight-arm-pulldown", name: "Straight Arm Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Triceps"], equipment: "Cable", tags: ["back", "lats", "cable", "isolation", "pull"] },
   // BICEPS
-  { id: "barbell-curl", name: "Barbell Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell" },
-  { id: "ez-bar-curl", name: "EZ Bar Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell" },
-  { id: "dumbbell-curl", name: "Dumbbell Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell" },
-  { id: "hammer-curl", name: "Hammer Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell" },
-  { id: "incline-curl", name: "Incline Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "cable-curl", name: "Cable Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Cable" },
-  { id: "preacher-curl", name: "Preacher Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell" },
-  { id: "concentration-curl", name: "Concentration Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "spider-curl", name: "Spider Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "reverse-curl", name: "Reverse Curl", category: "Biceps", primaryMuscle: "Forearms", secondaryMuscles: ["Biceps"], equipment: "Barbell" },
+  { id: "barbell-curl", name: "Barbell Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["biceps", "barbell", "isolation", "pull", "curl"] },
+  { id: "ez-bar-curl", name: "EZ Bar Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["biceps", "barbell", "isolation", "pull", "curl"] },
+  { id: "dumbbell-curl", name: "Dumbbell Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "hammer-curl", name: "Hammer Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "incline-curl", name: "Incline Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "cable-curl", name: "Cable Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Cable", tags: ["biceps", "cable", "isolation", "pull", "curl"] },
+  { id: "preacher-curl", name: "Preacher Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["biceps", "barbell", "isolation", "pull", "curl"] },
+  { id: "concentration-curl", name: "Concentration Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "spider-curl", name: "Spider Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "reverse-curl", name: "Reverse Curl", category: "Biceps", primaryMuscle: "Forearms", secondaryMuscles: ["Biceps"], equipment: "Barbell", tags: ["forearms", "barbell", "isolation", "pull", "curl"] },
   // TRICEPS
-  { id: "cable-pushdown", name: "Cable Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
-  { id: "rope-pushdown", name: "Rope Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
+  { id: "cable-pushdown", name: "Cable Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
+  { id: "rope-pushdown", name: "Rope Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
   {
     id: "overhead-tricep-extension",
     name: "Overhead Tricep Extension",
@@ -257,8 +270,9 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Triceps",
     secondaryMuscles: [],
     equipment: "Cable",
+    tags: ["triceps", "cable", "isolation", "push"],
   },
-  { id: "skull-crushers", name: "Skull Crushers", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Barbell" },
+  { id: "skull-crushers", name: "Skull Crushers", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Barbell", tags: ["triceps", "barbell", "isolation", "push"] },
   {
     id: "close-grip-bench-press",
     name: "Close Grip Bench Press",
@@ -266,17 +280,18 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Triceps",
     secondaryMuscles: ["Chest", "Front Delts"],
     equipment: "Barbell",
+    tags: ["triceps", "chest", "barbell", "compound", "push"],
   },
-  { id: "bench-dips", name: "Bench Dips", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Bodyweight" },
-  { id: "machine-dip", name: "Machine Dip", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Machine" },
-  { id: "single-arm-pushdown", name: "Single Arm Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable" },
-  { id: "tricep-kickback", name: "Tricep Kickback", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "jm-press", name: "JM Press", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Barbell" },
+  { id: "bench-dips", name: "Bench Dips", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Bodyweight", tags: ["triceps", "bodyweight", "compound", "push"] },
+  { id: "machine-dip", name: "Machine Dip", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Machine", tags: ["triceps", "machine", "compound", "push"] },
+  { id: "single-arm-pushdown", name: "Single Arm Pushdown", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
+  { id: "tricep-kickback", name: "Tricep Kickback", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["triceps", "dumbbell", "isolation", "push"] },
+  { id: "jm-press", name: "JM Press", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest"], equipment: "Barbell", tags: ["triceps", "barbell", "compound", "push"] },
   // LEGS
-  { id: "back-squat", name: "Back Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Barbell" },
-  { id: "front-squat", name: "Front Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
-  { id: "hack-squat", name: "Hack Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Machine" },
-  { id: "leg-press", name: "Leg Press", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Machine" },
+  { id: "back-squat", name: "Back Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "front-squat", name: "Front Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "hack-squat", name: "Hack Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Machine", tags: ["legs", "quads", "machine", "compound", "push", "squat"] },
+  { id: "leg-press", name: "Leg Press", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Machine", tags: ["legs", "quads", "machine", "compound", "push"] },
   {
     id: "bulgarian-split-squat",
     name: "Bulgarian Split Squat",
@@ -284,18 +299,19 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Quads",
     secondaryMuscles: ["Glutes", "Hamstrings"],
     equipment: "Dumbbell",
+    tags: ["legs", "quads", "dumbbell", "compound", "push", "squat"],
   },
-  { id: "walking-lunges", name: "Walking Lunges", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell" },
-  { id: "romanian-deadlift", name: "Romanian Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
-  { id: "stiff-leg-deadlift", name: "Stiff Leg Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell" },
-  { id: "leg-extension", name: "Leg Extension", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: [], equipment: "Machine" },
-  { id: "leg-curl", name: "Leg Curl", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: [], equipment: "Machine" },
-  { id: "goblet-squat", name: "Goblet Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Dumbbell" },
-  { id: "step-ups", name: "Step Ups", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell" },
+  { id: "walking-lunges", name: "Walking Lunges", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell", tags: ["legs", "quads", "dumbbell", "compound", "push", "lunge"] },
+  { id: "romanian-deadlift", name: "Romanian Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell", tags: ["legs", "hamstrings", "barbell", "compound", "pull", "hinge"] },
+  { id: "stiff-leg-deadlift", name: "Stiff Leg Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Barbell", tags: ["legs", "hamstrings", "barbell", "compound", "pull", "hinge"] },
+  { id: "leg-extension", name: "Leg Extension", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: [], equipment: "Machine", tags: ["legs", "quads", "machine", "isolation", "push"] },
+  { id: "leg-curl", name: "Leg Curl", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: [], equipment: "Machine", tags: ["legs", "hamstrings", "machine", "isolation", "pull", "curl"] },
+  { id: "goblet-squat", name: "Goblet Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Dumbbell", tags: ["legs", "quads", "dumbbell", "compound", "push", "squat"] },
+  { id: "step-ups", name: "Step Ups", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell", tags: ["legs", "quads", "dumbbell", "compound", "push"] },
   // GLUTES
-  { id: "hip-thrust", name: "Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Barbell" },
-  { id: "glute-bridge", name: "Glute Bridge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight" },
-  { id: "cable-kickback", name: "Cable Kickback", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: [], equipment: "Cable" },
+  { id: "hip-thrust", name: "Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Barbell", tags: ["glutes", "barbell", "compound", "push", "hinge"] },
+  { id: "glute-bridge", name: "Glute Bridge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight", tags: ["glutes", "bodyweight", "isolation", "push", "hinge"] },
+  { id: "cable-kickback", name: "Cable Kickback", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: [], equipment: "Cable", tags: ["glutes", "cable", "isolation", "push"] },
   {
     id: "smith-machine-hip-thrust",
     name: "Smith Machine Hip Thrust",
@@ -303,31 +319,32 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Glutes",
     secondaryMuscles: ["Hamstrings"],
     equipment: "Machine",
+    tags: ["glutes", "machine", "compound", "push", "hinge"],
   },
-  { id: "reverse-lunge", name: "Reverse Lunge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Quads", "Hamstrings"], equipment: "Dumbbell" },
+  { id: "reverse-lunge", name: "Reverse Lunge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Quads", "Hamstrings"], equipment: "Dumbbell", tags: ["glutes", "dumbbell", "compound", "push", "lunge"] },
   // CALVES
-  { id: "standing-calf-raise", name: "Standing Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine" },
-  { id: "seated-calf-raise", name: "Seated Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine" },
-  { id: "leg-press-calf-raise", name: "Leg Press Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine" },
-  { id: "single-leg-calf-raise", name: "Single Leg Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Bodyweight" },
-  { id: "donkey-calf-raise", name: "Donkey Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine" },
+  { id: "standing-calf-raise", name: "Standing Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine", tags: ["calves", "machine", "isolation", "push"] },
+  { id: "seated-calf-raise", name: "Seated Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine", tags: ["calves", "machine", "isolation", "push"] },
+  { id: "leg-press-calf-raise", name: "Leg Press Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine", tags: ["calves", "machine", "isolation", "push"] },
+  { id: "single-leg-calf-raise", name: "Single Leg Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Bodyweight", tags: ["calves", "bodyweight", "isolation", "push"] },
+  { id: "donkey-calf-raise", name: "Donkey Calf Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine", tags: ["calves", "machine", "isolation", "push"] },
   // ABS
-  { id: "crunch", name: "Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Bodyweight" },
-  { id: "cable-crunch", name: "Cable Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Cable" },
-  { id: "machine-crunch", name: "Machine Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Machine" },
-  { id: "leg-raise", name: "Leg Raise", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight" },
-  { id: "hanging-leg-raise", name: "Hanging Leg Raise", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Upper Abs"], equipment: "Bodyweight" },
-  { id: "reverse-crunch", name: "Reverse Crunch", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: [], equipment: "Bodyweight" },
-  { id: "plank", name: "Plank", category: "Abs", primaryMuscle: "Core", secondaryMuscles: [], equipment: "Bodyweight" },
-  { id: "ab-wheel-rollout", name: "Ab Wheel Rollout", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Upper Abs"], equipment: "Bodyweight" },
-  { id: "russian-twist", name: "Russian Twist", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Core"], equipment: "Bodyweight" },
-  { id: "mountain-climbers", name: "Mountain Climbers", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight" },
+  { id: "crunch", name: "Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Bodyweight", tags: ["abs", "upper abs", "bodyweight", "isolation", "core"] },
+  { id: "cable-crunch", name: "Cable Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Cable", tags: ["abs", "upper abs", "cable", "isolation", "core"] },
+  { id: "machine-crunch", name: "Machine Crunch", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: [], equipment: "Machine", tags: ["abs", "upper abs", "machine", "isolation", "core"] },
+  { id: "leg-raise", name: "Leg Raise", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "hanging-leg-raise", name: "Hanging Leg Raise", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Upper Abs"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "reverse-crunch", name: "Reverse Crunch", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: [], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "plank", name: "Plank", category: "Abs", primaryMuscle: "Core", secondaryMuscles: [], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "isolation", "core"] },
+  { id: "ab-wheel-rollout", name: "Ab Wheel Rollout", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Upper Abs"], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "compound", "core"] },
+  { id: "russian-twist", name: "Russian Twist", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Core"], equipment: "Bodyweight", tags: ["abs", "obliques", "bodyweight", "isolation", "core"] },
+  { id: "mountain-climbers", name: "Mountain Climbers", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "compound", "core"] },
   // FOREARMS
-  { id: "wrist-curl", name: "Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "reverse-wrist-curl", name: "Reverse Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Dumbbell" },
-  { id: "farmer-carry", name: "Farmer Carry", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: ["Traps"], equipment: "Dumbbell" },
-  { id: "behind-back-wrist-curl", name: "Behind Back Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Barbell" },
-  { id: "plate-pinch-hold", name: "Plate Pinch Hold", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Other" },
+  { id: "wrist-curl", name: "Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Dumbbell", tags: ["forearms", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "reverse-wrist-curl", name: "Reverse Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Dumbbell", tags: ["forearms", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "farmer-carry", name: "Farmer Carry", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: ["Traps"], equipment: "Dumbbell", tags: ["forearms", "traps", "dumbbell", "compound", "carry"] },
+  { id: "behind-back-wrist-curl", name: "Behind Back Wrist Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Barbell", tags: ["forearms", "barbell", "isolation", "pull", "curl"] },
+  { id: "plate-pinch-hold", name: "Plate Pinch Hold", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Other", tags: ["forearms", "other", "isolation", "hold"] },
   // FULL BODY
   {
     id: "deadlift",
@@ -336,6 +353,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Hamstrings",
     secondaryMuscles: ["Glutes", "Lower Back", "Forearms"],
     equipment: "Barbell",
+    tags: ["full body", "hamstrings", "barbell", "compound", "pull", "hinge"],
   },
   {
     id: "power-clean",
@@ -344,6 +362,7 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Quads",
     secondaryMuscles: ["Hamstrings", "Traps", "Core"],
     equipment: "Barbell",
+    tags: ["full body", "quads", "barbell", "compound", "pull", "explosive"],
   },
   {
     id: "clean-and-press",
@@ -352,8 +371,9 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Shoulders",
     secondaryMuscles: ["Quads", "Triceps", "Core"],
     equipment: "Barbell",
+    tags: ["full body", "shoulders", "barbell", "compound", "push", "explosive"],
   },
-  { id: "thruster", name: "Thruster", category: "Full Body", primaryMuscle: "Quads", secondaryMuscles: ["Shoulders", "Core"], equipment: "Barbell" },
+  { id: "thruster", name: "Thruster", category: "Full Body", primaryMuscle: "Quads", secondaryMuscles: ["Shoulders", "Core"], equipment: "Barbell", tags: ["full body", "quads", "barbell", "compound", "push", "explosive"] },
   {
     id: "kettlebell-swing",
     name: "Kettlebell Swing",
@@ -361,11 +381,130 @@ const EXERCISE_LIBRARY = [
     primaryMuscle: "Glutes",
     secondaryMuscles: ["Hamstrings", "Core"],
     equipment: "Kettlebell",
+    tags: ["full body", "glutes", "kettlebell", "compound", "pull", "hinge"],
   },
-  { id: "burpee", name: "Burpee", category: "Full Body", primaryMuscle: "Core", secondaryMuscles: ["Quads", "Chest", "Shoulders"], equipment: "Bodyweight" },
+  { id: "burpee", name: "Burpee", category: "Full Body", primaryMuscle: "Core", secondaryMuscles: ["Quads", "Chest", "Shoulders"], equipment: "Bodyweight", tags: ["full body", "core", "bodyweight", "compound", "push", "explosive"] },
+  // NEW CHEST
+  { id: "svend-press", name: "Svend Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Dumbbell", tags: ["chest", "dumbbell", "isolation", "push"] },
+  { id: "hex-press", name: "Hex Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps"], equipment: "Dumbbell", tags: ["chest", "dumbbell", "isolation", "push"] },
+  { id: "dumbbell-pullover", name: "Dumbbell Pullover", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Lats", "Triceps"], equipment: "Dumbbell", tags: ["chest", "lats", "dumbbell", "compound", "push"] },
+  { id: "low-cable-fly", name: "Low Cable Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable", tags: ["chest", "cable", "isolation", "push", "fly"] },
+  { id: "high-cable-fly", name: "High Cable Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable", tags: ["chest", "cable", "isolation", "push", "fly"] },
+  { id: "floor-press", name: "Floor Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Triceps"], equipment: "Barbell", tags: ["chest", "barbell", "compound", "push"] },
+  // NEW SHOULDERS
+  { id: "behind-neck-press", name: "Behind Neck Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Triceps"], equipment: "Barbell", tags: ["shoulders", "front delts", "barbell", "compound", "push"] },
+  { id: "single-arm-cable-lateral-raise", name: "Single Arm Cable Lateral Raise", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: [], equipment: "Cable", tags: ["shoulders", "side delts", "cable", "isolation", "push"] },
+  { id: "bent-over-cable-lateral-raise", name: "Bent Over Cable Lateral Raise", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: ["Side Delts"], equipment: "Cable", tags: ["shoulders", "rear delts", "cable", "isolation", "pull"] },
+  { id: "plate-front-raise", name: "Plate Front Raise", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: [], equipment: "Other", tags: ["shoulders", "front delts", "plate", "isolation", "push"] },
+  { id: "cuban-press", name: "Cuban Press", category: "Shoulders", primaryMuscle: "Side Delts", secondaryMuscles: ["Front Delts", "Rear Delts"], equipment: "Dumbbell", tags: ["shoulders", "side delts", "dumbbell", "compound", "pull"] },
+  { id: "z-press", name: "Z Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Core"], equipment: "Barbell", tags: ["shoulders", "front delts", "barbell", "compound", "push"] },
+  { id: "dumbbell-shrug", name: "Dumbbell Shrug", category: "Shoulders", primaryMuscle: "Traps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["traps", "shoulders", "dumbbell", "isolation", "pull"] },
+  { id: "barbell-shrug", name: "Barbell Shrug", category: "Shoulders", primaryMuscle: "Traps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["traps", "shoulders", "barbell", "isolation", "pull"] },
+  // NEW BACK
+  { id: "chest-supported-row", name: "Chest Supported Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Dumbbell", tags: ["back", "middle back", "dumbbell", "compound", "pull"] },
+  { id: "meadows-row", name: "Meadows Row", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Middle Back", "Biceps"], equipment: "Barbell", tags: ["back", "lats", "barbell", "compound", "pull"] },
+  { id: "cable-pullover", name: "Cable Pullover", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Chest", "Triceps"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "rack-pull", name: "Rack Pull", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Traps", "Forearms"], equipment: "Barbell", tags: ["back", "traps", "barbell", "compound", "pull", "hinge"] },
+  { id: "snatch-grip-deadlift", name: "Snatch Grip Deadlift", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Hamstrings", "Traps", "Forearms"], equipment: "Barbell", tags: ["back", "middle back", "barbell", "compound", "pull", "hinge"] },
+  { id: "hyperextension", name: "Hyperextension", category: "Back", primaryMuscle: "Lower Back", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Bodyweight", tags: ["back", "lower back", "bodyweight", "isolation", "pull", "hinge"] },
+  { id: "inverted-row", name: "Inverted Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Bodyweight", tags: ["back", "middle back", "bodyweight", "compound", "pull"] },
+  // NEW BICEPS
+  { id: "drag-curl", name: "Drag Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["biceps", "barbell", "isolation", "pull", "curl"] },
+  { id: "bayesian-cable-curl", name: "Bayesian Cable Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Cable", tags: ["biceps", "cable", "isolation", "pull", "curl"] },
+  { id: "zottman-curl", name: "Zottman Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["biceps", "forearms", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "pinwheel-curl", name: "Pinwheel Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "21s-curl", name: "21s Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["biceps", "barbell", "isolation", "pull", "curl"] },
+  // NEW TRICEPS
+  { id: "diamond-push-ups", name: "Diamond Push Ups", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: ["Chest", "Front Delts"], equipment: "Bodyweight", tags: ["triceps", "bodyweight", "compound", "push"] },
+  { id: "french-press", name: "French Press", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Barbell", tags: ["triceps", "barbell", "isolation", "push"] },
+  { id: "tate-press", name: "Tate Press", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["triceps", "dumbbell", "isolation", "push"] },
+  { id: "cable-overhead-extension", name: "Cable Overhead Extension", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
+  { id: "tricep-pushdown-v-bar", name: "Tricep Pushdown (V-Bar)", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
+  // NEW LEGS (Quads)
+  { id: "sissy-squat", name: "Sissy Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Core"], equipment: "Bodyweight", tags: ["legs", "quads", "bodyweight", "isolation", "push", "squat"] },
+  { id: "box-squat", name: "Box Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "pistol-squat", name: "Pistol Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Core"], equipment: "Bodyweight", tags: ["legs", "quads", "bodyweight", "compound", "push", "squat"] },
+  { id: "v-squat", name: "V-Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes"], equipment: "Machine", tags: ["legs", "quads", "machine", "compound", "push", "squat"] },
+  { id: "belt-squat", name: "Belt Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Machine", tags: ["legs", "quads", "machine", "compound", "push", "squat"] },
+  { id: "split-squat", name: "Split Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Dumbbell", tags: ["legs", "quads", "dumbbell", "compound", "push", "squat"] },
+  // NEW LEGS (Hamstrings)
+  { id: "lying-leg-curl", name: "Lying Leg Curl", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: [], equipment: "Machine", tags: ["legs", "hamstrings", "machine", "isolation", "pull", "curl"] },
+  { id: "nordic-curl", name: "Nordic Curl", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Bodyweight", tags: ["legs", "hamstrings", "bodyweight", "isolation", "pull", "curl"] },
+  { id: "glute-ham-raise", name: "Glute Ham Raise", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Machine", tags: ["legs", "hamstrings", "machine", "compound", "pull", "curl"] },
+  { id: "single-leg-rdl", name: "Single Leg RDL", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Dumbbell", tags: ["legs", "hamstrings", "dumbbell", "compound", "pull", "hinge"] },
+  { id: "cable-pull-through", name: "Cable Pull Through", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Cable", tags: ["legs", "hamstrings", "glutes", "cable", "compound", "pull", "hinge"] },
+  // NEW GLUTES
+  { id: "single-leg-hip-thrust", name: "Single Leg Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight", tags: ["glutes", "bodyweight", "isolation", "push", "hinge"] },
+  { id: "frog-pump", name: "Frog Pump", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight", tags: ["glutes", "bodyweight", "isolation", "push", "hinge"] },
+  { id: "glute-kickback-machine", name: "Glute Kickback Machine", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: [], equipment: "Machine", tags: ["glutes", "machine", "isolation", "push"] },
+  // NEW CALVES
+  { id: "calf-press-leg-press", name: "Calf Press on Leg Press", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Machine", tags: ["calves", "machine", "isolation", "push"] },
+  { id: "jump-rope", name: "Jump Rope", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: ["Quads", "Core"], equipment: "Bodyweight", tags: ["calves", "bodyweight", "compound", "push", "plyometric"] },
+  { id: "box-jump", name: "Box Jump", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: ["Quads", "Glutes"], equipment: "Bodyweight", tags: ["calves", "legs", "bodyweight", "compound", "push", "plyometric"] },
+  { id: "toe-raise", name: "Toe Raise", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: ["Tibialis"], equipment: "Bodyweight", tags: ["calves", "bodyweight", "isolation", "push"] },
+  // NEW ABS
+  { id: "dead-bug", name: "Dead Bug", category: "Abs", primaryMuscle: "Core", secondaryMuscles: [], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "isolation", "core"] },
+  { id: "bicycle-crunch", name: "Bicycle Crunch", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Upper Abs"], equipment: "Bodyweight", tags: ["abs", "obliques", "bodyweight", "isolation", "core"] },
+  { id: "side-plank", name: "Side Plank", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Core"], equipment: "Bodyweight", tags: ["abs", "obliques", "core", "bodyweight", "isolation", "core"] },
+  { id: "pallof-press", name: "Pallof Press", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Obliques"], equipment: "Cable", tags: ["abs", "core", "cable", "isolation", "core"] },
+  { id: "v-up", name: "V-Up", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: ["Lower Abs"], equipment: "Bodyweight", tags: ["abs", "upper abs", "bodyweight", "isolation", "core"] },
+  { id: "toes-to-bar", name: "Toes to Bar", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Upper Abs", "Hip Flexors"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "compound", "core"] },
+  { id: "dragon-flag", name: "Dragon Flag", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Upper Abs", "Lower Abs"], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "compound", "core"] },
+  { id: "hollow-body-hold", name: "Hollow Body Hold", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Upper Abs", "Lower Abs"], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "isolation", "core"] },
+  // NEW FOREARMS
+  { id: "finger-curl", name: "Finger Curl", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Barbell", tags: ["forearms", "barbell", "isolation", "pull", "curl"] },
+  { id: "wrist-roller", name: "Wrist Roller", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Other", tags: ["forearms", "other", "isolation", "pull", "curl"] },
+  { id: "dead-hang", name: "Dead Hang", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: ["Lats", "Core"], equipment: "Bodyweight", tags: ["forearms", "back", "bodyweight", "isolation", "pull", "hold"] },
+  { id: "fat-bar-hold", name: "Fat Bar Hold", category: "Forearms", primaryMuscle: "Forearms", secondaryMuscles: [], equipment: "Barbell", tags: ["forearms", "barbell", "isolation", "hold"] },
+  // ADDITIONAL EXERCISES
+  { id: "smith-machine-bench-press", name: "Smith Machine Bench Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Machine", tags: ["chest", "machine", "compound", "push"] },
+  { id: "smith-machine-incline-press", name: "Smith Machine Incline Press", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts", "Triceps"], equipment: "Machine", tags: ["chest", "machine", "compound", "push", "upper chest"] },
+  { id: "pec-deck-fly", name: "Pec Deck Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Machine", tags: ["chest", "machine", "isolation", "push", "fly"] },
+  { id: "cable-upper-chest-fly", name: "Cable Upper Chest Fly", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Front Delts"], equipment: "Cable", tags: ["chest", "cable", "isolation", "push", "fly", "upper chest"] },
+  { id: "smith-machine-overhead-press", name: "Smith Machine Overhead Press", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: ["Side Delts", "Triceps"], equipment: "Machine", tags: ["shoulders", "front delts", "machine", "compound", "push"] },
+  { id: "cable-front-raise", name: "Cable Front Raise", category: "Shoulders", primaryMuscle: "Front Delts", secondaryMuscles: [], equipment: "Cable", tags: ["shoulders", "front delts", "cable", "isolation", "push"] },
+  { id: "reverse-pec-deck", name: "Reverse Pec Deck", category: "Shoulders", primaryMuscle: "Rear Delts", secondaryMuscles: ["Middle Back"], equipment: "Machine", tags: ["shoulders", "rear delts", "machine", "isolation", "pull"] },
+  { id: "trap-bar-shrug", name: "Trap Bar Shrug", category: "Shoulders", primaryMuscle: "Traps", secondaryMuscles: ["Forearms"], equipment: "Barbell", tags: ["traps", "shoulders", "barbell", "isolation", "pull"] },
+  { id: "v-grip-pulldown", name: "V-Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "reverse-grip-pulldown", name: "Reverse Grip Pulldown", category: "Back", primaryMuscle: "Lats", secondaryMuscles: ["Biceps"], equipment: "Cable", tags: ["back", "lats", "cable", "compound", "pull"] },
+  { id: "cable-high-row", name: "Cable High Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Cable", tags: ["back", "middle back", "cable", "compound", "pull"] },
+  { id: "smith-machine-row", name: "Smith Machine Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Machine", tags: ["back", "middle back", "machine", "compound", "pull"] },
+  { id: "alternating-dumbbell-curl", name: "Alternating Dumbbell Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Dumbbell", tags: ["biceps", "dumbbell", "isolation", "pull", "curl"] },
+  { id: "cable-hammer-curl", name: "Cable Hammer Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Cable", tags: ["biceps", "cable", "isolation", "pull", "curl"] },
+  { id: "rope-hammer-curl", name: "Rope Hammer Curl", category: "Biceps", primaryMuscle: "Biceps", secondaryMuscles: ["Forearms"], equipment: "Cable", tags: ["biceps", "cable", "isolation", "pull", "curl"] },
+  { id: "ez-bar-skull-crusher", name: "EZ Bar Skull Crusher", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Barbell", tags: ["triceps", "barbell", "isolation", "push"] },
+  { id: "dumbbell-overhead-extension", name: "Dumbbell Overhead Extension", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Dumbbell", tags: ["triceps", "dumbbell", "isolation", "push"] },
+  { id: "cable-rope-overhead-extension", name: "Cable Rope Overhead Extension", category: "Triceps", primaryMuscle: "Triceps", secondaryMuscles: [], equipment: "Cable", tags: ["triceps", "cable", "isolation", "push"] },
+  { id: "safety-bar-squat", name: "Safety Bar Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "wide-stance-squat", name: "Wide Stance Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings", "Adductors"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "pause-squat", name: "Pause Squat", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Glutes", "Hamstrings"], equipment: "Barbell", tags: ["legs", "quads", "barbell", "compound", "push", "squat"] },
+  { id: "sled-push", name: "Sled Push", category: "Legs", primaryMuscle: "Quads", secondaryMuscles: ["Calves", "Glutes"], equipment: "Other", tags: ["legs", "quads", "other", "compound", "push"] },
+  { id: "kettlebell-deadlift", name: "Kettlebell Deadlift", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes", "Core"], equipment: "Kettlebell", tags: ["legs", "hamstrings", "kettlebell", "compound", "pull", "hinge"] },
+  { id: "dumbbell-rdl", name: "Dumbbell RDL", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Dumbbell", tags: ["legs", "hamstrings", "dumbbell", "compound", "pull", "hinge"] },
+  { id: "ball-leg-curl", name: "Ball Leg Curl", category: "Legs", primaryMuscle: "Hamstrings", secondaryMuscles: ["Glutes"], equipment: "Bodyweight", tags: ["legs", "hamstrings", "bodyweight", "isolation", "pull", "curl"] },
+  { id: "banded-hip-thrust", name: "Banded Hip Thrust", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Bodyweight", tags: ["glutes", "bodyweight", "compound", "push", "hinge"] },
+  { id: "barbell-glute-bridge", name: "Barbell Glute Bridge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Hamstrings"], equipment: "Barbell", tags: ["glutes", "barbell", "compound", "push", "hinge"] },
+  { id: "curtsy-lunge", name: "Curtsy Lunge", category: "Glutes", primaryMuscle: "Glutes", secondaryMuscles: ["Quads", "Adductors"], equipment: "Dumbbell", tags: ["glutes", "dumbbell", "compound", "push", "lunge"] },
+  { id: "jump-squat", name: "Jump Squat", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: ["Quads", "Glutes"], equipment: "Bodyweight", tags: ["calves", "legs", "bodyweight", "compound", "push", "plyometric"] },
+  { id: "tip-toe-walk", name: "Tip Toe Walk", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: [], equipment: "Bodyweight", tags: ["calves", "bodyweight", "isolation", "push"] },
+  { id: "incline-treadmill-walk", name: "Incline Treadmill Walk", category: "Calves", primaryMuscle: "Calves", secondaryMuscles: ["Hamstrings", "Glutes"], equipment: "Machine", tags: ["calves", "machine", "compound", "push"] },
+  { id: "hanging-knee-raise", name: "Hanging Knee Raise", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "cable-woodchop", name: "Cable Woodchop", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Core"], equipment: "Cable", tags: ["abs", "obliques", "cable", "compound", "core"] },
+  { id: "medicine-ball-slam", name: "Medicine Ball Slam", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Upper Abs", "Shoulders"], equipment: "Other", tags: ["abs", "core", "other", "compound", "core"] },
+  { id: "bear-crawl", name: "Bear Crawl", category: "Abs", primaryMuscle: "Core", secondaryMuscles: ["Shoulders", "Quads"], equipment: "Bodyweight", tags: ["abs", "core", "bodyweight", "compound", "core"] },
+  { id: "l-sit-hold", name: "L-Sit Hold", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Core", "Hip Flexors", "Quads"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "windshield-wiper", name: "Windshield Wiper", category: "Abs", primaryMuscle: "Obliques", secondaryMuscles: ["Lower Abs", "Core"], equipment: "Bodyweight", tags: ["abs", "obliques", "bodyweight", "compound", "core"] },
+  { id: "heel-tap", name: "Heel Tap", category: "Abs", primaryMuscle: "Upper Abs", secondaryMuscles: ["Obliques"], equipment: "Bodyweight", tags: ["abs", "upper abs", "bodyweight", "isolation", "core"] },
+  { id: "flutter-kicks", name: "Flutter Kicks", category: "Abs", primaryMuscle: "Lower Abs", secondaryMuscles: ["Hip Flexors"], equipment: "Bodyweight", tags: ["abs", "lower abs", "bodyweight", "isolation", "core"] },
+  { id: "landmine-row", name: "Landmine Row", category: "Back", primaryMuscle: "Middle Back", secondaryMuscles: ["Lats", "Biceps"], equipment: "Barbell", tags: ["back", "middle back", "barbell", "compound", "pull"] },
+  { id: "dumbbell-pullover-flat", name: "Dumbbell Pullover (Flat)", category: "Chest", primaryMuscle: "Chest", secondaryMuscles: ["Lats", "Triceps"], equipment: "Dumbbell", tags: ["chest", "lats", "dumbbell", "compound", "push"] },
+  { id: "snatch", name: "Snatch", category: "Full Body", primaryMuscle: "Quads", secondaryMuscles: ["Hamstrings", "Shoulders", "Core"], equipment: "Barbell", tags: ["full body", "quads", "barbell", "compound", "pull", "explosive"] },
+  { id: "push-jerk", name: "Push Jerk", category: "Full Body", primaryMuscle: "Shoulders", secondaryMuscles: ["Quads", "Triceps", "Core"], equipment: "Barbell", tags: ["full body", "shoulders", "barbell", "compound", "push", "explosive"] },
+  { id: "muscle-up", name: "Muscle Up", category: "Full Body", primaryMuscle: "Lats", secondaryMuscles: ["Chest", "Triceps", "Core"], equipment: "Bodyweight", tags: ["full body", "lats", "bodyweight", "compound", "pull"] },
+  { id: "handstand-push-up", name: "Handstand Push Up", category: "Full Body", primaryMuscle: "Shoulders", secondaryMuscles: ["Triceps", "Core"], equipment: "Bodyweight", tags: ["full body", "shoulders", "bodyweight", "compound", "push"] },
 ];
 
-const EXERCISE_CATEGORIES = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"];
+const EXERCISE_CATEGORIES = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Traps", "Full Body"];
 
 const COMPOUND_EXERCISE_NAMES = new Set([
   "Barbell Bench Press",
@@ -416,6 +555,35 @@ const COMPOUND_EXERCISE_NAMES = new Set([
   "Barbell Shrug",
   "Farmer Carry",
   "Farmer's Carry",
+  "Smith Machine Bench Press",
+  "Smith Machine Incline Press",
+  "Safety Bar Squat",
+  "Wide Stance Squat",
+  "Pause Squat",
+  "Sled Push",
+  "Cable Woodchop",
+  "Medicine Ball Slam",
+  "Bear Crawl",
+  "Windshield Wiper",
+  "Banded Hip Thrust",
+  "Barbell Glute Bridge",
+  "Curtsy Lunge",
+  "V-Grip Pulldown",
+  "Reverse Grip Pulldown",
+  "Cable High Row",
+  "Smith Machine Row",
+  "Landmine Row",
+  "Smith Machine Overhead Press",
+  "Snatch",
+  "Push Jerk",
+  "Muscle Up",
+  "Handstand Push Up",
+  "Jump Squat",
+  "Incline Treadmill Walk",
+  "Kettlebell Deadlift",
+  "Dumbbell RDL",
+  "Cable Pull Through",
+  "Dumbbell Pullover (Flat)",
 ]);
 
 function isCompoundExercise(exName) {
@@ -989,6 +1157,8 @@ function loadState() {
     showRecoveryAdvice: true,
     showWorkoutProgress: true,
     recoveryAnalysis: true,
+    workoutStreak: { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
+    customExercises: [],
   };
   try {
     const loaded = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
@@ -1027,26 +1197,47 @@ function saveAndRender() {
 }
 
 function getTodaySession() {
-  return state.sessions.find((item) => item.dateKey === getDateKey()) || null;
+  return state.sessions.find((item) => item.dateKey === getDateKey() && !item.finishedAt) || null;
 }
 
 function startSessionForWorkout(workoutId) {
   const today = getDateKey();
-  const existing = state.sessions.find((item) => item.dateKey === today);
+  const existing = state.sessions.find((item) => item.dateKey === today && !item.finishedAt);
   const activePlan = loadCustomProgram() || plan;
   const workout = activePlan.find((w) => w.id === workoutId);
-  if (!workout) return getTodaySession() || existing;
-  if (existing && existing.workoutId === workoutId) return existing;
+  if (!workout) {
+    console.log("[DEBUG] startSessionForWorkout: workout not found", { workoutId, activePlan });
+    return getTodaySession() || existing;
+  }
+  if (existing && existing.workoutId === workoutId) {
+    console.log("[DEBUG] startSessionForWorkout: returning existing session", { existing });
+    return existing;
+  }
   const session = {
     id: crypto.randomUUID(),
     dateKey: today,
+    startedAt: new Date().toISOString(),
     workoutId: workout.id,
     workoutName: workout.name,
-    exercises: workout.exercises.map((exercise) => ({
-      name: exercise.name,
-      sets: Array.from({ length: exercise.sets }, () => ({ reps: exercise.reps || 8, weight: "", done: false })),
-    })),
+    exercises: workout.exercises.map((exercise) => {
+      console.log("[DEBUG] Creating sets for exercise:", exercise.name, "sets value:", exercise.sets, "type:", typeof exercise.sets);
+      const setCount = typeof exercise.sets === "number" ? exercise.sets : 3;
+      return {
+        name: exercise.name,
+        sets: Array.from({ length: setCount }, () => ({
+          id: crypto.randomUUID(),
+          reps: exercise.reps || 8,
+          weight: "",
+          done: false,
+          isWarmup: false,
+          notes: "",
+          label: "",
+          loggedAt: null,
+        })),
+      };
+    }),
   };
+  console.log("[DEBUG] New session created:", JSON.parse(JSON.stringify(session)));
   state.sessions = state.sessions.filter((item) => item.dateKey !== today);
   state.sessions.unshift(session);
   saveState();
@@ -1054,7 +1245,7 @@ function startSessionForWorkout(workoutId) {
 }
 
 function getCurrentWorkout() {
-  const todaySession = state.sessions.find((item) => item.dateKey === getDateKey());
+  const todaySession = state.sessions.find((item) => item.dateKey === getDateKey() && !item.finishedAt);
   const activePlan = loadCustomProgram() || plan;
   if (todaySession) return activePlan.find((w) => w.id === todaySession.workoutId) || getPlannedWorkout();
   return getPlannedWorkout();
@@ -1068,7 +1259,20 @@ function getPlannedWorkout() {
 function getExerciseSession(session, exercise) {
   let ex = session.exercises.find((item) => item.name === exercise.name);
   if (!ex) {
-    ex = { name: exercise.name, sets: Array.from({ length: exercise.sets }, () => ({ reps: exercise.reps || 8, weight: "", done: false })) };
+    const setCount = typeof exercise.sets === "number" ? exercise.sets : 3;
+    ex = {
+      name: exercise.name,
+      sets: Array.from({ length: setCount }, () => ({
+        id: crypto.randomUUID(),
+        reps: exercise.reps || 8,
+        weight: "",
+        done: false,
+        isWarmup: false,
+        notes: "",
+        label: "",
+        loggedAt: null,
+      })),
+    };
     session.exercises.push(ex);
     saveState();
   }
@@ -1792,6 +1996,7 @@ function logWeight(weight, date, notes) {
   }
   saveState();
   renderSettings();
+  renderHome();
 }
 
 // ===== TAB SYSTEM =====
@@ -1830,6 +2035,7 @@ function positionNavIndicator() {
   if (active && indicator) {
     indicator.style.left = active.offsetLeft + "px";
     indicator.style.width = active.offsetWidth + "px";
+    indicator.classList.add("is-visible");
   }
 }
 
@@ -1867,7 +2073,20 @@ function showScreen(screenId) {
 // ===== HOME DASHBOARD =====
 
 function getDailyMessage() {
-  return "Focus on today's workout.";
+  const messages = [
+    "Have a great workout today.",
+    "Ready to hit your goals?",
+    "Let's build consistency today.",
+    "Focus on today's training.",
+    "Stay strong and keep moving.",
+    "Make every rep count.",
+    "You're building something great.",
+    "Trust the process.",
+    "Small steps lead to big results.",
+    "Today's effort = tomorrow's progress.",
+  ];
+  const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
+  return messages[dayOfYear % messages.length];
 }
 
 function getLastWorkoutForPlan(workoutId) {
@@ -1886,12 +2105,14 @@ function renderHome() {
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const profileComplete = isProfileComplete();
   const hasWeight = weight !== null && weight !== undefined;
+  const bmi = user && user.height && hasWeight ? (weight / ((user.height / 100) * (user.height / 100))).toFixed(1) : null;
   const longestStreak = getLongestStreak();
   document.getElementById("homeGreeting").innerHTML = `
     <div class="hero-greeting">${g.text} ${g.emoji}</div>
     <div class="hero-name">${name}</div>
     <div class="hero-motivation">${getDailyMessage()}</div>
     ${profileComplete || state.profileBannerDismissed ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span>Complete your profile to unlock all features</span><span class="home-incomplete-cta">Set Up →</span></div>`}
+    <div class="home-greeting-spacer"></div>
     <div class="hero-cards-row">
       <div class="hero-streak-card" id="heroStreakCard">
         <div class="hc-header">STREAK</div>
@@ -1902,7 +2123,7 @@ function renderHome() {
       <div class="hero-weight-card" id="heroWeightCard">
         <div class="hc-header">WEIGHT</div>
         <div class="hc-value">${hasWeight ? displayWeight(weight) : "—"}</div>
-        <div class="hc-sub">${hasWeight ? "Updated Today" : "Tap to log weight"}</div>
+        <div class="hc-sub">${hasWeight ? (bmi ? "BMI: " + bmi : "Updated Today") : "Tap to log weight"}</div>
       </div>
     </div>`;
 
@@ -1993,33 +2214,44 @@ function renderHome() {
 
 function renderWorkoutCardItem(workout, todaySession) {
   const isActive = todaySession && todaySession.workoutId === workout.id;
-  const last = getLastWorkoutForPlan(workout.id);
   const totalEx = workout.exercises ? workout.exercises.length : 0;
-  const badgeText = isActive ? "Active" : "";
-  const badgeClass = isActive ? "" : "is-idle";
 
-  let metaParts = [];
-  if (totalEx) metaParts.push(`${totalEx} exercise${totalEx !== 1 ? "s" : ""}`);
-  if (last) {
-    const parts = last.dateKey === getDateKey() ? "Today" : formatRelativeDate(last.dateKey);
-    metaParts.push(`Last: ${parts}`);
+  if (isActive && todaySession) {
+    const doneEx = todaySession.exercises.filter((e) => e.sets.length && e.sets.every((s) => s.done)).length;
+    const elapsed = todaySession.startedAt ? formatStopwatch(Math.floor((Date.now() - new Date(todaySession.startedAt).getTime()) / 1000)) : "";
+    return `<div class="wo-card-item is-active" data-w-id="${workout.id}">
+      <div class="wo-card-item-active-top">
+        <span class="wo-card-item-badge">Active</span>
+        <button class="wo-card-item-menu" data-w-id="${workout.id}">•••</button>
+      </div>
+      <div class="wo-card-item-name" style="font-size:1rem">${workout.name}</div>
+      <div class="wo-card-item-row2">
+        <span class="wo-card-item-meta">Exercise ${Math.min(doneEx + 1, totalEx)} of ${totalEx}${elapsed ? " · " + elapsed : ""}</span>
+        <button class="wo-card-item-btn" data-w-id="${workout.id}" data-action="continue">Continue Workout</button>
+      </div>
+    </div>`;
   }
-  if (!metaParts.length) metaParts.push("No history");
 
-  const btnLabel = isActive ? "Continue" : "Start";
-  const btnAction = isActive ? "continue" : "start";
-
-  return `<div class="wo-card-item ${isActive ? "is-active" : ""}" data-w-id="${workout.id}">
+  return `<div class="wo-card-item" data-w-id="${workout.id}">
     <div class="wo-card-item-row1">
       <span class="wo-card-item-name">${workout.name}</span>
-      ${badgeText ? `<span class="wo-card-item-badge ${badgeClass}">${badgeText}</span>` : ""}
       <button class="wo-card-item-menu" data-w-id="${workout.id}">•••</button>
     </div>
     <div class="wo-card-item-row2">
-      <span class="wo-card-item-meta">${metaParts.join(" · ")}</span>
-      <button class="wo-card-item-btn" data-w-id="${workout.id}" data-action="${btnAction}">${btnLabel}</button>
+      <span class="wo-card-item-meta"></span>
+      <button class="wo-card-item-btn" data-w-id="${workout.id}" data-action="start">Start Workout</button>
     </div>
   </div>`;
+}
+
+function formatStopwatch(secs) {
+  const m = Math.floor(secs / 60);
+  const s = secs % 60;
+  if (m >= 60) {
+    const h = Math.floor(m / 60);
+    return `${h}:${String(m % 60).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
+  }
+  return `${m}:${String(s).padStart(2, "0")}`;
 }
 
 function formatRelativeDate(dateKey) {
@@ -2049,7 +2281,7 @@ function renderRecentWorkouts() {
   container.innerHTML = recent
     .map((s) => {
       const d = parseDateKey(s.dateKey);
-      return `<div class="home-recent-card" data-open-workout="${s.workoutId}">
+      return `<div class="home-recent-card" data-session-id="${s.id}">
       <div class="home-recent-card-info">
         <div class="home-recent-card-name">${s.workoutName}</div>
         <div class="home-recent-card-date">${formatReadableDate(d)}</div>
@@ -2057,8 +2289,12 @@ function renderRecentWorkouts() {
     </div>`;
     })
     .join("");
-  container.querySelectorAll("[data-open-workout]").forEach((btn) => {
-    btn.addEventListener("click", () => openWorkout(btn.dataset.openWorkout));
+  container.querySelectorAll("[data-session-id]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      const id = btn.dataset.sessionId;
+      const session = state.sessions.find((s) => s.id === id);
+      if (session) openWorkoutReport(session);
+    });
   });
 }
 
@@ -2263,44 +2499,21 @@ function getGreeting() {
 }
 
 // ===== LEVEL 1: WORKOUT SESSION =====
-// ===== PROGRESS INDICATOR (V1.6) =====
+// ===== PROGRESS BAR =====
 function renderProgressIndicator() {
   const session = getTodaySession();
   if (!session || state.showWorkoutProgress === false) return "";
   const total = session.exercises.length;
-  const idx = currentExName ? session.exercises.findIndex((e) => e.name === currentExName) : -1;
-  const currentIdx = idx >= 0 ? idx : session.exercises.filter((e) => e.sets.some((s) => s.done)).length;
-
-  const dots = session.exercises.map((ex, i) => {
-    const done = ex.sets.some((s) => s.done);
-    let cls = "pr-dot";
-    if (i === currentIdx && (!done || (done && i === total - 1))) cls += " is-current";
-    else if (done) cls += " is-completed";
-    else cls += " is-upcoming";
-    return `<span class="${cls}" data-ex-index="${i}"></span>`;
-  }).join("");
-
-  return `<div class="pr-container">
-    <div class="pr-counter">Exercise ${Math.min(currentIdx + 1, total)} of ${total}</div>
-    <div class="pr-dots">${dots}</div>
+  const done = session.exercises.filter((e) => e.sets.length && e.sets.every((s) => s.done)).length;
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+  return `<div class="pr-bar-wrap">
+    <div class="pr-bar-track"><div class="pr-bar-fill" style="width:${pct}%"></div></div>
+    <div class="pr-bar-label">${done} / ${total} Exercises</div>
   </div>`;
 }
 function updateProgressIndicator() {
   const el = document.getElementById("wsProgressIndicator");
   if (el) el.innerHTML = renderProgressIndicator();
-  // Click-to-navigate on upcoming dots (when auto-next is OFF)
-  if (!state.autoNext) {
-    document.querySelectorAll(".pr-dot.is-upcoming").forEach((dot) => {
-      dot.style.cursor = "pointer";
-      dot.addEventListener("click", () => {
-        const idx = parseInt(dot.dataset.exIndex);
-        const session = getTodaySession();
-        if (session && session.exercises[idx]) {
-          openExerciseDetail(session.exercises[idx].name);
-        }
-      });
-    });
-  }
 }
 
 function renderWorkoutSession() {
@@ -2339,7 +2552,7 @@ function renderWorkoutSession() {
       const workingDone = ex.sets.filter((s) => s.done && !s.isWarmup).length;
       const totalWorking = ex.sets.filter((s) => !s.isWarmup).length;
       const cardLabel = totalWorking > 0 ? `${workingDone}/${totalWorking} sets` : `${ex.sets.filter((s) => s.done).length} sets`;
-      const allDone = (workingDone === totalWorking && totalWorking > 0) || (!totalWorking && ex.sets.every((s) => s.done));
+      const allDone = totalWorking > 0 && workingDone === totalWorking;
       return `<div class="ws-exercise-card" data-ex="${ex.name}">
       <div class="ws-ex-card-info">
         <div class="ws-ex-card-name">${ex.name.replace(/([A-Z])/g, " $1").trim()}</div>
@@ -2356,8 +2569,16 @@ function renderWorkoutSession() {
     });
   });
 
-  document.getElementById("wsFinishBtn").onclick = finishWorkout;
-  document.getElementById("wsCompleteCta").onclick = () => {
+  document.getElementById("wsFinishBtn").onclick = (e) => {
+    const btn = e.currentTarget;
+    btn.style.transform = "scale(0.97)";
+    setTimeout(() => { btn.style.transform = "scale(1)"; }, 150);
+    finishWorkout();
+  };
+  document.getElementById("wsCompleteCta").onclick = (e) => {
+    const btn = e.currentTarget;
+    btn.style.transform = "scale(0.97)";
+    setTimeout(() => { btn.style.transform = "scale(1)"; }, 150);
     const session = getTodaySession();
     if (!session) return;
     stopStopwatch();
@@ -2475,7 +2696,10 @@ function renderExerciseDetail() {
   // Finish workout button handler (last exercise, manual mode)
   const finishBtn = document.getElementById("edFinishBtn");
   if (finishBtn) {
-    finishBtn.addEventListener("click", () => {
+    finishBtn.addEventListener("click", (e) => {
+      const btn = e.currentTarget;
+      btn.style.transform = "scale(0.97)";
+      setTimeout(() => { btn.style.transform = "scale(1)"; }, 150);
       finishWorkout();
     });
   }
@@ -2645,6 +2869,7 @@ function duplicateSet(setId) {
     notes: set.notes || "",
     label: "",
     done: true,
+    isWarmup: false,
     loggedAt: new Date().toISOString(),
   });
   saveState();
@@ -2854,10 +3079,11 @@ function completeSetFromSheet() {
   closeEditBottomSheet();
   if (Number(set.weight) > 0 && state.autoRest) startRestTimer();
   renderExerciseDetail();
-  const completedRow = document.querySelector(`.ed-set-row[data-set-id="${editSetId}"]`);
-  if (completedRow) {
-    completedRow.classList.add("is-just-done");
-    setTimeout(() => completedRow.classList.remove("is-just-done"), 200);
+  const el = document.querySelector(`[data-set-id="${editSetId}"]`);
+  if (el) {
+    el.style.transform = "scale(1.03)";
+    el.style.transition = "transform 0.15s ease";
+    setTimeout(() => { el.style.transform = "scale(1)"; }, 150);
   }
   if (state.autoNext) {
     const pending = ex.sets.filter((s) => !s.isWarmup && !s.done);
@@ -2910,12 +3136,58 @@ function triggerWorkoutComplete() {
 function finishWorkout() {
   const session = getTodaySession();
   if (!session) return;
-  const completion = getCompletion(session);
-  if (completion.done === 0) return;
+  if (!isWorkoutComplete()) {
+    showFinishConfirm();
+    return;
+  }
+  doFinishWorkout();
+}
+function showFinishConfirm() {
+  const existing = document.querySelector(".confirm-overlay");
+  if (existing) existing.remove();
+  const overlay = document.createElement("div");
+  overlay.className = "confirm-overlay";
+  overlay.innerHTML = `
+    <div class="confirm-card">
+      <div class="confirm-title">Workout Not Complete</div>
+      <div class="confirm-text">You still have unfinished exercises or sets. Are you sure you want to finish this workout?</div>
+      <div class="confirm-actions">
+        <button class="btn-primary" id="finishConfirmContinue">Continue Workout</button>
+        <button class="btn-secondary" id="finishConfirmAnyway">Finish Anyway</button>
+      </div>
+    </div>`;
+  document.body.appendChild(overlay);
+  document.getElementById("finishConfirmContinue").addEventListener("click", () => overlay.remove());
+  document.getElementById("finishConfirmAnyway").addEventListener("click", () => {
+    overlay.remove();
+    doFinishWorkout();
+  });
+}
+function doFinishWorkout() {
+  const session = getTodaySession();
+  if (!session) return;
   stopStopwatch();
   session.finishedAt = new Date().toISOString();
   state.planOffset = ((state.planOffset + 1) % ((loadCustomProgram() || plan).length || 1));
   currentWorkoutId = null;
+  // Update streak
+  if (!state.workoutStreak) {
+    state.workoutStreak = { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null };
+  }
+  const today = new Date().toDateString();
+  const lastDate = state.workoutStreak.lastWorkoutDate;
+  if (lastDate !== today) {
+    const yesterday = new Date(Date.now() - 86400000).toDateString();
+    if (lastDate === yesterday) {
+      state.workoutStreak.currentStreak = (state.workoutStreak.currentStreak || 0) + 1;
+    } else {
+      state.workoutStreak.currentStreak = 1;
+    }
+    if (state.workoutStreak.currentStreak > (state.workoutStreak.longestStreak || 0)) {
+      state.workoutStreak.longestStreak = state.workoutStreak.currentStreak;
+    }
+    state.workoutStreak.lastWorkoutDate = today;
+  }
   saveAndRender();
   const todayPRs = getTodayPRs(session.dateKey || getDateKey());
   showEnhancedSummary(todayPRs);
@@ -2937,7 +3209,7 @@ function getKnownMuscle(name) {
 }
 
 function showEnhancedSummary(newPRs) {
-  const session = getTodaySession();
+  const session = state.sessions.find((item) => item.dateKey === getDateKey());
   if (!session) return;
 
   let totalSets = 0, totalReps = 0;
@@ -3983,8 +4255,6 @@ function renderEdAnalyze() {
 function renderSessionsTab() {
   renderSessionLog();
   renderPRBoard();
-  renderSessionsWeeklyReview();
-  renderMonthlyReport();
 }
 
 function renderSessionLog() {
@@ -4042,106 +4312,7 @@ function renderPRBoard() {
     : `<div class="empty-card"><div class="empty-card-content">Set a PR to see it here.</div></div>`;
 }
 
-function renderSessionsWeeklyReview() {
-  const container = document.getElementById("weeklyReviewCard");
-  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
 
-  if (weekSessions.length === 0) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">No workouts completed this week.</div></div>`;
-    return;
-  }
-
-  let totalSets = 0;
-  let totalKg = 0;
-  let totalDuration = 0;
-  const trainedDays = new Set();
-  for (const ses of weekSessions) {
-    trainedDays.add(ses.dateKey);
-    if (ses.duration) totalDuration += ses.duration;
-    for (const ex of ses.exercises) {
-      for (const st of ex.sets) {
-        if (st.done) totalSets++;
-        if (st.done && Number(st.weight) > 0) totalKg += Number(st.weight) * (Number(st.reps) || 0);
-      }
-    }
-  }
-  const sessionsCount = weekSessions.length;
-  const consistency = Math.min(100, Math.round((trainedDays.size / 7) * 100));
-  const avgDuration = totalDuration ? Math.round(totalDuration / sessionsCount) : 0;
-  let weeklyPRCount = 0;
-  if (state.prs) {
-    for (const [, data] of Object.entries(state.prs)) {
-      (data.history || []).forEach((h) => {
-        if (h.date && h.date >= weekAgo) weeklyPRCount++;
-      });
-    }
-  }
-
-  container.innerHTML = `
-    <div class="review-card">
-      <div class="review-grid">
-        <div class="review-item"><div class="text-metric-primary">${sessionsCount}</div><div class="text-caption">Sessions</div></div>
-        <div class="review-item"><div class="text-metric-primary">${totalSets}</div><div class="text-caption">Sets</div></div>
-        <div class="review-item"><div class="text-metric-primary">${Math.round(totalKg / 1000)}k</div><div class="text-caption">Volume</div></div>
-        <div class="review-item"><div class="text-metric-primary">${avgDuration > 0 ? avgDuration + "m" : "—"}</div><div class="text-caption">Avg Duration</div></div>
-        <div class="review-item"><div class="text-metric-primary">${weeklyPRCount}</div><div class="text-caption">PRs</div></div>
-        <div class="review-item"><div class="text-metric-primary">${consistency}%</div><div class="text-caption">Consistency</div></div>
-      </div>
-    </div>
-  `;
-}
-
-function getWeeklyNote(strengthPct, bwChange, sessions, proteinPct) {
-  if (strengthPct !== null && strengthPct > 5 && sessions >= 5) return "Great week. Strength is up and consistency is strong. Keep going.";
-  if (strengthPct !== null && strengthPct > 0) return "Strength is trending up. Stay consistent for continued progress.";
-  if (strengthPct !== null && strengthPct < -5) return "Strength is down this week. Consider checking recovery, sleep, and nutrition.";
-  if (sessions < 4) return "Fewer sessions this week. Consistency is key — aim for all 6 next week.";
-  if (proteinPct !== null && proteinPct < 80) return "Protein intake needs attention. Try to hit your target consistently.";
-  return "Solid week. Keep showing up and the results will follow.";
-}
-
-function renderMonthlyReport() {
-  const container = document.getElementById("monthlyReportContent");
-  const monthAgo = getDateKey(new Date(Date.now() - 30 * 86400000));
-  const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= monthAgo);
-  if (monthSessions.length === 0) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to unlock monthly insights.</div></div>`;
-    return;
-  }
-  const sessionsCount = monthSessions.length;
-  let totalSets = 0;
-  let totalKg = 0;
-  let totalDuration = 0;
-  let bestLift = { name: "", weight: 0 };
-  for (const ses of monthSessions) {
-    if (ses.duration) totalDuration += ses.duration;
-    for (const ex of ses.exercises) {
-      for (const st of ex.sets) {
-        if (st.done) totalSets++;
-        if (st.done && Number(st.weight) > 0) {
-          totalKg += Number(st.weight) * (Number(st.reps) || 0);
-          if (Number(st.weight) > bestLift.weight) bestLift = { name: ex.name, weight: Number(st.weight) };
-        }
-      }
-    }
-  }
-  const avgDuration = totalDuration ? Math.round(totalDuration / sessionsCount) : 0;
-  const prCount = getPRCount();
-
-  container.innerHTML = `
-    <div class="review-card">
-      <div class="review-grid">
-        <div class="review-item"><div class="text-metric-primary">${sessionsCount}</div><div class="text-caption">Sessions</div></div>
-        <div class="review-item"><div class="text-metric-primary">${totalSets}</div><div class="text-caption">Sets</div></div>
-        <div class="review-item"><div class="text-metric-primary">${Math.round(totalKg / 1000)}k</div><div class="text-caption">Volume</div></div>
-        <div class="review-item"><div class="text-metric-primary">${prCount}</div><div class="text-caption">PRs</div></div>
-        <div class="review-item"><div class="text-metric-primary">${bestLift.name ? bestLift.name.replace(/([A-Z])/g, " $1").trim() : "—"}</div><div class="text-caption">Best Lift</div></div>
-        <div class="review-item"><div class="text-metric-primary">${avgDuration > 0 ? avgDuration + "m" : "—"}</div><div class="text-caption">Avg Duration</div></div>
-      </div>
-    </div>
-  `;
-}
 
 
 
@@ -4273,12 +4444,35 @@ function renderTrainingCalendar() {
 function renderProgressPage() {
   const container = document.getElementById("progressPageContent");
   if (!container) return;
+
+  const u = state.user || {};
+  const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
+  const curWeight = latestLog ? latestLog.weight : (u.weight || null);
+  const targetWeight = u.targetWeight || null;
+  const bmi = u.height && curWeight ? (curWeight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
+
+  // Weight goal card
+  let weightHtml = "";
+  if (curWeight && targetWeight) {
+    const diff = (targetWeight - curWeight).toFixed(1);
+    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Current Weight</div><div class="progress-value">${displayWeight(curWeight)}</div></div><div class="progress-stat"><div class="progress-label">Target Weight</div><div class="progress-value">${displayWeight(targetWeight)}</div></div><div class="progress-stat"><div class="progress-label">Difference</div><div class="progress-value">${diff >= 0 ? "+" : ""}${displayWeight(Math.abs(diff))}</div></div><div class="progress-stat"><div class="progress-label">BMI</div><div class="progress-value">${bmi}</div></div></div>`;
+  } else if (!curWeight && !targetWeight) {
+    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">Log your first weight</div></div><div class="progress-stat"><div class="progress-label">Target</div><div class="progress-value">Set target weight in onboarding</div></div></div>`;
+  } else if (!curWeight) {
+    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">Log your first weight</div></div></div>`;
+  } else if (!targetWeight) {
+    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">${displayWeight(curWeight)}</div></div><div class="progress-stat"><div class="progress-label">Target</div><div class="progress-value">Set target weight in onboarding</div></div></div>`;
+  }
+
+  // Streak card
+  const streakHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Current Streak</div><div class="progress-value">${state.workoutStreak?.currentStreak || 0} days</div></div><div class="progress-stat"><div class="progress-label">Longest Streak</div><div class="progress-value">${state.workoutStreak?.longestStreak || 0} days</div></div></div>`;
+
   const sessions = state.sessions.filter((s) => s.finishedAt);
   if (!sessions.length) {
-    container.innerHTML = `<div class="progress-empty">Complete your first workout to see progress here.</div>`;
+    container.innerHTML = `${weightHtml}${streakHtml}<div class="progress-empty" style="margin-top:1rem">Complete your first workout to see progress here.</div>`;
     return;
   }
-  container.innerHTML = `
+  container.innerHTML = `${weightHtml}${streakHtml}
     <div class="progress-card">
       <div id="progressCalendarHero"></div>
     </div>
@@ -4748,11 +4942,14 @@ function closeWorkoutReport() {
 // ===== BODY TAB =====
 let bodyChartInstance = null;
 
-function renderBodyTab() {
-  renderBodySnapshot();
-  renderWeightTrend();
-  renderBodyGoals();
-}
+const GOAL_DESCRIPTIONS = {
+  "Muscle Gain": "Build strength and increase lean muscle mass.",
+  "Fat Loss": "Reduce body fat while maintaining muscle.",
+  "Strength": "Focus on increasing lifting performance.",
+  "Endurance": "Improve cardiovascular and muscular endurance.",
+  "General Fitness": "Maintain overall health and fitness levels.",
+  "Recomp": "Build muscle and lose fat simultaneously.",
+};
 
 function latestWeight() {
   const log = loadBodyLog().sort((a, b) => b.date.localeCompare(a.date));
@@ -4772,38 +4969,6 @@ function weeklyWeightChange() {
   return avgRecent - avgBefore;
 }
 
-// --- SECTION 1: Body Snapshot ---
-function renderBodySnapshot() {
-  const container = document.getElementById("bodyPageContent");
-  const u = state.user || {};
-  const entry = latestWeight();
-  const weight = entry ? entry.weight : null;
-  const bmi = u.height && weight ? (weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
-  const updatedStr = entry ? (() => {
-    const days = Math.floor((Date.now() - parseDateKey(entry.date).getTime()) / 86400000);
-    return days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days}d ago`;
-  })() : null;
-
-  const existing = container.querySelector(".body-snapshot");
-  if (existing) existing.remove();
-
-  const div = document.createElement("div");
-  div.className = "body-snapshot";
-  div.innerHTML = `
-    <div class="bs-grid">
-      <div class="bs-item"><span class="bs-label">Weight</span><span class="bs-value">${weight ? displayWeight(weight) : "—"}</span></div>
-      <div class="bs-item"><span class="bs-label">Height</span><span class="bs-value">${u.height ? displayHeight(u.height) : "—"}</span></div>
-      <div class="bs-item"><span class="bs-label">BMI</span><span class="bs-value">${bmi || "—"}</span></div>
-      <div class="bs-item"><span class="bs-label">Last Updated</span><span class="bs-value">${updatedStr || "—"}</span></div>
-    </div>
-    <div class="bs-footer">
-      <span class="bs-updated">${entry ? "Updated " + updatedStr : "No weigh-ins yet"}</span>
-      <button class="bs-edit-btn" id="snapshotEditBtn" aria-label="Log weigh-in">✎</button>
-    </div>`;
-  container.prepend(div);
-}
-
-// --- SECTION 2: Weight Trend ---
 function monthlyWeightChange() {
   const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
   if (log.length < 2) return null;
@@ -4817,33 +4982,118 @@ function monthlyWeightChange() {
   return avgRecent - avgBefore;
 }
 
-function renderWeightTrend() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-weight-trend");
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const change = weeklyWeightChange();
-  const monthlyChange = monthlyWeightChange();
+function goalDescription(goal) {
+  return GOAL_DESCRIPTIONS[goal] || "";
+}
 
-  if (existing) existing.remove();
+// ===== BODY TAB: NEW 7-SECTION REDESIGN =====
+function renderBodyTab() {
+  const container = document.getElementById("bodyPageContent");
+  container.innerHTML = "";
+
+  renderBodyCurrentGoal(container);
+  renderWeightGoalProgress(container);
+  renderBodyMetrics(container);
+  renderWeightTrend(container);
+  renderWorkoutStreak(container);
+  renderConsistencyScore(container);
+  renderProfileSummary(container);
+  renderEditGoalsBtn(container);
+}
+
+function renderBodyCurrentGoal(container) {
+  const u = state.user || {};
+  const goal = u.goal || state.bodyGoal || "";
+  const desc = goalDescription(goal);
 
   const div = document.createElement("div");
-  div.className = "body-weight-trend";
+  div.className = "body-card body-current-goal";
+
+  if (!goal) {
+    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Active Goals</div><p class="body-empty-text">Create your first goal</p></div>`;
+    container.appendChild(div);
+    return;
+  }
+
+  const entry = latestWeight();
+  const weight = entry ? entry.weight : 0;
+  const targetWeight = u.targetWeight || 0;
+  const progress = targetWeight > 0 ? Math.min(100, Math.round((weight / targetWeight) * 100)) : 0;
+
+  div.innerHTML = `
+    <div class="bcg-header">
+      <span class="bcg-label">Current Goal</span>
+    </div>
+    <div class="bcg-name">${goal}</div>
+    <div class="bcg-desc">${desc}</div>
+    <div class="bcg-progress">
+      <div class="bcg-bar-wrap"><div class="bcg-bar" style="width:${progress}%"></div></div>
+    </div>`;
+  container.appendChild(div);
+}
+
+function renderWeightGoalProgress(container) {
+  const u = state.user || {};
+  const entry = latestWeight();
+  const currentWeight = entry ? entry.weight : 0;
+  const targetWeight = u.targetWeight || 0;
+  const remaining = targetWeight > 0 && currentWeight > 0 ? targetWeight - currentWeight : 0;
+  const progress = targetWeight > 0 && currentWeight > 0 ? Math.min(100, Math.max(0, Math.round((currentWeight / targetWeight) * 100))) : 0;
+  const direction = remaining > 0 ? "to gain" : remaining < 0 ? "to lose" : "";
+
+  const div = document.createElement("div");
+  div.className = "body-card body-weight-progress";
+  div.innerHTML = `
+    <div class="bwpro-label">Weight Goal Progress</div>
+    <div class="bwpro-grid">
+      <div class="bwpro-stat"><span class="bwpro-stat-label">Current</span><span class="bwpro-stat-value">${currentWeight ? displayWeight(currentWeight) : "—"}</span></div>
+      <div class="bwpro-stat"><span class="bwpro-stat-label">Target</span><span class="bwpro-stat-value">${targetWeight ? displayWeight(targetWeight) : "—"}</span></div>
+      <div class="bwpro-stat"><span class="bwpro-stat-label">Remaining</span><span class="bwpro-stat-value">${remaining ? displayWeight(Math.abs(remaining)) + " " + direction : "—"}</span></div>
+    </div>
+    <div class="bwpro-bar-wrap"><div class="bwpro-bar" style="width:${progress}%"></div></div>
+    <div class="bwpro-pct">${progress}%</div>`;
+  container.appendChild(div);
+}
+
+function renderBodyMetrics(container) {
+  const u = state.user || {};
+  const entry = latestWeight();
+  const weight = entry ? entry.weight : null;
+  const bmi = u.height && weight ? (weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
+  const targetWeight = u.targetWeight || null;
+
+  const div = document.createElement("div");
+  div.className = "body-card body-metrics";
+  div.innerHTML = `
+    <div class="bm-grid">
+      <div class="bm-item"><span class="bm-value">${weight ? displayWeight(weight) : "—"}</span><span class="bm-label">Weight</span></div>
+      <div class="bm-item"><span class="bm-value">${bmi ? "BMI " + bmi : "—"}</span><span class="bm-label">BMI</span></div>
+      <div class="bm-item"><span class="bm-value">${targetWeight ? "Target " + displayWeight(targetWeight) : "—"}</span><span class="bm-label">Goal Weight</span></div>
+    </div>`;
+  container.appendChild(div);
+}
+
+function renderWeightTrend(container) {
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const change = weeklyWeightChange();
+  const monthlyChg = monthlyWeightChange();
+
+  const div = document.createElement("div");
+  div.className = "body-card body-weight-trend";
   const changeCls = (val) => val !== null && val !== 0 ? (val > 0 ? " is-up" : " is-down") : "";
   const fmtChange = (val) => val !== null ? (val > 0 ? "+" : "") + val.toFixed(1) + " kg" : "—";
   div.innerHTML = `
     <div class="bw-header">
       <div class="bw-stat"><span class="bw-stat-label">Current</span><span class="bw-stat-value">${log.length > 0 ? displayWeight(log[log.length - 1].weight) : "—"}</span></div>
       <div class="bw-stat${changeCls(change)}"><span class="bw-stat-label">Weekly</span><span class="bw-stat-value">${fmtChange(change)}</span></div>
-      <div class="bw-stat${changeCls(monthlyChange)}"><span class="bw-stat-label">Monthly</span><span class="bw-stat-value">${fmtChange(monthlyChange)}</span></div>
+      <div class="bw-stat${changeCls(monthlyChg)}"><span class="bw-stat-label">Monthly</span><span class="bw-stat-value">${fmtChange(monthlyChg)}</span></div>
     </div>
-    <div class="bw-chart-wrap"><canvas id="bodyWeightChart" style="width:100%;height:200px"></canvas></div>`;
-
-  const snapshot = container.querySelector(".body-snapshot");
-  if (snapshot) snapshot.after(div);
-  else container.prepend(div);
+    <div class="bw-chart-wrap"><canvas id="bodyWeightChart" style="width:100%;height:180px"></canvas></div>`;
+  container.appendChild(div);
 
   if (bodyChartInstance) { bodyChartInstance.destroy(); bodyChartInstance = null; }
   const canvas = document.getElementById("bodyWeightChart");
+  if (!canvas) return;
   if (log.length < 2) {
     canvas.style.display = "none";
     div.querySelector(".bw-chart-wrap").innerHTML = '<div class="bw-skeleton"><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-text">Track your weight to unlock trends</div></div>';
@@ -4871,43 +5121,81 @@ function renderWeightTrend() {
   });
 }
 
-// --- SECTION 3: Goals ---
-function renderBodyGoals() {
-  const container = document.getElementById("bodyPageContent");
-  const existing = container.querySelector(".body-goals");
-  if (existing) existing.remove();
-
-  const goals = (state.goals || []).filter((g) => {
-    if (g.type === "weight") return true;
-    if (g.type === "bench" || g.type === "squat" || g.type === "deadlift" || g.type === "custom") return true;
-    return false;
-  });
+function renderWorkoutStreak(container) {
+  const streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
 
   const div = document.createElement("div");
-  div.className = "body-goals";
-
-  if (goals.length === 0) {
-    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Active Goals</div><p class="body-empty-text">Create your first goal</p></div>`;
-  } else {
-    const visible = goals.slice(0, 3);
-    div.innerHTML = `<div class="bg-label">Goals</div><div class="bg-list">
-      ${visible.map((g) => {
-        const pct = typeof getGoalProgress === "function" ? getGoalProgress(g) : 0;
-        const val = typeof getGoalValue === "function" ? getGoalValue(g) : "—";
-        const target = g.target || g.value || "—";
-        return `<div class="bg-card">
-          <div class="bg-header"><span class="bg-name">${g.name}</span><span class="bg-pct">${pct}%</span></div>
-          <div class="bg-bar-wrap"><div class="bg-bar" style="width:${Math.min(pct, 100)}%"></div></div>
-          <div class="bg-meta">${typeof val === "string" ? val : displayWeight ? displayWeight(Number(val)) : val} / ${typeof target === "string" ? target : displayWeight ? displayWeight(Number(target)) : target}</div>
-        </div>`;
-      }).join("")}
-      ${goals.length > 3 ? '<button class="bg-view-all">View All</button>' : ""}
+  div.className = "body-card body-streak";
+  div.innerHTML = `
+    <div class="str-grid">
+      <div class="str-item"><span class="str-value">${streak.currentStreak || 0}</span><span class="str-label">Current Streak</span></div>
+      <div class="str-item"><span class="str-value">${streak.longestStreak || 0}</span><span class="str-label">Longest Streak</span></div>
     </div>`;
+  container.appendChild(div);
+}
+
+function renderConsistencyScore(container) {
+  const sessions = state.sessions || [];
+  const now = new Date();
+  const thirtyDaysAgo = getDateKey(new Date(now.getTime() - 30 * 86400000));
+  const finished = sessions.filter((s) => s.finishedAt && s.dateKey >= thirtyDaysAgo).length;
+  const totalDays = 30;
+  const pct = Math.min(100, Math.round((finished / totalDays) * 100));
+
+  const div = document.createElement("div");
+  div.className = "body-card body-consistency";
+  const deg = (pct / 100) * 360;
+  div.innerHTML = `
+    <div class="cons-ring" style="background: conic-gradient(var(--accent) ${deg}deg, var(--surface-2) 0deg)">
+      <div class="cons-ring-inner">${pct}%</div>
+    </div>
+    <div class="cons-info">
+      <div class="cons-label">Consistency</div>
+      <div class="cons-sub">${finished} / ${totalDays} days trained</div>
+    </div>`;
+  container.appendChild(div);
+}
+
+function renderProfileSummary(container) {
+  const u = state.user || {};
+  const entry = latestWeight();
+  const weight = entry ? entry.weight : u.weight || null;
+  const activePlan = loadCustomProgram() || plan;
+  const splitName = activePlan.length > 0 ? activePlan.map((w) => w.name).join(", ") : "—";
+  const goalDisplay = u.goal || "—";
+
+  const fields = [
+    { label: "Name", value: u.name || "—" },
+    { label: "Age", value: u.age || "—" },
+    { label: "Height", value: u.height ? displayHeight(u.height) : "—" },
+    { label: "Weight", value: weight ? displayWeight(weight) : "—" },
+    { label: "Goal", value: goalDisplay },
+    { label: "Experience", value: u.experience || "—" },
+    { label: "Split", value: splitName },
+  ];
+
+  const div = document.createElement("div");
+  div.className = "body-card body-profile-summary";
+
+  if (!state.user) {
+    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Profile Yet</div><p class="body-empty-text">Complete onboarding to set up your profile</p></div>`;
+    container.appendChild(div);
+    return;
   }
 
-  const needs = container.querySelector(".body-needs");
-  if (needs) needs.after(div);
-  else container.prepend(div);
+  div.innerHTML = `
+    <div class="bps-label">Profile Summary</div>
+    <div class="bps-grid">
+      ${fields.map((f) => `<div class="bps-item"><span class="bps-item-label">${f.label}</span><span class="bps-item-value">${f.value}</span></div>`).join("")}
+    </div>`;
+  container.appendChild(div);
+}
+
+function renderEditGoalsBtn(container) {
+  const div = document.createElement("div");
+  div.className = "body-edit-goals";
+  div.innerHTML = `<button class="beg-btn" id="bodyEditGoalBtn">Edit Goal</button>`;
+  container.appendChild(div);
 }
 
 
@@ -5045,6 +5333,10 @@ function isProfileComplete() {
   return !!(u && u.name && u.name !== "Athlete" && u.age && u.height && u.weight);
 }
 
+// ===== ONBOARDING V2 (Multi-Step) =====
+let onboardStep = 1;
+let onboardData = {};
+
 function openOnboarding(animateIn) {
   const modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
@@ -5053,7 +5345,7 @@ function openOnboarding(animateIn) {
     const onAnimEnd = () => { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onAnimEnd); };
     modal.addEventListener("animationend", onAnimEnd);
   }
-  document.getElementById("onboardName").focus();
+  resetOnboarding();
 }
 
 function closeOnboarding(animateOut, callback) {
@@ -5073,51 +5365,136 @@ function closeOnboarding(animateOut, callback) {
   }
 }
 
-function saveOnboardData(name, age, height, weight) {
-  state.user = { name: name.trim() || "Athlete", age: Number(age) || 0, height: Number(height) || 0, weight: Number(weight) || 0 };
-  if (weight > 0) {
+function resetOnboarding() {
+  onboardStep = 1;
+  onboardData = {};
+  document.getElementById("onboardStep1").style.display = "";
+  document.getElementById("onboardStep2").style.display = "none";
+  document.getElementById("onboardStep3").style.display = "none";
+  document.getElementById("onboardStep4").style.display = "none";
+  document.getElementById("onboardTitle").textContent = "Welcome to IronLog";
+  document.getElementById("onboardSub").textContent = "Let's get to know you.";
+  document.getElementById("onboardName").value = "";
+  document.getElementById("onboardAge").value = "";
+  document.getElementById("onboardHeight").value = "";
+  document.getElementById("onboardWeight").value = "";
+  document.getElementById("onboardTargetWeight").value = "";
+  document.querySelectorAll(".onboard-chip").forEach((c) => c.classList.remove("is-active"));
+  document.getElementById("onboardName").focus();
+}
+
+function goToStep(step) {
+  document.getElementById("onboardStep1").style.display = step === 1 ? "" : "none";
+  document.getElementById("onboardStep2").style.display = step === 2 ? "" : "none";
+  document.getElementById("onboardStep3").style.display = step === 3 ? "" : "none";
+  document.getElementById("onboardStep4").style.display = step === 4 ? "" : "none";
+
+  if (step === 2) {
+    document.getElementById("onboardTitle").textContent = "What's Your Goal?";
+    document.getElementById("onboardSub").textContent = "We'll personalize your experience.";
+  } else if (step === 3) {
+    document.getElementById("onboardTitle").textContent = "Experience Level";
+    document.getElementById("onboardSub").textContent = "So we can set the right intensity.";
+  } else if (step === 4) {
+    document.getElementById("onboardTitle").textContent = "Almost Done!";
+    document.getElementById("onboardSub").textContent = "Final details for your profile.";
+  } else {
+    document.getElementById("onboardTitle").textContent = "Welcome to IronLog";
+    document.getElementById("onboardSub").textContent = "Let's get to know you.";
+  }
+
+  onboardStep = step;
+}
+
+function saveOnboardData(data) {
+  state.user = {
+    name: (data.name || "Athlete").trim(),
+    age: Number(data.age) || 0,
+    height: Number(data.height) || 0,
+    weight: Number(data.weight) || 0,
+    goal: data.goal || "",
+    experience: data.experience || "",
+    trainingLocation: data.trainingLocation || "",
+    targetWeight: Number(data.targetWeight) || 0,
+  };
+  if (data.goal) state.bodyGoal = data.goal;
+  if (data.weight > 0) {
     if (!state.weightLog) state.weightLog = [];
-    state.weightLog.push({ weight: Number(weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+    state.weightLog.push({ weight: Number(data.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
   }
   saveState();
 }
 
-// --- Living listeners ---
-document.addEventListener("input", (e) => {
-  if (["onboardName", "onboardAge", "onboardHeight", "onboardWeight"].includes(e.target.id)) {
-    const name = document.getElementById("onboardName").value.trim();
-    const age = document.getElementById("onboardAge").value;
-    const height = document.getElementById("onboardHeight").value;
-    const weight = document.getElementById("onboardWeight").value;
-    document.getElementById("onboardSaveBtn").disabled = !(name && Number(age) > 0 && Number(height) > 0 && Number(weight) > 0);
+// Chip selection
+document.addEventListener("click", (e) => {
+  const chip = e.target.closest(".onboard-chip");
+  if (!chip) return;
+  const parent = chip.closest(".onboard-options");
+  if (!parent) return;
+  parent.querySelectorAll(".onboard-chip").forEach((c) => c.classList.remove("is-active"));
+  chip.classList.add("is-active");
+
+  if (parent.id === "onboardGoalOptions") document.getElementById("onboardGoalNext").disabled = false;
+  if (parent.id === "onboardExperienceOptions") document.getElementById("onboardExpNext").disabled = false;
+  if (parent.id === "onboardLocationOptions") {
+    const tw = document.getElementById("onboardTargetWeight").value;
+    document.getElementById("onboardFinishBtn").disabled = !(Number(tw) > 0);
   }
 });
 
-document.addEventListener("keydown", (e) => {
-  if (e.key !== "Enter") return;
-  const fieldMap = ["onboardName", "onboardAge", "onboardHeight", "onboardWeight"];
-  const idx = fieldMap.indexOf(e.target.id);
-  if (idx === -1) return;
-  e.preventDefault();
-  const next = fieldMap[idx + 1];
-  if (next) {
-    document.getElementById(next).focus();
-  } else {
-    document.getElementById("onboardSaveBtn").click();
-  }
-});
-
-document.getElementById("onboardSaveBtn")?.addEventListener("click", () => {
-  const name = document.getElementById("onboardName").value;
+// Step navigation
+document.getElementById("onboardNextBtn")?.addEventListener("click", () => {
+  const name = document.getElementById("onboardName").value.trim();
   const age = document.getElementById("onboardAge").value;
   const height = document.getElementById("onboardHeight").value;
   const weight = document.getElementById("onboardWeight").value;
-  if (!(name.trim() && Number(age) > 0 && Number(height) > 0 && Number(weight) > 0)) return;
-  saveOnboardData(name, age, height, weight);
+  if (!name) { showToast("Please enter your name."); return; }
+  if (!age || Number(age) <= 0) { showToast("Please enter a valid age."); return; }
+  if (!height || Number(height) <= 0) { showToast("Please enter a valid height."); return; }
+  if (!weight || Number(weight) <= 0) { showToast("Please enter a valid weight."); return; }
+  onboardData.name = name;
+  onboardData.age = Number(age);
+  onboardData.height = Number(height);
+  onboardData.weight = Number(weight);
+  goToStep(2);
+});
+
+document.getElementById("onboardGoalBack")?.addEventListener("click", () => goToStep(1));
+document.getElementById("onboardGoalNext")?.addEventListener("click", () => {
+  const active = document.querySelector("#onboardGoalOptions .onboard-chip.is-active");
+  if (!active) return;
+  onboardData.goal = active.dataset.value;
+  goToStep(3);
+});
+
+document.getElementById("onboardExpBack")?.addEventListener("click", () => goToStep(2));
+document.getElementById("onboardExpNext")?.addEventListener("click", () => {
+  const active = document.querySelector("#onboardExperienceOptions .onboard-chip.is-active");
+  if (!active) return;
+  onboardData.experience = active.dataset.value;
+  goToStep(4);
+});
+
+document.getElementById("onboardTargetBack")?.addEventListener("click", () => goToStep(3));
+
+document.getElementById("onboardTargetWeight")?.addEventListener("input", () => {
+  const tw = document.getElementById("onboardTargetWeight").value;
+  const loc = document.querySelector("#onboardLocationOptions .onboard-chip.is-active");
+  document.getElementById("onboardFinishBtn").disabled = !(loc && Number(tw) > 0);
+});
+
+document.getElementById("onboardFinishBtn")?.addEventListener("click", () => {
+  const activeLoc = document.querySelector("#onboardLocationOptions .onboard-chip.is-active");
+  const targetWeight = document.getElementById("onboardTargetWeight").value;
+  if (!activeLoc) { showToast("Please select where you train."); return; }
+  if (!targetWeight || Number(targetWeight) <= 0) { showToast("Please enter a target weight."); return; }
+  onboardData.trainingLocation = activeLoc.dataset.value;
+  onboardData.targetWeight = targetWeight;
+  saveOnboardData(onboardData);
   closeOnboarding(true, () => render());
 });
 
-// --- Skip ---
+// Skip
 document.getElementById("onboardSkipBtn")?.addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
 });
@@ -5126,7 +5503,7 @@ document.getElementById("onboardConfirmCancel")?.addEventListener("click", () =>
 });
 document.getElementById("onboardConfirmSkip")?.addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.add("is-hidden");
-  saveOnboardData("Athlete", 0, 0, 0);
+  saveOnboardData({ name: "Athlete", age: 0, height: 0, weight: 0, goal: "", experience: "", trainingLocation: "", targetWeight: 0 });
   closeOnboarding(true, () => render());
 });
 
@@ -5290,9 +5667,19 @@ function addExerciseToWorkout(exId) {
   const session = getTodaySession();
   const existing = session.exercises.find((e) => e.name === exDef.name);
   if (!existing) {
+    const setCount = 3;
     session.exercises.push({
       name: exDef.name,
-      sets: Array.from({ length: 3 }, () => ({ reps: 8, weight: "", done: false })),
+      sets: Array.from({ length: setCount }, () => ({
+        id: crypto.randomUUID(),
+        reps: 8,
+        weight: "",
+        done: false,
+        isWarmup: false,
+        notes: "",
+        label: "",
+        loggedAt: null,
+      })),
     });
     saveState();
   }
@@ -5313,12 +5700,14 @@ function openCustomExerciseModal(exId) {
     editExerciseId = exId;
     document.getElementById("customExName").value = ex.name;
     document.getElementById("customExCategory").value = ex.category;
-    document.getElementById("customExEquipment").value = ex.equipment;
+    document.getElementById("customExEquipment").value = ex.equipment || "";
+    document.getElementById("customExTags").value = (ex.tags || []).join(", ");
     document.getElementById("customExSave").textContent = "Save Changes";
   } else {
     editExerciseId = null;
     document.getElementById("customExName").value = "";
     document.getElementById("customExEquipment").value = "";
+    document.getElementById("customExTags").value = "";
     document.getElementById("customExSave").textContent = "Add Exercise";
   }
   document.getElementById("customExModal").classList.remove("is-hidden");
@@ -5327,7 +5716,9 @@ function openCustomExerciseModal(exId) {
 function saveCustomExercise() {
   const name = document.getElementById("customExName").value.trim();
   const category = document.getElementById("customExCategory").value;
-  const equipment = document.getElementById("customExEquipment").value.trim() || "Other";
+  const equipment = document.getElementById("customExEquipment").value || "Other";
+  const tagsRaw = document.getElementById("customExTags").value.trim();
+  const tags = tagsRaw ? tagsRaw.split(",").map(t => t.trim()).filter(Boolean) : [];
   if (!name) return;
 
   if (editExerciseId) {
@@ -5337,6 +5728,7 @@ function saveCustomExercise() {
       ex.category = category;
       ex.primaryMuscle = category;
       ex.equipment = equipment;
+      ex.tags = tags;
       saveState();
     }
     editExerciseId = null;
@@ -5348,6 +5740,7 @@ function saveCustomExercise() {
       primaryMuscle: category,
       secondaryMuscles: [],
       equipment,
+      tags,
       isCustom: true,
     };
     if (!state.customExercises) state.customExercises = [];
@@ -5429,17 +5822,33 @@ function showNewWorkoutBuilder() {
   nwActiveFilters = [];
   renderFilterChips();
   renderNewWorkoutList();
+  document.getElementById("nwName").style.display = "none";
+  document.getElementById("nwCreateBtn").style.display = "none";
   showScreen("screen-new-workout");
 }
 
 const NW_FILTERS = ["Chest", "Back", "Shoulders", "Triceps", "Biceps", "Legs", "Core"];
+const NW_EQUIPMENT_FILTERS = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight"];
+const NW_TYPE_FILTERS = ["Compound", "Isolation"];
 
 function renderFilterChips() {
   const bar = document.getElementById("nwFilterBar");
-  bar.innerHTML = NW_FILTERS.map(
-    (f) =>
-      `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
+  let html = `<div class="nw-filter-section"><span class="nw-filter-label">Muscle</span><div class="nw-filter-row">`;
+  html += NW_FILTERS.map(
+    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
   ).join("");
+  html += `</div></div>`;
+  html += `<div class="nw-filter-section"><span class="nw-filter-label">Equipment</span><div class="nw-filter-row">`;
+  html += NW_EQUIPMENT_FILTERS.map(
+    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
+  ).join("");
+  html += `</div></div>`;
+  html += `<div class="nw-filter-section"><span class="nw-filter-label">Type</span><div class="nw-filter-row">`;
+  html += NW_TYPE_FILTERS.map(
+    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
+  ).join("");
+  html += `</div></div>`;
+  bar.innerHTML = html;
   bar.querySelectorAll(".nw-chip").forEach((chip) => {
     chip.addEventListener("click", () => {
       const f = chip.dataset.filter;
@@ -5454,15 +5863,36 @@ function renderFilterChips() {
 
 function renderNewWorkoutList() {
   const container = document.getElementById("nwList");
-  const cats = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Full Body"];
+  const cats = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Traps", "Full Body"];
   let html = "";
   let total = 0;
   const q = nwSearchTerm.toLowerCase().trim();
+
+  // Get all exercises (library + custom)
+  let allExercises = [...EXERCISE_LIBRARY];
+  if (state.customExercises) allExercises = allExercises.concat(state.customExercises);
+
   cats.forEach((cat) => {
-    let exs = EXERCISE_LIBRARY.filter((e) => e.category === cat);
-    if (q) exs = exs.filter((e) => e.name.toLowerCase().includes(q));
+    let exs = allExercises.filter((e) => e.category === cat);
+    // Smart search: match name, tags, primaryMuscle, equipment
+    if (q) {
+      exs = exs.filter((e) => {
+        const name = e.name.toLowerCase();
+        const tags = (e.tags || []).map((t) => t.toLowerCase());
+        const muscle = e.primaryMuscle.toLowerCase();
+        const equip = e.equipment.toLowerCase();
+        return name.includes(q) || tags.some((t) => t.includes(q)) || muscle.includes(q) || equip.includes(q);
+      });
+    }
+    // Apply active filters
     if (nwActiveFilters.length) {
-      exs = exs.filter((e) => nwActiveFilters.some((f) => (e.category === f || e.primaryMuscle === f)));
+      exs = exs.filter((e) => {
+        const tags = e.tags || [];
+        return nwActiveFilters.some((f) => {
+          const fLow = f.toLowerCase();
+          return e.category.toLowerCase() === fLow || e.primaryMuscle.toLowerCase() === fLow || e.equipment.toLowerCase() === fLow || tags.some((t) => t.toLowerCase() === fLow);
+        });
+      });
     }
     if (!exs.length) return;
     total += exs.length;
@@ -5471,21 +5901,38 @@ function renderNewWorkoutList() {
       html += `<label class="nw-ex-row" data-id="${ex.id}">
         <input type="checkbox" class="nw-check" data-id="${ex.id}" />
         <span class="nw-ex-name">${ex.name}</span>
-        <span class="nw-ex-muscle">${ex.primaryMuscle}</span>
+        <span class="nw-ex-muscle">${ex.primaryMuscle} · ${ex.equipment}</span>
       </label>`;
     });
   });
+
+  if (!html) {
+    html = `<div class="nw-empty">No exercises found. <button class="nw-empty-btn" id="nwCustomBtn">Create Custom Exercise</button></div>`;
+  }
+
   container.innerHTML = html;
-  document.getElementById("nwCounter").textContent = `0 of ${total} exercises selected`;
+  document.getElementById("nwCounter").textContent = total > 0 ? `0 of ${total} exercises selected` : "No exercises found";
 
   container.querySelectorAll(".nw-check").forEach((cb) => {
     cb.addEventListener("change", updateNwState);
   });
+
+  const customBtn = document.getElementById("nwCustomBtn");
+  if (customBtn) {
+    customBtn.addEventListener("click", () => {
+      openCustomExerciseModal(null);
+    });
+  }
 }
 
 function updateNwState() {
   const checked = document.querySelectorAll(".nw-check:checked");
-  document.getElementById("nwCounter").textContent = `${checked.length} exercises selected`;
+  const count = checked.length;
+  const nameInput = document.getElementById("nwName");
+  const createBtn = document.getElementById("nwCreateBtn");
+  nameInput.style.display = count === 0 ? "none" : "";
+  createBtn.style.display = count === 0 ? "none" : "";
+  document.getElementById("nwCounter").textContent = `${count} exercises selected`;
   updateNwCreateBtn();
 }
 function updateNwCreateBtn() {
@@ -5506,23 +5953,27 @@ document.getElementById("nwName").addEventListener("input", updateNwCreateBtn);
 document.getElementById("nwCreateBtn").addEventListener("click", () => {
   const workoutName = document.getElementById("nwName").value.trim();
   if (!workoutName) {
-    showToast("Please name your workout");
+    showToast("Please enter a workout name.");
     return;
   }
   const checked = [...document.querySelectorAll(".nw-check:checked")];
   if (!checked.length) {
-    showToast("Select at least one exercise");
+    showToast("Please select at least one exercise.");
+    return;
+  }
+
+  const activePlan = loadCustomProgram() || [];
+  if (activePlan.some(w => w.name.toLowerCase() === workoutName.toLowerCase())) {
+    showToast("A workout with this name already exists.");
     return;
   }
 
   const exercises = checked.map((cb) => {
     const ex = EXERCISE_LIBRARY.find((e) => e.id === cb.dataset.id);
-    return { name: ex.name, sets: [], notes: "" };
+    return { name: ex.name, sets: 3, reps: 10, weight: "", notes: "" };
   });
 
   // Create workout
-  let activePlan = loadCustomProgram() || [];
-  if (!activePlan.length) activePlan = [];
   const workout = {
     id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
     name: workoutName,
@@ -5547,6 +5998,10 @@ document.getElementById("cwSaveBtn").addEventListener("click", () => {
   const name = document.getElementById("cwName").value.trim();
   if (!name) return;
   const activePlan = loadCustomProgram() || [];
+  if (activePlan.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+    showToast("A workout named '" + name + "' already exists");
+    return;
+  }
   const newWorkout = {
     id: "custom-" + crypto.randomUUID().slice(0, 8),
     name,
@@ -5890,6 +6345,7 @@ document.getElementById("wlDeleteBtn")?.addEventListener("click", () => {
   wlEntryId = null;
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
   renderSettings();
+  renderHome();
 });
 document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
   const wlW = document.getElementById("wlWeight");
@@ -5910,6 +6366,7 @@ document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
   }
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
   renderSettings();
+  renderHome();
 });
 
 // ===== REMINDER NOTIFICATIONS =====
@@ -6237,7 +6694,7 @@ document.getElementById("ddConfirmBtn").addEventListener("click", () => {
     STORAGE_KEY, "wl_custom_program", "wl_prs", "nutrition_v2",
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
     "wl_fav_exercises", "wl_recent_exercises", "wl_profile", "wl_theme",
-    "wl_preferred_unit", "wl_nutrition_mode",
+    "wl_preferred_unit", "wl_nutrition_mode", "wl_generator_profile", "wt_autosave",
   ];
   // Gather all date-prefixed keys
   const allKeys = Object.keys(localStorage);
@@ -6668,18 +7125,17 @@ document.addEventListener("DOMContentLoaded", () => {
     });
   }
 
+  activateTab("sets");
   render();
-
-  if (!state.user) {
-    openOnboarding(true);
-  }
 
   const todaySession = getTodaySession();
   if (todaySession && todaySession.exercises.some((e) => e.sets.some((s) => s.done))) {
     startStopwatch();
   }
 
-  activateTab("sets");
+  if (!state.user) {
+    openOnboarding(true);
+  }
 
   // Apply persisted settings
   if (state.theme) {
@@ -6694,6 +7150,35 @@ document.addEventListener("DOMContentLoaded", () => {
 
   requestNotificationPermission();
   checkReminders();
+
+  // Exit protection while workout is active
+  window.addEventListener("beforeunload", (e) => {
+    const hasActive = state.sessions && state.sessions.some(s => !s.finishedAt);
+    if (hasActive) {
+      e.preventDefault();
+      e.returnValue = "";
+    }
+  });
+
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden") {
+      const hasActive = state.sessions && state.sessions.some(s => !s.finishedAt);
+      if (hasActive) {
+        localStorage.setItem("wt_autosave", JSON.stringify(state));
+      }
+    }
+  });
+
+  // History back protection
+  window.addEventListener("popstate", (e) => {
+    const hasActive = state.sessions && state.sessions.some(s => !s.finishedAt);
+    if (hasActive) {
+      e.preventDefault();
+      if (!confirm("You have an active workout. Are you sure you want to leave?")) {
+        history.pushState(null, "", location.href);
+      }
+    }
+  });
 });
 
 // ===== WEIGHT BOTTOM SHEET =====
@@ -6705,6 +7190,10 @@ document.addEventListener("click", (e) => {
     updateWeightDisplay();
     document.getElementById("weightLogSheet").classList.remove("is-hidden");
     setTimeout(() => document.getElementById("wlSheetWeight").select(), 150);
+  }
+  const goalEditBtn = e.target.closest("#bodyEditGoalBtn");
+  if (goalEditBtn) {
+    openProfileEditor();
   }
 });
 function updateWeightDisplay() {
@@ -6741,8 +7230,15 @@ document.getElementById("wlMinus")?.addEventListener("click", () => {
   updateWeightDisplay();
 });
 document.getElementById("wlDisplay")?.addEventListener("click", () => {
-  document.getElementById("wlSheetWeight").select();
-  document.getElementById("wlSheetWeight").focus();
+  const input = document.getElementById("wlSheetWeight");
+  input.classList.add("is-active");
+  input.value = document.getElementById("wlDisplay").textContent.replace(" kg", "");
+  input.focus();
+  input.select();
+});
+document.getElementById("wlSheetWeight")?.addEventListener("blur", () => {
+  document.getElementById("wlSheetWeight").classList.remove("is-active");
+  updateWeightDisplay();
 });
 document.getElementById("wlSheetWeight")?.addEventListener("input", (e) => {
   const val = Number(e.target.value);
@@ -6750,7 +7246,10 @@ document.getElementById("wlSheetWeight")?.addEventListener("input", (e) => {
   updateWeightDisplay();
 });
 document.getElementById("wlSheetWeight")?.addEventListener("keydown", (e) => {
-  if (e.key === "Enter") document.getElementById("wlSave").click();
+  if (e.key === "Enter") {
+    e.target.blur();
+    document.getElementById("wlSave").click();
+  }
 });
 
 // ===== STREAK DRAWER =====
@@ -6771,108 +7270,454 @@ document.getElementById("cdsCloseBtn")?.addEventListener("click", () => {
 
 // (Muscle search removed — no longer needed)
 
-// ===== GENERATE WORKOUT =====
-function openGenerateWorkout() {
-  document.querySelectorAll(".gm-chip").forEach((c) => c.classList.remove("is-active"));
-  document.getElementById("gmGenerateBtn").disabled = true;
-  document.getElementById("gmResult").innerHTML = "";
-  document.getElementById("generateModal").classList.remove("is-hidden");
+// ===== SMART WORKOUT GENERATOR =====
+
+// --- Goal/Experience metadata ---
+const GOAL_META = {
+  "Muscle Gain": { icon: "💪", desc: "Build size and definition with moderate-heavy weights and moderate reps.", short: "Build muscle size" },
+  "Fat Loss": { icon: "🔥", desc: "Burn fat with higher reps, shorter rest, and metabolic conditioning.", short: "Burn fat & tone" },
+  Strength: { icon: "🏋️", desc: "Build raw strength with heavy compound lifts and low reps.", short: "Get stronger" },
+  "General Fitness": { icon: "⭐", desc: "Balanced approach for overall health, endurance, and body composition.", short: "Overall fitness" },
+  Endurance: { icon: "🏃", desc: "Build muscular endurance with high reps and minimal rest.", short: "Build endurance" },
+};
+
+const EXP_META = {
+  Beginner: { desc: "New to training or returning after a long break. Focus on form and consistency.", short: "New to training" },
+  Intermediate: { desc: "6+ months of consistent training. Ready for progressive overload and specialization.", short: "Some experience" },
+  Advanced: { desc: "1+ year of dedicated training. Need structured periodization and advanced techniques.", short: "Experienced lifter" },
+};
+
+// --- Recommendation Engine ---
+const SPLIT_RECOMMENDATIONS = {
+  "Push Pull Legs": {
+    recommendedFor: ["Muscle Gain", "Strength"],
+    score: { "Muscle Gain": 95, Strength: 88, "Fat Loss": 72, Endurance: 68, "General Fitness": 76 },
+    desc: "Each muscle group gets dedicated attention with 48h recovery.",
+  },
+  "Upper Lower": {
+    recommendedFor: ["Strength", "Muscle Gain"],
+    score: { "Muscle Gain": 85, Strength: 93, "Fat Loss": 78, Endurance: 72, "General Fitness": 82 },
+    desc: "Balanced frequency with adequate recovery. Great for strength and muscle balance.",
+  },
+  "Full Body": {
+    recommendedFor: ["Fat Loss", "General Fitness", "Endurance"],
+    score: { "Muscle Gain": 65, Strength: 70, "Fat Loss": 92, Endurance: 88, "General Fitness": 90 },
+    desc: "Maximum frequency per muscle group. Best for fat loss, endurance, and overall fitness.",
+  },
+};
+
+const SPLIT_ORDER = ["Push Pull Legs", "Upper Lower", "Full Body"];
+
+const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+function getTrainingDayIndices(totalDays) {
+  const map = { 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] };
+  return map[totalDays] || [0, 2, 4];
 }
 
-let gmSelections = { goal: "", split: "", experience: "" };
+// --- Exercise Goal Priority ---
+const GOAL_PRIORITY = {
+  Strength: { compound: 10, barbell: 5, dumbbell: 3, isolation: -2, bodyweight: -1 },
+  "Muscle Gain": { compound: 7, barbell: 4, dumbbell: 4, cable: 3, isolation: 2, bodyweight: 0 },
+  "Fat Loss": { compound: 8, bodyweight: 5, kettlebell: 3, dumbbell: 2, barbell: 1, isolation: 0 },
+  Endurance: { bodyweight: 6, compound: 5, kettlebell: 4, dumbbell: 2, barbell: 1, isolation: 0 },
+  "General Fitness": { compound: 6, dumbbell: 4, barbell: 3, bodyweight: 3, cable: 2, isolation: 1 },
+};
 
-document.querySelectorAll(".gm-chip").forEach((chip) => {
-  chip.addEventListener("click", () => {
-    const section = chip.closest(".gm-options");
-    section.querySelectorAll(".gm-chip").forEach((c) => c.classList.remove("is-active"));
-    chip.classList.add("is-active");
-    const key = chip.closest(".gm-section").querySelector(".gm-label").textContent.trim().toLowerCase();
-    if (key === "goal") gmSelections.goal = chip.dataset.value;
-    else if (key === "workout split") gmSelections.split = chip.dataset.value;
-    else if (key === "experience") gmSelections.experience = chip.dataset.value;
-    document.getElementById("gmGenerateBtn").disabled = !gmSelections.goal || !gmSelections.split || !gmSelections.experience;
+const EX_COUNT_RANGE = {
+  Beginner: { min: 4, max: 5 },
+  Intermediate: { min: 5, max: 7 },
+  Advanced: { min: 6, max: 8 },
+};
+
+const SET_REP_BY_GOAL_EXP = {
+  Strength: {
+    Beginner: { sets: 3, reps: "6-8" },
+    Intermediate: { sets: 4, reps: "4-6" },
+    Advanced: { sets: 5, reps: "3-5" },
+  },
+  "Muscle Gain": {
+    Beginner: { sets: 3, reps: "10-12" },
+    Intermediate: { sets: 4, reps: "8-12" },
+    Advanced: { sets: 4, reps: "8-10" },
+  },
+  "Fat Loss": {
+    Beginner: { sets: 3, reps: "12-15" },
+    Intermediate: { sets: 3, reps: "12-15" },
+    Advanced: { sets: 4, reps: "10-12" },
+  },
+  Endurance: {
+    Beginner: { sets: 2, reps: "15-20" },
+    Intermediate: { sets: 3, reps: "15-20" },
+    Advanced: { sets: 3, reps: "12-15" },
+  },
+  "General Fitness": {
+    Beginner: { sets: 2, reps: "10-12" },
+    Intermediate: { sets: 3, reps: "10-12" },
+    Advanced: { sets: 3, reps: "8-12" },
+  },
+};
+
+const RECOVERY_TIPS = [
+  { title: "Brisk Walk", icon: "🚶", desc: "20-30 min walk to promote blood flow and reduce soreness." },
+  { title: "Full Body Stretch", icon: "🧘", desc: "15-20 min stretching focusing on worked muscle groups." },
+  { title: "Mobility Work", icon: "🤸", desc: "10-15 min joint mobility and range of motion drills." },
+  { title: "Foam Rolling", icon: "🔄", desc: "10-15 min self-myofascial release for tight areas." },
+  { title: "Light Cardio", icon: "🏃", desc: "15-20 min light jog, cycle, or elliptical work." },
+];
+
+const FULL_BODY_CATEGORIES = [
+  ["Chest", "Back", "Legs", "Shoulders"],
+  ["Back", "Legs", "Chest", "Abs"],
+  ["Shoulders", "Legs", "Chest", "Biceps", "Triceps"],
+  ["Chest", "Back", "Legs", "Abs"],
+  ["Legs", "Shoulders", "Back", "Chest"],
+  ["Full Body", "Chest", "Back", "Legs"],
+];
+
+const CATEGORY_MAP = {
+  Push: ["Chest", "Shoulders", "Triceps"],
+  Pull: ["Back", "Biceps", "Forearms"],
+  Legs: ["Legs", "Glutes", "Calves"],
+  Upper: ["Chest", "Shoulders", "Back", "Biceps", "Triceps"],
+  Lower: ["Legs", "Glutes", "Calves"],
+};
+
+// --- Generator State ---
+const genState = { step: 1, goal: null, experience: null, days: null, split: null };
+
+// --- Helpers ---
+function shuffleArr(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
+  return a;
+}
+
+function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+
+function scoreExerciseForGoal(ex, goal) {
+  const pri = GOAL_PRIORITY[goal] || GOAL_PRIORITY["General Fitness"];
+  let score = 0;
+  const isCompound = COMPOUND_EXERCISE_NAMES.has(ex.name);
+  if (isCompound) score += pri.compound;
+  if (pri[ex.equipment.toLowerCase()] !== undefined) score += pri[ex.equipment.toLowerCase()];
+  if (ex.equipment === "Bodyweight") score += pri.bodyweight;
+  if (ex.tags && ex.tags.includes("isolation")) score += pri.isolation;
+  return Math.max(0, score);
+}
+
+function filterByExperience(candidates, experience) {
+  if (experience === "Beginner") {
+    return candidates.filter(e =>
+      !["Barbell", "Kettlebell"].includes(e.equipment) ||
+      ["Barbell Row", "Deadlift", "Barbell Curl", "Barbell Bench Press"].includes(e.name)
+    );
+  }
+  return candidates;
+}
+
+const SPLIT_ROTATION = {
+  "Push Pull Legs": ["Push", "Pull", "Legs"],
+  "Upper Lower": ["Upper", "Lower"],
+};
+
+function getSplitDayName(split, dayIndex) {
+  if (split === "Full Body") {
+    const variants = ["A", "B", "C", "D", "E", "F"];
+    return "Full Body " + variants[dayIndex % variants.length];
+  }
+  const rot = SPLIT_ROTATION[split] || ["Full Body"];
+  return rot[dayIndex % rot.length];
+}
+
+function getCategoriesForDay(splitDay) {
+  if (!splitDay.startsWith("Full Body")) return CATEGORY_MAP[splitDay] || ["Full Body"];
+  const idx = splitDay === "Full Body" ? 0 : parseInt(splitDay.slice(-1), 36) - 10;
+  return FULL_BODY_CATEGORIES[idx] || FULL_BODY_CATEGORIES[0];
+}
+
+function selectExercisesForDay(goal, experience, splitDay) {
+  const categories = getCategoriesForDay(splitDay);
+  let candidates = EXERCISE_LIBRARY.filter(e => categories.includes(e.category));
+  candidates = filterByExperience(candidates, experience);
+  const scored = candidates.map(e => ({ exercise: e, score: scoreExerciseForGoal(e, goal) }));
+  scored.sort((a, b) => b.score - a.score || Math.random() - 0.5);
+  const range = EX_COUNT_RANGE[experience] || EX_COUNT_RANGE.Intermediate;
+  const count = Math.min(randInt(range.min, range.max), scored.length);
+  const selected = scored.slice(0, count);
+  const sr = SET_REP_BY_GOAL_EXP[goal]?.[experience] || SET_REP_BY_GOAL_EXP["General Fitness"].Intermediate;
+  return selected.map(s => ({ name: s.exercise.name, sets: sr.sets, reps: sr.reps, weight: "" }));
+}
+
+function generateWeeklySchedule(goal, experience, split, days) {
+  const indices = getTrainingDayIndices(days);
+  const schedule = [];
+  for (let d = 0; d < 7; d++) {
+    if (indices.includes(d)) {
+      const dayIdx = indices.indexOf(d);
+      const splitDay = getSplitDayName(split, dayIdx);
+      const exercises = selectExercisesForDay(goal, experience, splitDay);
+      schedule.push({ day: d, type: "workout", name: splitDay, exercises });
+    } else {
+      const tip = RECOVERY_TIPS[d % RECOVERY_TIPS.length];
+      schedule.push({ day: d, type: "recovery", title: tip.title, icon: tip.icon, desc: tip.desc });
+    }
+  }
+  return schedule;
+}
+
+function getSplitScore(splitName, goal) {
+  return SPLIT_RECOMMENDATIONS[splitName]?.score?.[goal] || 0;
+}
+
+function getBestSplit(goal) {
+  let best = SPLIT_ORDER[0], bestScore = -1;
+  SPLIT_ORDER.forEach(s => {
+    const sc = getSplitScore(s, goal);
+    if (sc > bestScore) { bestScore = sc; best = s; }
   });
-});
+  return best;
+}
 
-document.getElementById("gmGenerateBtn")?.addEventListener("click", generateWorkout);
+function getSortedSplits(goal) {
+  return SPLIT_ORDER.map(s => ({ name: s, score: getSplitScore(s, goal), rec: SPLIT_RECOMMENDATIONS[s] }))
+    .sort((a, b) => b.score - a.score);
+}
+
+// --- Step Renderers ---
+function renderStep1() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "What's your goal?";
+  let html = "";
+  Object.entries(GOAL_META).forEach(([key, val]) => {
+    const active = genState.goal === key ? " is-active" : "";
+    html += `<div class="gw-option${active}" data-gw-goal="${key}">
+      <div class="gw-option-icon">${val.icon}</div>
+      <div class="gw-option-content">
+        <div class="gw-option-title">${key}</div>
+        <div class="gw-option-desc">${val.desc}</div>
+      </div>
+    </div>`;
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-option").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gw-option").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.goal = el.dataset.gwGoal;
+    });
+  });
+}
+
+function renderStep2() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Experience Level";
+  let html = "";
+  Object.entries(EXP_META).forEach(([key, val]) => {
+    const active = genState.experience === key ? " is-active" : "";
+    html += `<div class="gw-option${active}" data-gw-exp="${key}">
+      <div class="gw-option-content">
+        <div class="gw-option-title">${key}</div>
+        <div class="gw-option-desc">${val.desc}</div>
+      </div>
+    </div>`;
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-option").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gw-option").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.experience = el.dataset.gwExp;
+    });
+  });
+}
+
+function renderStep3() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Training Days Per Week";
+  const options = [3, 4, 5, 6];
+  let html = `<div class="gw-days-grid">`;
+  options.forEach(d => {
+    const active = genState.days === d ? " is-active" : "";
+    html += `<div class="gw-day-card${active}" data-gw-days="${d}">
+      <div class="gw-day-num">${d}</div>
+      <div class="gw-day-label">days / week</div>
+    </div>`;
+  });
+  html += `</div>`;
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-day-card").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gw-day-card").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.days = parseInt(el.dataset.gwDays);
+    });
+  });
+}
+
+function renderStep4() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Choose Your Split";
+  const sorted = getSortedSplits(genState.goal);
+  const bestName = sorted[0].name;
+  let html = "";
+  sorted.forEach((s, i) => {
+    const active = genState.split === s.name ? " is-active" : "";
+    const recommended = s.name === bestName ? " is-recommended" : "";
+    const badge = s.name === bestName ? '<span class="gw-split-badge">Recommended</span>' : "";
+    html += `<div class="gw-split-card${active}${recommended}" data-gw-split="${s.name}">
+      <div class="gw-split-top">
+        <span class="gw-split-name">${s.name}</span>
+        <span class="gw-split-pct">${s.score}% match</span>
+        ${badge}
+      </div>
+      <div class="gw-split-desc">${s.rec.desc}</div>
+    </div>`;
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-split-card").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gw-split-card").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.split = el.dataset.gwSplit;
+    });
+  });
+}
+
+function renderStep5() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Program Review";
+  const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days);
+  genState.schedule = schedule;
+  const totWorkouts = schedule.filter(d => d.type === "workout").length;
+  const sr = SET_REP_BY_GOAL_EXP[genState.goal]?.[genState.experience] || SET_REP_BY_GOAL_EXP["General Fitness"].Intermediate;
+  let html = `<div class="gw-review-summary">
+    <strong>${genState.split}</strong> · ${totWorkouts} days/week · ${genState.experience} · ${genState.goal}<br>
+    Exercises per workout: ${EX_COUNT_RANGE[genState.experience].min}-${EX_COUNT_RANGE[genState.experience].max} ·
+    Sets: ${sr.sets} · Reps: ${sr.reps}
+  </div>`;
+  schedule.forEach(d => {
+    if (d.type === "workout") {
+      html += `<div class="gw-review-day">
+        <div class="gw-review-day-header">
+          <span>${DAY_LABELS[d.day]} · ${d.name}</span>
+          <span class="gw-day-tag">Workout</span>
+        </div>`;
+      d.exercises.forEach(ex => {
+        html += `<div class="gw-review-ex">
+          <span class="gw-review-ex-name">${ex.name}</span>
+          <span class="gw-review-ex-meta">${ex.sets}×${ex.reps}</span>
+        </div>`;
+      });
+      html += `</div>`;
+    } else {
+      html += `<div class="gw-review-day">
+        <div class="gw-review-day-header">
+          <span>${DAY_LABELS[d.day]} · Recovery</span>
+          <span class="gw-day-tag is-recovery">Recovery</span>
+        </div>
+        <div class="gw-review-recovery">
+          <div class="gw-review-recovery-title">${d.icon} ${d.title}</div>
+          <div class="gw-review-recovery-desc">${d.desc}</div>
+        </div>
+      </div>`;
+    }
+  });
+  body.innerHTML = html;
+}
+
+// --- Wizard Navigation ---
+function goToStep(step) {
+  genState.step = step;
+  const backBtn = document.getElementById("gmBackBtn");
+  const nextBtn = document.getElementById("gmNextBtn");
+  backBtn.style.display = step === 1 ? "none" : "";
+  if (step === 5) {
+    nextBtn.textContent = "Save Program";
+  } else {
+    nextBtn.textContent = "Next";
+  }
+  document.getElementById("gmStepBadge").textContent = `Step ${step} of 5`;
+  switch (step) {
+    case 1: renderStep1(); break;
+    case 2: renderStep2(); break;
+    case 3: renderStep3(); break;
+    case 4: renderStep4(); break;
+    case 5: renderStep5(); break;
+  }
+}
+
+function nextStep() {
+  const s = genState.step;
+  if (s === 1 && !genState.goal) { showToast("Select a goal to continue."); return; }
+  if (s === 2 && !genState.experience) { showToast("Select your experience level."); return; }
+  if (s === 3 && !genState.days) { showToast("Select training days."); return; }
+  if (s === 4 && !genState.split) { showToast("Select a workout split."); return; }
+  if (s === 5) { saveGeneratedProgram(); return; }
+  goToStep(s + 1);
+}
+
+function prevStep() {
+  if (genState.step > 1) goToStep(genState.step - 1);
+}
+
+// --- Open / Cancel ---
+function openGenerateWorkout() {
+  genState.step = 1;
+  genState.goal = null;
+  genState.experience = null;
+  genState.days = null;
+  genState.split = null;
+  genState.schedule = null;
+  document.getElementById("generateModal").classList.remove("is-hidden");
+  goToStep(1);
+}
+
+// --- Save ---
+function saveGeneratedProgram() {
+  const schedule = genState.schedule;
+  if (!schedule) return;
+  const workouts = schedule.filter(d => d.type === "workout");
+  const programName = `${genState.split} (${genState.goal})`;
+  let activePlan = loadCustomProgram() || [];
+  let hasDup = false;
+  workouts.forEach(gw => {
+    const wName = DayLabel(gw.day) + " · " + gw.name;
+    if (activePlan.some(w => w.name.toLowerCase() === wName.toLowerCase())) hasDup = true;
+  });
+  if (hasDup) { showToast("A workout with this name already exists."); return; }
+  workouts.forEach(gw => {
+    const wName = DayLabel(gw.day) + " · " + gw.name;
+    const workout = {
+      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+      name: wName,
+      exercises: gw.exercises.map(ex => ({ name: ex.name, sets: ex.sets, reps: ex.reps, weight: "", notes: "" })),
+    };
+    activePlan.push(workout);
+  });
+  localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+  state.plan = activePlan;
+  saveState();
+  const profile = {
+    goal: genState.goal,
+    experience: genState.experience,
+    split: genState.split,
+    days: genState.days,
+    createdAt: new Date().toISOString(),
+  };
+  localStorage.setItem("wl_generator_profile", JSON.stringify(profile));
+  document.getElementById("generateModal").classList.add("is-hidden");
+  showScreen("screen-home");
+  renderHome();
+  showToast(`Program "${programName}" created (${workouts.length} workouts)`);
+}
+
+function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }
+
+// --- Event Listeners ---
+document.getElementById("gmNextBtn")?.addEventListener("click", nextStep);
+document.getElementById("gmBackBtn")?.addEventListener("click", prevStep);
 document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
   document.getElementById("generateModal").classList.add("is-hidden");
 });
-
-function generateWorkout() {
-  const { goal, split, experience } = gmSelections;
-  if (!goal || !split || !experience) return;
-
-  const categoryMap = {
-    Push: ["Chest", "Shoulders", "Triceps"],
-    Pull: ["Back", "Biceps"],
-    Legs: ["Legs", "Glutes", "Calves"],
-    Upper: ["Chest", "Shoulders", "Back", "Biceps", "Triceps"],
-    Lower: ["Legs", "Glutes", "Calves"],
-    "Full Body": ["Chest", "Shoulders", "Back", "Legs", "Glutes"],
-  };
-
-  const categories = categoryMap[split] || ["Full Body"];
-  let candidates = EXERCISE_LIBRARY.filter((e) => categories.includes(e.category));
-
-  // Filter by experience
-  if (experience === "Beginner") {
-    candidates = candidates.filter((e) => !["Barbell", "Kettlebell"].includes(e.equipment) || ["Barbell Row", "Deadlift", "Barbell Curl", "Barbell Bench Press"].includes(e.name));
-  } else if (experience === "Advanced") {
-    // include everything
-  }
-
-  // Shuffle and pick
-  for (let i = candidates.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [candidates[i], candidates[j]] = [candidates[j], candidates[i]];
-  }
-
-  const count = experience === "Beginner" ? 4 : experience === "Intermediate" ? 5 : 6;
-  const selected = candidates.slice(0, count);
-
-  const setRepsMap = {
-    Strength: { sets: 4, reps: 6 },
-    "Muscle Gain": { sets: 3, reps: 10 },
-    "Fat Loss": { sets: 3, reps: 12 },
-    Endurance: { sets: 3, reps: 15 },
-    "General Fitness": { sets: 3, reps: 10 },
-  };
-
-  const sr = setRepsMap[goal] || { sets: 3, reps: 10 };
-
-  const exercises = selected.map((ex) => ({
-    name: ex.name,
-    sets: sr.sets,
-    reps: sr.reps,
-    weight: "",
-  }));
-
-  // Show preview
-  const resultDiv = document.getElementById("gmResult");
-  let html = `<div style="font-weight:700;margin-bottom:0.5rem">Generated Workout</div>`;
-  html += exercises.map((ex) => `<div class="gm-ex">${ex.name} <span class="gm-ex-meta">${ex.sets}×${ex.reps}</span></div>`).join("");
-  html += `<div style="display:flex;gap:0.5rem;margin-top:0.75rem">
-    <button class="btn-primary" id="gmSaveBtn" style="flex:1">Save Workout</button>
-    <button class="btn-secondary" id="gmRegenBtn">Regenerate</button>
-  </div>`;
-  resultDiv.innerHTML = html;
-  document.getElementById("gmSaveBtn")?.addEventListener("click", () => {
-    const name = `${split} (${goal})`;
-    let activePlan = loadCustomProgram() || [];
-    const workout = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name,
-      exercises: exercises.map((ex) => ({ name: ex.name, sets: [], notes: "" })),
-    };
-    activePlan.push(workout);
-    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
-    state.plan = activePlan;
-    saveState();
-    document.getElementById("generateModal").classList.add("is-hidden");
-    showScreen("screen-home");
-    renderHome();
-    showToast(`"${name}" created`);
-  });
-  document.getElementById("gmRegenBtn")?.addEventListener("click", generateWorkout);
-}
