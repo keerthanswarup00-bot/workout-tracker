@@ -6588,10 +6588,7 @@ h4,
   line-height: 1.4;
 }
 
-/* --- SECTION 1: Current Goal --- */
-.body-current-goal {
-  padding: var(--space-sm);
-}
+/* --- SECTION 1 + 2: Weight Goal Progress (combined) --- */
 .bcg-header {
   margin-bottom: 0.35rem;
 }
@@ -6609,53 +6606,27 @@ h4,
   color: var(--accent);
   margin-bottom: 0.15rem;
 }
-.bcg-desc {
-  font-size: 0.75rem;
-  color: var(--text-secondary);
-  margin-bottom: 0.5rem;
-  line-height: 1.4;
-}
-.bcg-progress {
-  margin-top: 0.3rem;
-}
-.bcg-bar-wrap {
-  height: 4px;
-  background: var(--border);
-  border-radius: 2px;
-  overflow: hidden;
-}
-.bcg-bar {
-  height: 100%;
-  border-radius: 2px;
-  background: var(--accent);
-  transition: width 0.4s ease;
+
+.wgp-status {
+  font-size: 0.78rem;
+  font-weight: 600;
+  margin-bottom: 0.6rem;
+  color: var(--text);
 }
 
-/* --- SECTION 2: Weight Goal Progress --- */
-.body-weight-progress {
-  padding: var(--space-sm);
-}
-.bwpro-label {
-  font-size: 0.68rem;
-  font-weight: 700;
-  color: var(--text-secondary);
-  text-transform: uppercase;
-  letter-spacing: 0.05em;
-  margin-bottom: 0.5rem;
-}
-.bwpro-grid {
+.wgp-grid {
   display: grid;
   grid-template-columns: 1fr 1fr 1fr;
   gap: 0.4rem;
-  margin-bottom: 0.5rem;
+  margin-bottom: 0.6rem;
 }
-.bwpro-stat {
+.wgp-stat {
   text-align: center;
-  padding: 0.4rem 0.3rem;
+  padding: 0.45rem 0.3rem;
   background: var(--surface-2);
   border-radius: var(--radius-sm);
 }
-.bwpro-stat-label {
+.wgp-stat-label {
   display: block;
   font-size: 0.6rem;
   font-weight: 600;
@@ -6664,29 +6635,43 @@ h4,
   letter-spacing: 0.04em;
   margin-bottom: 0.15rem;
 }
-.bwpro-stat-value {
+.wgp-stat-value {
   font-family: "Plus Jakarta Sans", sans-serif;
   font-size: 1rem;
   font-weight: 800;
   color: var(--text);
 }
-.bwpro-bar-wrap {
+
+.wgp-bar-wrap {
   height: 6px;
   background: var(--border);
   border-radius: 3px;
   overflow: hidden;
   margin-bottom: 0.25rem;
 }
-.bwpro-bar {
+.wgp-bar {
   height: 100%;
   border-radius: 3px;
   background: var(--accent);
   transition: width 0.4s ease;
 }
-.bwpro-pct {
+.wgp-pct {
   text-align: right;
   font-size: 0.72rem;
   font-weight: 700;
+  margin-bottom: 0.5rem;
+}
+
+.wgp-meta {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+.wgp-meta-item {
+  font-weight: 600;
+}
+.wgp-meta-bonus {
   color: var(--accent);
 }
 
@@ -6942,7 +6927,7 @@ h4,
 
 /* --- Responsive --- */
 @media (max-width: 400px) {
-  .bwpro-grid {
+  .wgp-grid {
     gap: 0.3rem;
   }
   .bm-grid {

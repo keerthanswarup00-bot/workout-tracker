@@ -1146,6 +1146,7 @@ function loadState() {
     plan: null,
     weightLog: [],
     goals: [],
+    weightGoal: null,
     profileBannerDismissed: false,
     autoWarmup: true,
     warmupReminder: true,
@@ -1182,6 +1183,22 @@ function loadState() {
       // We do NOT remove them; groups just organized existing workouts visually.
       // All workouts remain in the plan. Groups are simply discarded.
       delete loaded.workoutGroups;
+    }
+    // Migrate weightGoal from existing user data
+    if (!loaded.weightGoal) {
+      const u = loaded.user;
+      if (u && u.targetWeight) {
+        const log = (loaded.weightLog || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+        const firstWeight = log.length > 0 ? log[0].weight : (u.weight || 0);
+        if (firstWeight > 0 && u.targetWeight > 0) {
+          loaded.weightGoal = {
+            startWeight: firstWeight,
+            targetWeight: u.targetWeight,
+            goalType: mapGoalType(u.goal || loaded.bodyGoal || ""),
+            createdAt: new Date().toISOString(),
+          };
+        }
+      }
     }
     return loaded;
   } catch {
@@ -4954,6 +4971,73 @@ function latestWeight() {
   return log.length > 0 ? log[0] : null;
 }
 
+const GOAL_TYPE_MAP = {
+  "build-muscle": "muscle-gain",
+  "lose-fat": "fat-loss",
+  "recomp": "recomposition",
+  "strength": "general-fitness",
+  "athletic": "general-fitness",
+  "general": "general-fitness",
+  "custom": "general-fitness",
+};
+
+function mapGoalType(raw) {
+  return GOAL_TYPE_MAP[raw] || "general-fitness";
+}
+
+function getWeightGoal() {
+  if (state.weightGoal) return state.weightGoal;
+  const u = state.user;
+  if (!u || !u.targetWeight) return null;
+  const entry = latestWeight();
+  const startWeight = entry ? entry.weight : (u.weight || 0);
+  if (!startWeight || !u.targetWeight) return null;
+  state.weightGoal = {
+    startWeight,
+    targetWeight: u.targetWeight,
+    goalType: mapGoalType(u.goal || state.bodyGoal || ""),
+    createdAt: new Date().toISOString(),
+  };
+  saveState();
+  return state.weightGoal;
+}
+
+function computeGoalProgress() {
+  const goal = getWeightGoal();
+  if (!goal) return null;
+  const { startWeight, targetWeight, goalType } = goal;
+  const entry = latestWeight();
+  const currentWeight = entry ? entry.weight : startWeight;
+
+  if (goalType === "recomposition") {
+    const change = Math.round((currentWeight - startWeight) * 10) / 10;
+    return { progress: 0, status: "maintaining", remaining: null, changeSinceStart: change, currentWeight, startWeight, targetWeight, goalType };
+  }
+
+  const isLoss = goalType === "fat-loss";
+  const effectiveIsLoss = isLoss || (goalType === "general-fitness" && targetWeight < startWeight);
+  const journey = Math.round((effectiveIsLoss ? startWeight - targetWeight : targetWeight - startWeight) * 10) / 10;
+  const change = Math.round((effectiveIsLoss ? startWeight - currentWeight : currentWeight - startWeight) * 10) / 10;
+
+  if (journey <= 0) {
+    return { progress: 0, status: "maintaining", remaining: 0, changeSinceStart: change, currentWeight, startWeight, targetWeight, goalType };
+  }
+
+  if (change <= 0) {
+    const remaining = Math.max(0, Math.round((effectiveIsLoss ? currentWeight - targetWeight : targetWeight - currentWeight) * 10) / 10);
+    return { progress: 0, status: change < 0 ? "moving-away" : "on-track", remaining, changeSinceStart: change, currentWeight, startWeight, targetWeight, goalType };
+  }
+
+  const pct = Math.min(100, Math.round((change / journey) * 100));
+  const remaining = Math.max(0, Math.round((effectiveIsLoss ? currentWeight - targetWeight : targetWeight - currentWeight) * 10) / 10);
+
+  if (pct >= 100) {
+    return { progress: 100, status: "achieved", remaining: 0, changeSinceStart: change, currentWeight, startWeight, targetWeight, goalType };
+  }
+
+  return { progress: pct, status: "on-track", remaining, changeSinceStart: change, currentWeight, startWeight, targetWeight, goalType };
+}
+
 function weeklyWeightChange() {
   const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
   if (log.length < 2) return null;
@@ -4989,7 +5073,6 @@ function renderBodyTab() {
   const container = document.getElementById("bodyPageContent");
   container.innerHTML = "";
 
-  renderBodyCurrentGoal(container);
   renderWeightGoalProgress(container);
   renderBodyMetrics(container);
   renderWeightTrend(container);
@@ -4999,57 +5082,75 @@ function renderBodyTab() {
   renderEditGoalsBtn(container);
 }
 
-function renderBodyCurrentGoal(container) {
-  const u = state.user || {};
-  const goal = u.goal || state.bodyGoal || "";
-  const desc = goalDescription(goal);
-
+function renderWeightGoalProgress(container) {
+  const result = computeGoalProgress();
   const div = document.createElement("div");
-  div.className = "body-card body-current-goal";
+  div.className = "body-card body-weight-progress";
 
-  if (!goal) {
-    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Active Goals</div><p class="body-empty-text">Create your first goal</p></div>`;
+  if (!result) {
+    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Weight Goal Set</div><p class="body-empty-text">Set a target weight to track progress</p></div>`;
     container.appendChild(div);
     return;
   }
 
-  const entry = latestWeight();
-  const weight = entry ? entry.weight : 0;
-  const targetWeight = u.targetWeight || 0;
-  const progress = targetWeight > 0 ? Math.min(100, Math.round((weight / targetWeight) * 100)) : 0;
+  const { progress, status, remaining, changeSinceStart, currentWeight, startWeight, targetWeight, goalType } = result;
 
-  div.innerHTML = `
-    <div class="bcg-header">
-      <span class="bcg-label">Current Goal</span>
-    </div>
-    <div class="bcg-name">${goal}</div>
-    <div class="bcg-desc">${desc}</div>
-    <div class="bcg-progress">
-      <div class="bcg-bar-wrap"><div class="bcg-bar" style="width:${progress}%"></div></div>
+  const statusMeta = {
+    "on-track": { label: "On Track", icon: "🟢" },
+    "moving-away": { label: "Moving Away From Goal", icon: "🔴" },
+    "maintaining": { label: "Maintaining", icon: "🟡" },
+    "achieved": { label: "Goal Achieved", icon: "🏆" },
+  };
+
+  const goalLabels = {
+    "fat-loss": "Fat Loss",
+    "muscle-gain": "Muscle Gain",
+    "recomposition": "Recomposition",
+    "general-fitness": "General Fitness",
+  };
+
+  const goalLabel = goalLabels[goalType] || "General Fitness";
+  const sm = statusMeta[status];
+  const isLossGoal = goalType === "fat-loss" || (goalType === "general-fitness" && targetWeight < startWeight);
+
+  let html = `
+    <div class="bcg-header"><span class="bcg-label">Current Goal</span></div>
+    <div class="bcg-name">${goalLabel}</div>
+    <div class="wgp-status">${sm.icon} ${sm.label}</div>
+    <div class="wgp-grid">
+      <div class="wgp-stat"><span class="wgp-stat-label">Start</span><span class="wgp-stat-value">${displayWeight(startWeight)}</span></div>
+      <div class="wgp-stat"><span class="wgp-stat-label">Current</span><span class="wgp-stat-value">${displayWeight(currentWeight)}</span></div>
+      <div class="wgp-stat"><span class="wgp-stat-label">Target</span><span class="wgp-stat-value">${displayWeight(targetWeight)}</span></div>
     </div>`;
-  container.appendChild(div);
-}
 
-function renderWeightGoalProgress(container) {
-  const u = state.user || {};
-  const entry = latestWeight();
-  const currentWeight = entry ? entry.weight : 0;
-  const targetWeight = u.targetWeight || 0;
-  const remaining = targetWeight > 0 && currentWeight > 0 ? targetWeight - currentWeight : 0;
-  const progress = targetWeight > 0 && currentWeight > 0 ? Math.min(100, Math.max(0, Math.round((currentWeight / targetWeight) * 100))) : 0;
-  const direction = remaining > 0 ? "to gain" : remaining < 0 ? "to lose" : "";
+  if (goalType !== "recomposition") {
+    const barColor = status === "achieved" ? "var(--accent)" : status === "moving-away" ? "var(--red)" : "var(--accent)";
+    html += `<div class="wgp-bar-wrap"><div class="wgp-bar" style="width:${progress}%;background:${barColor}"></div></div>
+      <div class="wgp-pct" style="color:${barColor}">${progress}%</div>`;
+  }
 
-  const div = document.createElement("div");
-  div.className = "body-card body-weight-progress";
-  div.innerHTML = `
-    <div class="bwpro-label">Weight Goal Progress</div>
-    <div class="bwpro-grid">
-      <div class="bwpro-stat"><span class="bwpro-stat-label">Current</span><span class="bwpro-stat-value">${currentWeight ? displayWeight(currentWeight) : "—"}</span></div>
-      <div class="bwpro-stat"><span class="bwpro-stat-label">Target</span><span class="bwpro-stat-value">${targetWeight ? displayWeight(targetWeight) : "—"}</span></div>
-      <div class="bwpro-stat"><span class="bwpro-stat-label">Remaining</span><span class="bwpro-stat-value">${remaining ? displayWeight(Math.abs(remaining)) + " " + direction : "—"}</span></div>
-    </div>
-    <div class="bwpro-bar-wrap"><div class="bwpro-bar" style="width:${progress}%"></div></div>
-    <div class="bwpro-pct">${progress}%</div>`;
+  if (goalType !== "recomposition") {
+    if (status === "achieved") {
+      const direction = isLossGoal ? "Lost" : "Gained";
+      html += `<div class="wgp-meta"><span class="wgp-meta-item wgp-meta-bonus">🎯 Goal Complete</span><span class="wgp-meta-item">${direction} ${displayWeight(Math.abs(changeSinceStart))}</span></div>`;
+    } else if (status === "moving-away") {
+      const direction = isLossGoal ? "gained" : "lost";
+      html += `<div class="wgp-meta"><span class="wgp-meta-item">${displayWeight(remaining)} to goal</span><span class="wgp-meta-item">${direction} ${displayWeight(Math.abs(changeSinceStart))} since start</span></div>`;
+    } else {
+      const direction = isLossGoal ? "Lost" : "Gained";
+      const dispChange = changeSinceStart;
+      html += `<div class="wgp-meta"><span class="wgp-meta-item">${displayWeight(remaining)} Remaining</span><span class="wgp-meta-item">${direction} ${displayWeight(dispChange)}</span></div>`;
+    }
+  }
+
+  if (goalType === "recomposition") {
+    const diff = changeSinceStart;
+    const absDiff = Math.abs(diff);
+    const trend = diff > 0.5 ? "▲ Gained" : diff < -0.5 ? "▼ Lost" : "— Stable";
+    html += `<div class="wgp-meta"><span class="wgp-meta-item">${trend} ${absDiff > 0.5 ? displayWeight(absDiff) : ""}</span><span class="wgp-meta-item">Tracking body composition</span></div>`;
+  }
+
+  div.innerHTML = html;
   container.appendChild(div);
 }
 
@@ -5386,6 +5487,14 @@ function saveOnboardData(data) {
   if (data.weight > 0) {
     if (!state.weightLog) state.weightLog = [];
     state.weightLog.push({ weight: Number(data.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+  }
+  if (data.targetWeight > 0 && data.weight > 0) {
+    state.weightGoal = {
+      startWeight: Number(data.weight),
+      targetWeight: Number(data.targetWeight),
+      goalType: mapGoalType(data.goal || ""),
+      createdAt: new Date().toISOString(),
+    };
   }
   saveState();
 }
@@ -6224,6 +6333,9 @@ document.getElementById("peSaveBtn").addEventListener("click", () => {
   state.user.goal = document.getElementById("peGoal").value || "recomp";
   state.user.activity = document.getElementById("peActivity").value || "";
   if (state.user.goal) state.bodyGoal = state.user.goal;
+  if (state.weightGoal) {
+    state.weightGoal.goalType = mapGoalType(state.user.goal);
+  }
   saveState();
   document.getElementById("profileEditorModal").classList.add("is-hidden");
   renderHome();
