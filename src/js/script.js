@@ -7466,8 +7466,58 @@ function getCategoriesForDay(splitDay) {
   return FULL_BODY_CATEGORIES[idx] || FULL_BODY_CATEGORIES[0];
 }
 
+const TIME_META = {
+  "30-45": { label: "30-45 Minutes", short: "Quick sessions", icon: "⚡" },
+  "45-60": { label: "45-60 Minutes", short: "Standard sessions", icon: "🕐" },
+  "60-75": { label: "60-75 Minutes", short: "Extended sessions", icon: "🕑" },
+  "75-90": { label: "75-90 Minutes", short: "Full sessions", icon: "🕒" },
+};
+
+const PRIORITY_META = {
+  none: { label: "None", desc: "Balanced training across all muscles." },
+  chest: { label: "Chest", desc: "Add extra chest volume each week." },
+  back: { label: "Back", desc: "Add extra back volume each week." },
+  shoulders: { label: "Shoulders", desc: "Add extra shoulder volume each week." },
+  arms: { label: "Arms", desc: "Add extra arm volume each week." },
+  legs: { label: "Legs", desc: "Add extra leg volume each week." },
+  glutes: { label: "Glutes", desc: "Add extra glute volume each week." },
+};
+
+const EQUIPMENT_META = {
+  "full-gym": { label: "Full Gym", desc: "Barbells, dumbbells, cables, and machines." },
+  "home-gym": { label: "Home Gym", desc: "Dumbbells, bench, bands, pull-up bar." },
+  "dumbbells-only": { label: "Dumbbells Only", desc: "Adjustable or fixed dumbbells." },
+  "bodyweight-only": { label: "Bodyweight Only", desc: "No equipment required." },
+};
+
+const LIMITATION_META = {
+  none: { label: "None", desc: "Full range of motion available." },
+  shoulder: { label: "Shoulder", desc: "Avoid overhead pressing, upright rows, behind-neck." },
+  knee: { label: "Knee", desc: "Avoid deep squats, lunges, leg extensions." },
+  "lower-back": { label: "Lower Back", desc: "Avoid deadlifts, good mornings, heavy squats." },
+};
+
+const SPLIT_BY_EXP = {
+  Beginner: { 3: "Full Body", 4: "Upper Lower", 5: "Upper Lower", 6: "Upper Lower" },
+  Intermediate: { 3: "Full Body", 4: "Upper Lower", 5: "Upper Lower", 6: "Push Pull Legs" },
+  Advanced: { 3: "Full Body", 4: "Upper Lower", 5: "Push Pull Legs", 6: "Push Pull Legs" },
+};
+
+const EQUIPMENT_ALLOWED = {
+  "full-gym": null,
+  "home-gym": ["Barbell", "Dumbbell", "Bodyweight", "Resistance Band", "Pull-up Bar", "EZ Bar", "Kettlebell"],
+  "dumbbells-only": ["Dumbbell"],
+  "bodyweight-only": ["Bodyweight"],
+};
+
+const EXERCISES_TO_AVOID = {
+  shoulder: ["upright-row", "behind-neck-press", "dip", "dips", "barbell-overhead-press"],
+  knee: ["barbell-squat", "dumbbell-lunge", "leg-extension", "bulgarian-split-squat"],
+  "lower-back": ["barbell-deadlift", "good-morning", "barbell-squat", "barbell-good-morning"],
+};
+
 // --- Generator State ---
-const genState = { step: 1, goal: null, experience: null, days: null, split: null };
+const genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null };
 
 // --- Helpers ---
 function shuffleArr(arr) {
@@ -7477,6 +7527,18 @@ function shuffleArr(arr) {
 }
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
+function filterByEquipment(exercises, equipment) {
+  const allowed = EQUIPMENT_ALLOWED[equipment];
+  if (!allowed) return exercises;
+  return exercises.filter(function(e) { return allowed.includes(e.equipment); });
+}
+
+function filterByLimitation(exercises, limitation) {
+  const avoid = EXERCISES_TO_AVOID[limitation];
+  if (!avoid) return exercises;
+  return exercises.filter(function(e) { return !avoid.includes(e.id); });
+}
+
 
 function isCompound(exName) {
   return COMPOUND_EXERCISE_NAMES.has(exName);
@@ -7564,55 +7626,70 @@ function filterByExperience(candidates, experience) {
   return candidates.filter(e => !["Power Clean", "Snatch"].includes(e.name));
 }
 
-function selectExercisesForDay(goal, experience, splitDay, usedInCycle) {
+function selectExercisesForDay(goal, experience, splitDay, usedInCycle, equipment, limitation, priority) {
   const categories = getCategoriesForDay(splitDay);
-  let candidates = EXERCISE_LIBRARY.filter(e => categories.includes(e.category));
+  let candidates = EXERCISE_LIBRARY.filter(function(e) { return categories.includes(e.category); });
   candidates = filterByExperience(candidates, experience);
-  const scored = candidates.map(e => ({ exercise: e, score: scoreExercise(e, goal, usedInCycle) }));
-  scored.sort((a, b) => b.score - a.score || Math.random() - 0.5);
+  candidates = filterByEquipment(candidates, equipment);
+  candidates = filterByLimitation(candidates, limitation);
+  const scored = candidates.map(function(e) { return { exercise: e, score: scoreExercise(e, goal, usedInCycle) }; });
+  scored.sort(function(a, b) { return b.score - a.score || Math.random() - 0.5; });
 
   const range = EX_COUNT_RANGE[experience] || EX_COUNT_RANGE.Intermediate;
   const count = Math.min(randInt(range.min, range.max), scored.length);
   const ratios = GOAL_RATIOS[goal] || GOAL_RATIOS["General Fitness"];
 
-  let compounds = scored.filter(s => isCompound(s.exercise.name) && s.score > 0);
-  let isolations = scored.filter(s => !isCompound(s.exercise.name) && !isConditioning(s.exercise) && s.score > 0);
-  let conditioningPool = EXERCISE_LIBRARY.filter(e => isConditioning(e));
+  var compounds = scored.filter(function(s) { return isCompound(s.exercise.name) && s.score > 0; });
+  var isolations = scored.filter(function(s) { return !isCompound(s.exercise.name) && !isConditioning(s.exercise) && s.score > 0; });
+  var conditioningPool = EXERCISE_LIBRARY.filter(function(e) { return isConditioning(e); });
   conditioningPool = filterByExperience(conditioningPool, experience);
-  let conditioning = conditioningPool
-    .map(e => ({ exercise: e, score: scoreExercise(e, goal, usedInCycle) }))
-    .filter(s => s.score > 0)
-    .sort((a, b) => b.score - a.score || Math.random() - 0.5);
+  conditioningPool = filterByEquipment(conditioningPool, equipment);
+  conditioningPool = filterByLimitation(conditioningPool, limitation);
+  var conditioning = conditioningPool
+    .map(function(e) { return { exercise: e, score: scoreExercise(e, goal, usedInCycle) }; })
+    .filter(function(s) { return s.score > 0; })
+    .sort(function(a, b) { return b.score - a.score || Math.random() - 0.5; });
 
   const nComp = Math.round(count * ratios.compound);
   const nIso = Math.round(count * ratios.isolation);
   const nCond = count - nComp - nIso;
 
-  const pick = (arr, n) => {
+  const pick = function(arr, n) {
     const result = [];
-    const pool = [...arr];
-    for (let i = 0; i < n && pool.length > 0; i++) {
+    const pool = [].concat(arr);
+    for (var i = 0; i < n && pool.length > 0; i++) {
       result.push(pool.shift());
     }
     return result;
   };
 
-  const picked = [
-    ...pick(compounds, nComp),
-    ...pick(isolations, nIso),
-    ...pick(conditioning, nCond),
-  ];
+  const picked = [].concat(
+    pick(compounds, nComp),
+    pick(isolations, nIso),
+    pick(conditioning, nCond)
+  );
 
-  const sets = EXP_SETS[experience] || EXP_SETS.Intermediate;
-  return picked.map(s => ({
-    name: s.exercise.name,
-    sets,
-    reps: getRepTarget(goal, s.exercise.name),
-    weight: "",
-  }));
+  var sets = EXP_SETS[experience] || EXP_SETS.Intermediate;
+
+  // Priority muscle: add 2 extra sets to matching exercises
+  var priorityTag = priority && priority !== "none" ? PRIORITY_MUSCLE_TAGS[priority] : null;
+  var result = picked.map(function(s) {
+    var finalSets = s.sets;
+    if (priorityTag && (s.exercise.primaryMuscle === priorityTag || (s.exercise.secondaryMuscles || []).indexOf(priorityTag) >= 0)) {
+      finalSets = s.sets + 2;
+    }
+    return {
+      name: s.exercise.name,
+      sets: finalSets,
+      reps: getRepTarget(goal, s.exercise.name),
+      weight: "",
+    };
+  });
+
+  return result;
 }
 
-function generateWeeklySchedule(goal, experience, split, days) {
+function generateWeeklySchedule(goal, experience, split, days, time, priority, equipment, limitation) {
   const indices = getTrainingDayIndices(days);
   const cycle = split === "Push Pull Legs" ? ["Push", "Pull", "Legs"] : split === "Upper Lower" ? ["Upper", "Lower"] : [];
   const usedInCycle = new Set();
@@ -7623,7 +7700,7 @@ function generateWeeklySchedule(goal, experience, split, days) {
       const splitDay = getSplitDayName(split, dayIdx);
       // Reset usedInCycle when a new cycle begins
       if (cycle.length > 0 && dayIdx > 0 && splitDay === cycle[0]) usedInCycle.clear();
-      const exercises = selectExercisesForDay(goal, experience, splitDay, usedInCycle);
+      const exercises = selectExercisesForDay(goal, experience, splitDay, usedInCycle, equipment, limitation, priority);
       exercises.forEach(ex => usedInCycle.add(ex.name));
       schedule.push({ day: d, type: "workout", name: splitDay, exercises });
     } else {
@@ -7645,6 +7722,11 @@ function getBestSplit(goal) {
     if (sc > bestScore) { bestScore = sc; best = s; }
   });
   return best;
+}
+
+function getRecommendedSplit(experience, days) {
+  var table = SPLIT_BY_EXP[experience];
+  return table ? table[days] : "Full Body";
 }
 
 function getSortedSplits(goal) {
@@ -7725,71 +7807,163 @@ function renderStep3() {
 
 function renderStep4() {
   const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Choose Your Split";
-  const sorted = getSortedSplits(genState.goal);
-  const bestName = sorted[0].name;
+  document.getElementById("gmStepTitle").textContent = "Available Workout Time";
   let html = "";
-  sorted.forEach((s, i) => {
-    const active = genState.split === s.name ? " is-active" : "";
-    const recommended = s.name === bestName ? " is-recommended" : "";
-    const badge = s.name === bestName ? '<span class="gw-split-badge">⭐ Recommended</span>' : "";
-    const note = s.name === bestName ? '<div class="gw-split-note">Best match for your goal.</div>' : "";
-    const check = active ? '<span class="gw-split-check">✓ Selected</span>' : "";
-    html += `<div class="gw-split-card${active}${recommended}" data-gw-split="${s.name}">
-      <div class="gw-split-top">
-        <span class="gw-split-name">${s.name}</span>
-        ${check}
-        <span class="gw-split-pct">${s.score}% match</span>
-      </div>
-      <div class="gw-split-desc">${s.rec.desc}</div>
-      ${badge}${note}
-    </div>`;
+  Object.entries(TIME_META).forEach(function(_ref) {
+    var key = _ref[0], val = _ref[1];
+    var active = genState.time === key ? " is-active" : "";
+    html += '<div class="gw-option' + active + '" data-gw-time="' + key + '">' +
+      '<div class="gw-option-icon">' + val.icon + '</div>' +
+      '<div class="gw-option-content">' +
+      '<div class="gw-option-title">' + val.label + '</div>' +
+      '<div class="gw-option-desc">' + val.short + '</div></div></div>';
   });
   body.innerHTML = html;
-  body.querySelectorAll(".gw-split-card").forEach(el => {
-    el.addEventListener("click", () => {
-      body.querySelectorAll(".gw-split-card").forEach(c => c.classList.remove("is-active"));
+  body.querySelectorAll(".gw-option").forEach(function(el) {
+    el.addEventListener("click", function() {
+      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
       el.classList.add("is-active");
-      genState.split = el.dataset.gwSplit;
+      genState.time = el.dataset.gwTime;
     });
   });
 }
 
 function renderStep5() {
   const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Priority Muscle (Optional)";
+  let html = "";
+  Object.entries(PRIORITY_META).forEach(function(_ref) {
+    var key = _ref[0], val = _ref[1];
+    var active = genState.priority === key ? " is-active" : "";
+    html += '<div class="gw-option' + active + '" data-gw-priority="' + key + '">' +
+      '<div class="gw-option-content">' +
+      '<div class="gw-option-title">' + val.label + '</div>' +
+      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-option").forEach(function(el) {
+    el.addEventListener("click", function() {
+      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
+      el.classList.add("is-active");
+      genState.priority = el.dataset.gwPriority;
+    });
+  });
+}
+
+function renderStep6() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Available Equipment";
+  let html = "";
+  Object.entries(EQUIPMENT_META).forEach(function(_ref) {
+    var key = _ref[0], val = _ref[1];
+    var active = genState.equipment === key ? " is-active" : "";
+    html += '<div class="gw-option' + active + '" data-gw-equipment="' + key + '">' +
+      '<div class="gw-option-content">' +
+      '<div class="gw-option-title">' + val.label + '</div>' +
+      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-option").forEach(function(el) {
+    el.addEventListener("click", function() {
+      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
+      el.classList.add("is-active");
+      genState.equipment = el.dataset.gwEquipment;
+    });
+  });
+}
+
+function renderStep7() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Limitations / Injuries";
+  let html = "";
+  Object.entries(LIMITATION_META).forEach(function(_ref) {
+    var key = _ref[0], val = _ref[1];
+    var active = genState.limitation === key ? " is-active" : "";
+    html += '<div class="gw-option' + active + '" data-gw-limitation="' + key + '">' +
+      '<div class="gw-option-content">' +
+      '<div class="gw-option-title">' + val.label + '</div>' +
+      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-option").forEach(function(el) {
+    el.addEventListener("click", function() {
+      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
+      el.classList.add("is-active");
+      genState.limitation = el.dataset.gwLimitation;
+    });
+  });
+}
+
+function renderStep8() {
+  const body = document.getElementById("gmBody");
+  document.getElementById("gmStepTitle").textContent = "Choose Your Split";
+  const sorted = getSortedSplits(genState.goal);
+  const recName = getRecommendedSplit(genState.experience, genState.days);
+  const bestName = sorted[0].name;
+  let html = "";
+  sorted.forEach(function(s) {
+    const active = genState.split === s.name ? " is-active" : "";
+    const recommended = s.name === recName ? " is-recommended" : "";
+    const badge = s.name === recName ? '<span class="gw-split-badge">&#11088; Recommended</span>' : '';
+    const check = active ? '<span class="gw-split-check">&#10003; Selected</span>' : '';
+    html += '<div class="gw-split-card' + active + recommended + '" data-gw-split="' + s.name + '">' +
+      '<div class="gw-split-top">' +
+      '<span class="gw-split-name">' + s.name + '</span>' +
+      check +
+      '<span class="gw-split-pct">' + s.score + '% match</span></div>' +
+      '<div class="gw-split-desc">' + s.rec.desc + '</div>' +
+      badge + '</div>';
+  });
+  body.innerHTML = html;
+  body.querySelectorAll(".gw-split-card").forEach(function(el) {
+    el.addEventListener("click", function() {
+      body.querySelectorAll(".gw-split-card").forEach(function(c) { c.classList.remove("is-active"); });
+      el.classList.add("is-active");
+      genState.split = el.dataset.gwSplit;
+    });
+  });
+}
+
+function renderStep9() {
+  const body = document.getElementById("gmBody");
   document.getElementById("gmStepTitle").textContent = "Program Review";
-  const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days);
+  const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days, genState.time, genState.priority, genState.equipment, genState.limitation);
   genState.schedule = schedule;
-  const totWorkouts = schedule.filter(d => d.type === "workout").length;
-  let html = `<div class="gw-review-summary">
-    <strong>${genState.split}</strong> · ${totWorkouts} days/week · ${genState.experience} · ${genState.goal}<br>
-    Exercises per workout: ${EX_COUNT_RANGE[genState.experience].min}-${EX_COUNT_RANGE[genState.experience].max}
-  </div>`;
-  schedule.forEach(d => {
+  const totWorkouts = schedule.filter(function(d) { return d.type === "workout"; }).length;
+  const timeLabel = TIME_META[genState.time] ? TIME_META[genState.time].label : "";
+  const equipLabel = EQUIPMENT_META[genState.equipment] ? EQUIPMENT_META[genState.equipment].label : "";
+  const limLabel = LIMITATION_META[genState.limitation] ? LIMITATION_META[genState.limitation].label : "";
+  const prioLabel = PRIORITY_META[genState.priority] ? PRIORITY_META[genState.priority].label : "";
+  var duration = "45-60 min";
+  if (genState.time === "30-45") duration = "30-45 min";
+  else if (genState.time === "60-75") duration = "60-75 min";
+  else if (genState.time === "75-90") duration = "75-90 min";
+
+  let html = '<div class="gw-review-summary">' +
+    '<strong>' + genState.split + '</strong> &middot; ' + totWorkouts + ' days/week &middot; ' + genState.experience + ' &middot; ' + genState.goal + '<br>' +
+    'Duration: ' + duration + ' &middot; Equipment: ' + equipLabel + '<br>' +
+    'Priority: ' + prioLabel + ' &middot; Limitations: ' + limLabel +
+    '</div>';
+  schedule.forEach(function(d) {
     if (d.type === "workout") {
-      html += `<div class="gw-review-day">
-        <div class="gw-review-day-header">
-          <span>${DAY_LABELS[d.day]} · ${d.name}</span>
-          <span class="gw-day-tag">Workout</span>
-        </div>`;
-      d.exercises.forEach(ex => {
-        html += `<div class="gw-review-ex">
-          <span class="gw-review-ex-name">${ex.name}</span>
-          <span class="gw-review-ex-meta">${ex.sets}×${ex.reps}</span>
-        </div>`;
+      html += '<div class="gw-review-day">' +
+        '<div class="gw-review-day-header">' +
+        '<span>' + DAY_LABELS[d.day] + ' &middot; ' + d.name + '</span>' +
+        '<span class="gw-day-tag">Workout</span></div>';
+      d.exercises.forEach(function(ex) {
+        html += '<div class="gw-review-ex">' +
+          '<span class="gw-review-ex-name">' + ex.name + '</span>' +
+          '<span class="gw-review-ex-meta">' + ex.sets + '&times;' + ex.reps + '</span></div>';
       });
-      html += `</div>`;
+      html += '</div>';
     } else {
-      html += `<div class="gw-review-day">
-        <div class="gw-review-day-header">
-          <span>${DAY_LABELS[d.day]} · Recovery</span>
-          <span class="gw-day-tag is-recovery">Recovery</span>
-        </div>
-        <div class="gw-review-recovery">
-          <div class="gw-review-recovery-title">${d.icon} ${d.title}</div>
-          <div class="gw-review-recovery-desc">${d.desc}</div>
-        </div>
-      </div>`;
+      html += '<div class="gw-review-day">' +
+        '<div class="gw-review-day-header">' +
+        '<span>' + DAY_LABELS[d.day] + ' &middot; Recovery</span>' +
+        '<span class="gw-day-tag is-recovery">Recovery</span></div>' +
+        '<div class="gw-review-recovery">' +
+        '<div class="gw-review-recovery-title">' + d.icon + ' ' + d.title + '</div>' +
+        '<div class="gw-review-recovery-desc">' + d.desc + '</div></div></div>';
     }
   });
   body.innerHTML = html;
@@ -7801,18 +7975,22 @@ function goToStep(step) {
   const backBtn = document.getElementById("gmBackBtn");
   const nextBtn = document.getElementById("gmNextBtn");
   backBtn.style.display = step === 1 ? "none" : "";
-  if (step === 5) {
+  if (step === 9) {
     nextBtn.textContent = "Save Program";
   } else {
     nextBtn.textContent = "Next";
   }
-  document.getElementById("gmStepBadge").textContent = `Step ${step} of 5`;
+  document.getElementById("gmStepBadge").textContent = "Step " + step + " of 9";
   switch (step) {
     case 1: renderStep1(); break;
     case 2: renderStep2(); break;
     case 3: renderStep3(); break;
     case 4: renderStep4(); break;
     case 5: renderStep5(); break;
+    case 6: renderStep6(); break;
+    case 7: renderStep7(); break;
+    case 8: renderStep8(); break;
+    case 9: renderStep9(); break;
   }
 }
 
@@ -7821,8 +7999,9 @@ function nextStep() {
   if (s === 1 && !genState.goal) { showToast("Select a goal to continue."); return; }
   if (s === 2 && !genState.experience) { showToast("Select your experience level."); return; }
   if (s === 3 && !genState.days) { showToast("Select training days."); return; }
-  if (s === 4 && !genState.split) { showToast("Select a workout split."); return; }
-  if (s === 5) { saveGeneratedProgram(); return; }
+  if (s === 4 && !genState.time) { showToast("Select available workout time."); return; }
+  if (s === 8 && !genState.split) { showToast("Select a workout split."); return; }
+  if (s === 9) { saveGeneratedProgram(); return; }
   goToStep(s + 1);
 }
 
@@ -7852,6 +8031,10 @@ function openGenerateWorkout() {
   genState.goal = (u && goalMap[u.goal]) || null;
   genState.experience = (u && expMap[u.experience]) || null;
   genState.days = (u && u.trainingDays) || null;
+  genState.time = null;
+  genState.priority = "none";
+  genState.equipment = "full-gym";
+  genState.limitation = "none";
   genState.split = null;
   genState.schedule = null;
   document.getElementById("generateModal").classList.remove("is-hidden");
@@ -7888,6 +8071,10 @@ function saveGeneratedProgram() {
     experience: genState.experience,
     split: genState.split,
     days: genState.days,
+    time: genState.time,
+    priority: genState.priority,
+    equipment: genState.equipment,
+    limitation: genState.limitation,
     createdAt: new Date().toISOString(),
   };
   localStorage.setItem("wl_generator_profile", JSON.stringify(profile));
