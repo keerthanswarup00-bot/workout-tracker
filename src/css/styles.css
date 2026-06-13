@@ -4170,6 +4170,91 @@ textarea:focus {
   background: var(--surface-2);
 }
 
+/* Weekly Report Card */
+.wr-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-card);
+  padding: var(--space-sm);
+}
+.wr-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: var(--space-xs);
+}
+.wr-stat {
+  text-align: center;
+  padding: 6px 0;
+}
+.wr-stat strong {
+  display: block;
+  font-size: 16px;
+  font-weight: 800;
+  color: var(--text);
+}
+.wr-stat small {
+  display: block;
+  font-size: 0.55rem;
+  color: var(--text-tertiary);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  margin-top: 2px;
+}
+.wr-weight {
+  text-align: center;
+  font-size: 0.7rem;
+  color: var(--text-secondary);
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.wr-wins {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 8px;
+  padding-top: 8px;
+  border-top: 1px solid var(--border);
+}
+.wr-win {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 0.72rem;
+  color: var(--text);
+  padding: 4px 8px;
+  background: var(--surface-2);
+  border-radius: 6px;
+}
+.wr-win span:first-child {
+  font-size: 0.85rem;
+  flex-shrink: 0;
+}
+
+/* Milestone Markers */
+.wgp-milestones {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin: 8px 0 4px;
+}
+.wgp-milestone {
+  font-size: 14px;
+  opacity: 0.3;
+  transition: opacity 0.3s;
+}
+.wgp-milestone.is-reached {
+  opacity: 1;
+}
+.wgp-milestone-text {
+  text-align: center;
+  font-size: 0.6rem;
+  color: var(--text-tertiary);
+  margin-bottom: 8px;
+  font-weight: 600;
+}
+
 .home-workout-list {
   display: grid;
   gap: 0.4rem;
@@ -4713,7 +4798,7 @@ textarea:focus {
 }
 .ss-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(4, 1fr);
   gap: 0.5rem;
   margin-bottom: 0.75rem;
 }
