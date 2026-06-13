@@ -5383,7 +5383,7 @@ function resetOnboarding() {
   document.getElementById("onboardName").focus();
 }
 
-function goToStep(step) {
+function onboardGoToStep(step) {
   document.getElementById("onboardStep1").style.display = step === 1 ? "" : "none";
   document.getElementById("onboardStep2").style.display = step === 2 ? "" : "none";
   document.getElementById("onboardStep3").style.display = step === 3 ? "" : "none";
@@ -5456,26 +5456,26 @@ document.getElementById("onboardNextBtn")?.addEventListener("click", () => {
   onboardData.age = Number(age);
   onboardData.height = Number(height);
   onboardData.weight = Number(weight);
-  goToStep(2);
+  onboardGoToStep(2);
 });
 
-document.getElementById("onboardGoalBack")?.addEventListener("click", () => goToStep(1));
+document.getElementById("onboardGoalBack")?.addEventListener("click", () => onboardGoToStep(1));
 document.getElementById("onboardGoalNext")?.addEventListener("click", () => {
   const active = document.querySelector("#onboardGoalOptions .onboard-chip.is-active");
   if (!active) return;
   onboardData.goal = active.dataset.value;
-  goToStep(3);
+  onboardGoToStep(3);
 });
 
-document.getElementById("onboardExpBack")?.addEventListener("click", () => goToStep(2));
+document.getElementById("onboardExpBack")?.addEventListener("click", () => onboardGoToStep(2));
 document.getElementById("onboardExpNext")?.addEventListener("click", () => {
   const active = document.querySelector("#onboardExperienceOptions .onboard-chip.is-active");
   if (!active) return;
   onboardData.experience = active.dataset.value;
-  goToStep(4);
+  onboardGoToStep(4);
 });
 
-document.getElementById("onboardTargetBack")?.addEventListener("click", () => goToStep(3));
+document.getElementById("onboardTargetBack")?.addEventListener("click", () => onboardGoToStep(3));
 
 document.getElementById("onboardTargetWeight")?.addEventListener("input", () => {
   const tw = document.getElementById("onboardTargetWeight").value;
