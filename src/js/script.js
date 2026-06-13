@@ -24,8 +24,8 @@ function autoGenerateWarmups(exercise, workingWeight) {
   if (state.warmupStyle === "advanced") {
     if (w <= 20) {
       warmups = [
-        { bar: Math.round((w * 0.5) / 2.5) * 2.5 || 5, reps: 10, pct: "50%" },
-        { bar: Math.round((w * 0.75) / 2.5) * 2.5 || 10, reps: 10, pct: "75%" },
+        { bar: Math.round((w * 0.5) / 2.5) * 2.5 || Math.min(5, w * 0.5), reps: 10, pct: "50%" },
+        { bar: Math.round((w * 0.75) / 2.5) * 2.5 || Math.min(10, w * 0.75), reps: 10, pct: "75%" },
       ];
     } else if (w <= 60) {
       warmups = [
@@ -49,7 +49,7 @@ function autoGenerateWarmups(exercise, workingWeight) {
   } else {
     // Simple: 1-2 light warmup sets
     if (w <= 20) {
-      warmups = [{ bar: Math.round((w * 0.5) / 2.5) * 2.5 || 5, reps: 10, pct: "50%" }];
+      warmups = [{ bar: Math.round((w * 0.5) / 2.5) * 2.5 || Math.min(5, w * 0.5), reps: 10, pct: "50%" }];
     } else if (w <= 60) {
       warmups = [{ bar: 20, reps: 10, pct: "Light" }];
     } else {
@@ -605,9 +605,10 @@ function parseWeight(val) {
 function showToast(msg) {
   const t = document.getElementById("prToast");
   if (t) {
+    if (window.prToastTimer) clearTimeout(window.prToastTimer);
     document.getElementById("prToastMsg").textContent = msg;
     t.classList.remove("is-hidden");
-    setTimeout(() => t.classList.add("is-hidden"), 3000);
+    window.prToastTimer = setTimeout(() => t.classList.add("is-hidden"), 3000);
   }
 }
 function displayHeight(cm) {
@@ -1161,7 +1162,9 @@ function loadState() {
     customExercises: [],
   };
   try {
-    const loaded = { ...fallback, ...JSON.parse(localStorage.getItem(STORAGE_KEY)) };
+    const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
+    const loaded = { ...fallback, ...stored };
+    if (stored && stored.workoutStreak) loaded.workoutStreak = { ...fallback.workoutStreak, ...stored.workoutStreak };
     // Migrate legacy wl_bodylog to state.weightLog
     if (!loaded.weightLog || !loaded.weightLog.length) {
       try {
@@ -1206,11 +1209,9 @@ function startSessionForWorkout(workoutId) {
   const activePlan = loadCustomProgram() || plan;
   const workout = activePlan.find((w) => w.id === workoutId);
   if (!workout) {
-    console.log("[DEBUG] startSessionForWorkout: workout not found", { workoutId, activePlan });
     return getTodaySession() || existing;
   }
   if (existing && existing.workoutId === workoutId) {
-    console.log("[DEBUG] startSessionForWorkout: returning existing session", { existing });
     return existing;
   }
   const session = {
@@ -1220,7 +1221,6 @@ function startSessionForWorkout(workoutId) {
     workoutId: workout.id,
     workoutName: workout.name,
     exercises: workout.exercises.map((exercise) => {
-      console.log("[DEBUG] Creating sets for exercise:", exercise.name, "sets value:", exercise.sets, "type:", typeof exercise.sets);
       const setCount = typeof exercise.sets === "number" ? exercise.sets : 3;
       return {
         name: exercise.name,
@@ -1237,7 +1237,6 @@ function startSessionForWorkout(workoutId) {
       };
     }),
   };
-  console.log("[DEBUG] New session created:", JSON.parse(JSON.stringify(session)));
   state.sessions = state.sessions.filter((item) => item.dateKey !== today);
   state.sessions.unshift(session);
   saveState();
@@ -2030,6 +2029,7 @@ function activateTab(tabName) {
 
 function positionNavIndicator() {
   const nav = document.getElementById("bottomNav");
+  if (!nav) return;
   const active = nav.querySelector(".nav-tab.is-active");
   const indicator = document.getElementById("navIndicator");
   if (active && indicator) {
@@ -2067,6 +2067,11 @@ function showScreen(screenId) {
     nav.classList.add("is-locked");
   } else {
     nav.classList.remove("is-locked");
+  }
+  if (screenId !== "screen-ws" && restTimerInterval) {
+    clearInterval(restTimerInterval);
+    restTimerInterval = null;
+    document.getElementById("restTimerDisplay").classList.add("is-hidden");
   }
 }
 
@@ -4004,14 +4009,6 @@ document.getElementById("esWeightPlus5").addEventListener("click", () => {
 document.getElementById("esCompleteBtn").addEventListener("click", completeSetFromSheet);
 document.getElementById("esEditDeleteBtn").addEventListener("click", deleteSetFromSheet);
 
-// ===== MUSCLE SHEET =====
-document.getElementById("muscleSheetOverlay")?.addEventListener("click", () => {
-  document.getElementById("muscleSheet").classList.add("is-hidden");
-});
-document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
-  if (e.target === e.currentTarget) e.currentTarget.classList.add("is-hidden");
-});
-
 // ===== REST TIMER CONTROLS =====
 document.getElementById("rtAdd30").addEventListener("click", () => {
   restTimerSeconds += 30;
@@ -4259,6 +4256,7 @@ function renderSessionsTab() {
 
 function renderSessionLog() {
   const container = document.getElementById("sessionLog");
+  if (!container) return;
   const logs = state.sessions
     .filter((s) => s.finishedAt)
     .slice()
@@ -5203,37 +5201,7 @@ function renderEditGoalsBtn(container) {
 // ===== MODALS =====
 let exerciseDetailChartInstance = null;
 
-document.getElementById("myExercisesBtn")?.addEventListener("click", () => {
-  const container = document.getElementById("exerciseDetailTitle");
-  const activePlan = loadCustomProgram() || plan;
-  const allExercises = activePlan.flatMap((w) => w.exercises.map((e) => e.name));
-  container.textContent = `All Exercises (${allExercises.length})`;
 
-  if (exerciseDetailChartInstance) {
-    exerciseDetailChartInstance.destroy();
-    exerciseDetailChartInstance = null;
-  }
-  const canvas = document.getElementById("exerciseDetailChart");
-  if (canvas) {
-    const ctx = canvas.getContext("2d");
-    const counts = {};
-    allExercises.forEach((name) => {
-      counts[name] = (counts[name] || 0) + 1;
-    });
-    const labels = Object.keys(counts);
-    const data = Object.values(counts);
-    exerciseDetailChartInstance = new Chart(ctx, {
-      type: "bar",
-      data: { labels, datasets: [{ data, backgroundColor: "#00d26a", borderRadius: 4 }] },
-      options: {
-        plugins: { legend: { display: false } },
-        scales: { y: { ticks: { stepSize: 1, color: "#737373" } }, x: { ticks: { color: "#737373", font: { size: 8 } } } },
-      },
-    });
-  }
-
-  document.getElementById("exerciseDetailModal").classList.remove("is-hidden");
-});
 
 document.getElementById("exerciseDetailClose")?.addEventListener("click", () => {
   document.getElementById("exerciseDetailModal").classList.add("is-hidden");
@@ -5246,9 +5214,6 @@ document.getElementById("exerciseDetailClose")?.addEventListener("click", () => 
 });
 
 // ===== LOAD PROGRAM =====
-document.getElementById("newPlanBtn")?.addEventListener("click", () => {
-  document.getElementById("loadProgramModal").classList.remove("is-hidden");
-});
 document.getElementById("loadProgramClose")?.addEventListener("click", () => {
   document.getElementById("loadProgramModal").classList.add("is-hidden");
 });
