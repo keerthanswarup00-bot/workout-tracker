@@ -6337,25 +6337,19 @@ function showNewWorkoutBuilder() {
   document.getElementById("nwSearch").value = "";
   nwSearchTerm = "";
   nwActiveFilters = [];
-  document.getElementById("nwCreateBar").classList.add("is-hidden");
+  document.getElementById("nwCreateBar").style.display = "none";
   renderFilterChips();
   renderNewWorkoutList();
   showScreen("screen-new-workout");
 }
 
 const NW_FILTERS = ["Chest", "Back", "Shoulders", "Triceps", "Biceps", "Legs", "Core"];
-const NW_EQUIPMENT_FILTERS = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight"];
 const NW_TYPE_FILTERS = ["Compound", "Isolation"];
 
 function renderFilterChips() {
   const bar = document.getElementById("nwFilterBar");
   let html = `<div class="nw-filter-section"><span class="nw-filter-label">Muscle</span><div class="nw-filter-row">`;
   html += NW_FILTERS.map(
-    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
-  ).join("");
-  html += `</div></div>`;
-  html += `<div class="nw-filter-section"><span class="nw-filter-label">Equipment</span><div class="nw-filter-row">`;
-  html += NW_EQUIPMENT_FILTERS.map(
     (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
   ).join("");
   html += `</div></div>`;
@@ -6429,7 +6423,7 @@ function renderNewWorkoutList() {
   container.innerHTML = html;
   document.getElementById("nwCounter").textContent = total > 0 ? "0 Exercises Selected" : "No exercises found";
   document.getElementById("nwHelperText").textContent = "Select at least one exercise";
-  document.getElementById("nwCreateBar").classList.add("is-hidden");
+  document.getElementById("nwCreateBar").style.display = "none";
 
   container.querySelectorAll(".nw-check").forEach((cb) => {
     cb.addEventListener("change", updateCreateBar);
@@ -6459,12 +6453,12 @@ function updateCreateBar() {
   const countLabel = document.getElementById("nwCreateCount");
 
   if (count === 0) {
-    bar.classList.add("is-hidden");
+    bar.style.display = "none";
     counter.textContent = "0 Exercises Selected";
     return;
   }
 
-  bar.classList.remove("is-hidden");
+  bar.style.display = "flex";
   const label = count === 1 ? "Exercise Selected" : "Exercises Selected";
   countLabel.textContent = `${count} ${label}`;
   counter.textContent = `${count} ${label}`;
