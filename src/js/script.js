@@ -2217,9 +2217,14 @@ function showScreen(screenId) {
   document.querySelectorAll("#panel-sets .screen").forEach((el) => el.classList.add("is-hidden"));
   document.getElementById(screenId).classList.remove("is-hidden");
   const nav = document.getElementById("bottomNav");
-  if (screenId === "screen-ws") {
+  if (screenId === "screen-new-workout") {
+    nav.classList.remove("is-locked");
+    nav.style.display = "none";
+  } else if (screenId === "screen-ws") {
+    nav.style.display = "";
     nav.classList.add("is-locked");
   } else {
+    nav.style.display = "";
     nav.classList.remove("is-locked");
   }
   if (screenId !== "screen-ws" && restTimerInterval) {
@@ -6330,13 +6335,12 @@ let nwActiveFilters = [];
 function showNewWorkoutBuilder() {
   document.getElementById("nwName").value = "";
   document.getElementById("nwCreateBtn").disabled = true;
+  document.getElementById("nwCreateBtn").textContent = "Select at least one exercise";
   document.getElementById("nwSearch").value = "";
   nwSearchTerm = "";
   nwActiveFilters = [];
   renderFilterChips();
   renderNewWorkoutList();
-  document.getElementById("nwName").style.display = "none";
-  document.getElementById("nwCreateBtn").style.display = "none";
   showScreen("screen-new-workout");
 }
 
@@ -6424,7 +6428,18 @@ function renderNewWorkoutList() {
   }
 
   container.innerHTML = html;
-  document.getElementById("nwCounter").textContent = total > 0 ? `0 of ${total} exercises selected` : "No exercises found";
+  const counter = document.getElementById("nwCounter");
+  counter.dataset.total = total;
+  const createBtn = document.getElementById("nwCreateBtn");
+  if (total > 0) {
+    counter.textContent = "0 exercises selected";
+    createBtn.textContent = "Select at least one exercise";
+    createBtn.disabled = true;
+  } else {
+    counter.textContent = "No exercises found";
+    createBtn.textContent = "Select at least one exercise";
+    createBtn.disabled = true;
+  }
 
   container.querySelectorAll(".nw-check").forEach((cb) => {
     cb.addEventListener("change", updateNwState);
@@ -6441,12 +6456,19 @@ function renderNewWorkoutList() {
 function updateNwState() {
   const checked = document.querySelectorAll(".nw-check:checked");
   const count = checked.length;
-  const nameInput = document.getElementById("nwName");
   const createBtn = document.getElementById("nwCreateBtn");
-  nameInput.style.display = count === 0 ? "none" : "";
-  createBtn.style.display = count === 0 ? "none" : "";
-  document.getElementById("nwCounter").textContent = `${count} exercises selected`;
-  updateNwCreateBtn();
+  const counter = document.getElementById("nwCounter");
+
+  const total = counter.dataset.total || 0;
+  counter.textContent = `${count} of ${total} exercises selected`;
+
+  if (count === 0) {
+    createBtn.textContent = "Select at least one exercise";
+    createBtn.disabled = true;
+  } else {
+    createBtn.textContent = "Create Workout";
+    updateNwCreateBtn();
+  }
 }
 function updateNwCreateBtn() {
   const checked = document.querySelectorAll(".nw-check:checked").length;
