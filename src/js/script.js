@@ -2165,14 +2165,14 @@ function activateTab(tabName) {
   if (tabName === "settings") {
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === "panel-sets"));
   } else {
-    const panelId = tabName === "progress" ? "panel-progress" : "panel-" + tabName;
+    const panelId = tabName === "trainer" ? "panel-trainer" : tabName === "progress" ? "panel-progress" : "panel-" + tabName;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === panelId));
   }
 
   positionNavIndicator();
 
-  if (tabName === "sessions") renderSessionsTab();
   if (tabName === "progress") renderProgressPage();
+  if (tabName === "trainer") renderTrainerTab();
   if (tabName === "body") renderBodyTab();
   if (tabName === "sets") renderSetsPanel();
   if (tabName === "settings") {
@@ -2197,8 +2197,8 @@ function render() {
   document.getElementById("todayLabel").textContent = formatReadableDate(new Date());
   updateStreak();
   renderSetsPanel();
-  if (currentTab === "sessions") renderSessionsTab();
   if (currentTab === "progress") renderProgressPage();
+  if (currentTab === "trainer") renderTrainerTab();
   if (currentTab === "body") renderBodyTab();
   updateTopbarTimer();
 }
@@ -4814,6 +4814,7 @@ function renderProgressPage() {
   renderWeeklyReview();
   renderMonthlyReview();
   renderRecentAchievements();
+  renderSessionsTab();
 }
 
 function renderWeeklyReview() {
@@ -4934,6 +4935,244 @@ function renderRecentAchievements() {
       return `<div class="ach-item"><span class="ach-icon">${icon}</span>${name} · ${displayWeight(pr.weight)} × ${pr.reps}<span class="ach-date">${date}</span></div>`;
     }).join("")}</div>
   </div>`;
+}
+
+// ===== TRAINER PAGE =====
+function renderTrainerTab() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  const coach = CoachEngine.runAll();
+  const dc = coach.daily;
+  const gs = coach.goalStrategy;
+  const ins = coach.insights;
+  const prog = coach.progress;
+  const rep = coach.reports;
+  const rec = coach.recovery;
+  const edu = coach.education;
+  const ps = coach.problemSolver;
+
+  const sessions = (state.sessions || []).filter((s) => s.finishedAt);
+  const curWeight = dc.curWeight || (state.user || {}).weight || null;
+
+  // Helper to map engine types to CSS classes/icons
+  function insightClass(type) {
+    return type === "positive" ? "tr-insight-positive" : type === "warning" ? "tr-insight-warning" : type === "red" ? "tr-insight-red" : "tr-insight-blue";
+  }
+  function insightIcon(type) {
+    return type === "positive" ? "🟢" : type === "warning" ? "🟡" : type === "red" ? "🔴" : "🔵";
+  }
+
+  const learnColors = ["var(--accent)", "var(--blue)", "var(--orange)", "var(--yellow)", "var(--accent)", "var(--blue)"];
+
+  // Build HTML
+  let html = `<div class="tr-page">`;
+
+  // SECTION 1: Daily Coach Hero
+  const gp = dc.goalProgress;
+  const onTrack = dc.status === "on_track";
+  html += `
+  <div class="tr-hero">
+    <div class="tr-hero-bg"></div>
+    <div class="tr-hero-content">
+      <div class="tr-hero-top">
+        <div class="tr-hero-greeting">${dc.greeting} <span class="tr-hero-name">${dc.name}</span></div>
+        <div class="tr-hero-badges">
+          <span class="tr-badge tr-badge-goal">${dc.goalLabel}</span>
+          <span class="tr-badge tr-badge-status ${onTrack ? "tr-badge-on-track" : "tr-badge-warning"}">${onTrack ? "On Track" : "Needs Attention"}</span>
+        </div>
+      </div>
+      <div class="tr-hero-progress-area">
+        <div class="tr-hero-progress-ring">
+          <svg width="72" height="72" viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="5" opacity="0.3" />
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"
+              stroke-dasharray="188.5" stroke-dashoffset="${gp ? 188.5 - (gp / 100) * 188.5 : 188.5}"
+              transform="rotate(-90 36 36)" />
+          </svg>
+          <span class="tr-hero-ring-label">${gp ? Math.round(gp) : "—"}%</span>
+        </div>
+        <div class="tr-hero-progress-text">
+          ${dc.startWeight && dc.targetWeight ? `<div class="tr-hero-weight">${Math.round(dc.curWeight)}kg <span class="tr-hero-arrow">→</span> ${Math.round(dc.targetWeight)}kg</div>` : ""}
+          <div class="tr-hero-progress-bar"><div class="tr-hero-progress-fill" style="width:${gp || 0}%"></div></div>
+        </div>
+      </div>
+      <div class="tr-hero-message">${dc.coachMessage}</div>
+      <div class="tr-hero-priorities">
+        ${dc.dailyFocus.map(p => `<div class="tr-priority ${p.done ? "tr-priority-done" : ""}"><span class="tr-priority-check">${p.done ? "✓" : "○"}</span><span>${p.label}</span></div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+
+  // SECTION 2: Daily Scoreboard
+  const nut = coach.nutrition;
+  const proteinTarget = parseInt(nut.proteinTarget) || 150;
+  const waterTargetL = nut.waterTarget || 3;
+  html += `
+  <div class="tr-section">
+    <div class="tr-scoreboard">
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-workout">🏋️</div>
+        <div class="tr-sc-value">${dc.hasWorkoutToday ? "Done" : "Rest"}</div>
+        <div class="tr-sc-label">Workout</div>
+      </div>
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-protein">🥩</div>
+        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>${proteinTarget}<span class="tr-sc-unit">g</span></div>
+        <div class="tr-sc-label">Protein</div>
+      </div>
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-steps">🚶</div>
+        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>10k</div>
+        <div class="tr-sc-label">Steps</div>
+      </div>
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-water">💧</div>
+        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>${waterTargetL}<span class="tr-sc-unit">L</span></div>
+        <div class="tr-sc-label">Water</div>
+      </div>
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-sleep">🌙</div>
+        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>8<span class="tr-sc-unit">h</span></div>
+        <div class="tr-sc-label">Sleep</div>
+      </div>
+      <div class="tr-score-card">
+        <div class="tr-sc-icon tr-sc-weight">⚖️</div>
+        <div class="tr-sc-value">${curWeight ? Math.round(curWeight) + '<span class="tr-sc-unit">kg</span>' : "—"}</div>
+        <div class="tr-sc-label">Weight</div>
+      </div>
+    </div>
+  </div>`;
+
+  // SECTION 3: Coach Insights
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Coach Insights</span></div>
+    <div class="tr-insights">${ins.insights.map(i => {
+      return `<div class="tr-insight ${insightClass(i.type)}"><span class="tr-insight-icon">${insightIcon(i.type)}</span><span class="tr-insight-text">${i.text}</span></div>`;
+    }).join("")}</div>
+  </div>`;
+
+  // SECTION 4: Goal Strategy
+  const gst = gs.targets;
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Goal Strategy</span><span class="tr-section-sub">${gs.goalLabel}</span></div>
+    <div class="tr-strategy">
+      <div class="tr-strategy-grid">
+        <div class="tr-strategy-item"><span class="tr-strategy-label">Calories</span><span class="tr-strategy-value">${gst.calories}</span></div>
+        <div class="tr-strategy-item"><span class="tr-strategy-label">Protein</span><span class="tr-strategy-value">${gst.protein}</span></div>
+        <div class="tr-strategy-item"><span class="tr-strategy-label">Steps</span><span class="tr-strategy-value">${gst.steps}</span></div>
+        <div class="tr-strategy-item"><span class="tr-strategy-label">Cardio</span><span class="tr-strategy-value">${gst.cardio}</span></div>
+        <div class="tr-strategy-item"><span class="tr-strategy-label">Expected Rate</span><span class="tr-strategy-value">${gs.expectedRate}</span></div>
+      </div>
+      <div class="tr-strategy-mistakes">
+        <div class="tr-strategy-mistakes-title">Common Mistakes</div>
+        ${gs.warnings.map(m => `<div class="tr-strategy-mistake">• ${m}</div>`).join("")}
+      </div>
+    </div>
+  </div>`;
+
+  // SECTION 5: Problem Solver
+  const problems = ps.problems;
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">What's holding you back?</span></div>
+    <input type="text" class="tr-problem-search" placeholder="Search a problem..." readonly />
+    <div class="tr-problems">
+      ${problems.map(p => `<button class="tr-problem-card"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`).join("")}
+    </div>
+  </div>`;
+
+  // SECTION 6: Learning Hub
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Learning Hub</span></div>
+    <div class="tr-learn">
+      ${edu.categories.map((l, i) => `<div class="tr-learn-card" style="--card-accent:${learnColors[i % learnColors.length]}"><div class="tr-learn-card-top"><span class="tr-learn-icon">📖</span></div><div class="tr-learn-card-body"><div class="tr-learn-name">${l.name}</div><div class="tr-learn-meta"><span>${l.lessons} Lessons</span><span>${l.level.charAt(0).toUpperCase() + l.level.slice(1)}</span></div></div></div>`).join("")}
+    </div>
+  </div>`;
+
+  // SECTION 7: Exercise Encyclopedia
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Exercise Encyclopedia</span></div>
+    <input type="text" class="tr-problem-search" placeholder="Search exercise..." readonly />
+    <div class="tr-encyclopedia">
+      ${edu.popularExercises.map(e => `<button class="tr-ex-card"><div class="tr-ex-name">${e.name}</div><div class="tr-ex-meta"><span>${e.muscle}</span><span>${e.difficulty}</span><span>${e.equipment}</span></div></button>`).join("")}
+    </div>
+  </div>`;
+
+  // SECTION 8: Weekly Report
+  const wr = rep.weekly;
+  const wColor = wr.assessment.score === "excellent" ? "var(--accent)" : wr.assessment.score === "good" ? "var(--orange)" : "var(--red)";
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Weekly Report</span></div>
+    <div class="tr-weekly">
+      <div class="tr-weekly-header">
+        <span class="tr-weekly-assessment" style="color:${wColor}">${wr.assessment.label}</span>
+      </div>
+      <div class="tr-weekly-grid">
+        <div class="tr-weekly-item"><span class="tr-weekly-label">Workouts</span><span class="tr-weekly-value">${wr.workouts}</span></div>
+        <div class="tr-weekly-item"><span class="tr-weekly-label">Weight</span><span class="tr-weekly-value">${wr.weightChange}</span></div>
+        <div class="tr-weekly-item"><span class="tr-weekly-label">Protein</span><span class="tr-weekly-value">${wr.proteinDays}</span></div>
+        <div class="tr-weekly-item"><span class="tr-weekly-label">Steps</span><span class="tr-weekly-value">—</span></div>
+        <div class="tr-weekly-item"><span class="tr-weekly-label">Avg Sleep</span><span class="tr-weekly-value">—</span></div>
+      </div>
+      <div class="tr-weekly-recommend"><span class="tr-weekly-rec-label">Recommendation</span> ${wr.recommendation}</div>
+    </div>
+  </div>`;
+
+  // SECTION 9: Monthly Analysis
+  const mr = rep.monthly;
+  html += `
+  <div class="tr-section tr-section-last">
+    <div class="tr-section-header"><span class="tr-section-title">Monthly Analysis</span></div>
+    <div class="tr-monthly">
+      <div class="tr-monthly-grid">
+        <div class="tr-monthly-item"><span class="tr-monthly-label">Workouts</span><span class="tr-monthly-value">${mr.workouts}</span></div>
+        <div class="tr-monthly-item"><span class="tr-monthly-label">Streak</span><span class="tr-monthly-value">${mr.streak}d</span></div>
+        <div class="tr-monthly-item"><span class="tr-monthly-label">Consistency</span><span class="tr-monthly-value">${prog.weekly.consistency}%</span></div>
+        <div class="tr-monthly-item"><span class="tr-monthly-label">PRs</span><span class="tr-monthly-value">${mr.prs}</span></div>
+      </div>
+      ${curWeight ? `<div class="tr-monthly-chart-preview">
+        <div class="tr-monthly-coach-summary">${gs.goal === "build-muscle" ? "You're building size. Keep protein high and train progressively." : gs.goal === "lose-fat" ? "Fat loss is a marathon. Trust the deficit, stay patient." : gs.goal === "strength" ? "Strength gains take time. Focus on technique and progressive overload." : "Great work staying consistent. Keep showing up."}</div>
+      </div>` : `<div class="tr-empty-card"><div class="tr-empty-card-content">Log your body weight to unlock monthly analysis.</div></div>`}
+    </div>
+  </div>`;
+
+  html += `</div>`;
+
+  // Override with empty states if no data
+  if (!sessions.length && !curWeight) {
+    html = `<div class="tr-page">
+      <div class="tr-empty-state">
+        <div class="tr-empty-icon">🎯</div>
+        <div class="tr-empty-title">Welcome to Trainer</div>
+        <div class="tr-empty-desc">Your personal coaching hub. Complete your first workout and log your body weight to unlock insights.</div>
+      </div>
+      <div class="tr-empty-cards">
+        <div class="tr-empty-card"><div class="tr-empty-card-icon">💪</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
+        <div class="tr-empty-card"><div class="tr-empty-card-icon">⚖️</div><div class="tr-empty-card-text">Add body weight to begin progress tracking.</div></div>
+        <div class="tr-empty-card"><div class="tr-empty-card-icon">🎯</div><div class="tr-empty-card-text">Set a fitness goal to receive personalized recommendations.</div></div>
+      </div>
+    </div>`;
+  } else if (!sessions.length) {
+    html = `<div class="tr-page">
+      <div class="tr-empty-state">
+        <div class="tr-empty-icon">💪</div>
+        <div class="tr-empty-title">No Workouts Yet</div>
+        <div class="tr-empty-desc">Complete your first workout to unlock the Trainer experience.</div>
+      </div>
+      <div class="tr-empty-cards">
+        <div class="tr-empty-card"><div class="tr-empty-card-icon">🏋️</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
+        <div class="tr-empty-card"><div class="tr-empty-card-icon">⚖️</div><div class="tr-empty-card-text">Add body weight to begin progress tracking.</div></div>
+      </div>
+    </div>`;
+  }
+
+  container.innerHTML = html;
 }
 
 function renderCalendarHero() {
@@ -6507,10 +6746,20 @@ document.getElementById("nwName").addEventListener("input", () => {
 });
 
 document.getElementById("nwCreateBtn").addEventListener("click", () => {
-  if (!canCreateWorkout()) return;
+  const name = document.getElementById("nwName").value.trim();
+  const checked = document.querySelectorAll(".nw-check:checked").length;
 
-  const workoutName = document.getElementById("nwName").value.trim();
-  const checked = [...document.querySelectorAll(".nw-check:checked")];
+  if (!name) {
+    showToast("Name your workout");
+    return;
+  }
+  if (!checked) {
+    showToast("Select at least one exercise");
+    return;
+  }
+
+  const workoutName = name;
+  const checkedEls = [...document.querySelectorAll(".nw-check:checked")];
 
   const activePlan = loadCustomProgram() || [];
   if (activePlan.some(w => w.name.toLowerCase() === workoutName.toLowerCase())) {
@@ -6518,7 +6767,7 @@ document.getElementById("nwCreateBtn").addEventListener("click", () => {
     return;
   }
 
-  const exercises = checked.map((cb) => {
+  const exercises = checkedEls.map((cb) => {
     const ex = EXERCISE_LIBRARY.find((e) => e.id === cb.dataset.id);
     return { name: ex.name, sets: 3, reps: 10, weight: "", notes: "" };
   });
@@ -8687,11 +8936,3 @@ document.getElementById("gmFailureClose")?.addEventListener("click", () => {
 });
 
 function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }
-
-// --- Event Listeners ---
-document.getElementById("gmNextBtn")?.addEventListener("click", nextStep);
-document.getElementById("gmBackBtn")?.addEventListener("click", prevStep);
-document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
-  document.getElementById("generateModal").classList.add("is-hidden");
-  showGmOverlay(null);
-});
