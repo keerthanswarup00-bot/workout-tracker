@@ -3116,6 +3116,78 @@ textarea:focus {
   to { opacity: 0; transform: translateY(24px); }
 }
 
+/* --- Developer Modal --- */
+#developerModal .modal-card {
+  max-width: 340px;
+  text-align: center;
+}
+.dev-content {
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+}
+.dev-avatar {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #000;
+  font-weight: 800;
+  font-size: 1.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 0.5rem;
+}
+.dev-subtitle {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: var(--text);
+}
+.dev-desc {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  text-align: center;
+  max-width: 280px;
+  margin: 0;
+}
+.dev-mail-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.6rem 1rem;
+  border-radius: var(--radius-sm);
+  background: var(--accent);
+  color: #000;
+  font-weight: 600;
+  font-size: 0.82rem;
+  text-decoration: none;
+  margin-top: 0.25rem;
+}
+.dev-mail-btn:active {
+  transform: scale(0.97);
+}
+.modal-back {
+  background: none;
+  border: none;
+  font-size: 1.2rem;
+  color: var(--text);
+  cursor: pointer;
+  padding: 0.25rem 0.5rem;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+.modal-back:active {
+  background: var(--surface-2);
+}
+
 /* --- Home Incomplete Profile Banner --- */
 .home-incomplete-banner {
   display: flex;
@@ -5678,6 +5750,13 @@ textarea:focus {
   display: none !important;
 }
 .focus-mode .topbar {
+  padding: 0.25rem;
+  justify-content: flex-end;
+  background: transparent !important;
+  border-bottom: none !important;
+}
+.focus-mode .topbar-left,
+.focus-mode .topbar-timer {
   display: none !important;
 }
 .focus-mode .app-layout {

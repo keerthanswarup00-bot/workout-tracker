@@ -2055,85 +2055,55 @@ function renderSettings() {
     </div>
   </div>
 
-  <!-- SECTION 3: WORKOUT SETTINGS -->
+  <!-- SECTION 3: WORKOUT -->
   <div class="sg">
     <div class="sg-label">WORKOUT</div>
     <div class="sg-row" data-setting="rest-timer"><span>Rest Timer</span><span class="sg-row-val" id="sgRestVal">${state.restTimer || 90}s</span><span class="sg-chevron">›</span></div>
     <label class="sg-row sg-toggle"><span>Auto-Start Rest Timer</span><input type="checkbox" ${state.autoRest ? "checked" : ""} data-setting="auto-rest" /><span class="sg-toggle-track"></span></label>
     <label class="sg-row sg-toggle"><span>Auto-Open Next Exercise</span><input type="checkbox" ${state.autoNext ? "checked" : ""} data-setting="auto-next" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
     <div class="sg-row" data-setting="weight-inc"><span>Weight Increment</span><span class="sg-row-val">${displayWeight(state.weightInc || 1)}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="rep-inc"><span>Rep Increment</span><span class="sg-row-val">${state.repInc || "1"}</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto-Generate Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
-    <div class="sg-row" data-setting="warmup-style"><span>Warm-Up Style</span><span class="sg-row-val">${state.warmupStyle === "advanced" ? "Advanced" : "Simple"}</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Auto-Open Summary</span><input type="checkbox" ${state.autoSummary !== false ? "checked" : ""} data-setting="auto-summary" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto-Start Cool Down</span><input type="checkbox" ${state.autoCooldown ? "checked" : ""} data-setting="auto-cooldown" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Show Workout Progress</span><input type="checkbox" ${state.showWorkoutProgress !== false ? "checked" : ""} data-setting="show-workout-progress" /><span class="sg-toggle-track"></span></label>
-    <div class="sg-row" data-setting="cool-down-duration"><span>Cool Down Duration</span><span class="sg-row-val" id="sgCoolDownVal">${state.coolDownDuration || 5} min</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Auto-Advance Stretches</span><input type="checkbox" ${state.autoAdvanceStretches !== false ? "checked" : ""} data-setting="auto-advance-stretches" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Tomorrow Preview</span><input type="checkbox" ${state.showTomorrowPreview !== false ? "checked" : ""} data-setting="show-tomorrow" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Recovery Advice</span><input type="checkbox" ${state.showRecoveryAdvice !== false ? "checked" : ""} data-setting="show-recovery" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
   </div>
 
-  <!-- SECTION 4: BODY & PROGRESS -->
-  <div class="sg">
-    <div class="sg-label">BODY & PROGRESS</div>
-    <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Daily Weight Reminder</span><input type="checkbox" ${state.weightReminder ? "checked" : ""} data-setting="weight-reminder" /><span class="sg-toggle-track"></span></label>
-    <div class="sg-row" data-setting="weight-unit"><span>Weight Unit</span><span class="sg-row-val">${state.weightUnit || "kg"}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="height-unit"><span>Height Unit</span><span class="sg-row-val">${state.heightUnit || "cm"}</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>7-Day Average</span><input type="checkbox" ${state.show7dAvg !== false ? "checked" : ""} data-setting="show-7d" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>30-Day Average</span><input type="checkbox" ${state.show30dAvg !== false ? "checked" : ""} data-setting="show-30d" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Progress Photos</span><input type="checkbox" ${state.progressPhotos ? "checked" : ""} data-setting="progress-photos" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Body Measurements</span><input type="checkbox" ${state.bodyMeasurements ? "checked" : ""} data-setting="body-measurements" /><span class="sg-toggle-track"></span></label>
-  </div>
-
-  <!-- SECTION 5: NUTRITION -->
-  <div class="sg">
-    <div class="sg-label">NUTRITION</div>
-    <div class="sg-row" data-setting="cal-goal"><span>Daily Calories</span><span class="sg-row-val">${state.calorieTarget || CAL_GOAL} kcal</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="protein-goal"><span>Protein Goal</span><span class="sg-row-val">${state.proteinGoal || PROTEIN_GOAL} g</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="water-goal"><span>Water Goal</span><span class="sg-row-val">${state.waterGoal || WATER_TARGET} ml</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Nutrition Reminder</span><input type="checkbox" ${state.nutritionReminder ? "checked" : ""} data-setting="nutrition-reminder" /><span class="sg-toggle-track"></span></label>
-  </div>
-
-  <!-- SECTION 6: APPEARANCE -->
+  <!-- SECTION 4: APPEARANCE -->
   <div class="sg">
     <div class="sg-label">APPEARANCE</div>
     <div class="sg-row" data-setting="theme"><span>Theme</span><span class="sg-row-val">${state.theme || "Dark"}</span><span class="sg-chevron">›</span></div>
     <div class="sg-row" data-setting="accent"><span>Accent Color</span><span class="sg-row-val" style="color:var(--accent)">${state.accent || "Green"}</span><span class="sg-chevron">›</span></div>
     <div class="sg-row" data-setting="font-size"><span>Font Size</span><span class="sg-row-val">${state.fontSize || "Medium"}</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Compact Workout Mode</span><input type="checkbox" ${state.compactMode ? "checked" : ""} data-setting="compact-mode" /><span class="sg-toggle-track"></span></label>
   </div>
 
-  <!-- SECTION 7: DATA & BACKUP -->
+  <!-- SECTION 5: DATA & BACKUP -->
   <div class="sg">
-    <div class="sg-label">DATA & BACKUP</div>
+    <div class="sg-label">DATA</div>
+    <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="weight-unit"><span>Weight Unit</span><span class="sg-row-val">${state.weightUnit || "kg"}</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="height-unit"><span>Height Unit</span><span class="sg-row-val">${state.heightUnit || "cm"}</span><span class="sg-chevron">›</span></div>
     <button class="sg-row" data-setting="export-json"><span>Export Data (JSON)</span><span class="sg-chevron">›</span></button>
     <button class="sg-row" data-setting="import-json"><span>Import Data (JSON)</span><span class="sg-chevron">›</span></button>
     <button class="sg-row sg-row-danger" data-setting="delete-all"><span>Delete All Data</span><span class="sg-chevron">›</span></button>
   </div>
 
-  <!-- SECTION 8: COACH -->
-  <div class="sg">
-    <div class="sg-label">COACH</div>
-    <label class="sg-row sg-toggle"><span>Weekly Review</span><input type="checkbox" ${state.weeklyReview !== false ? "checked" : ""} data-setting="weekly-review" /><span class="sg-toggle-track"></span></label>
-
-    <label class="sg-row sg-toggle"><span>Warm-Up Reminders</span><input type="checkbox" ${state.warmupReminder !== false ? "checked" : ""} data-setting="warmup-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Stretch Reminders</span><input type="checkbox" ${state.stretchReminder !== false ? "checked" : ""} data-setting="stretch-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Recovery Analysis</span><input type="checkbox" ${state.recoveryAnalysis !== false ? "checked" : ""} data-setting="recovery-analysis" /><span class="sg-toggle-track"></span></label>
-  </div>
-
-  <!-- SECTION 9: ABOUT -->
+  <!-- SECTION 6: ABOUT -->
   <div class="sg">
     <div class="sg-label">ABOUT</div>
     <div class="sg-row"><span>Version</span><span class="sg-row-val">2.0</span></div>
     <div class="sg-row"><span>IronLog</span><span class="sg-row-val">Track. Lift. Progress.</span></div>
+    <button class="sg-row" data-setting="about-developer"><span>About The Developer</span><span class="sg-chevron">›</span></button>
     <div class="sg-row" style="cursor:default"><span style="font-size:0.7rem;color:var(--text-secondary)">Built with ❤️</span></div>
   </div>`;
 
   document.getElementById("settingsContent").innerHTML = html;
+}
+
+function openDeveloperModal() {
+  const modal = document.getElementById("developerModal");
+  if (modal) modal.classList.remove("is-hidden");
+}
+
+function closeDeveloperModal() {
+  const modal = document.getElementById("developerModal");
+  if (modal) modal.classList.add("is-hidden");
 }
 
 function logWeight(weight, date, notes) {
@@ -2262,8 +2232,10 @@ function renderHome() {
   const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
   const profileComplete = isProfileComplete();
   const hasWeight = weight !== null && weight !== undefined;
-  const bmi = user && user.height && hasWeight ? (weight / ((user.height / 100) * (user.height / 100))).toFixed(1) : null;
   const longestStreak = getLongestStreak();
+  const daysSinceWeight = getDaysSinceLastWeight();
+  const lastWeightText = getLastWeightText();
+  const checkInDue = daysSinceWeight !== null && daysSinceWeight > 7;
   document.getElementById("homeGreeting").innerHTML = `
     <div class="hero-greeting">${g.text} ${g.emoji}</div>
     <div class="hero-name">${name}</div>
@@ -2278,9 +2250,10 @@ function renderHome() {
         ${lastSession ? `<div class="hc-last">Last: ${lastSession.workoutName}</div>` : ""}
       </div>
       <div class="hero-weight-card" id="heroWeightCard">
-        <div class="hc-header">WEIGHT</div>
+        <div class="hc-header">WEIGHT <span class="hwr-plus">+</span></div>
         <div class="hc-value">${hasWeight ? displayWeight(weight) : "—"}</div>
-        <div class="hc-sub">${hasWeight ? (bmi ? "BMI: " + bmi : "Updated Today") : "Tap to log weight"}</div>
+        <div class="hc-sub">${lastWeightText}</div>
+        ${checkInDue ? '<div class="hc-warn">⚠ Weight Check-In Due</div>' : ''}
       </div>
     </div>`;
 
@@ -5220,6 +5193,26 @@ function latestWeight() {
   return log.length > 0 ? log[0] : null;
 }
 
+function getDaysSinceLastWeight() {
+  const log = state.weightLog || [];
+  if (!log.length) return null;
+  const sorted = log.slice().sort((a, b) => b.date.localeCompare(a.date));
+  const last = sorted[0];
+  const today = new Date();
+  const lastDate = parseDateKey(last.date);
+  return Math.round((today - lastDate) / 86400000);
+}
+
+function getLastWeightText() {
+  const log = state.weightLog || [];
+  if (!log.length) return "Tap to log weight";
+  const days = getDaysSinceLastWeight();
+  if (days === 0) return "Updated Today";
+  if (days === 1) return "Updated Yesterday";
+  if (days !== null) return "Updated " + days + " Days Ago";
+  return "Tap to log weight";
+}
+
 const GOAL_TYPE_MAP = {
   "build-muscle": "muscle-gain",
   "lose-fat": "fat-loss",
@@ -5339,9 +5332,10 @@ function renderBodyTab() {
   renderWeightGoalProgress(container);
   renderBodyMetrics(container);
   renderWeightTrend(container);
+  renderMilestoneCards(container);
   renderWorkoutStreak(container);
   renderConsistencyScore(container);
-  renderProfileSummary(container);
+  renderAchievements(container);
   renderEditGoalsBtn(container);
 }
 
@@ -5392,17 +5386,6 @@ function renderWeightGoalProgress(container) {
       <div class="wgp-pct" style="color:${barColor}">${progress}%</div>`;
   }
 
-  // Milestone markers
-  if (milestones && milestones.length > 0 && goalType !== "recomposition") {
-    html += `<div class="wgp-milestones">`;
-    for (const m of milestones) {
-      const isReached = m.index <= currentMilestone;
-      html += `<div class="wgp-milestone${isReached ? ' is-reached' : ''}" title="${displayWeight(m.weight)} — ${m.pct}%">${isReached ? '🏁' : '○'}</div>`;
-    }
-    html += `</div>`;
-    html += `<div class="wgp-milestone-text">${currentMilestone} of ${totalMilestones} milestones reached</div>`;
-  }
-
   if (goalType !== "recomposition") {
     if (status === "achieved") {
       const direction = isLossGoal ? "Lost" : "Gained";
@@ -5433,15 +5416,22 @@ function renderBodyMetrics(container) {
   const entry = latestWeight();
   const weight = entry ? entry.weight : null;
   const bmi = u.height && weight ? (weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
-  const targetWeight = u.targetWeight || null;
+  let status = "—";
+  if (bmi !== null) {
+    if (bmi < 18.5) status = "Underweight";
+    else if (bmi < 25) status = "Healthy Weight";
+    else if (bmi < 30) status = "Overweight";
+    else status = "Obese";
+  }
 
   const div = document.createElement("div");
   div.className = "body-card body-metrics";
   div.innerHTML = `
+    <div class="bm-header"><span class="bm-label">Body Metrics</span></div>
     <div class="bm-grid">
-      <div class="bm-item"><span class="bm-value">${weight ? displayWeight(weight) : "—"}</span><span class="bm-label">Weight</span></div>
-      <div class="bm-item"><span class="bm-value">${bmi ? "BMI " + bmi : "—"}</span><span class="bm-label">BMI</span></div>
-      <div class="bm-item"><span class="bm-value">${targetWeight ? "Target " + displayWeight(targetWeight) : "—"}</span><span class="bm-label">Goal Weight</span></div>
+      <div class="bm-item"><span class="bm-value">${weight ? displayWeight(weight) : "—"}</span><span class="bm-sub">Current Weight</span></div>
+      <div class="bm-item"><span class="bm-value">${bmi !== null ? bmi : "—"}</span><span class="bm-sub">BMI</span></div>
+      <div class="bm-item"><span class="bm-value">${status}</span><span class="bm-sub">Body Status</span></div>
     </div>`;
   container.appendChild(div);
 }
@@ -5571,6 +5561,65 @@ function renderEditGoalsBtn(container) {
   container.appendChild(div);
 }
 
+function renderMilestoneCards(container) {
+  const result = computeGoalProgress();
+  if (!result || !result.milestones || result.milestones.length === 0) return;
+  const { milestones, currentMilestone, totalMilestones } = result;
+  if (result.goalType === "recomposition") return;
+
+  const div = document.createElement("div");
+  div.className = "body-card body-milestones";
+  let html = '<div class="bm-header"><span class="bm-label">Milestone Progress</span></div>';
+  for (const m of milestones) {
+    const isReached = m.index <= currentMilestone;
+    const isCurrent = m.index === currentMilestone + 1;
+    const isGoal = m.index === totalMilestones;
+    let lbl = "";
+    if (isReached) lbl = "✓ Completed";
+    else if (isCurrent) lbl = "○ Next";
+    else if (isGoal) lbl = "🎯 Goal";
+    else lbl = "🔒 Locked";
+    const cls = isReached ? " is-done" : isCurrent ? " is-next" : isGoal ? " is-goal" : " is-locked";
+    html += '<div class="ms-card' + cls + '"><span class="ms-weight">' + displayWeight(m.weight) + '</span><span class="ms-status">' + lbl + '</span></div>';
+  }
+  div.innerHTML = html;
+  container.appendChild(div);
+}
+
+function renderAchievements(container) {
+  const sessions = state.sessions || [];
+  const totalWorkouts = sessions.filter(function(s) { return s.finishedAt; }).length;
+  const prs = state.prs || {};
+  var totalPRs = 0;
+  for (const key in prs) {
+    if (prs[key] && prs[key].history) totalPRs += prs[key].history.length;
+  }
+  const streak = getStreak();
+  const longestStreak = getLongestStreak();
+  const goalResult = computeGoalProgress();
+  const hasMilestone = goalResult && goalResult.currentMilestone >= 1;
+  const isGoalReached = goalResult && goalResult.status === "achieved";
+
+  const achievements = [
+    { icon: "🏆", label: "First Workout", unlocked: totalWorkouts >= 1 },
+    { icon: "⭐", label: "First PR", unlocked: totalPRs >= 1 },
+    { icon: "🔥", label: "7 Day Streak", unlocked: longestStreak >= 7 },
+    { icon: "💪", label: "10 Workouts Logged", unlocked: totalWorkouts >= 10 },
+    { icon: "🎯", label: "First Weight Milestone", unlocked: hasMilestone },
+    { icon: "📅", label: "Consistent For 30 Days", unlocked: totalWorkouts >= 30 },
+    { icon: "🏋️", label: "Complete 50 Workouts", unlocked: totalWorkouts >= 50 },
+    { icon: "🎉", label: "Reach Goal Weight", unlocked: isGoalReached },
+    { icon: "🔥", label: "100 Day Streak", unlocked: longestStreak >= 100 },
+  ];
+
+  const div = document.createElement("div");
+  div.className = "body-card body-achievements";
+  div.innerHTML = '<div class="bm-header"><span class="bm-label">Achievements</span></div><div class="ach-grid">' +
+    achievements.map(function(a) {
+      return '<div class="ach-item' + (a.unlocked ? ' is-unlocked' : ' is-locked') + '"><span class="ach-icon">' + (a.unlocked ? a.icon : "🔒") + '</span><span class="ach-label">' + a.label + '</span></div>';
+    }).join("") + '</div>';
+  container.appendChild(div);
+}
 
 
 // ===== MODALS =====
@@ -6801,28 +6850,6 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     renderSettings();
     return;
   }
-  if (setting === "rep-inc") {
-    const cur = state.repInc || 1;
-    state.repInc = cur === 1 ? 2 : 1;
-    saveState();
-    renderSettings();
-    return;
-  }
-  if (setting === "warmup-style") {
-    state.warmupStyle = state.warmupStyle === "advanced" ? "simple" : "advanced";
-    saveState();
-    renderSettings();
-    return;
-  }
-  if (setting === "cool-down-duration") {
-    const opts = [3, 5, 8];
-    const cur = state.coolDownDuration || 5;
-    const next = opts[(opts.indexOf(cur) + 1) % opts.length];
-    state.coolDownDuration = next;
-    saveState();
-    renderSettings();
-    return;
-  }
   if (setting === "weight-unit") {
     state.weightUnit = state.weightUnit === "kg" ? "lb" : "kg";
     saveState();
@@ -6863,18 +6890,6 @@ if (setting === "theme") {
     const next = vals[(vals.indexOf(cur) + 1) % vals.length];
     state.fontSize = next;
     document.documentElement.setAttribute("data-font-size", next.toLowerCase());
-    saveState();
-    renderSettings();
-    return;
-  }
-  if (setting === "cal-goal" || setting === "protein-goal" || setting === "water-goal") {
-    const val = prompt("Enter new value:", row.querySelector(".sg-row-val")?.textContent || "");
-    if (!val) return;
-    const num = parseInt(val);
-    if (isNaN(num)) return;
-    if (setting === "cal-goal") state.calorieTarget = num;
-    if (setting === "protein-goal") state.proteinGoal = num;
-    if (setting === "water-goal") state.waterGoal = num;
     saveState();
     renderSettings();
     return;
@@ -6976,6 +6991,11 @@ if (setting === "theme") {
     return;
   }
 
+  if (setting === "about-developer") {
+    openDeveloperModal();
+    return;
+  }
+
   // Goal radio change
   if (setting === "goal") {
     const sel = row.querySelector("input:checked");
@@ -6984,6 +7004,8 @@ if (setting === "theme") {
     if (state.user) state.user.goal = sel.value;
     saveState();
     renderSettings();
+    renderHome();
+    if (typeof renderBodyTab === "function") renderBodyTab();
     return;
   }
 });
@@ -6999,25 +7021,6 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
     "auto-rest": "autoRest",
     "auto-next": "autoNext",
     "focus-mode": "focusMode",
-    "screen-awake": "screenAwake",
-    "weight-reminder": "weightReminder",
-    "show-7d": "show7dAvg",
-    "show-30d": "show30dAvg",
-    "progress-photos": "progressPhotos",
-    "body-measurements": "bodyMeasurements",
-    "nutrition-reminder": "nutritionReminder",
-    "compact-mode": "compactMode",
-    "weekly-review": "weeklyReview",
-    "auto-warmup": "autoWarmup",
-    "warmup-reminder": "warmupReminder",
-    "stretch-reminder": "stretchReminder",
-    "auto-summary": "autoSummary",
-    "auto-cooldown": "autoCooldown",
-    "auto-advance-stretches": "autoAdvanceStretches",
-    "show-workout-progress": "showWorkoutProgress",
-    "show-tomorrow": "showTomorrowPreview",
-    "show-recovery": "showRecoveryAdvice",
-    "recovery-analysis": "recoveryAnalysis",
   };
   if (map[setting] !== undefined) {
     state[map[setting]] = checked;
@@ -7026,10 +7029,6 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
 
   if (setting === "focus-mode") {
     document.documentElement.classList.toggle("focus-mode", checked);
-  }
-  if (setting === "screen-awake") {
-    if (checked) requestWakeLock();
-    else releaseWakeLock();
   }
 });
 
@@ -7054,6 +7053,12 @@ document.getElementById("ddConfirmBtn").addEventListener("click", () => {
   });
   keys.forEach((k) => localStorage.removeItem(k));
   location.reload();
+});
+
+// Developer modal
+document.getElementById("dmBack")?.addEventListener("click", closeDeveloperModal);
+document.getElementById("developerModal")?.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) closeDeveloperModal();
 });
 
 // ===== EVENT LISTENERS: BUILDER =====
@@ -7564,10 +7569,15 @@ document.getElementById("wlCancel")?.addEventListener("click", () => {
 document.getElementById("wlSave")?.addEventListener("click", () => {
   const w = Number(document.getElementById("wlSheetWeight").value);
   if (!w) return;
+  if (w <= 20 || w >= 300) {
+    showToast("Please enter a valid weight.");
+    return;
+  }
   saveBodyLogEntry({ date: getDateKey(), weight: w });
   document.getElementById("weightLogSheet").classList.add("is-hidden");
   renderHome();
   renderBodyTab();
+  showToast("Weight Updated");
 });
 document.getElementById("wlPlus")?.addEventListener("click", () => {
   const input = document.getElementById("wlSheetWeight");
