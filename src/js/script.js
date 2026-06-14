@@ -7804,6 +7804,15 @@ const PRIORITY_META = {
   glutes: { label: "Glutes", desc: "Add extra glute volume each week." },
 };
 
+const PRIORITY_MUSCLE_TAGS = {
+  chest: "Chest",
+  back: "Back",
+  shoulders: "Front Delts",
+  arms: "Biceps",
+  legs: "Quads",
+  glutes: "Glutes",
+};
+
 const EQUIPMENT_META = {
   "full-gym": { label: "Full Gym", desc: "Barbells, dumbbells, cables, and machines." },
   "home-gym": { label: "Home Gym", desc: "Dumbbells, bench, bands, pull-up bar." },
