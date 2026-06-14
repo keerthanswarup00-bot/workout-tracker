@@ -85,14 +85,16 @@
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
             </div>
             <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
-            <div class="nw-action-bar">
-              <input type="text" id="nwName" class="nw-name-input" placeholder="Name your workout..." maxlength="30" autocomplete="off" />
-              <button class="btn-primary" id="nwCreateBtn" disabled>Create Workout</button>
-            </div>
-            <div class="nw-counter" id="nwCounter">0 exercises selected</div>
+            <div class="nw-counter" id="nwCounter"></div>
             <div class="nw-scroll">
               <div class="nw-filter-bar" id="nwFilterBar"></div>
               <div class="nw-list" id="nwList"></div>
+            </div>
+            <div class="nw-create-bar is-hidden" id="nwCreateBar">
+              <div class="nw-create-count" id="nwCreateCount"></div>
+              <input type="text" id="nwName" class="nw-name-input" placeholder="Name your workout..." maxlength="30" autocomplete="off" />
+              <div class="nw-helper-text" id="nwHelperText">Select at least one exercise</div>
+              <button class="btn-primary" id="nwCreateBtn" disabled>Create Workout</button>
             </div>
           </div>
 
