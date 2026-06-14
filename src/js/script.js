@@ -5078,10 +5078,11 @@ function renderTrainerTab() {
   html += `
   <div class="tr-section">
     <div class="tr-section-header"><span class="tr-section-title">What's holding you back?</span></div>
-    <input type="text" class="tr-problem-search" placeholder="Search a problem..." readonly />
-    <div class="tr-problems">
-      ${problems.map(p => `<button class="tr-problem-card"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`).join("")}
+    <input type="text" class="tr-problem-search" id="problemSearchInput" placeholder="Search a problem..." />
+    <div class="tr-problems" id="trainerProblemCards">
+      ${problems.map(p => `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`).join("")}
     </div>
+    <button class="tr-view-all-btn" id="viewAllProblemsBtn">View All Problems →</button>
   </div>`;
 
   // SECTION 6: Learning Hub
@@ -5173,6 +5174,29 @@ function renderTrainerTab() {
   }
 
   container.innerHTML = html;
+
+  // Problem Solver search listener (fresh input each render)
+  const searchInput = document.getElementById("problemSearchInput");
+  if (searchInput) {
+    searchInput.addEventListener("input", (e) => {
+      const q = e.target.value.trim();
+      if (q.length > 0) {
+        const results = filterProblems(q);
+        showTrainerScreen("problems", q);
+      } else {
+        // Restore default 6 cards
+        const coach = CoachEngine.runAll();
+        const cardsContainer = document.getElementById("trainerProblemCards");
+        if (cardsContainer) {
+          cardsContainer.innerHTML = coach.problemSolver.problems.map(p =>
+            `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`
+          ).join("");
+        }
+      }
+    });
+  }
+
+  // Problem card clicks and View All handled by document-level delegation (in init)
 }
 
 function renderCalendarHero() {
@@ -5273,6 +5297,241 @@ function renderCalendarHero() {
       openCalendarDateSheet(session);
     });
   });
+}
+
+// ===== PROBLEM DATABASE RENDERING =====
+
+function showTrainerScreen(screen, searchQuery) {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  if (screen === "home") {
+    renderTrainerTab();
+    return;
+  }
+  if (screen === "problems") {
+    renderProblemList(searchQuery);
+    return;
+  }
+  if (screen === "detail") {
+    return; // renderProblemDetail handles its own container
+  }
+}
+
+function filterProblems(query) {
+  if (!query || !query.trim()) return PROBLEM_DATABASE;
+  const qWords = query.toLowerCase().split(/\s+/).filter(Boolean);
+  const scored = PROBLEM_DATABASE.map(p => {
+    const text = (p.title + " " + p.description + " " + p.keywords.join(" ") + " " + p.tags.join(" ")).toLowerCase();
+    let score = 0;
+    for (const word of qWords) {
+      if (p.keywords.some(k => k.toLowerCase().includes(word))) score += 2;
+      if (p.tags.some(t => t.toLowerCase().includes(word))) score += 2;
+      if (text.includes(word)) score += 1;
+    }
+    return { problem: p, score };
+  });
+  const results = scored.filter(s => s.score > 0).sort((a, b) => b.score - a.score).map(s => s.problem);
+  return results;
+}
+
+function renderProblemList(query) {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const problems = query ? filterProblems(query) : PROBLEM_DATABASE;
+
+  let html = `<div class="tr-page"><div class="tr-section">`;
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="problemListBackBtn">← Back</button><span class="tr-section-title">Problem Database</span></div>`;
+  html += `<input type="text" class="tr-problem-search" id="problemListSearch" placeholder="Search problems..." value="${query || ""}" />`;
+  if (problems.length === 0) {
+    html += `<div class="tr-empty-search"><div class="tr-empty-search-icon">🔍</div><div class="tr-empty-search-text">No problems found matching "${query}"</div><button class="tr-view-all-btn" id="clearSearchBtn">Clear Search</button></div>`;
+  } else {
+    html += `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">${problems.length} problem${problems.length !== 1 ? "s" : ""} found</div>`;
+    html += `<div class="tr-problems">`;
+    html += problems.map(p => {
+      const icon = p.id.includes("weight") ? "⚖️" : p.id.includes("muscle") || p.id.includes("grow") ? "💪" : p.id.includes("bench") || p.id.includes("squat") || p.id.includes("deadlift") || p.id.includes("lockout") || p.id.includes("grip") ? "🏋️" : p.id.includes("sore") || p.id.includes("recover") || p.id.includes("sleep") || p.id.includes("tired") || p.id.includes("energy") || p.id.includes("pain") || p.id.includes("burnout") ? "😴" : p.id.includes("split") || p.id.includes("program") || p.id.includes("progression") || p.id.includes("beginner") ? "📋" : p.id.includes("hungry") || p.id.includes("protein") || p.id.includes("calorie") || p.id.includes("eating") || p.id.includes("diet") || p.id.includes("nutrition") ? "🥗" : p.id.includes("motivation") || p.id.includes("anxiety") || p.id.includes("consistent") || p.id.includes("progress") ? "🎯" : "❓";
+      return `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${icon}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.category}</span></span></button>`;
+    }).join("");
+    html += `</div>`;
+  }
+  html += `</div></div>`;
+  container.innerHTML = html;
+
+  // Back button
+  document.getElementById("problemListBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+
+  // Search in problem list
+  const listSearch = document.getElementById("problemListSearch");
+  if (listSearch) {
+    listSearch.addEventListener("input", (e) => {
+      renderProblemList(e.target.value.trim());
+    });
+  }
+
+  document.getElementById("clearSearchBtn")?.addEventListener("click", () => renderProblemList());
+
+  // Card clicks
+  container.addEventListener("click", (e) => {
+    const card = e.target.closest("[data-problem-id]");
+    if (card) {
+      renderProblemDetail(card.dataset.problemId);
+    }
+  });
+}
+
+function getWeightTrend() {
+  const log = state.weightLog || [];
+  if (log.length < 2) return "not enough data";
+  const sorted = log.slice().sort((a, b) => a.date.localeCompare(b.date));
+  const recent = sorted.slice(-7);
+  const first = recent[0].weight;
+  const last = recent[recent.length - 1].weight;
+  const diff = last - first;
+  if (Math.abs(diff) < 0.5) return "stable";
+  return diff < 0 ? "down" : "up";
+}
+
+function getProteinCompliance() {
+  const sessions = (state.sessions || []).filter(s => s.finishedAt);
+  if (sessions.length === 0) return null;
+  const weight = state.user?.weight || 70;
+  const goal = state.user?.goal || "general";
+  const mult = goal === "lose-fat" ? 2.2 : 2.0;
+  const target = weight * mult;
+  const recent = sessions.slice(-7);
+  let daysHit = 0;
+  for (const s of recent) {
+    const totalProtein = (s.exercises || []).reduce((sum, ex) => {
+      return sum + (ex.sets || []).reduce((ss, set) => ss + (set.protein || 0), 0);
+    }, 0);
+    if (totalProtein >= target) daysHit++;
+  }
+  return { target, daysHit, total: recent.length };
+}
+
+function renderProblemDetail(problemId) {
+  const problem = PROBLEM_DATABASE.find(p => p.id === problemId);
+  if (!problem) return;
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  // Gather coach data for analysis
+  const coach = CoachEngine.runAll();
+  const dc = coach.daily;
+  const gs = coach.goalStrategy;
+  const rec = coach.recovery;
+  const weightTrend = getWeightTrend();
+  const proteinData = getProteinCompliance();
+  const sessions = (state.sessions || []).filter(s => s.finishedAt);
+  const weekSessions = sessions.filter(s => {
+    const d = parseDateKey(s.dateKey);
+    if (!d) return false;
+    const now = new Date();
+    const weekAgo = new Date(now);
+    weekAgo.setDate(weekAgo.getDate() - 7);
+    return d >= weekAgo && d <= now;
+  });
+  const workoutCompletion = weekSessions.length;
+
+  let html = `<div class="tr-page"><div class="tr-problem-detail">`;
+
+  // Back + title
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="problemDetailBackBtn">← Back</button><span class="tr-section-title">${problem.title}</span></div>`;
+
+  // 1. Overview
+  html += `<div class="tr-section"><div class="tr-pd-overview">
+    <div class="tr-pd-category">${problem.category}</div>
+    <div class="tr-pd-difficulty">${problem.difficulty}</div>
+    <p class="tr-pd-description">${problem.description}</p>
+  </div></div>`;
+
+  // 2. Most Common Causes
+  html += `<div class="tr-section"><div class="tr-section-header"><span class="tr-section-title" style="font-size:16px">Most Common Causes</span></div>
+    <div class="tr-pd-causes">${problem.causes.map(c => `<div class="tr-pd-cause"><span class="tr-pd-cause-bullet">•</span><span>${c}</span></div>`).join("")}
+  </div></div>`;
+
+  // 3. Reality Check
+  html += `<div class="tr-section"><div class="tr-pd-reality">
+    <div class="tr-pd-reality-icon">💡</div>
+    <div class="tr-pd-reality-text">${problem.realityCheck}</div>
+  </div></div>`;
+
+  // 4. Action Plan (checklist)
+  html += `<div class="tr-section"><div class="tr-section-header"><span class="tr-section-title" style="font-size:16px">What To Do</span></div>
+    <div class="tr-pd-action">${problem.actionPlan.map((item, i) => `<button class="tr-pa-item" data-action-index="${i}"><span class="tr-pa-check">○</span><span class="tr-pa-text">${item.text}</span></button>`).join("")}
+  </div></div>`;
+
+  // 5. Advanced Fixes
+  if (problem.advancedFixes && problem.advancedFixes.length > 0) {
+    html += `<div class="tr-section"><div class="tr-section-header"><span class="tr-section-title" style="font-size:16px">Already Doing This?</span></div>
+      <div class="tr-pd-advanced">${problem.advancedFixes.map(f => `<div class="tr-pd-advanced-item"><span class="tr-pd-advanced-bullet">→</span><span>${f}</span></div>`).join("")}
+    </div></div>`;
+  }
+
+  // 6. Coach Analysis (uses real user data)
+  html += `<div class="tr-section"><div class="tr-section-header"><span class="tr-section-title" style="font-size:16px">Coach Analysis</span></div>
+    <div class="tr-coach-analysis">
+      <div class="tr-ca-grid">
+        <div class="tr-ca-item"><span class="tr-ca-label">Your Goal</span><span class="tr-ca-value">${gs.goalLabel}</span></div>
+        <div class="tr-ca-item"><span class="tr-ca-label">Weight Trend</span><span class="tr-ca-value ${weightTrend === "up" ? "tr-ca-negative" : weightTrend === "down" ? "tr-ca-positive" : ""}">${weightTrend === "not enough data" ? "—" : weightTrend === "stable" ? "Stable" : weightTrend === "up" ? "↑ Increasing" : "↓ Decreasing"}</span></div>
+        <div class="tr-ca-item"><span class="tr-ca-label">Recovery</span><span class="tr-ca-value">${rec.score}/100 (${rec.status})</span></div>
+        <div class="tr-ca-item"><span class="tr-ca-label">Workouts This Week</span><span class="tr-ca-value">${workoutCompletion}</span></div>
+        ${proteinData ? `<div class="tr-ca-item"><span class="tr-ca-label">Protein Target</span><span class="tr-ca-value">${proteinData.target}g/day</span></div>` : ""}
+        <div class="tr-ca-item"><span class="tr-ca-label">Coach Says</span><span class="tr-ca-value tr-ca-message">${dc.coachMessage}</span></div>
+      </div>
+    </div>
+  </div>`;
+
+  // 7. Recommended Next Action
+  const hasGenerator = problem.relatedTools.includes("generator");
+  const hasNutrition = problem.relatedTools.includes("nutrition");
+  const hasGoalStrategy = problem.relatedTools.includes("goal-strategy");
+  let ctaText = "Review Your Goal Strategy";
+  let ctaAction = "goalStrategy";
+  if (hasGenerator) {
+    ctaText = "Generate Workout Split";
+    ctaAction = "generator";
+  } else if (hasNutrition) {
+    ctaText = "Review Nutrition Strategy";
+    ctaAction = "nutrition";
+  }
+
+  html += `<div class="tr-section tr-section-last"><div class="tr-recommend-cta">
+    <div class="tr-recommend-cta-label">Recommended Next Action</div>
+    <button class="tr-recommend-cta-btn" id="problemCtaBtn" data-cta="${ctaAction}">${ctaText}</button>
+  </div></div>`;
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+
+  // Back button
+  document.getElementById("problemDetailBackBtn")?.addEventListener("click", () => showTrainerScreen("problems"));
+
+  // Checklist click toggles
+  container.querySelectorAll(".tr-pa-item").forEach(item => {
+    item.addEventListener("click", () => {
+      item.classList.toggle("is-checked");
+      const check = item.querySelector(".tr-pa-check");
+      if (check) check.textContent = item.classList.contains("is-checked") ? "✓" : "○";
+    });
+  });
+
+  // CTA button
+  document.getElementById("problemCtaBtn")?.addEventListener("click", () => {
+    const cta = document.getElementById("problemCtaBtn").dataset.cta;
+    if (cta === "generator") {
+      openNewWorkoutGenerator();
+    } else {
+      showTrainerScreen("home");
+      setTimeout(() => {
+        document.querySelector(".tr-strategy")?.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 100);
+    }
+  });
+}
+
+function openNewWorkoutGenerator() {
+  showScreen("screen-new-workout");
+  document.getElementById("newWoGenerate")?.click();
 }
 
 function openCalendarDateSheet(session) {
@@ -7963,6 +8222,21 @@ document.addEventListener("click", (e) => {
   const goalEditBtn = e.target.closest("#bodyEditGoalBtn");
   if (goalEditBtn) {
     openGoalSelector();
+  }
+
+  // Trainer: problem card click
+  const problemCard = e.target.closest("[data-problem-id]");
+  if (problemCard && document.getElementById("trainerPageContent")?.contains(problemCard)) {
+    const id = problemCard.dataset.problemId;
+    const problem = PROBLEM_DATABASE.find(p => p.id === id);
+    if (problem) renderProblemDetail(id);
+    return;
+  }
+
+  // Trainer: View All Problems button
+  if (e.target.closest("#viewAllProblemsBtn")) {
+    showTrainerScreen("problems");
+    return;
   }
 });
 function updateWeightDisplay() {
