@@ -1277,11 +1277,34 @@ function loadState() {
     bodyGoal: "recomp",
     calorieTarget: CAL_GOAL,
     fatTarget: FAT_GOAL,
+    proteinGoal: PROTEIN_GOAL,
+    waterGoal: WATER_TARGET,
     user: null,
     plan: null,
     weightLog: [],
     goals: [],
     weightGoal: null,
+    restTimer: 90,
+    weightUnit: "kg",
+    heightUnit: "cm",
+    weightInc: 1,
+    repInc: 1,
+    autoRest: false,
+    autoNext: false,
+    focusMode: false,
+    screenAwake: false,
+    warmupStyle: "simple",
+    theme: "Dark",
+    accent: "Green",
+    fontSize: "Medium",
+    compactMode: false,
+    show7dAvg: true,
+    show30dAvg: true,
+    progressPhotos: false,
+    bodyMeasurements: false,
+    weightReminder: false,
+    nutritionReminder: false,
+    weeklyReview: true,
     profileBannerDismissed: false,
     autoWarmup: true,
     warmupReminder: true,
@@ -1882,6 +1905,7 @@ function stopStopwatch() {
     stopwatchInterval = null;
   }
   const session = getTodaySession();
+  if (!session) return;
   session.duration = stopwatchElapsed;
   saveState();
   stopwatchElapsed = 0;
@@ -2055,7 +2079,13 @@ function renderSettings() {
     </div>
   </div>
 
-  <!-- SECTION 3: WORKOUT -->
+  <!-- SECTION 3: CUSTOM GOALS -->
+  <div class="sg">
+    <div class="sg-label">CUSTOM GOALS</div>
+    <div id="goalsContent"></div>
+  </div>
+
+  <!-- SECTION 4: WORKOUT -->
   <div class="sg">
     <div class="sg-label">WORKOUT</div>
     <div class="sg-row" data-setting="rest-timer"><span>Rest Timer</span><span class="sg-row-val" id="sgRestVal">${state.restTimer || 90}s</span><span class="sg-chevron">›</span></div>
@@ -2065,7 +2095,7 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
   </div>
 
-  <!-- SECTION 4: APPEARANCE -->
+  <!-- SECTION 5: APPEARANCE -->
   <div class="sg">
     <div class="sg-label">APPEARANCE</div>
     <div class="sg-row" data-setting="theme"><span>Theme</span><span class="sg-row-val">${state.theme || "Dark"}</span><span class="sg-chevron">›</span></div>
@@ -2073,7 +2103,7 @@ function renderSettings() {
     <div class="sg-row" data-setting="font-size"><span>Font Size</span><span class="sg-row-val">${state.fontSize || "Medium"}</span><span class="sg-chevron">›</span></div>
   </div>
 
-  <!-- SECTION 5: DATA & BACKUP -->
+  <!-- SECTION 6: DATA & BACKUP -->
   <div class="sg">
     <div class="sg-label">DATA</div>
     <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
@@ -2084,7 +2114,7 @@ function renderSettings() {
     <button class="sg-row sg-row-danger" data-setting="delete-all"><span>Delete All Data</span><span class="sg-chevron">›</span></button>
   </div>
 
-  <!-- SECTION 6: ABOUT -->
+  <!-- SECTION 7: ABOUT -->
   <div class="sg">
     <div class="sg-label">ABOUT</div>
     <div class="sg-row"><span>Version</span><span class="sg-row-val">2.0</span></div>
@@ -2094,6 +2124,8 @@ function renderSettings() {
   </div>`;
 
   document.getElementById("settingsContent").innerHTML = html;
+  const goalsContainer = document.getElementById("goalsContent");
+  if (goalsContainer) renderGoals();
 }
 
 function openDeveloperModal() {
@@ -2193,7 +2225,7 @@ function showScreen(screenId) {
   if (screenId !== "screen-ws" && restTimerInterval) {
     clearInterval(restTimerInterval);
     restTimerInterval = null;
-    document.getElementById("restTimerDisplay").classList.add("is-hidden");
+    document.getElementById("restTimer")?.classList.add("is-hidden");
   }
 }
 
@@ -3213,6 +3245,7 @@ function openAddSetModal() {
   addSetWeight = 0;
 
   const session = getTodaySession();
+  if (!session) return;
   const ex = session.exercises.find((e) => e.name === currentExName);
   if (ex && ex.sets.length > 0) {
     const lastDone = [...ex.sets].reverse().find((s) => s.done);
@@ -3234,6 +3267,7 @@ function closeAddSetModal() {
 
 function saveAddSet() {
   const session = getTodaySession();
+  if (!session) return;
   const ex = session.exercises.find((e) => e.name === currentExName);
   if (!ex) return;
 
@@ -3800,6 +3834,7 @@ function getGoalValue(goal) {
 
 function renderGoals() {
   const container = document.getElementById("goalsContent");
+  if (!container) return;
   const goals = state.goals || [];
   const goalLabels = { weight: "Body Weight", bench: "Bench Press", squat: "Squat", deadlift: "Deadlift", frequency: "Weekly Sessions", custom: "Custom" };
 
@@ -6142,6 +6177,7 @@ function addExerciseToWorkout(exId) {
   if (!exDef) return;
 
   const session = getTodaySession();
+  if (!session) return;
   const existing = session.exercises.find((e) => e.name === exDef.name);
   if (!existing) {
     const setCount = 3;
@@ -6980,6 +7016,7 @@ if (setting === "theme") {
       nutrition: state.nutrition || {},
       user: state.user || null,
       plan: state.plan || null,
+      customExercises: state.customExercises || [],
 
       weightLog: state.weightLog || [],
       goals: state.goals || [],
@@ -7041,10 +7078,10 @@ if (setting === "theme") {
             return;
           }
           // Whitelist allowed keys and validate types
-          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "recoveryAnalysis", "warmupReminder", "showRecoveryAdvice"]);
+          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "nutrition", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "coolDownDuration", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed"]);
           const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog"]);
-          const objKeys = new Set(["user", "recoveryAnalysis"]);
-          const boolKeys = new Set(["warmupReminder", "showRecoveryAdvice"]);
+          const objKeys = new Set(["user", "nutrition", "recoveryAnalysis", "workoutStreak"]);
+          const boolKeys = new Set(["autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupReminder", "stretchReminder", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "profileBannerDismissed"]);
           for (const key of Object.keys(data)) {
             if (!allowedKeys.has(key)) continue;
             if (arrayKeys.has(key) && !Array.isArray(data[key])) { data[key] = []; }
