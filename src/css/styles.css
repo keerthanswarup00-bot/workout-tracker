@@ -3188,6 +3188,53 @@ textarea:focus {
   background: var(--surface-2);
 }
 
+/* --- Goal Selector Sheet --- */
+.gs-title {
+  font-weight: 700;
+  font-size: 1rem;
+  text-align: center;
+  margin-bottom: 0.75rem;
+}
+.gs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+.gs-option {
+  display: flex;
+  flex-direction: column;
+  gap: 0.15rem;
+  padding: 0.75rem;
+  border-radius: var(--radius-sm);
+  background: var(--surface-2);
+  border: 1.5px solid transparent;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  font: inherit;
+  color: var(--text);
+}
+.gs-option:active {
+  transform: scale(0.99);
+}
+.gs-option.is-sel {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 10%, var(--surface-2));
+}
+.gs-option-title {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+.gs-option-desc {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.gs-option-rate {
+  font-size: 0.7rem;
+  color: var(--accent);
+  font-weight: 500;
+}
+
 /* --- Home Incomplete Profile Banner --- */
 .home-incomplete-banner {
   display: flex;

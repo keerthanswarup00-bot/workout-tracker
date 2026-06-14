@@ -619,10 +619,8 @@
       </button>
       <button class="nav-tab" data-tab="body">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 2a4 4 0 1 0 0 8 4 4 0 0 0 0-8z" />
-          <path d="M4 22c0-4.418 3.582-8 8-8s8 3.582 8 8" />
-          <path d="M6 12h12" />
-          <path d="M8 8c0 2.21 1.79 4 4 4s4-1.79 4-4" />
+          <circle cx="12" cy="8" r="3" />
+          <path d="M6 21v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3" />
         </svg>
         <span>Body</span>
       </button>
@@ -1122,6 +1120,18 @@
           <div class="as-title" id="waTitle">Workout Actions</div>
           <div class="wa-list" id="waList"></div>
           <button class="btn-secondary" id="waCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- GOAL SELECTOR SHEET -->
+    <div class="bottom-sheet is-hidden" id="goalSelectorSheet">
+      <div class="bottom-sheet-overlay" id="gsOverlay"></div>
+      <div class="bottom-sheet-card" style="max-width:360px">
+        <div class="bottom-sheet-handle"></div>
+        <div class="bottom-sheet-body">
+          <div class="gs-title">Select Fitness Goal</div>
+          <div class="gs-list" id="gsList"></div>
         </div>
       </div>
     </div>

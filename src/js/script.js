@@ -5561,6 +5561,42 @@ function renderEditGoalsBtn(container) {
   container.appendChild(div);
 }
 
+function openGoalSelector() {
+  const list = document.getElementById("gsList");
+  const goals = [
+    { id: "fat-loss", label: "Fat Loss", desc: "Lose body fat while preserving muscle", rate: "0.5–1 kg/week" },
+    { id: "recomp", label: "Recomp", desc: "Build muscle while losing fat", rate: "Maintenance" },
+    { id: "lean-bulk", label: "Lean Bulk", desc: "Gain muscle with minimal fat", rate: "0.25 kg/week" },
+    { id: "aggressive-bulk", label: "Aggressive Bulk", desc: "Maximize muscle gain", rate: "0.5 kg/week" },
+  ];
+  const cur = state.bodyGoal || "recomp";
+  list.innerHTML = goals.map(g => `
+    <button class="gs-option${cur === g.id ? " is-sel" : ""}" data-goal="${g.id}">
+      <span class="gs-option-title">${g.label}</span>
+      <span class="gs-option-desc">${g.desc}</span>
+      <span class="gs-option-rate">${g.rate}</span>
+    </button>
+  `).join("");
+  document.getElementById("goalSelectorSheet").classList.remove("is-hidden");
+}
+
+document.getElementById("gsOverlay")?.addEventListener("click", () => {
+  document.getElementById("goalSelectorSheet").classList.add("is-hidden");
+});
+
+document.getElementById("gsList")?.addEventListener("click", (e) => {
+  const opt = e.target.closest(".gs-option");
+  if (!opt) return;
+  const goal = opt.dataset.goal;
+  state.bodyGoal = goal;
+  if (state.user) state.user.goal = goal;
+  saveState();
+  document.getElementById("goalSelectorSheet").classList.add("is-hidden");
+  renderHome();
+  if (typeof renderBodyTab === "function") renderBodyTab();
+  if (typeof renderSettings === "function") renderSettings();
+});
+
 function renderMilestoneCards(container) {
   const result = computeGoalProgress();
   if (!result || !result.milestones || result.milestones.length === 0) return;
@@ -7550,7 +7586,7 @@ document.addEventListener("click", (e) => {
   }
   const goalEditBtn = e.target.closest("#bodyEditGoalBtn");
   if (goalEditBtn) {
-    openProfileEditor();
+    openGoalSelector();
   }
 });
 function updateWeightDisplay() {
