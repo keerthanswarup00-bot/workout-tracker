@@ -6338,6 +6338,7 @@ function showNewWorkoutBuilder() {
   nwSearchTerm = "";
   nwActiveFilters = [];
   document.getElementById("nwCreateBar").style.display = "none";
+  document.getElementById("nwCreateSpacer").style.display = "none";
   renderFilterChips();
   renderNewWorkoutList();
   showScreen("screen-new-workout");
@@ -6424,6 +6425,7 @@ function renderNewWorkoutList() {
   document.getElementById("nwCounter").textContent = total > 0 ? "0 Exercises Selected" : "No exercises found";
   document.getElementById("nwHelperText").textContent = "Select at least one exercise";
   document.getElementById("nwCreateBar").style.display = "none";
+  document.getElementById("nwCreateSpacer").style.display = "none";
 
   container.querySelectorAll(".nw-check").forEach((cb) => {
     cb.addEventListener("change", updateCreateBar);
@@ -6452,13 +6454,17 @@ function updateCreateBar() {
   const helper = document.getElementById("nwHelperText");
   const countLabel = document.getElementById("nwCreateCount");
 
+  const spacer = document.getElementById("nwCreateSpacer");
+
   if (count === 0) {
     bar.style.display = "none";
+    spacer.style.display = "none";
     counter.textContent = "0 Exercises Selected";
     return;
   }
 
   bar.style.display = "flex";
+  spacer.style.display = "block";
   const label = count === 1 ? "Exercise Selected" : "Exercises Selected";
   countLabel.textContent = `${count} ${label}`;
   counter.textContent = `${count} ${label}`;

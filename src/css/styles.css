@@ -2834,14 +2834,19 @@ textarea:focus {
 }
 
 .nw-create-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 101;
   border-top: 1px solid var(--border);
   background: var(--surface);
   padding: 0.75rem 1rem;
   padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 12px));
-  flex-shrink: 0;
-  display: flex;
+  display: none;
   flex-direction: column;
   gap: 0.5rem;
+  box-shadow: 0 -4px 20px rgba(0,0,0,0.15);
 }
 .nw-create-bar .nw-name-input {
   width: 100%;
@@ -2849,6 +2854,11 @@ textarea:focus {
 }
 .nw-create-bar .btn-primary {
   width: 100%;
+}
+.nw-create-spacer {
+  display: none;
+  height: 210px;
+  flex-shrink: 0;
 }
 .nw-create-count {
   font-size: 0.78rem;
