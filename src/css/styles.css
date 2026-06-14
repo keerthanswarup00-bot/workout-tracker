@@ -7365,6 +7365,7 @@ h4,
 
 /* ===== GENERATOR WIZARD ===== */
 .gm-card {
+  position: relative;
   display: flex;
   flex-direction: column;
   max-height: 90vh;
@@ -7874,4 +7875,49 @@ h4,
   .bc-map-wrap .body-view {
     max-height: 320px;
   }
+}
+
+/* --- Generator Overlay --- */
+.gm-overlay {
+  position: absolute;
+  inset: 0;
+  background: var(--surface);
+  border-radius: var(--radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 20;
+}
+.gm-overlay-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.gm-ol-icon {
+  font-size: 2.5rem;
+}
+.gm-ol-title {
+  font-weight: 700;
+  font-size: 1.05rem;
+  color: var(--text);
+}
+.gm-ol-desc {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  max-width: 280px;
+}
+.gm-spinner {
+  width: 36px;
+  height: 36px;
+  border: 3px solid var(--border);
+  border-top-color: var(--accent);
+  border-radius: 50%;
+  animation: gmSpin 0.7s linear infinite;
+}
+@keyframes gmSpin {
+  to { transform: rotate(360deg); }
 }

@@ -8358,51 +8358,170 @@ function openGenerateWorkout() {
   genState.split = null;
   genState.schedule = null;
   document.getElementById("generateModal").classList.remove("is-hidden");
+  showGmOverlay(null);
   goToStep(1);
 }
 
 // --- Save ---
+function showGmOverlay(state, reason) {
+  document.getElementById("gmLoading").classList.toggle("is-hidden", state !== "loading");
+  document.getElementById("gmSuccess").classList.toggle("is-hidden", state !== "success");
+  document.getElementById("gmFailure").classList.toggle("is-hidden", state !== "failure");
+  document.getElementById("gmOverlay").classList.toggle("is-hidden", state === null);
+  if (state === "failure" && reason) {
+    document.getElementById("gmFailureReason").textContent = reason;
+  }
+}
+
 function saveGeneratedProgram() {
+  const startTime = Date.now();
+
+  // --- LOADING ---
+  showGmOverlay("loading");
+
+  // SAVE STEP 1: Schedule check
+  console.log("[SAVE STEP 1] Schedule exists:", !!genState.schedule);
   const schedule = genState.schedule;
-  if (!schedule) return;
+  if (!schedule) {
+    console.error("[SAVE STEP 1] No schedule — genState.schedule is null or undefined");
+    showGmOverlay("failure", "Program generation failed: No schedule data. Please go back and review your selections.");
+    return;
+  }
+
+  // SAVE STEP 2: Filter workouts
   const workouts = schedule.filter(d => d.type === "workout");
+  console.log("[SAVE STEP 2] Workouts to save:", workouts.length);
+
+  if (workouts.length === 0) {
+    console.error("[SAVE STEP 2] No workout days in schedule");
+    showGmOverlay("failure", "Program generation failed: No workout days generated. Try different settings.");
+    return;
+  }
+
   const programName = `${genState.split} (${genState.goal})`;
-  let activePlan = loadCustomProgram() || [];
+  console.log("[SAVE STEP 3] Program name:", programName);
+
+  // SAVE STEP 4: Load existing program
+  let activePlan = [];
+  try {
+    const existing = loadCustomProgram();
+    if (Array.isArray(existing)) activePlan = existing;
+    console.log("[SAVE STEP 4] Existing program loaded. Workout count:", activePlan.length);
+  } catch (e) {
+    console.error("[SAVE STEP 4] loadCustomProgram error:", e);
+    activePlan = [];
+  }
+
+  // SAVE STEP 5: Duplicate check
   let hasDup = false;
   workouts.forEach(gw => {
     const wName = DayLabel(gw.day) + " · " + gw.name;
-    if (activePlan.some(w => w.name.toLowerCase() === wName.toLowerCase())) hasDup = true;
+    if (activePlan.some(w => w && w.name && w.name.toLowerCase() === wName.toLowerCase())) hasDup = true;
   });
-  if (hasDup) { showToast("A workout with this name already exists."); return; }
-  workouts.forEach(gw => {
-    const wName = DayLabel(gw.day) + " · " + gw.name;
-    const workout = {
-      id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-      name: wName,
-      exercises: gw.exercises.map(ex => ({ name: ex.name, sets: ex.sets, reps: ex.reps, weight: "", notes: "" })),
+  console.log("[SAVE STEP 5] Duplicate check:", hasDup ? "DUPLICATE FOUND" : "No duplicates");
+  if (hasDup) {
+    showGmOverlay("failure", "Workout with the same name already exists. Rename or remove existing workouts first.");
+    return;
+  }
+
+  // SAVE STEP 6: Build workout objects
+  try {
+    workouts.forEach(gw => {
+      const wName = DayLabel(gw.day) + " · " + gw.name;
+      const exList = Array.isArray(gw.exercises) ? gw.exercises : [];
+      const workout = {
+        id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+        name: wName,
+        exercises: exList.map(ex => ({ name: ex.name || "Unknown", sets: ex.sets || 3, reps: ex.reps || 10, weight: "", notes: "" })),
+      };
+      activePlan.push(workout);
+    });
+    console.log("[SAVE STEP 6] Workout objects created. Total:", activePlan.length);
+  } catch (e) {
+    console.error("[SAVE STEP 6] Workout conversion error:", e);
+    showGmOverlay("failure", "Workout conversion failed: " + e.message);
+    return;
+  }
+
+  // SAVE STEP 7: Write to storage
+  try {
+    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+    console.log("[SAVE STEP 7] Written to wl_custom_program");
+  } catch (e) {
+    console.error("[SAVE STEP 7] Storage write error:", e);
+    showGmOverlay("failure", "Storage write failed: " + e.message);
+    return;
+  }
+
+  // SAVE STEP 8: Update state
+  try {
+    state.plan = activePlan;
+    saveState();
+    console.log("[SAVE STEP 8] State saved. state.plan has", (state.plan || []).length, "workouts");
+  } catch (e) {
+    console.error("[SAVE STEP 8] saveState error:", e);
+    showGmOverlay("failure", "State save failed: " + e.message);
+    return;
+  }
+
+  // SAVE STEP 9: Save generator profile
+  try {
+    const profile = {
+      goal: genState.goal,
+      experience: genState.experience,
+      split: genState.split,
+      days: genState.days,
+      time: genState.time,
+      priority: genState.priority,
+      equipment: genState.equipment,
+      limitation: genState.limitation,
+      createdAt: new Date().toISOString(),
     };
-    activePlan.push(workout);
-  });
-  localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
-  state.plan = activePlan;
-  saveState();
-  const profile = {
-    goal: genState.goal,
-    experience: genState.experience,
-    split: genState.split,
-    days: genState.days,
-    time: genState.time,
-    priority: genState.priority,
-    equipment: genState.equipment,
-    limitation: genState.limitation,
-    createdAt: new Date().toISOString(),
-  };
-  localStorage.setItem("wl_generator_profile", JSON.stringify(profile));
+    localStorage.setItem("wl_generator_profile", JSON.stringify(profile));
+    console.log("[SAVE STEP 9] Generator profile saved");
+  } catch (e) {
+    console.error("[SAVE STEP 9] Profile save error:", e);
+    // Non-critical, continue
+  }
+
+  console.log("[SAVE] All steps complete. Showing success.");
+
+  // Minimum 800ms loading display
+  const elapsed = Date.now() - startTime;
+  const minDisplay = 800;
+  const remaining = Math.max(0, minDisplay - elapsed);
+  const maxDisplay = 2000;
+  const delay = Math.min(remaining + 100, maxDisplay);
+
+  setTimeout(() => {
+    showGmOverlay("success");
+    // Store program data for View Program button
+    window._lastGenProgramName = programName;
+    window._lastGenWorkoutCount = workouts.length;
+    window._lastGenFirstDay = DayLabel(workouts[0].day);
+  }, delay);
+}
+
+document.getElementById("gmViewProgramBtn")?.addEventListener("click", () => {
   document.getElementById("generateModal").classList.add("is-hidden");
+  showGmOverlay(null);
   showScreen("screen-home");
   renderHome();
-  showToast(`Program "${programName}" created (${workouts.length} workouts)`);
-}
+
+  // Scroll to and highlight the newly created program
+  setTimeout(() => {
+    const cards = document.querySelectorAll(".wo-card-item");
+    if (cards.length > 0) {
+      cards[cards.length - 1].scrollIntoView({ behavior: "smooth", block: "center" });
+      cards[cards.length - 1].classList.add("is-active");
+      setTimeout(() => cards[cards.length - 1].classList.remove("is-active"), 2000);
+    }
+  }, 100);
+});
+
+document.getElementById("gmFailureClose")?.addEventListener("click", () => {
+  showGmOverlay(null);
+});
 
 function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }
 
@@ -8411,4 +8530,5 @@ document.getElementById("gmNextBtn")?.addEventListener("click", nextStep);
 document.getElementById("gmBackBtn")?.addEventListener("click", prevStep);
 document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
   document.getElementById("generateModal").classList.add("is-hidden");
+  showGmOverlay(null);
 });

@@ -692,6 +692,25 @@
           <button class="btn-secondary" id="gmCancelBtn">Cancel</button>
           <div class="gm-profile-note">Using your profile preferences. You can change them anytime.</div>
         </div>
+        <div class="gm-overlay is-hidden" id="gmOverlay">
+          <div class="gm-overlay-inner" id="gmLoading">
+            <div class="gm-spinner"></div>
+            <div class="gm-ol-title">Creating Your Program</div>
+            <div class="gm-ol-desc">Your personal workout program is being prepared.<br>Analyzing your goal, experience, recovery needs, and training schedule.</div>
+          </div>
+          <div class="gm-overlay-inner is-hidden" id="gmSuccess">
+            <div class="gm-ol-icon">✅</div>
+            <div class="gm-ol-title">Program Created Successfully</div>
+            <div class="gm-ol-desc">Your workouts are now ready.</div>
+            <button class="btn-primary" id="gmViewProgramBtn">View Program</button>
+          </div>
+          <div class="gm-overlay-inner is-hidden" id="gmFailure">
+            <div class="gm-ol-icon">❌</div>
+            <div class="gm-ol-title">Save Failed</div>
+            <div class="gm-ol-desc" id="gmFailureReason"></div>
+            <button class="btn-secondary" id="gmFailureClose">Close</button>
+          </div>
+        </div>
       </div>
     </div>
 
