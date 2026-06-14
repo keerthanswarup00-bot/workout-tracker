@@ -2280,7 +2280,51 @@ function renderHome() {
     document.getElementById("emptyStateBuildBtn")?.addEventListener("click", showNewWorkoutBuilder);
     document.getElementById("emptyStateGenerateBtn")?.addEventListener("click", openGenerateWorkout);
   } else {
-    container.innerHTML = sorted.map((w) => renderWorkoutCardItem(w, todaySession)).join("");
+    // Group by programName, keep ungrouped workouts separate
+    let html = "";
+    var groups = {};
+    var ungrouped = [];
+    sorted.forEach(function(w) {
+      if (w.programName) {
+        if (!groups[w.programName]) groups[w.programName] = [];
+        groups[w.programName].push(w);
+      } else {
+        ungrouped.push(w);
+      }
+    });
+    var pgIds = Object.keys(groups);
+    pgIds.forEach(function(pn) {
+      var pWorkouts = groups[pn];
+      var expanded = pWorkouts.some(function(w) { return todaySession && todaySession.workoutId === w.id; });
+      html += '<div class="wo-program-group' + (expanded ? " is-expanded" : "") + '">' +
+        '<div class="wo-program-header">' +
+        '<span class="wo-program-name">' + pn + '</span>' +
+        '<span class="wo-program-toggle">' + (expanded ? "▲" : "▼") + '</span>' +
+        '</div>' +
+        '<div class="wo-program-body"' + (expanded ? '' : ' style="display:none"') + '>' +
+        pWorkouts.map(function(w) { return renderWorkoutCardItem(w, todaySession); }).join("") +
+        '</div></div>';
+    });
+    html += ungrouped.map(function(w) { return renderWorkoutCardItem(w, todaySession); }).join("");
+    container.innerHTML = html;
+
+    // Bind program header toggles
+    container.querySelectorAll(".wo-program-header").forEach(function(hdr) {
+      hdr.addEventListener("click", function() {
+        var group = hdr.closest(".wo-program-group");
+        var body = group.querySelector(".wo-program-body");
+        var toggle = hdr.querySelector(".wo-program-toggle");
+        if (body.style.display === "none") {
+          body.style.display = "";
+          toggle.textContent = "▲";
+          group.classList.add("is-expanded");
+        } else {
+          body.style.display = "none";
+          toggle.textContent = "▼";
+          group.classList.remove("is-expanded");
+        }
+      });
+    });
   }
 
   // Bind card taps => details
@@ -7710,7 +7754,12 @@ const DAY_LABELS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
 const DAY_NAMES = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
 
 function getTrainingDayIndices(totalDays) {
-  const map = { 3: [0, 2, 4], 4: [0, 1, 3, 4], 5: [0, 1, 2, 3, 4], 6: [0, 1, 2, 3, 4, 5] };
+  const map = {
+    3: [0, 2, 4],
+    4: [0, 2, 4, 6],
+    5: [0, 1, 3, 4, 6],
+    6: [0, 1, 2, 3, 4, 5],
+  };
   return map[totalDays] || [0, 2, 4];
 }
 
@@ -8004,14 +8053,18 @@ function selectExercisesForDay(goal, experience, splitDay, usedInCycle, equipmen
   // Priority muscle: add 2 extra sets to matching exercises
   var priorityTag = priority && priority !== "none" ? PRIORITY_MUSCLE_TAGS[priority] : null;
   var result = picked.map(function(s) {
-    var finalSets = s.sets;
+    var finalSets = sets;
     if (priorityTag && (s.exercise.primaryMuscle === priorityTag || (s.exercise.secondaryMuscles || []).indexOf(priorityTag) >= 0)) {
-      finalSets = s.sets + 2;
+      finalSets = sets + 2;
     }
+    var repVal = getRepTarget(goal, s.exercise.name);
+    if (typeof finalSets !== "number" || isNaN(finalSets)) finalSets = sets;
+    if (typeof repVal !== "number" || isNaN(repVal)) repVal = 10;
     return {
       name: s.exercise.name,
       sets: finalSets,
-      reps: getRepTarget(goal, s.exercise.name),
+      reps: repVal,
+      category: s.exercise.category,
       weight: "",
     };
   });
@@ -8259,6 +8312,7 @@ function renderStep9() {
   const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days, genState.time, genState.priority, genState.equipment, genState.limitation);
   genState.schedule = schedule;
   const totWorkouts = schedule.filter(function(d) { return d.type === "workout"; }).length;
+  const totRecovery = schedule.filter(function(d) { return d.type === "recovery"; }).length;
   const timeLabel = TIME_META[genState.time] ? TIME_META[genState.time].label : "";
   const equipLabel = EQUIPMENT_META[genState.equipment] ? EQUIPMENT_META[genState.equipment].label : "";
   const limLabel = LIMITATION_META[genState.limitation] ? LIMITATION_META[genState.limitation].label : "";
@@ -8268,27 +8322,35 @@ function renderStep9() {
   else if (genState.time === "60-75") duration = "60-75 min";
   else if (genState.time === "75-90") duration = "75-90 min";
 
-  let html = '<div class="gw-review-summary">' +
-    '<strong>' + genState.split + '</strong> &middot; ' + totWorkouts + ' days/week &middot; ' + genState.experience + ' &middot; ' + genState.goal + '<br>' +
-    'Duration: ' + duration + ' &middot; Equipment: ' + equipLabel + '<br>' +
-    'Priority: ' + prioLabel + ' &middot; Limitations: ' + limLabel +
-    '</div>';
+  let html = '<div class="gw-program-summary">' +
+    '<div class="gw-ps-name">' + genState.split + ' Program</div>' +
+    '<div class="gw-ps-grid">' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Goal</span><span class="gw-ps-val">' + genState.goal + '</span></div>' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Split</span><span class="gw-ps-val">' + genState.split + '</span></div>' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Experience</span><span class="gw-ps-val">' + genState.experience + '</span></div>' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Training Days</span><span class="gw-ps-val">' + totWorkouts + '</span></div>' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Recovery Days</span><span class="gw-ps-val">' + totRecovery + '</span></div>' +
+    '<div class="gw-ps-item"><span class="gw-ps-label">Duration</span><span class="gw-ps-val">' + duration + '</span></div>' +
+    '</div></div>';
+
   schedule.forEach(function(d) {
     if (d.type === "workout") {
       html += '<div class="gw-review-day">' +
         '<div class="gw-review-day-header">' +
-        '<span>' + DAY_LABELS[d.day] + ' &middot; ' + d.name + '</span>' +
+        '<span>' + DAY_LABELS[d.day] + ' · ' + d.name + '</span>' +
         '<span class="gw-day-tag">Workout</span></div>';
       d.exercises.forEach(function(ex) {
+        var sVal = (typeof ex.sets === "number" && !isNaN(ex.sets)) ? ex.sets : "—";
+        var rVal = (typeof ex.reps === "number" && !isNaN(ex.reps)) ? ex.reps : "—";
         html += '<div class="gw-review-ex">' +
           '<span class="gw-review-ex-name">' + ex.name + '</span>' +
-          '<span class="gw-review-ex-meta">' + ex.sets + '&times;' + ex.reps + '</span></div>';
+          '<span class="gw-review-ex-meta">' + sVal + ' Sets × ' + rVal + ' Reps</span></div>';
       });
       html += '</div>';
     } else {
       html += '<div class="gw-review-day">' +
         '<div class="gw-review-day-header">' +
-        '<span>' + DAY_LABELS[d.day] + ' &middot; Recovery</span>' +
+        '<span>' + DAY_LABELS[d.day] + ' · Recovery</span>' +
         '<span class="gw-day-tag is-recovery">Recovery</span></div>' +
         '<div class="gw-review-recovery">' +
         '<div class="gw-review-recovery-title">' + d.icon + ' ' + d.title + '</div>' +
@@ -8407,8 +8469,9 @@ function saveGeneratedProgram() {
     return;
   }
 
+  const programId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
   const programName = `${genState.split} (${genState.goal})`;
-  console.log("[SAVE STEP 3] Program name:", programName);
+  console.log("[SAVE STEP 3] Program name:", programName, "ID:", programId);
 
   // SAVE STEP 4: Load existing program
   let activePlan = [];
@@ -8435,13 +8498,21 @@ function saveGeneratedProgram() {
 
   // SAVE STEP 6: Build workout objects
   try {
-    workouts.forEach(gw => {
+    workouts.forEach((gw, idx) => {
       const wName = DayLabel(gw.day) + " · " + gw.name;
       const exList = Array.isArray(gw.exercises) ? gw.exercises : [];
       const workout = {
         id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
         name: wName,
-        exercises: exList.map(ex => ({ name: ex.name || "Unknown", sets: ex.sets || 3, reps: ex.reps || 10, weight: "", notes: "" })),
+        programId: programId,
+        programName: programName,
+        programSort: idx,
+        exercises: exList.map(ex => ({
+          name: ex.name || "Unknown",
+          sets: typeof ex.sets === "number" && !isNaN(ex.sets) ? ex.sets : 3,
+          reps: typeof ex.reps === "number" && !isNaN(ex.reps) ? ex.reps : 10,
+          weight: "", notes: "",
+        })),
       };
       activePlan.push(workout);
     });

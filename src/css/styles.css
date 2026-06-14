@@ -7632,16 +7632,35 @@ h4,
   color: var(--text-secondary);
   line-height: 1.35;
 }
-.gw-review-summary {
+.gw-program-summary {
   background: var(--surface-2);
   border-radius: 10px;
-  padding: 0.75rem;
+  padding: 0.85rem;
   margin-bottom: 0.75rem;
-  font-size: 0.78rem;
-  line-height: 1.5;
 }
-.gw-review-summary strong {
+.gw-ps-name {
+  font-weight: 700;
+  font-size: 0.95rem;
+  margin-bottom: 0.5rem;
   color: var(--text);
+}
+.gw-ps-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem 0.75rem;
+}
+.gw-ps-item {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.25rem;
+  font-size: 0.75rem;
+}
+.gw-ps-label {
+  color: var(--text-secondary);
+}
+.gw-ps-val {
+  color: var(--text);
+  font-weight: 500;
 }
 /* ===== STICKY FOOTER FOR BUILDER ===== */
 .nw-scroll {
@@ -7677,6 +7696,46 @@ h4,
 .empty-state-btn.secondary {
   background: var(--surface-2);
   color: var(--text);
+}
+/* ===== WORKOUT PROGRAM GROUPS ===== */
+.wo-program-group {
+  margin-bottom: 0.5rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+.wo-program-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.7rem 0.85rem;
+  background: var(--surface-2);
+  cursor: pointer;
+  user-select: none;
+}
+.wo-program-header:active {
+  background: var(--surface-1);
+}
+.wo-program-name {
+  font-weight: 700;
+  font-size: 0.85rem;
+  color: var(--text);
+}
+.wo-program-toggle {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+.wo-program-body {
+  border-top: 1px solid var(--border);
+}
+.wo-program-body .wo-card-item {
+  border: none;
+  border-radius: 0;
+  margin-bottom: 0;
+  border-bottom: 1px solid var(--border);
+}
+.wo-program-body .wo-card-item:last-child {
+  border-bottom: none;
 }
 /* ===== WORKOUT CARD ITEMS ===== */
 .wo-card-item {
