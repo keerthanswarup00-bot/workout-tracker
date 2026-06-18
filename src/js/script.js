@@ -2043,7 +2043,7 @@ function renderSettings() {
     </div>
     ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi / 40) * 100 + "%;background:" + (bmiCat === "Underweight" ? "#4a9eff" : bmiCat === "Normal" ? "#00d26a" : bmiCat === "Overweight" ? "#ff9500" : "#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ""}
     ${!isProfileComplete() ? '<button class="sg-card sg-card-cta" id="settingsCompleteProfile"><div class="sg-card-body"><div class="sg-card-name">Complete Your Profile</div><div class="sg-card-meta">Add your stats to unlock features</div></div><span class="sg-chevron">›</span></button>' : ""}
-    <button class="sg-row" id="settingsGoalCenterBtn"><span>Goal Center</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" id="settingsGoalCenterBtn"><span>Goals</span><span class="sg-chevron">›</span></button>
   </div>
 
   <!-- SECTION 2: FITNESS GOALS -->
@@ -5014,8 +5014,8 @@ function renderProgressPage() {
       <div id="progressMonthly"></div>
     </div>
     <div class="progress-section">
-      <div class="section-label">Achievements</div>
-      <div id="progressAchievements"></div>
+      <div class="section-label">Milestones</div>
+      <div id="progressMilestones"></div>
     </div>
     <div class="progress-section">
       <button class="btn-secondary" id="progressViewReportsBtn" style="width:100%">View Weekly & Monthly Reports →</button>
@@ -5024,7 +5024,7 @@ function renderProgressPage() {
   renderCalendarHero();
   renderWeeklyReview();
   renderMonthlyReview();
-  renderRecentAchievements();
+  renderRecentMilestones();
   renderSessionsTab();
   document.getElementById("progressViewReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
 }
@@ -5124,8 +5124,8 @@ function renderMonthlyReview() {
   </div>`;
 }
 
-function renderRecentAchievements() {
-  const container = document.getElementById("progressAchievements");
+function renderRecentMilestones() {
+  const container = document.getElementById("progressMilestones");
   if (!container) return;
   const allPRs = getAllPRs();
   const items = [];
@@ -5139,7 +5139,7 @@ function renderRecentAchievements() {
     return;
   }
   container.innerHTML = `<div class="progress-card">
-    <div class="progress-card-title">Recent Achievements</div>
+    <div class="progress-card-title">Recent Milestones</div>
     <div class="ach-list">${recent.map((pr) => {
       const name = pr.exerciseName.replace(/([A-Z])/g, " $1").trim();
       const date = formatReadableDate(parseDateKey(pr.date));
@@ -5271,7 +5271,7 @@ function renderTrainerTab() {
   <div class="tr-section">
     <button class="tr-goal-summary" id="openGoalCenterBtn">
       <div class="tr-goal-summary-left">
-        <span class="tr-goal-summary-label">Goal Center</span>
+        <span class="tr-goal-summary-label">Goals</span>
         <span class="tr-goal-summary-goal">${hasGCGoal ? GoalCenter.getGoalLabel() : "No Goal Set"}</span>
       </div>
       <div class="tr-goal-summary-right">
@@ -5324,7 +5324,7 @@ function renderTrainerTab() {
     </div>
   </div>`;
 
-  // SECTION 2.5: Challenges, Achievements & Streaks
+  // SECTION 2.5: Challenges, Milestones & Streaks
   const cas = coach.cas;
   if (cas) {
     const dcLabel = cas.challenges.daily ? cas.challenges.daily.label : "";
@@ -5346,7 +5346,7 @@ function renderTrainerTab() {
 
     html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Challenges & Achievements</span></div>
+    <div class="tr-section-header"><span class="tr-section-title">Challenges & Milestones</span></div>
     <div class="tr-cas-grid">
       <button class="tr-cas-card" id="openChallengesBtn">
         <div class="tr-cas-card-icon">
@@ -5376,12 +5376,12 @@ function renderTrainerTab() {
         </div>
         <span class="tr-cas-card-action">→</span>
       </button>
-      <button class="tr-cas-card" id="openAchievementsBtn">
+      <button class="tr-cas-card" id="openMilestonesBtn">
         <div class="tr-cas-card-icon">
           <span class="tr-cas-icon-label" style="font-size:18px">${cas.achievements.count}</span>
         </div>
         <div class="tr-cas-card-body">
-          <div class="tr-cas-card-title">Achievements</div>
+          <div class="tr-cas-card-title">Milestones</div>
           <div class="tr-cas-card-desc">${cas.achievements.count}/${cas.achievements.total} earned</div>
         </div>
         <span class="tr-cas-card-action">→</span>
@@ -5453,13 +5453,13 @@ function renderTrainerTab() {
     <button class="tr-view-all-btn" id="viewAllProblemsBtn">View All Solutions →</button>
   </div>`;
 
-  // SECTION 6: Learning Hub
+  // SECTION 6: Learn
   const lhProgress = getLearningProgress();
   const lhTotal = LESSON_DATABASE.length;
   const lhDone = lhProgress.completed.length;
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Learning Hub</span><button class="tr-section-action" id="openLearningHubBtn">View All</button></div>
+    <div class="tr-section-header"><span class="tr-section-title">Learn</span><button class="tr-section-action" id="openLearningHubBtn">View All</button></div>
     <div class="lh-home-summary"><span class="lh-home-pct">${lhTotal > 0 ? Math.round((lhDone / lhTotal) * 100) : 0}% Complete</span><span class="lh-home-count">${lhDone}/${lhTotal} lessons</span></div>
     <div class="tr-learn">
       ${LESSON_CATEGORIES.slice(0, 6).map(c => {
@@ -5469,11 +5469,11 @@ function renderTrainerTab() {
     </div>
   </div>`;
 
-  // SECTION 7: Exercise Encyclopedia
+  // SECTION 7: Exercises
   const previewExs = EXERCISE_DATABASE.slice(0, 6);
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Exercise Encyclopedia</span><button class="tr-section-action" id="eeViewAllBtn">View All</button></div>
+    <div class="tr-section-header"><span class="tr-section-title">Exercises</span><button class="tr-section-action" id="eeViewAllBtn">View All</button></div>
     <input type="text" class="tr-problem-search" id="eeHomeSearch" placeholder="Search exercise..." autocomplete="off" />
     <div class="tr-encyclopedia" id="eeHomeGrid">
       ${previewExs.map(e => `<button class="tr-ex-card" data-ee-id="${e.id}"><div class="tr-ex-name">${e.name}</div><div class="tr-ex-meta"><span>${e.category || "General"}</span><span>${e.difficulty || "Intermediate"}</span><span>${e.equipment || "Any"}</span></div></button>`).join("")}
@@ -5519,10 +5519,10 @@ function renderTrainerTab() {
     </div>
   </div>`;
 
-  // SECTION 10: Program Review
+  // SECTION 10: Program Health
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Program Review</span><button class="tr-section-action" id="viewProgramReviewBtn">Full Review →</button></div>
+    <div class="tr-section-header"><span class="tr-section-title">Program Health</span><button class="tr-section-action" id="viewProgramReviewBtn">Full Review →</button></div>
     <div class="pr-card">
       <div class="pr-card-header">
         <span class="pr-card-title">${gs.goalLabel || "Current"} Program</span>
@@ -5548,7 +5548,7 @@ function renderTrainerTab() {
     html = `<div class="tr-page">
       <div class="tr-empty-state">
         <div class="tr-empty-icon">🎯</div>
-        <div class="tr-empty-title">Welcome to Trainer</div>
+        <div class="tr-empty-title">Welcome to Coach</div>
         <div class="tr-empty-desc">Your personal coaching hub. Complete your first workout and log your body weight to unlock insights.</div>
       </div>
       <div class="tr-empty-cards">
@@ -5561,8 +5561,8 @@ function renderTrainerTab() {
     html = `<div class="tr-page">
       <div class="tr-empty-state">
         <div class="tr-empty-icon">💪</div>
-        <div class="tr-empty-title">No Workouts Yet</div>
-        <div class="tr-empty-desc">Complete your first workout to unlock the Trainer experience.</div>
+        <div class="tr-empty-title">No Training Yet</div>
+        <div class="tr-empty-desc">Complete your first workout to unlock the Coach experience.</div>
       </div>
       <div class="tr-empty-cards">
         <div class="tr-empty-card"><div class="tr-empty-card-icon">🏋️</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
@@ -5601,18 +5601,18 @@ function renderTrainerTab() {
 
   // Problem card clicks and View All handled by document-level delegation (in init)
 
-  // Learning Hub: View All
+  // Learn: View All
   document.getElementById("openLearningHubBtn")?.addEventListener("click", () => renderLearningHub());
 
-  // Learning Hub: category card clicks (home page)
+  // Learn: category card clicks (home page)
   container.querySelectorAll(".lh-cat-home-btn").forEach(btn => {
     btn.addEventListener("click", () => renderLessonCategory(btn.dataset.categoryId));
   });
 
-  // Exercise Encyclopedia: View All
+  // Exercises: View All
   document.getElementById("eeViewAllBtn")?.addEventListener("click", () => renderExerciseEncyclopedia());
 
-  // Exercise Encyclopedia: home search
+  // Exercises: home search
   const eeHomeSearch = document.getElementById("eeHomeSearch");
   if (eeHomeSearch) {
     eeHomeSearch.addEventListener("input", (e) => {
@@ -5634,7 +5634,7 @@ function renderTrainerTab() {
     });
   }
 
-  // Exercise Encyclopedia: home card clicks
+  // Exercises: home card clicks
   container.querySelectorAll("#eeHomeGrid [data-ee-id]").forEach(btn => {
     btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
   });
@@ -5660,16 +5660,16 @@ function renderTrainerTab() {
   // CAS buttons
   document.getElementById("openChallengesBtn")?.addEventListener("click", () => showTrainerScreen("challenges"));
   document.getElementById("openStreaksBtn")?.addEventListener("click", () => showTrainerScreen("streaks"));
-  document.getElementById("openAchievementsBtn")?.addEventListener("click", () => showTrainerScreen("achievements"));
+  document.getElementById("openMilestonesBtn")?.addEventListener("click", () => showTrainerScreen("achievements"));
 
   // Command Center
   document.getElementById("openCommandCenterBtn")?.addEventListener("click", () => showTrainerScreen("command-center"));
 
-  // Program Review
+  // Program Health
   const prBtn = document.getElementById("viewProgramReviewBtn");
   if (prBtn) prBtn.addEventListener("click", () => showTrainerScreen("program-review"));
 
-  // Populate Program Review card preview
+  // Populate Program Health card preview
   if (typeof ProgramReviewEngine !== "undefined") {
     try {
       const prReview = ProgramReviewEngine.runReview();
@@ -5852,7 +5852,7 @@ function showTrainerScreen(screen, searchQuery) {
     return;
   }
   if (screen === "achievements") {
-    renderAchievementsPage();
+    renderMilestonesPage();
     return;
   }
   if (screen === "streaks") {
@@ -6206,7 +6206,7 @@ function renderLearningHub() {
   const completedCount = progress.completed.length;
 
   let html = `<div class="tr-page"><div class="tr-section">`;
-  html += `<div class="tr-section-header"><button class="tr-back-btn" id="lhBackBtn">← Back</button><span class="tr-section-title">Learning Hub</span></div>`;
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="lhBackBtn">← Back</button><span class="tr-section-title">Learn</span></div>`;
 
   // Progress summary
   const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
@@ -6467,7 +6467,7 @@ function renderExerciseEncyclopedia() {
   let html = `<div class="tr-page ee-page">`;
 
   // Header
-  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="eeBackBtn">← Back</button><span class="tr-section-title">Exercise Encyclopedia</span></div>`;
+  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="eeBackBtn">← Back</button><span class="tr-section-title">Exercises</span></div>`;
 
   // Search
   html += `<div style="padding:8px 16px"><input type="text" class="ee-search" id="eeSearch" placeholder="Search exercises, muscles, equipment..." autocomplete="off" /></div>`;
@@ -6803,7 +6803,7 @@ function renderGoalCenterEmpty() {
   container.innerHTML = `<div class="tr-page"><div class="gc-no-goal">
     <div class="gc-no-goal-icon">🎯</div>
     <div class="gc-no-goal-title">Set Your First Goal</div>
-    <div class="gc-no-goal-desc">Define what you want to achieve and let Goal Center guide every workout, meal, and milestone.</div>
+    <div class="gc-no-goal-desc">Define what you want to achieve and let Goals guide every workout, meal, and milestone.</div>
     <button class="gc-no-goal-btn" id="gcCreateFirstBtn">Create Goal</button>
   </div></div>`;
   document.getElementById("gcCreateFirstBtn")?.addEventListener("click", () => renderCreateGoalFlow());
@@ -6822,7 +6822,7 @@ function renderGoalCenterDashboard(gc) {
   let html = `<div class="tr-page gc-page">`;
 
   // Back button
-  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="gcBackBtn">← Back</button><span class="tr-section-title">Goal Center</span></div>`;
+  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="gcBackBtn">← Back</button><span class="tr-section-title">Goals</span></div>`;
 
   // HERO CARD
   const goalTypeLabels = { "fat-loss": "Fat Loss", "muscle-gain": "Muscle Gain", "strength": "Strength", "general-fitness": "General Fitness", "endurance": "Endurance" };
@@ -6946,11 +6946,11 @@ function renderGoalCenterDashboard(gc) {
     </div>`;
   }
 
-  // SECTION 6: Weight Intelligence
+  // SECTION 6: Weight Insights
   html += `<div class="gc-section">
     <button class="tr-goal-summary" id="gcWeightIntelBtn" style="width:100%;text-align:left">
       <div class="tr-goal-summary-left">
-        <span class="tr-goal-summary-label">Weight Intelligence</span>
+        <span class="tr-goal-summary-label">Weight Insights</span>
         <span class="tr-goal-summary-goal">Trends, pace, and analysis</span>
       </div>
       <div class="tr-goal-summary-right">
@@ -6974,7 +6974,7 @@ function renderGoalCenterDashboard(gc) {
   // Back
   document.getElementById("gcBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
 
-  // Weight Intelligence
+  // Weight Insights
   document.getElementById("gcWeightIntelBtn")?.addEventListener("click", openWeightIntelligence);
 
   // View Strategy scrolls to strategy section
@@ -7277,7 +7277,7 @@ function renderWeightIntelligence() {
 
   let html = `<div class="wi-page">
     <div class="wi-header">
-      <h2>Weight Intelligence</h2>
+      <h2>Weight Insights</h2>
       <button class="wi-back-btn" id="wiBackBtn">Back</button>
     </div>`;
 
@@ -7896,7 +7896,7 @@ function renderChallengesPage() {
   window.scrollTo(0, 0);
 }
 
-function renderAchievementsPage() {
+function renderMilestonesPage() {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
   const coach = CoachEngine.runAll();
@@ -7911,7 +7911,7 @@ function renderAchievementsPage() {
 
   let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
 
-  html += `<div class="cas-header"><div class="cas-ach-summary"><span class="cas-ach-count">${cas.achievements.count}</span><span class="cas-ach-total">/${cas.achievements.total}</span><span class="cas-ach-label">Achievements Unlocked</span></div></div>`;
+  html += `<div class="cas-header"><div class="cas-ach-summary"><span class="cas-ach-count">${cas.achievements.count}</span><span class="cas-ach-total">/${cas.achievements.total}</span><span class="cas-ach-label">Milestones Unlocked</span></div></div>`;
 
   categories.forEach((cat) => {
     const catAchs = allAch.filter((a) => a.category === cat);
@@ -8074,7 +8074,7 @@ function renderCoachCommandCenter() {
     <div class="cc-stat"><span class="cc-stat-val">${nut.proteinTarget || "—"}</span><span class="cc-stat-label">Protein Target</span></div>
     <div class="cc-stat"><span class="cc-stat-val">${profile ? Math.round(profile.workoutCompliance) + "%" : "—"}</span><span class="cc-stat-label">Compliance</span></div>
     <div class="cc-stat"><span class="cc-stat-val">${profile ? Math.round(profile.proteinCompliance) + "%" : "—"}</span><span class="cc-stat-label">Protein Adherence</span></div>
-    <div class="cc-stat"><span class="cc-stat-val">${cas ? cas.achievements.count : "—"}</span><span class="cc-stat-label">Achievements</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${cas ? cas.achievements.count : "—"}</span><span class="cc-stat-label">Milestones</span></div>
     <div class="cc-stat"><span class="cc-stat-val">${cas ? cas.challenges.completed : "—"}</span><span class="cc-stat-label">Challenges Done</span></div>
     <div class="cc-stat"><span class="cc-stat-val">${prog.curWeight ? Math.round(prog.curWeight) + "kg" : "—"}</span><span class="cc-stat-label">Current Weight</span></div>
   </div></div>`;
@@ -8097,7 +8097,7 @@ function renderProgramReview() {
   if (!container) return;
 
   if (typeof ProgramReviewEngine === "undefined") {
-    container.innerHTML = `<div class="tr-page"><div class="tr-back" id="prBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div><div class="wi-empty">Program Review engine not available.</div></div>`;
+    container.innerHTML = `<div class="tr-page"><div class="tr-back" id="prBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div><div class="wi-empty">Program Health engine not available.</div></div>`;
     document.getElementById("prBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
     return;
   }
@@ -8123,7 +8123,7 @@ function renderProgramReview() {
   <div class="pr-header">
     <div class="pr-header-top">
       <div class="pr-header-left">
-        <span class="pr-header-label">Program Review</span>
+        <span class="pr-header-label">Program Health</span>
         <span class="pr-header-week">${gp.goalType ? (typeof GoalCenter !== "undefined" ? GoalCenter.getGoalLabel() : gp.goalType) : "General"} · Week ${review.weekNumber}</span>
       </div>
       <div class="pr-outcome-badge" style="color:${o.color}">${o.icon} ${o.label}</div>
@@ -8734,7 +8734,7 @@ function renderBodyTab() {
   renderMilestoneCards(container);
   renderWorkoutStreak(container);
   renderConsistencyScore(container);
-  renderAchievements(container);
+  renderMilestones(container);
   renderEditGoalsBtn(container);
 }
 
@@ -9021,7 +9021,7 @@ function renderMilestoneCards(container) {
   container.appendChild(div);
 }
 
-function renderAchievements(container) {
+function renderMilestones(container) {
   const sessions = state.sessions || [];
   const totalWorkouts = sessions.filter(function(s) { return s.finishedAt; }).length;
   const prs = state.prs || {};
@@ -9049,7 +9049,7 @@ function renderAchievements(container) {
 
   const div = document.createElement("div");
   div.className = "body-card body-achievements";
-  div.innerHTML = '<div class="bm-header"><span class="bm-label">Achievements</span></div><div class="ach-grid">' +
+  div.innerHTML = '<div class="bm-header"><span class="bm-label">Milestones</span></div><div class="ach-grid">' +
     achievements.map(function(a) {
       return '<div class="ach-item' + (a.unlocked ? ' is-unlocked' : ' is-locked') + '"><span class="ach-icon">' + (a.unlocked ? a.icon : "🔒") + '</span><span class="ach-label">' + a.label + '</span></div>';
     }).join("") + '</div>';
@@ -9679,7 +9679,7 @@ function showCoachActivation() {
     { icon: "🎯", text: "Goal Created" },
     { icon: "🤖", text: "Coach Activated" },
     { icon: "💪", text: "Recovery Tracking" },
-    { icon: "⚖️", text: "Weight Intelligence" },
+    { icon: "⚖️", text: "Weight Insights" },
     { icon: "🏆", text: "Challenges Enabled" },
     { icon: "📊", text: "Reports Enabled" },
   ];
@@ -9704,7 +9704,7 @@ function getFirst7DayFocus() {
     { day: 1, key: "day1Workout", focus: "First Workout", desc: "Complete your first workout", icon: "💪" },
     { day: 2, key: "day2Weight", focus: "Log Weight", desc: "Log your body weight", icon: "⚖️" },
     { day: 3, key: "day3Protein", focus: "Protein Education", desc: "Learn about protein", icon: "🥩" },
-    { day: 4, key: "day4Learning", focus: "Learning Hub", desc: "Explore the Learning Hub", icon: "📚" },
+    { day: 4, key: "day4Learning", focus: "Learn", desc: "Explore the Learn", icon: "📚" },
     { day: 5, key: "day5Challenge", focus: "Challenge Introduction", desc: "Try your first challenge", icon: "🏆" },
     { day: 6, key: "day6CoachScore", focus: "Coach Score", desc: "Understand your Coach Score", icon: "📈" },
     { day: 7, key: "day7Report", focus: "First Weekly Report", desc: "Review your first report", icon: "📊" },
@@ -12344,7 +12344,7 @@ function renderStep8() {
 
 function renderStep9() {
   const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Program Review";
+  document.getElementById("gmStepTitle").textContent = "Program Health";
   const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days, genState.time, genState.priority, genState.equipment, genState.limitation);
   genState.schedule = schedule;
   const totWorkouts = schedule.filter(function(d) { return d.type === "workout"; }).length;
