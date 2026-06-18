@@ -2004,11 +2004,12 @@ function renderSettings() {
     general: "Fitness",
     custom: "Custom",
   };
+  const sgGoal = GoalCenter.getGoalType();
   const mCals = u.weight
     ? Math.round(
         u.weight *
           (u.activity === "sedentary" ? 24 : u.activity === "light" ? 26.5 : u.activity === "moderate" ? 29 : u.activity === "very" ? 31.5 : 34) *
-          (u.goal === "fat-loss" ? 0.8 : u.goal === "build-muscle" || u.goal === "strength" ? 1.1 : 1),
+          (sgGoal === "lose-fat" ? 0.8 : sgGoal === "build-muscle" || sgGoal === "strength" ? 1.1 : 1),
       )
     : "—";
   const initials = u.name
@@ -2028,7 +2029,7 @@ function renderSettings() {
       <div class="sg-avatar" style="background:var(--accent);color:#000;font-weight:800">${initials}</div>
       <div class="sg-card-body">
         <div class="sg-card-name">${u.name || "Tap to set up"}</div>
-        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", u.goal ? goalLabels[u.goal] || "" : ""].filter(Boolean).join(" · ") || "No profile yet"}</div>
+        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", GoalCenter.getGoalLabel()].filter(Boolean).join(" · ") || "No profile yet"}</div>
       </div>
       <span class="sg-chevron">›</span>
     </button>
@@ -2036,12 +2037,13 @@ function renderSettings() {
       <div class="sg-stat"><span class="sg-stat-val">${u.age || "—"}</span><span class="sg-stat-lbl">Age</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.height ? displayHeight(u.height) : "—"}</span><span class="sg-stat-lbl">Height</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.weight ? displayWeight(u.weight) : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.goal ? (u.goal === "fat-loss" ? "Fat Loss" : u.goal === "build-muscle" ? "Build Muscle" : u.goal === "recomp" ? "Recomp" : u.goal === "strength" ? "Strength" : u.goal === "athletic" ? "Athletic" : "General") : "—"}</span><span class="sg-stat-lbl">Goal</span></div>
+      <div class="sg-stat"><span class="sg-stat-val">${GoalCenter.getGoalLabel()}</span><span class="sg-stat-lbl">Goal</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${bmi || "—"}</span><span class="sg-stat-lbl">BMI</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${mCals}</span><span class="sg-stat-lbl">Calories</span></div>
     </div>
     ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi / 40) * 100 + "%;background:" + (bmiCat === "Underweight" ? "#4a9eff" : bmiCat === "Normal" ? "#00d26a" : bmiCat === "Overweight" ? "#ff9500" : "#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ""}
     ${!isProfileComplete() ? '<button class="sg-card sg-card-cta" id="settingsCompleteProfile"><div class="sg-card-body"><div class="sg-card-name">Complete Your Profile</div><div class="sg-card-meta">Add your stats to unlock features</div></div><span class="sg-chevron">›</span></button>' : ""}
+    <button class="sg-row" id="settingsGoalCenterBtn"><span>Goal Center</span><span class="sg-chevron">›</span></button>
   </div>
 
   <!-- SECTION 2: FITNESS GOALS -->
@@ -2153,24 +2155,24 @@ function logWeight(weight, date, notes) {
 }
 
 // ===== TAB SYSTEM =====
-let currentTab = "sets";
+let currentTab = "today";
 
 function activateTab(tabName) {
   currentTab = tabName;
-
   document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tabName));
   document.querySelectorAll(".nav-tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tabName));
-
-  // Settings lives inside panel-sets, so keep that panel active
+  
+  // Close profile menu if open
+  document.getElementById("profileMenu")?.classList.add("is-hidden");
+  
   if (tabName === "settings") {
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === "panel-sets"));
   } else {
-    const panelId = tabName === "trainer" ? "panel-trainer" : tabName === "progress" ? "panel-progress" : "panel-" + tabName;
+    const panelId = tabName === "today" ? "panel-today" : tabName === "trainer" ? "panel-trainer" : tabName === "progress" ? "panel-progress" : "panel-" + tabName;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === panelId));
   }
-
   positionNavIndicator();
-
+  if (tabName === "today") renderTodayTab();
   if (tabName === "progress") renderProgressPage();
   if (tabName === "trainer") renderTrainerTab();
   if (tabName === "body") renderBodyTab();
@@ -2197,6 +2199,8 @@ function render() {
   document.getElementById("todayLabel").textContent = formatReadableDate(new Date());
   updateStreak();
   renderSetsPanel();
+  renderProfileAvatar();
+  if (currentTab === "today") renderTodayTab();
   if (currentTab === "progress") renderProgressPage();
   if (currentTab === "trainer") renderTrainerTab();
   if (currentTab === "body") renderBodyTab();
@@ -2259,6 +2263,10 @@ function getLastWorkoutForPlan(workoutId) {
   return sessions.sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
 }
 
+function renderHomeGoalText() {
+  return GoalCenter.getGoalLabel();
+}
+
 function renderHome() {
   const user = state.user;
   const name = user ? user.name : "there";
@@ -2291,6 +2299,11 @@ function renderHome() {
         <div class="hc-value">${hasWeight ? displayWeight(weight) : "—"}</div>
         <div class="hc-sub">${lastWeightText}</div>
         ${checkInDue ? '<div class="hc-warn">⚠ Weight Check-In Due</div>' : ''}
+      </div>
+      <div class="hero-goal-card" id="heroGoalCard">
+        <div class="hc-header">GOAL</div>
+        <div class="hc-value">${renderHomeGoalText()}</div>
+        <div class="hc-sub">Tap to view</div>
       </div>
     </div>`;
 
@@ -2400,6 +2413,7 @@ function renderHome() {
     document.getElementById("weightLogSheet").classList.remove("is-hidden");
     setTimeout(() => document.getElementById("wlSheetWeight").select(), 150);
   });
+  document.getElementById("heroGoalCard")?.addEventListener("click", openGoalCenter);
 
   const banner = document.getElementById("homeIncompleteBanner");
   if (banner) {
@@ -2416,8 +2430,34 @@ function renderHome() {
       setTimeout(() => banner.remove(), 300);
       state.profileBannerDismissed = true;
       saveState();
-      openOnboarding(true);
+      if (typeof OnboardingEngine !== "undefined") openOnboarding(true);
     });
+  }
+
+  // First 7 Days banner on home screen
+  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    const homeGreeting = document.getElementById("homeGreeting");
+    if (homeGreeting) {
+      const existing = document.getElementById("f7dBanner");
+      if (!existing) {
+        const f7dFocus = getFirst7DayFocus();
+        if (f7dFocus) {
+          const f7dBanner = document.createElement("div");
+          f7dBanner.className = "f7d-banner";
+          f7dBanner.id = "f7dBanner";
+          f7dBanner.innerHTML = `
+            <div class="f7d-banner-icon">${f7dFocus.icon}</div>
+            <div class="f7d-banner-text">
+              <div class="f7d-banner-title">Day ${f7dFocus.day}: ${f7dFocus.focus}</div>
+              <div class="f7d-banner-desc">${f7dFocus.desc}</div>
+              <div class="f7d-banner-bar"><div class="f7d-banner-fill" style="width:${(f7dFocus.progress / f7dFocus.total) * 100}%"></div></div>
+            </div>
+            <div class="f7d-banner-arrow">→</div>`;
+          f7dBanner.addEventListener("click", () => obNavigateToDay(f7dFocus.day, f7dFocus.key));
+          homeGreeting.after(f7dBanner);
+        }
+      }
+    }
   }
 
   renderWeeklyReport();
@@ -2530,6 +2570,53 @@ function generateWeeklyWins(report) {
   if (streak >= 7) wins.push({ icon: "🔥", text: `${streak}-day streak` });
   if (wins.length === 0) wins.push({ icon: "💪", text: "Keep showing up — every workout counts" });
   return wins.slice(0, 4);
+}
+
+// ===== REPORT STORAGE =====
+const REPORT_KEY = "ironlog_reports";
+function loadAllReports() {
+  try { return JSON.parse(localStorage.getItem(REPORT_KEY)) || { weekly: {}, monthly: {} }; }
+  catch { return { weekly: {}, monthly: {} }; }
+}
+function saveAllReports(data) {
+  localStorage.setItem(REPORT_KEY, JSON.stringify(data));
+}
+function getCurrentWeekKey() {
+  const now = new Date();
+  const mon = new Date(now);
+  mon.setDate(now.getDate() - ((now.getDay() + 6) % 7));
+  return `${mon.getFullYear()}-W${String(Math.ceil((((mon - new Date(mon.getFullYear(), 0, 1)) / 86400000) + mon.getDay() + 1) / 7)).padStart(2, "0")}`;
+}
+function getCurrentMonthKey() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+function saveWeeklyReport(report) {
+  const all = loadAllReports();
+  const key = getCurrentWeekKey();
+  all.weekly[key] = { ...report, savedAt: new Date().toISOString() };
+  saveAllReports(all);
+}
+function getWeeklyReport(weekKey) {
+  const all = loadAllReports();
+  return all.weekly[weekKey] || null;
+}
+function saveMonthlyReport(report) {
+  const all = loadAllReports();
+  const key = getCurrentMonthKey();
+  all.monthly[key] = { ...report, savedAt: new Date().toISOString() };
+  saveAllReports(all);
+}
+function getMonthlyReport(monthKey) {
+  const all = loadAllReports();
+  return all.monthly[monthKey] || null;
+}
+function getAllReportKeys() {
+  const all = loadAllReports();
+  return {
+    weekly: Object.keys(all.weekly).sort().reverse(),
+    monthly: Object.keys(all.monthly).sort().reverse(),
+  };
 }
 
 function renderWeeklyReport() {
@@ -2763,6 +2850,126 @@ function closeWorkout() {
   currentWorkoutId = null;
   showScreen("screen-home");
   renderHome();
+}
+
+// ===== PROFILE AVATAR =====
+function renderProfileAvatar() {
+  const name = state.user?.name || "User";
+  const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "IL";
+  const circle = document.getElementById("avatarCircle");
+  const menuAvatar = document.getElementById("profileMenuAvatar");
+  const menuName = document.getElementById("profileMenuName");
+  if (circle) circle.textContent = initials;
+  if (menuAvatar) menuAvatar.textContent = initials;
+  if (menuName) menuName.textContent = name;
+}
+
+// ===== TODAY PANEL =====
+function renderTodayTab() {
+  // Rings
+  const trainPct = state.coachScore || 85;
+  const fuelPct = state.protein?.pct || 72;
+  const recoverPct = state.recoveryScore || 90;
+  
+  const trainRing = document.getElementById("trainRing");
+  const fuelRing = document.getElementById("fuelRing");
+  const recoverRing = document.getElementById("recoverRing");
+  if (trainRing) trainRing.style.strokeDashoffset = 534 - (534 * trainPct / 100);
+  if (fuelRing) fuelRing.style.strokeDashoffset = 408 - (408 * fuelPct / 100);
+  if (recoverRing) recoverRing.style.strokeDashoffset = 282 - (282 * recoverPct / 100);
+  
+  document.getElementById("ringsScore").textContent = Math.round(trainPct);
+  document.getElementById("trainPercent").textContent = trainPct + "%";
+  document.getElementById("fuelPercent").textContent = fuelPct + "%";
+  document.getElementById("recoverPercent").textContent = recoverPct + "%";
+  
+  // Coach Score
+  document.getElementById("coachScoreValue").textContent = state.coachScore || 82;
+  document.getElementById("coachScoreTrend").textContent = "↑ 4 This Week";
+  
+  // Today's Focus
+  const todaySession = getTodaySession?.() || state.sessions?.find(s => {
+    const sd = new Date(s.date);
+    const today = new Date();
+    return sd.toDateString() === today.toDateString();
+  });
+  
+  const focusItems = document.querySelectorAll(".today-focus-item");
+  focusItems.forEach(item => {
+    const type = item.dataset.focus;
+    const checkbox = item.querySelector(".focus-checkbox");
+    if (type === "workout" && todaySession) {
+      checkbox.classList.add("is-checked");
+      item.classList.add("is-done");
+    }
+    if (type === "protein" && state.protein?.today >= state.protein?.goal * 0.8) {
+      checkbox.classList.add("is-checked");
+      item.classList.add("is-done");
+    }
+    if (type === "weight") {
+      const weights = state.weightLog || [];
+      if (weights.some(w => {
+        const wd = new Date(w.date);
+        const today = new Date();
+        return wd.toDateString() === today.toDateString();
+      })) {
+        checkbox.classList.add("is-checked");
+        item.classList.add("is-done");
+      }
+    }
+  });
+  
+  // Coach Insight
+  const goals = GoalCenter?.getGoals?.() || [];
+  const proteinConsistent = state.protein?.streak >= 3;
+  const insightText = proteinConsistent 
+    ? "Your protein consistency is excellent! Focus on sleep quality for better recovery." 
+    : "Protein consistency is currently limiting progress. Try to hit your daily target for 7 consecutive days.";
+  document.getElementById("coachInsightText").textContent = insightText;
+  
+  // Challenge
+  const streak = state.workoutStreak?.current || 0;
+  document.getElementById("challengeName").textContent = streak >= 3 ? "Streak Master" : "Protein Streak";
+  document.getElementById("challengeCount").textContent = streak + " / 7 Days";
+  document.getElementById("challengeBarFill").style.width = Math.min(100, (streak / 7) * 100) + "%";
+  
+  // Recent Win
+  const recentPR = state.recentPR || (todaySession?.prs?.length ? todaySession.prs[0] : null);
+  if (recentPR) {
+    document.getElementById("recentWinText").textContent = recentPR.exercise + " " + recentPR.value;
+    document.getElementById("recentWinMeta").textContent = streak + " Day Streak";
+  } else {
+    document.getElementById("recentWinText").textContent = streak > 0 ? streak + " Day Streak 🔥" : "Complete your first workout!";
+    document.getElementById("recentWinMeta").textContent = "Keep going!";
+  }
+  
+  // Timeline
+  const timeline = document.getElementById("todayTimeline");
+  const entries = [];
+  if (state.weightLog?.some(w => new Date(w.date).toDateString() === new Date().toDateString())) {
+    entries.push({ time: "Morning", text: "Weight Logged" });
+  }
+  if (todaySession) {
+    const timeOfDay = todaySession.timeOfDay || "Afternoon";
+    entries.push({ time: timeOfDay, text: todaySession.name + " Completed" });
+  }
+  if (state.protein?.today >= state.protein?.goal * 0.8) {
+    entries.push({ time: "Evening", text: "Protein Goal Achieved" });
+  }
+  
+  if (entries.length === 0) {
+    timeline.innerHTML = '<div class="timeline-empty">No activity yet today.</div>';
+  } else {
+    timeline.innerHTML = entries.map(e => `
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-content">
+          <div class="timeline-time">${e.time}</div>
+          <div class="timeline-text">${e.text}</div>
+        </div>
+      </div>
+    `).join("");
+  }
 }
 
 // ===== SETS PANEL =====
@@ -4769,7 +4976,8 @@ function renderProgressPage() {
   const u = state.user || {};
   const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
   const curWeight = latestLog ? latestLog.weight : (u.weight || null);
-  const targetWeight = u.targetWeight || null;
+  const gcWeightData = GoalCenter.getGoalWeightData();
+  const targetWeight = gcWeightData.targetWeight || u.targetWeight || null;
   const bmi = u.height && curWeight ? (curWeight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
 
   // Weight goal card
@@ -4809,12 +5017,16 @@ function renderProgressPage() {
       <div class="section-label">Achievements</div>
       <div id="progressAchievements"></div>
     </div>
+    <div class="progress-section">
+      <button class="btn-secondary" id="progressViewReportsBtn" style="width:100%">View Weekly & Monthly Reports →</button>
+    </div>
   `;
   renderCalendarHero();
   renderWeeklyReview();
   renderMonthlyReview();
   renderRecentAchievements();
   renderSessionsTab();
+  document.getElementById("progressViewReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
 }
 
 function renderWeeklyReview() {
@@ -4951,6 +5163,7 @@ function renderTrainerTab() {
   const rec = coach.recovery;
   const edu = coach.education;
   const ps = coach.problemSolver;
+  const ad = coach.adaptive;
 
   const sessions = (state.sessions || []).filter((s) => s.finishedAt);
   const curWeight = dc.curWeight || (state.user || {}).weight || null;
@@ -5004,6 +5217,73 @@ function renderTrainerTab() {
     </div>
   </div>`;
 
+  // SECTION 1.3: Readiness Card
+  const readinessData = coach.readiness(rec);
+  const rcScore = rec.score;
+  const rcStatus = rec.status;
+  const rcLabel = rec.label;
+  const rcTrend = rec.trend;
+  const rcColor = rcScore >= 75 ? "var(--accent)" : rcScore >= 60 ? "var(--orange)" : "var(--red)";
+  const ringCirc = 2 * Math.PI * 28;
+  const ringOff = ringCirc - (rcScore / 100) * ringCirc;
+  const trendIcon = rcTrend > 0 ? "↑" : rcTrend < 0 ? "↓" : "→";
+  const trendColor = rcTrend > 0 ? "var(--accent)" : rcTrend < 0 ? "var(--red)" : "var(--text-secondary)";
+  html += `
+  <div class="tr-section">
+    <div class="rr-hero">
+      <div class="rr-hero-ring">
+        <svg viewBox="0 0 72 72">
+          <circle class="rr-ring-bg" cx="36" cy="36" r="28"/>
+          <circle class="rr-ring-fill" cx="36" cy="36" r="28" stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" style="stroke:${rcColor}"/>
+        </svg>
+        <span class="rr-ring-text" style="color:${rcColor}">${rcScore}</span>
+      </div>
+      <div class="rr-hero-body">
+        <div class="rr-hero-top">
+          <span class="rr-hero-label">${rcLabel}</span>
+          ${rcTrend !== null ? `<span class="rr-hero-trend" style="color:${trendColor}">${trendIcon} ${Math.abs(rcTrend)}</span>` : ""}
+        </div>
+        <div class="rr-hero-message">${rec.coachMessage}</div>
+        <button class="rr-hero-cta" id="openReadinessBtn">View Recovery Details →</button>
+      </div>
+    </div>
+  </div>`;
+
+  // SECTION 1.4: Adaptive Profile badge + Command Center
+  if (coach.adaptive && coach.adaptive.profile) {
+    const riskColor = coach.adaptive.profile.riskLevel === "low" ? "var(--accent)" : coach.adaptive.profile.riskLevel === "medium" ? "var(--orange)" : "var(--red)";
+    const riskLabel = coach.adaptive.profile.riskLevel === "low" ? "Low Risk" : coach.adaptive.profile.riskLevel === "medium" ? "Medium Risk" : "High Risk";
+    html += `
+    <div class="tr-section">
+      <div class="tr-adaptive-strip">
+        <div class="tr-adaptive-risk" style="background:${riskColor}">${riskLabel}</div>
+        <div class="tr-adaptive-focus">Focus: ${ad.focus.label}</div>
+        <button class="tr-adaptive-cc-btn" id="openCommandCenterBtn">Overview →</button>
+      </div>
+    </div>`;
+  }
+
+  // SECTION 1.5: Goal Center (summary card)
+  const gcProfile = GoalCenter.load();
+  const hasGCGoal = GoalCenter.hasGoal(gcProfile);
+  const gcGoal = GoalCenter.getAll();
+  html += `
+  <div class="tr-section">
+    <button class="tr-goal-summary" id="openGoalCenterBtn">
+      <div class="tr-goal-summary-left">
+        <span class="tr-goal-summary-label">Goal Center</span>
+        <span class="tr-goal-summary-goal">${hasGCGoal ? GoalCenter.getGoalLabel() : "No Goal Set"}</span>
+      </div>
+      <div class="tr-goal-summary-right">
+        ${hasGCGoal && gcGoal.health ? `<span class="tr-goal-health-pill ${gcGoal.health.level}">${gcGoal.health.score}</span>` : `<span class="tr-goal-health-pill inactive">—</span>`}
+        <span class="tr-goal-summary-arrow">→</span>
+      </div>
+    </button>
+  </div>`;
+
+  // SECTION 1.6: Daily Check-In
+  html += renderWeightCheckInCard();
+
   // SECTION 2: Daily Scoreboard
   const nut = coach.nutrition;
   const proteinTarget = parseInt(nut.proteinTarget) || 150;
@@ -5044,10 +5324,98 @@ function renderTrainerTab() {
     </div>
   </div>`;
 
-  // SECTION 3: Coach Insights
+  // SECTION 2.5: Challenges, Achievements & Streaks
+  const cas = coach.cas;
+  if (cas) {
+    const dcLabel = cas.challenges.daily ? cas.challenges.daily.label : "";
+    const dcProgress = cas.challenges.daily ? cas.challenges.daily.progress : 0;
+    const dcTarget = cas.challenges.daily ? cas.challenges.daily.target : 0;
+    const dcDone = cas.challenges.daily ? cas.challenges.daily.completed : false;
+    const dcIcon = cas.challenges.daily ? cas.challenges.daily.icon : "🎯";
+    const dcPct = dcTarget > 0 ? Math.min(100, Math.round((dcProgress / dcTarget) * 100)) : 0;
+
+    const topStreak = Object.entries(cas.streak)
+      .map(([k, v]) => ({ key: k, ...v }))
+      .sort((a, b) => b.current - a.current)[0];
+
+    const recentAch = cas.achievements.new.length > 0
+      ? cas.achievements.new[cas.achievements.new.length - 1]
+      : cas.achievements.count > 0
+        ? (() => { const a = ACHIEVEMENT_DB?.find(ad => ad.id === cas.achievements.unlocked.slice(-1)[0]?.id); return a || null; })()
+        : null;
+
+    html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Challenges & Achievements</span></div>
+    <div class="tr-cas-grid">
+      <button class="tr-cas-card" id="openChallengesBtn">
+        <div class="tr-cas-card-icon">
+          <div class="tr-cas-progress-ring">
+            <svg width="44" height="44" viewBox="0 0 44 44">
+              <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="3" opacity="0.3" />
+              <circle cx="22" cy="22" r="18" fill="none" stroke="${dcDone ? "var(--accent)" : "var(--blue)"}" stroke-width="3" stroke-linecap="round"
+                stroke-dasharray="113.1" stroke-dashoffset="${dcDone ? 0 : 113.1 - (dcPct / 100) * 113.1}"
+                transform="rotate(-90 22 22)" />
+            </svg>
+            <span class="tr-cas-ring-label">${dcDone ? "✓" : dcPct + "%"}</span>
+          </div>
+        </div>
+        <div class="tr-cas-card-body">
+          <div class="tr-cas-card-title">Today's Challenge</div>
+          <div class="tr-cas-card-desc">${dcDone ? "Completed! " + dcLabel : dcLabel + " — " + dcProgress + "/" + dcTarget}</div>
+        </div>
+        <span class="tr-cas-card-action">→</span>
+      </button>
+      <button class="tr-cas-card" id="openStreaksBtn">
+        <div class="tr-cas-card-icon">
+          <span class="tr-cas-icon-label">${topStreak ? topStreak.current : 0}<span class="tr-cas-icon-unit">d</span></span>
+        </div>
+        <div class="tr-cas-card-body">
+          <div class="tr-cas-card-title">Best Streak</div>
+          <div class="tr-cas-card-desc">${topStreak ? topStreak.key.charAt(0).toUpperCase() + topStreak.key.slice(1) : "No data yet"}</div>
+        </div>
+        <span class="tr-cas-card-action">→</span>
+      </button>
+      <button class="tr-cas-card" id="openAchievementsBtn">
+        <div class="tr-cas-card-icon">
+          <span class="tr-cas-icon-label" style="font-size:18px">${cas.achievements.count}</span>
+        </div>
+        <div class="tr-cas-card-body">
+          <div class="tr-cas-card-title">Achievements</div>
+          <div class="tr-cas-card-desc">${cas.achievements.count}/${cas.achievements.total} earned</div>
+        </div>
+        <span class="tr-cas-card-action">→</span>
+      </button>
+    </div>
+    ${cas.xp ? `<div class="tr-cas-xp-bar"><div class="tr-cas-xp-info"><span>Level ${cas.xp.level} · ${cas.xp.title}</span><span>${cas.xp.xp}/${cas.xp.xpNeeded} XP</span></div><div class="tr-cas-xp-track"><div class="tr-cas-xp-fill" style="width:${cas.xp.xpNeeded > 0 ? (cas.xp.xp / cas.xp.xpNeeded) * 100 : 0}%"></div></div></div>` : ""}
+  </div>`;
+  }
+
+  // SECTION 3: Coach Insights (adaptive)
+  let adaptiveFocusHtml = "";
+  let adaptiveAlertsHtml = "";
+  if (ad && ad.focus && ad.focus.area && ad.focus.area !== "maintain") {
+    adaptiveFocusHtml = `<div class="ad-focus-card">
+      <div class="ad-focus-label">Primary Focus</div>
+      <div class="ad-focus-area">${ad.focus.label}</div>
+      <div class="ad-focus-msg">${ad.focus.message}</div>
+      ${ad.focus.improvement ? `<div class="ad-focus-action">${ad.focus.improvement}</div>` : ""}
+    </div>`;
+  }
+  if (ad && ad.alerts && ad.alerts.length > 0) {
+    const activeAlerts = ad.alerts.filter((a) => a.severity !== "low");
+    if (activeAlerts.length > 0) {
+      adaptiveAlertsHtml = activeAlerts.slice(0, 3).map((a) => {
+        const severityIcon = a.severity === "critical" ? "🔴" : a.severity === "high" ? "🟠" : "🟡";
+        return `<div class="ad-alert ad-alert-${a.severity}"><span class="ad-alert-icon">${severityIcon}</span><span class="ad-alert-text">${a.text}</span></div>`;
+      }).join("");
+    }
+  }
   html += `
   <div class="tr-section">
     <div class="tr-section-header"><span class="tr-section-title">Coach Insights</span></div>
+    ${adaptiveFocusHtml}
+    ${adaptiveAlertsHtml ? `<div class="ad-alerts">${adaptiveAlertsHtml}</div>` : ""}
     <div class="tr-insights">${ins.insights.map(i => {
       return `<div class="tr-insight ${insightClass(i.type)}"><span class="tr-insight-icon">${insightIcon(i.type)}</span><span class="tr-insight-text">${i.text}</span></div>`;
     }).join("")}</div>
@@ -5078,29 +5446,37 @@ function renderTrainerTab() {
   html += `
   <div class="tr-section">
     <div class="tr-section-header"><span class="tr-section-title">What's holding you back?</span></div>
-    <input type="text" class="tr-problem-search" id="problemSearchInput" placeholder="Search a problem..." />
+    <input type="text" class="tr-problem-search" id="problemSearchInput" placeholder="Search solutions..." />
     <div class="tr-problems" id="trainerProblemCards">
       ${problems.map(p => `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`).join("")}
     </div>
-    <button class="tr-view-all-btn" id="viewAllProblemsBtn">View All Problems →</button>
+    <button class="tr-view-all-btn" id="viewAllProblemsBtn">View All Solutions →</button>
   </div>`;
 
   // SECTION 6: Learning Hub
+  const lhProgress = getLearningProgress();
+  const lhTotal = LESSON_DATABASE.length;
+  const lhDone = lhProgress.completed.length;
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Learning Hub</span></div>
+    <div class="tr-section-header"><span class="tr-section-title">Learning Hub</span><button class="tr-section-action" id="openLearningHubBtn">View All</button></div>
+    <div class="lh-home-summary"><span class="lh-home-pct">${lhTotal > 0 ? Math.round((lhDone / lhTotal) * 100) : 0}% Complete</span><span class="lh-home-count">${lhDone}/${lhTotal} lessons</span></div>
     <div class="tr-learn">
-      ${edu.categories.map((l, i) => `<div class="tr-learn-card" style="--card-accent:${learnColors[i % learnColors.length]}"><div class="tr-learn-card-top"><span class="tr-learn-icon">📖</span></div><div class="tr-learn-card-body"><div class="tr-learn-name">${l.name}</div><div class="tr-learn-meta"><span>${l.lessons} Lessons</span><span>${l.level.charAt(0).toUpperCase() + l.level.slice(1)}</span></div></div></div>`).join("")}
+      ${LESSON_CATEGORIES.slice(0, 6).map(c => {
+        const catDone = c.lessons.filter(id => lhProgress.completed.includes(id)).length;
+        return `<button class="tr-learn-card lh-cat-home-btn" data-category-id="${c.id}" style="--card-accent:${c.color}"><div class="tr-learn-card-top"><span class="tr-learn-icon">${c.icon}</span></div><div class="tr-learn-card-body"><div class="tr-learn-name">${c.name}</div><div class="tr-learn-meta"><span>${catDone}/${c.lessons.length}</span><span>${c.lessons.filter(id => getLessonById(id))[0] ? getLessonById(c.lessons[0]).difficulty : ""}</span></div></div></button>`;
+      }).join("")}
     </div>
   </div>`;
 
   // SECTION 7: Exercise Encyclopedia
+  const previewExs = EXERCISE_DATABASE.slice(0, 6);
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Exercise Encyclopedia</span></div>
-    <input type="text" class="tr-problem-search" placeholder="Search exercise..." readonly />
-    <div class="tr-encyclopedia">
-      ${edu.popularExercises.map(e => `<button class="tr-ex-card"><div class="tr-ex-name">${e.name}</div><div class="tr-ex-meta"><span>${e.muscle}</span><span>${e.difficulty}</span><span>${e.equipment}</span></div></button>`).join("")}
+    <div class="tr-section-header"><span class="tr-section-title">Exercise Encyclopedia</span><button class="tr-section-action" id="eeViewAllBtn">View All</button></div>
+    <input type="text" class="tr-problem-search" id="eeHomeSearch" placeholder="Search exercise..." autocomplete="off" />
+    <div class="tr-encyclopedia" id="eeHomeGrid">
+      ${previewExs.map(e => `<button class="tr-ex-card" data-ee-id="${e.id}"><div class="tr-ex-name">${e.name}</div><div class="tr-ex-meta"><span>${e.category || "General"}</span><span>${e.difficulty || "Intermediate"}</span><span>${e.equipment || "Any"}</span></div></button>`).join("")}
     </div>
   </div>`;
 
@@ -5109,7 +5485,7 @@ function renderTrainerTab() {
   const wColor = wr.assessment.score === "excellent" ? "var(--accent)" : wr.assessment.score === "good" ? "var(--orange)" : "var(--red)";
   html += `
   <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Weekly Report</span></div>
+    <div class="tr-section-header"><span class="tr-section-title">Weekly Report</span><button class="tr-section-action" id="viewFullWeeklyReport">Full Report →</button></div>
     <div class="tr-weekly">
       <div class="tr-weekly-header">
         <span class="tr-weekly-assessment" style="color:${wColor}">${wr.assessment.label}</span>
@@ -5129,7 +5505,7 @@ function renderTrainerTab() {
   const mr = rep.monthly;
   html += `
   <div class="tr-section tr-section-last">
-    <div class="tr-section-header"><span class="tr-section-title">Monthly Analysis</span></div>
+    <div class="tr-section-header"><span class="tr-section-title">Monthly Analysis</span><button class="tr-section-action" id="viewFullMonthlyReport">Full Analysis →</button></div>
     <div class="tr-monthly">
       <div class="tr-monthly-grid">
         <div class="tr-monthly-item"><span class="tr-monthly-label">Workouts</span><span class="tr-monthly-value">${mr.workouts}</span></div>
@@ -5141,6 +5517,28 @@ function renderTrainerTab() {
         <div class="tr-monthly-coach-summary">${gs.goal === "build-muscle" ? "You're building size. Keep protein high and train progressively." : gs.goal === "lose-fat" ? "Fat loss is a marathon. Trust the deficit, stay patient." : gs.goal === "strength" ? "Strength gains take time. Focus on technique and progressive overload." : "Great work staying consistent. Keep showing up."}</div>
       </div>` : `<div class="tr-empty-card"><div class="tr-empty-card-content">Log your body weight to unlock monthly analysis.</div></div>`}
     </div>
+  </div>`;
+
+  // SECTION 10: Program Review
+  html += `
+  <div class="tr-section">
+    <div class="tr-section-header"><span class="tr-section-title">Program Review</span><button class="tr-section-action" id="viewProgramReviewBtn">Full Review →</button></div>
+    <div class="pr-card">
+      <div class="pr-card-header">
+        <span class="pr-card-title">${gs.goalLabel || "Current"} Program</span>
+        <span class="pr-card-badge" id="prCardBadge">Loading...</span>
+      </div>
+      <div class="pr-card-preview" id="prCardPreview">Running 4-week review...</div>
+      <div class="pr-card-footer">
+        <span class="pr-card-meta">Reviews your goal progress, training effectiveness, recovery, and nutrition</span>
+      </div>
+    </div>
+  </div>`;
+
+  // SECTION 11: Report History
+  html += `
+  <div class="tr-section tr-section-last">
+    <button class="tr-view-all-btn" id="viewAllReportsBtn">View All Reports →</button>
   </div>`;
 
   html += `</div>`;
@@ -5175,6 +5573,11 @@ function renderTrainerTab() {
 
   container.innerHTML = html;
 
+  // First 7 Days banner (only when Trainer has data)
+  if (sessions.length && curWeight && typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    renderFirst7DaysBanner(container);
+  }
+
   // Problem Solver search listener (fresh input each render)
   const searchInput = document.getElementById("problemSearchInput");
   if (searchInput) {
@@ -5197,6 +5600,92 @@ function renderTrainerTab() {
   }
 
   // Problem card clicks and View All handled by document-level delegation (in init)
+
+  // Learning Hub: View All
+  document.getElementById("openLearningHubBtn")?.addEventListener("click", () => renderLearningHub());
+
+  // Learning Hub: category card clicks (home page)
+  container.querySelectorAll(".lh-cat-home-btn").forEach(btn => {
+    btn.addEventListener("click", () => renderLessonCategory(btn.dataset.categoryId));
+  });
+
+  // Exercise Encyclopedia: View All
+  document.getElementById("eeViewAllBtn")?.addEventListener("click", () => renderExerciseEncyclopedia());
+
+  // Exercise Encyclopedia: home search
+  const eeHomeSearch = document.getElementById("eeHomeSearch");
+  if (eeHomeSearch) {
+    eeHomeSearch.addEventListener("input", (e) => {
+      const q = e.target.value.trim().toLowerCase();
+      const grid = document.getElementById("eeHomeGrid");
+      if (!grid) return;
+      if (!q) {
+        grid.innerHTML = EXERCISE_DATABASE.slice(0, 6).map(ex => `<button class="tr-ex-card" data-ee-id="${ex.id}"><div class="tr-ex-name">${ex.name}</div><div class="tr-ex-meta"><span>${ex.category || "General"}</span><span>${ex.difficulty || "Intermediate"}</span><span>${ex.equipment || "Any"}</span></div></button>`).join("");
+      } else {
+        const filtered = EXERCISE_DATABASE.filter(ex => {
+          const text = (ex.name + " " + ex.category + " " + ex.equipment + " " + ex.movementType + " " + ex.primaryMuscles.join(" ") + " " + ex.secondaryMuscles.join(" ") + " " + ex.keywords.join(" ")).toLowerCase();
+          return text.includes(q);
+        });
+        grid.innerHTML = filtered.length > 0 ? filtered.map(ex => `<button class="tr-ex-card" data-ee-id="${ex.id}"><div class="tr-ex-name">${ex.name}</div><div class="tr-ex-meta"><span>${ex.category || "General"}</span><span>${ex.difficulty || "Intermediate"}</span><span>${ex.equipment || "Any"}</span></div></button>`).join("") : `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">No exercises found</div>`;
+      }
+      grid.querySelectorAll("[data-ee-id]").forEach(btn => {
+        btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
+      });
+    });
+  }
+
+  // Exercise Encyclopedia: home card clicks
+  container.querySelectorAll("#eeHomeGrid [data-ee-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
+  });
+
+  // Weekly / Monthly Report: full pages
+  document.getElementById("viewFullWeeklyReport")?.addEventListener("click", () => showTrainerScreen("weekly-report"));
+  document.getElementById("viewFullMonthlyReport")?.addEventListener("click", () => showTrainerScreen("monthly-report"));
+  document.getElementById("viewAllReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
+
+  // Goal Center: open
+  document.getElementById("openReadinessBtn")?.addEventListener("click", () => showTrainerScreen("readiness"));
+  document.getElementById("openGoalCenterBtn")?.addEventListener("click", openGoalCenter);
+
+  // Weight Check-In
+  document.getElementById("wiCheckInBtn")?.addEventListener("click", () => {
+    const entry = latestWeight();
+    document.getElementById("wlSheetWeight").value = entry ? entry.weight : "";
+    updateWeightDisplay();
+    document.getElementById("weightLogSheet").classList.remove("is-hidden");
+    setTimeout(() => document.getElementById("wlSheetWeight").select(), 150);
+  });
+
+  // CAS buttons
+  document.getElementById("openChallengesBtn")?.addEventListener("click", () => showTrainerScreen("challenges"));
+  document.getElementById("openStreaksBtn")?.addEventListener("click", () => showTrainerScreen("streaks"));
+  document.getElementById("openAchievementsBtn")?.addEventListener("click", () => showTrainerScreen("achievements"));
+
+  // Command Center
+  document.getElementById("openCommandCenterBtn")?.addEventListener("click", () => showTrainerScreen("command-center"));
+
+  // Program Review
+  const prBtn = document.getElementById("viewProgramReviewBtn");
+  if (prBtn) prBtn.addEventListener("click", () => showTrainerScreen("program-review"));
+
+  // Populate Program Review card preview
+  if (typeof ProgramReviewEngine !== "undefined") {
+    try {
+      const prReview = ProgramReviewEngine.runReview();
+      const cardBadge = document.getElementById("prCardBadge");
+      const cardPreview = document.getElementById("prCardPreview");
+      if (cardBadge) {
+        cardBadge.textContent = prReview.outcome.label;
+        cardBadge.style.color = prReview.outcome.color;
+      }
+      if (cardPreview) {
+        cardPreview.textContent = prReview.coachSummary;
+      }
+    } catch (e) {
+      // Engine not ready
+    }
+  }
 }
 
 function renderCalendarHero() {
@@ -5313,7 +5802,70 @@ function showTrainerScreen(screen, searchQuery) {
     return;
   }
   if (screen === "detail") {
-    return; // renderProblemDetail handles its own container
+    return;
+  }
+  if (screen === "learning") {
+    renderLearningHub();
+    return;
+  }
+  if (screen === "learning-category") {
+    renderLessonCategory(searchQuery);
+    return;
+  }
+  if (screen === "ee") {
+    renderExerciseEncyclopedia();
+    return;
+  }
+  if (screen === "ee-detail") {
+    return;
+  }
+  if (screen === "goal-center") {
+    renderGoalCenter();
+    return;
+  }
+  if (screen === "create-goal") {
+    renderCreateGoalFlow();
+    return;
+  }
+  if (screen === "weight-intelligence") {
+    renderWeightIntelligence();
+    return;
+  }
+  if (screen === "readiness") {
+    renderReadinessPage();
+    return;
+  }
+  if (screen === "weekly-report") {
+    renderWeeklyReportPage();
+    return;
+  }
+  if (screen === "monthly-report") {
+    renderMonthlyReportPage();
+    return;
+  }
+  if (screen === "report-history") {
+    renderReportHistory();
+    return;
+  }
+  if (screen === "challenges") {
+    renderChallengesPage();
+    return;
+  }
+  if (screen === "achievements") {
+    renderAchievementsPage();
+    return;
+  }
+  if (screen === "streaks") {
+    renderStreaksPage();
+    return;
+  }
+  if (screen === "command-center") {
+    renderCoachCommandCenter();
+    return;
+  }
+  if (screen === "program-review") {
+    renderProgramReview();
+    return;
   }
 }
 
@@ -5334,22 +5886,31 @@ function filterProblems(query) {
   return results;
 }
 
-function renderProblemList(query) {
+function renderProblemList(query, activeFilter) {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
-  const problems = query ? filterProblems(query) : PROBLEM_DATABASE;
+  let problems = query ? filterProblems(query) : PROBLEM_DATABASE;
+  if (activeFilter && activeFilter !== "All") {
+    problems = problems.filter(p => p.category === activeFilter);
+  }
+  const categories = ["All", "Fat Loss", "Muscle Gain", "Strength", "Recovery", "Nutrition", "Programming"];
 
   let html = `<div class="tr-page"><div class="tr-section">`;
-  html += `<div class="tr-section-header"><button class="tr-back-btn" id="problemListBackBtn">← Back</button><span class="tr-section-title">Problem Database</span></div>`;
-  html += `<input type="text" class="tr-problem-search" id="problemListSearch" placeholder="Search problems..." value="${query || ""}" />`;
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="problemListBackBtn">← Back</button></div>`;
+  html += `<div class="tr-cs-header">
+    <div class="tr-cs-title">Coach Solutions</div>
+    <div class="tr-cs-subtitle">Find answers to common training, fat loss, muscle gain, recovery and nutrition problems.</div>
+  </div>`;
+  html += `<input type="text" class="tr-problem-search" id="problemListSearch" placeholder="Search solutions..." value="${query || ""}" />`;
+  html += `<div class="tr-cs-filters">${categories.map(c => `<button class="tr-cs-filter${c === (activeFilter || "All") ? " is-active" : ""}" data-filter="${c}">${c}</button>`).join("")}</div>`;
   if (problems.length === 0) {
-    html += `<div class="tr-empty-search"><div class="tr-empty-search-icon">🔍</div><div class="tr-empty-search-text">No problems found matching "${query}"</div><button class="tr-view-all-btn" id="clearSearchBtn">Clear Search</button></div>`;
+    html += `<div class="tr-empty-search"><div class="tr-empty-search-icon">🔍</div><div class="tr-empty-search-text">No solutions found matching "${query || ""}"</div><button class="tr-view-all-btn" id="clearSearchBtn">Clear Search</button></div>`;
   } else {
-    html += `<div style="font-size:12px;color:var(--text-secondary);margin-bottom:10px;">${problems.length} problem${problems.length !== 1 ? "s" : ""} found</div>`;
+    html += `<div class="tr-cs-count">${problems.length} solution${problems.length !== 1 ? "s" : ""}</div>`;
     html += `<div class="tr-problems">`;
     html += problems.map(p => {
       const icon = p.id.includes("weight") ? "⚖️" : p.id.includes("muscle") || p.id.includes("grow") ? "💪" : p.id.includes("bench") || p.id.includes("squat") || p.id.includes("deadlift") || p.id.includes("lockout") || p.id.includes("grip") ? "🏋️" : p.id.includes("sore") || p.id.includes("recover") || p.id.includes("sleep") || p.id.includes("tired") || p.id.includes("energy") || p.id.includes("pain") || p.id.includes("burnout") ? "😴" : p.id.includes("split") || p.id.includes("program") || p.id.includes("progression") || p.id.includes("beginner") ? "📋" : p.id.includes("hungry") || p.id.includes("protein") || p.id.includes("calorie") || p.id.includes("eating") || p.id.includes("diet") || p.id.includes("nutrition") ? "🥗" : p.id.includes("motivation") || p.id.includes("anxiety") || p.id.includes("consistent") || p.id.includes("progress") ? "🎯" : "❓";
-      return `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${icon}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.category}</span></span></button>`;
+      return `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${icon}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-category">${p.category}</span></span></button>`;
     }).join("");
     html += `</div>`;
   }
@@ -5363,9 +5924,18 @@ function renderProblemList(query) {
   const listSearch = document.getElementById("problemListSearch");
   if (listSearch) {
     listSearch.addEventListener("input", (e) => {
-      renderProblemList(e.target.value.trim());
+      renderProblemList(e.target.value.trim(), activeFilter);
     });
   }
+
+  // Category filter clicks
+  container.querySelectorAll(".tr-cs-filter").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const filter = btn.dataset.filter;
+      const currentSearch = document.getElementById("problemListSearch")?.value || "";
+      renderProblemList(currentSearch, filter === "All" ? null : filter);
+    });
+  });
 
   document.getElementById("clearSearchBtn")?.addEventListener("click", () => renderProblemList());
 
@@ -5419,6 +5989,8 @@ function renderProblemDetail(problemId) {
   const dc = coach.daily;
   const gs = coach.goalStrategy;
   const rec = coach.recovery;
+  const ad = coach.adaptive;
+  const rep = coach.reports;
   const weightTrend = getWeightTrend();
   const proteinData = getProteinCompliance();
   const sessions = (state.sessions || []).filter(s => s.finishedAt);
@@ -5431,6 +6003,8 @@ function renderProblemDetail(problemId) {
     return d >= weekAgo && d <= now;
   });
   const workoutCompletion = weekSessions.length;
+  const profile = ad && ad.profile;
+  const wrFull = rep.weekly && rep.weekly.full;
 
   let html = `<div class="tr-page"><div class="tr-problem-detail">`;
 
@@ -5467,11 +6041,18 @@ function renderProblemDetail(problemId) {
     </div></div>`;
   }
 
-  // 6. Coach Analysis (uses real user data)
+  // 6. Coach Analysis (uses real user data + adaptive profile)
+  const csScore = wrFull ? wrFull.coachScore : 0;
+  const riskLabel = profile ? profile.riskLevel : null;
+  const focusLabel = ad && ad.focus ? ad.focus.label : null;
+  const csColor = csScore >= 80 ? "var(--accent)" : csScore >= 60 ? "var(--orange)" : "var(--red)";
+
   html += `<div class="tr-section"><div class="tr-section-header"><span class="tr-section-title" style="font-size:16px">Coach Analysis</span></div>
     <div class="tr-coach-analysis">
       <div class="tr-ca-grid">
         <div class="tr-ca-item"><span class="tr-ca-label">Your Goal</span><span class="tr-ca-value">${gs.goalLabel}</span></div>
+        <div class="tr-ca-item"><span class="tr-ca-label">Coach Score</span><span class="tr-ca-value" style="color:${csColor}">${csScore}${focusLabel ? ` · Focus: ${focusLabel}` : ""}</span></div>
+        ${riskLabel ? `<div class="tr-ca-item"><span class="tr-ca-label">Risk Level</span><span class="tr-ca-value" style="color:${riskLabel === "low" ? "var(--accent)" : riskLabel === "medium" ? "var(--orange)" : "var(--red)"}">${riskLabel.charAt(0).toUpperCase() + riskLabel.slice(1)}</span></div>` : ""}
         <div class="tr-ca-item"><span class="tr-ca-label">Weight Trend</span><span class="tr-ca-value ${weightTrend === "up" ? "tr-ca-negative" : weightTrend === "down" ? "tr-ca-positive" : ""}">${weightTrend === "not enough data" ? "—" : weightTrend === "stable" ? "Stable" : weightTrend === "up" ? "↑ Increasing" : "↓ Decreasing"}</span></div>
         <div class="tr-ca-item"><span class="tr-ca-label">Recovery</span><span class="tr-ca-value">${rec.score}/100 (${rec.status})</span></div>
         <div class="tr-ca-item"><span class="tr-ca-label">Workouts This Week</span><span class="tr-ca-value">${workoutCompletion}</span></div>
@@ -5502,6 +6083,8 @@ function renderProblemDetail(problemId) {
 
   html += `</div></div>`;
   container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
 
   // Back button
   document.getElementById("problemDetailBackBtn")?.addEventListener("click", () => showTrainerScreen("problems"));
@@ -5534,6 +6117,2231 @@ function openNewWorkoutGenerator() {
   document.getElementById("newWoGenerate")?.click();
 }
 
+// ===== LEARNING HUB V2 =====
+
+function getLearningProgress() {
+  try { return JSON.parse(localStorage.getItem(LH_PROGRESS_KEY)) || { completed: [], saved: [], streak: 0, lastRead: null }; }
+  catch { return { completed: [], saved: [], streak: 0, lastRead: null }; }
+}
+
+function saveLearningProgress(p) {
+  localStorage.setItem(LH_PROGRESS_KEY, JSON.stringify(p));
+}
+
+function getLessonById(id) {
+  return LESSON_DATABASE.find(l => l.id === id);
+}
+
+function getCategoryById(id) {
+  return LESSON_CATEGORIES.find(c => c.id === id);
+}
+
+function getGoalRelevance(lesson) {
+  const goal = GoalCenter.getGoalType();
+  const map = { "build-muscle": "muscle", "lose-fat": "fat", "strength": "strength", "general": "general", "athletic": "athletic" };
+  return lesson.goalRelevance[goal] || "medium";
+}
+
+function getRecommendedLessons() {
+  const goal = GoalCenter.getGoalType();
+  const progress = getLearningProgress();
+  const weightTrend = (state.weightLog || []).length > 2 ? getWeightTrend() : null;
+  const weekCount = (state.sessions || []).filter(s => {
+    if (!s.finishedAt) return false;
+    const d = parseDateKey(s.dateKey);
+    if (!d) return false;
+    const weekAgo = new Date(); weekAgo.setDate(weekAgo.getDate() - 7);
+    return d >= weekAgo;
+  }).length;
+
+  // Get adaptive profile focus area
+  let focusArea = null;
+  try {
+    const coach = CoachEngine.runAll();
+    if (coach.adaptive && coach.adaptive.focus) focusArea = coach.adaptive.focus.area;
+  } catch (e) { /* ignore */ }
+
+  const focusLessonMap = {
+    protein: ["nutrition-fundamentals", "protein-timing", "calorie-tracking"],
+    recovery: ["recovery-basics", "sleep-optimization", "overtraining"],
+    workout: ["training-frequency", "programming-basics", "what-matters-most"],
+    steps: ["cardio-for-fat-loss", "activity-tracking", "walking-for-fat-loss"],
+    tracking: ["tracking-accuracy", "goal-setting", "calorie-deficit"],
+    weight: ["nutrition-fundamentals", "calorie-tracking", "fat-loss-plateaus"],
+  };
+
+  let scored = LESSON_DATABASE.map(l => {
+    let score = 0;
+    const rel = getGoalRelevance(l);
+    if (rel === "high") score += 10;
+    else if (rel === "medium") score += 5;
+    if (!progress.completed.includes(l.id)) score += 8;
+    if (goal === "lose-fat" && l.category === "Fat Loss") score += 8;
+    if (goal === "lose-fat" && l.category === "Cardio") score += 6;
+    if (goal === "lose-fat" && l.category === "Nutrition") score += 6;
+    if (goal === "build-muscle" && l.category === "Muscle Building") score += 8;
+    if (goal === "build-muscle" && l.category === "Strength Fundamentals") score += 6;
+    if (goal === "strength" && l.category === "Strength Fundamentals") score += 8;
+    if (weekCount < 2 && l.id === "what-matters-most") score += 10;
+    if (weightTrend === "up" && goal === "lose-fat" && l.id === "calorie-deficit") score += 8;
+    if (weightTrend === "stable" && goal === "lose-fat" && l.id === "fat-loss-plateaus") score += 8;
+
+    // Adaptive focus area boost
+    if (focusArea && focusLessonMap[focusArea]) {
+      if (focusLessonMap[focusArea].includes(l.id)) score += 12;
+    }
+
+    return { lesson: l, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 6).map(s => s.lesson);
+}
+
+function renderLearningHub() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const progress = getLearningProgress();
+  const recommendations = getRecommendedLessons();
+  const totalLessons = LESSON_DATABASE.length;
+  const completedCount = progress.completed.length;
+
+  let html = `<div class="tr-page"><div class="tr-section">`;
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="lhBackBtn">← Back</button><span class="tr-section-title">Learning Hub</span></div>`;
+
+  // Progress summary
+  const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
+  html += `<div class="lh-progress"><div class="lh-progress-ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="none" stroke="var(--border)" stroke-width="4"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="${138.23 - (pct / 100) * 138.23}" transform="rotate(-90 28 28)"/></svg><span class="lh-progress-pct">${pct}%</span></div><div class="lh-progress-info"><div class="lh-progress-count">${completedCount} / ${totalLessons} Lessons</div><div class="lh-progress-streak">🔥 ${progress.streak} Day Streak</div></div></div>`;
+
+  // Recommended For You
+  if (recommendations.length > 0) {
+    html += `<div class="lh-section"><div class="lh-section-title">Recommended For You</div><div class="lh-rec-cards">`;
+    html += recommendations.map(l => `<button class="lh-rec-card" data-lesson-id="${l.id}"><span class="lh-rec-icon">${getLessonIcon(l)}</span><span class="lh-rec-body"><span class="lh-rec-title">${l.title}</span><span class="lh-rec-meta">${l.category} · ${l.readingTime}</span></span></button>`).join("");
+    html += `</div></div>`;
+  }
+
+  // Categories grid
+  html += `<div class="lh-section"><div class="lh-section-title">All Categories</div><div class="lh-categories">`;
+  html += LESSON_CATEGORIES.map(c => {
+    const catLessonCount = c.lessons.length || 1;
+    const catDone = c.lessons.filter(id => progress.completed.includes(id)).length;
+    const catPct = catLessonCount > 0 ? Math.round((catDone / catLessonCount) * 100) : 0;
+    return `<button class="lh-cat-card" data-category-id="${c.id}"${c.color ? ` style="--cat-color:${c.color}"` : ""}><div class="lh-cat-top"><span class="lh-cat-icon">${c.icon || "📖"}</span></div><div class="lh-cat-body"><div class="lh-cat-name">${c.name || "Category"}</div><div class="lh-cat-progress-bar"><div class="lh-cat-progress-fill" style="width:${catPct}%"></div></div><div class="lh-cat-meta">${catDone}/${catLessonCount} · ${catPct}%</div></div></button>`;
+  }).join("");
+  html += `</div></div>`;
+  html += `</div></div>`;
+
+  container.innerHTML = html;
+
+  document.getElementById("lhBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+
+  container.querySelectorAll("[data-lesson-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderLessonDetail(btn.dataset.lessonId));
+  });
+  container.querySelectorAll("[data-category-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderLessonCategory(btn.dataset.categoryId));
+  });
+}
+
+function getLessonIcon(lesson) {
+  const cat = LESSON_CATEGORIES.find(c => c.lessons.includes(lesson.id));
+  return cat ? cat.icon : "📖";
+}
+
+function renderLessonCategory(categoryId) {
+  const cat = getCategoryById(categoryId);
+  if (!cat) return;
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const progress = getLearningProgress();
+  const lessons = cat.lessons.map(id => getLessonById(id)).filter(Boolean);
+  const catDone = lessons.filter(l => progress.completed.includes(l.id)).length;
+
+  let html = `<div class="tr-page"><div class="tr-section">`;
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="lhCatBackBtn">← Back</button></div>`;
+  html += `<div class="lh-cat-header"><span class="lh-cat-header-icon">${cat.icon}</span><div><div class="lh-cat-header-name">${cat.name}</div><div class="lh-cat-header-progress">${catDone}/${lessons.length} lessons completed</div></div></div>`;
+  html += `<div class="lh-lesson-list">`;
+  lessons.forEach(l => {
+    const done = progress.completed.includes(l.id);
+    const saved = progress.saved.includes(l.id);
+    html += `<button class="lh-lesson-card" data-lesson-id="${l.id}"><div class="lh-lesson-left"><div class="lh-lesson-check${done ? " is-done" : ""}">${done ? "✓" : "○"}</div><div class="lh-lesson-info"><div class="lh-lesson-title">${l.title}</div><div class="lh-lesson-meta">${l.difficulty} · ${l.readingTime}${saved ? ' · <span style="color:var(--accent)">Saved</span>' : ""}</div></div></div><span class="lh-lesson-arrow">→</span></button>`;
+  });
+  html += `</div></div></div>`;
+  container.innerHTML = html;
+
+  document.getElementById("lhCatBackBtn")?.addEventListener("click", () => renderLearningHub());
+  container.querySelectorAll("[data-lesson-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderLessonDetail(btn.dataset.lessonId));
+  });
+}
+
+function renderLessonDetail(lessonId) {
+  const lesson = getLessonById(lessonId);
+  if (!lesson) return;
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const progress = getLearningProgress();
+  const goal = GoalCenter.getGoalType();
+  const goalLabel = goal === "build-muscle" ? "Muscle Gain" : goal === "lose-fat" ? "Fat Loss" : goal === "strength" ? "Strength" : goal === "athletic" ? "Athletic" : "General";
+  const isCompleted = progress.completed.includes(lesson.id);
+  const isSaved = progress.saved.includes(lesson.id);
+  const goalRel = getGoalRelevance(lesson);
+  const goalRelLabel = goalRel === "high" ? "Highly Relevant For Your Goal" : goalRel === "medium" ? "Relevant For Your Goal" : "Supplementary Content";
+
+  let html = `<div class="tr-page"><div class="lh-lesson-detail">`;
+
+  // Back
+  html += `<div class="tr-section-header"><button class="tr-back-btn" id="lhDetailBackBtn">← Back</button></div>`;
+
+  // SECTION 1: Hero
+  html += `<div class="lh-detail-hero">
+    <div class="lh-hero-category">${lesson.category}</div>
+    <div class="lh-hero-title">${lesson.title}</div>
+    <div class="lh-hero-meta-row">
+      <span class="lh-hero-meta-tag">${lesson.difficulty}</span>
+      <span class="lh-hero-meta-tag">${lesson.readingTime} Read</span>
+      <span class="lh-hero-meta-tag lh-hero-relevance">${goalRelLabel}</span>
+    </div>
+  </div>`;
+
+  // SECTION 2: Simple Explanation
+  html += `<div class="lh-section"><div class="lh-detail-section-title">What Is It?</div>
+    <div class="lh-detail-text">${lesson.description}</div>
+  </div>`;
+
+  // SECTION 3: Why It Matters
+  html += `<div class="lh-section"><div class="lh-detail-section-title">Why It Matters</div>
+    <div class="lh-detail-text">${lesson.whyItMatters}</div>
+  </div>`;
+
+  // SECTION 4: Real Life Example
+  html += `<div class="lh-section"><div class="lh-detail-section-title">Real Life Example</div>
+    <div class="lh-detail-example">${lesson.realLifeExample}</div>
+  </div>`;
+
+  // SECTION 5: Common Mistakes
+  if (lesson.commonMistakes && lesson.commonMistakes.length > 0) {
+    html += `<div class="lh-section"><div class="lh-detail-section-title">Common Mistakes</div>
+      <div class="lh-detail-mistakes">${lesson.commonMistakes.map(m => `<div class="lh-mistake-item"><span class="lh-mistake-bullet">✕</span><span>${m}</span></div>`).join("")}</div>
+    </div>`;
+  }
+
+  // SECTION 6: Action Steps
+  if (lesson.actionSteps && lesson.actionSteps.length > 0) {
+    html += `<div class="lh-section"><div class="lh-detail-section-title">Action Steps</div>
+      <div class="lh-detail-actions">${lesson.actionSteps.map((a, i) => `<div class="lh-action-item"><span class="lh-action-check">${isCompleted ? "✓" : "☐"}</span><span>${a}</span></div>`).join("")}</div>
+    </div>`;
+  }
+
+  // SECTION 7: Coach Recommendation (personalized)
+  let coachText = lesson.coachRecommendation;
+  if (goal === "lose-fat") {
+    coachText = lesson.coachRecommendation + (goal === "lose-fat" && lesson.category !== "Fat Loss" && lesson.category !== "Cardio" ? ` Remember your fat loss goal — apply these principles while maintaining your calorie deficit.` : "");
+  } else if (goal === "build-muscle") {
+    coachText = lesson.coachRecommendation + (lesson.category !== "Muscle Building" ? ` For your muscle-building goal, prioritize applying these fundamentals alongside your hypertrophy training.` : "");
+  }
+  html += `<div class="lh-section"><div class="lh-detail-section-title">Coach Says</div>
+    <div class="lh-coach-box">${coachText}</div>
+  </div>`;
+
+  // SECTION 8: Related Lessons
+  if (lesson.relatedLessons && lesson.relatedLessons.length > 0) {
+    html += `<div class="lh-section"><div class="lh-detail-section-title">Related Lessons</div>
+      <div class="lh-related">${lesson.relatedLessons.map(id => {
+        const rl = getLessonById(id);
+        return rl ? `<button class="lh-related-card" data-lesson-id="${rl.id}"><span class="lh-related-icon">${getLessonIcon(rl)}</span><span class="lh-related-info"><span class="lh-related-title">${rl.title}</span><span class="lh-related-meta">${rl.readingTime}</span></span></button>` : "";
+      }).join("")}</div>
+    </div>`;
+  }
+
+  // Apply To My Plan button
+  if (lesson.applyAction) {
+    const applyLabel = lesson.applyAction.type === "protein" ? "Update Protein Target" : lesson.applyAction.type === "steps" ? "Update Step Target" : lesson.applyAction.type === "calories" ? "Update Calorie Target" : lesson.applyAction.type === "water" ? "Update Water Target" : "Apply To My Plan";
+    html += `<div class="lh-section"><button class="lh-apply-btn" id="lhApplyBtn" data-apply-type="${lesson.applyAction.type}">${applyLabel}</button></div>`;
+  }
+
+  // Bottom CTAs
+  html += `<div class="lh-detail-ctas">
+    <button class="lh-cta-btn ${isCompleted ? "is-done" : ""}" id="lhMarkBtn">${isCompleted ? "✓ Completed" : "Mark As Read"}</button>
+    <button class="lh-cta-btn lh-cta-secondary ${isSaved ? "is-done" : ""}" id="lhSaveBtn">${isSaved ? "Saved" : "Save For Later"}</button>
+  </div>`;
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+
+  // Back
+  document.getElementById("lhDetailBackBtn")?.addEventListener("click", () => {
+    const cat = LESSON_CATEGORIES.find(c => c.lessons.includes(lessonId));
+    cat ? renderLessonCategory(cat.id) : renderLearningHub();
+  });
+
+  // Mark as read
+  document.getElementById("lhMarkBtn")?.addEventListener("click", () => {
+    const p = getLearningProgress();
+    if (!p.completed.includes(lessonId)) {
+      p.completed.push(lessonId);
+      p.streak = (p.streak || 0) + 1;
+      p.lastRead = new Date().toISOString();
+      saveLearningProgress(p);
+      renderLessonDetail(lessonId);
+    }
+  });
+
+  // Save for later
+  document.getElementById("lhSaveBtn")?.addEventListener("click", () => {
+    const p = getLearningProgress();
+    if (p.saved.includes(lessonId)) {
+      p.saved = p.saved.filter(id => id !== lessonId);
+    } else {
+      p.saved.push(lessonId);
+    }
+    saveLearningProgress(p);
+    renderLessonDetail(lessonId);
+  });
+
+  // Apply to my plan
+  document.getElementById("lhApplyBtn")?.addEventListener("click", () => {
+    const type = document.getElementById("lhApplyBtn").dataset.applyType;
+    if (type === "protein") {
+      const w = (state.user && state.user.weight) || 70;
+      const g = GoalCenter.getGoalType();
+      const mult = g === "lose-fat" ? 2.2 : 2.0;
+      const target = Math.round(w * mult);
+      showToast(`Protein target set to ${target}g/day`);
+    } else if (type === "steps") {
+      showToast("Daily step target set to 10,000 steps");
+    } else if (type === "calories") {
+      showToast("Deficit target adjusted");
+    } else if (type === "water") {
+      const w = (state.user && state.user.weight) || 70;
+      const target = (w * 0.04).toFixed(1);
+      showToast(`Water target set to ${target}L/day`);
+    }
+  });
+
+  // Related lesson clicks
+  container.querySelectorAll("[data-lesson-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderLessonDetail(btn.dataset.lessonId));
+  });
+}
+
+// ===== EXERCISE ENCYCLOPEDIA V1 =====
+
+function getExerciseById(id) {
+  return EXERCISE_DATABASE.find(e => e.id === id);
+}
+
+function getRecommendedExercises() {
+  const goal = GoalCenter.getGoalType();
+  const goalMap = { "build-muscle": "buildMuscle", "lose-fat": "loseFat", "strength": "strength" };
+  const goalKey = goalMap[goal] || "buildMuscle";
+  const goalPriority = goal === "build-muscle" ? ["Muscle Gain", "Hypertrophy", "General Fitness"] : goal === "lose-fat" ? ["Fat Loss", "Endurance", "General Fitness"] : goal === "strength" ? ["Strength", "Athletic Performance", "General Fitness"] : ["General Fitness"];
+  let scored = EXERCISE_DATABASE.map(e => {
+    let score = 0;
+    const bestFor = e.whenToUse.bestFor || [];
+    if (bestFor.some(b => goalPriority.includes(b))) score += 6;
+    if (goalKey === "buildMuscle" && (e.ratings.hypertrophy || 0) >= 8) score += 4;
+    if (goalKey === "loseFat" && (e.ratings.fatLoss || 0) >= 8) score += 4;
+    if (goalKey === "strength" && (e.ratings.strength || 0) >= 8) score += 4;
+    if ((e.ratings.beginner || 0) >= 8) score += 2;
+    return { exercise: e, score };
+  });
+  scored.sort((a, b) => b.score - a.score);
+  return scored.slice(0, 6).map(s => s.exercise);
+}
+
+function getExerciseCategoryAbbr(cat) {
+  const map = { "Chest": "CH", "Back": "BK", "Shoulders": "SH", "Arms": "AR", "Legs": "LG", "Core": "CR", "Cardio": "CD" };
+  return map[cat] || "EX";
+}
+
+function renderExerciseEncyclopedia() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const goal = GoalCenter.getGoalType();
+  const recommendations = getRecommendedExercises();
+  const activeCat = "All";
+  const activeEquip = "All";
+
+  let html = `<div class="tr-page ee-page">`;
+
+  // Header
+  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="eeBackBtn">← Back</button><span class="tr-section-title">Exercise Encyclopedia</span></div>`;
+
+  // Search
+  html += `<div style="padding:8px 16px"><input type="text" class="ee-search" id="eeSearch" placeholder="Search exercises, muscles, equipment..." autocomplete="off" /></div>`;
+
+  // Category filters
+  html += `<div class="ee-filters" id="eeFilters">`;
+  html += EXERCISE_CATEGORIES.map(c => `<button class="ee-filter${c === activeCat ? " is-active" : ""}" data-ee-cat="${c}">${c}</button>`).join("");
+  html += `</div>`;
+
+  // Equipment filters
+  html += `<div class="ee-equipment-row" id="eeEquipmentFilters">`;
+  html += EXERCISE_EQUIPMENT_FILTERS.map(e => `<button class="ee-equipment-filter${e === activeEquip ? " is-active" : ""}" data-ee-equip="${e}">${e}</button>`).join("");
+  html += `</div>`;
+
+  // Recommendations
+  if (recommendations.length > 0) {
+    html += `<div class="ee-section"><div class="ee-section-title">Recommended For You</div>`;
+    html += `<div class="ee-rec-cards">`;
+    html += recommendations.map(e => `<button class="ee-rec-card" data-ee-id="${e.id}"><span class="ee-rec-icon" style="font-size:12px;font-weight:800;color:var(--accent);background:var(--surface-2);width:36px;height:36px;display:flex;align-items:center;justify-content:center;border-radius:10px">${getExerciseCategoryAbbr(e.category)}</span><span class="ee-rec-body"><span class="ee-rec-name">${e.name}</span><span class="ee-rec-meta">${e.primaryMuscles.join(", ")} · ${e.equipment}</span></span><span class="ee-rec-cat">${e.category}</span></button>`).join("");
+    html += `</div></div>`;
+  }
+
+  // Exercise grid header
+  html += `<div class="ee-count" id="eeCount">${EXERCISE_DATABASE.length} Exercises</div>`;
+  html += `<div class="ee-grid" id="eeGrid">`;
+  html += EXERCISE_DATABASE.map(e => renderEECard(e)).join("");
+  html += `</div>`;
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+
+  // Back button
+  document.getElementById("eeBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+
+  // Search listener
+  document.getElementById("eeSearch")?.addEventListener("input", (e) => {
+    filterEE(e.target.value.trim());
+  });
+
+  // Category filter clicks
+  document.querySelectorAll("[data-ee-cat]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-ee-cat]").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      filterEE(document.getElementById("eeSearch")?.value?.trim() || "");
+    });
+  });
+
+  // Equipment filter clicks
+  document.querySelectorAll("[data-ee-equip]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      document.querySelectorAll("[data-ee-equip]").forEach(b => b.classList.remove("is-active"));
+      btn.classList.add("is-active");
+      filterEE(document.getElementById("eeSearch")?.value?.trim() || "");
+    });
+  });
+
+  // Card clicks
+  container.querySelectorAll("[data-ee-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
+  });
+}
+
+function renderEECard(ex) {
+  return `<button class="ee-card" data-ee-id="${ex.id}">
+    <div class="ee-card-top">
+      <span class="ee-card-badge">${ex.category || "General"}</span>
+      <span class="ee-card-diff">${ex.difficulty || "Intermediate"}</span>
+    </div>
+    <div class="ee-card-name">${ex.name}</div>
+    <div class="ee-card-meta">
+      <span>${ex.equipment || "Any"}</span>
+      <span>${ex.movementType || "General"}</span>
+    </div>
+  </button>`;
+}
+
+function filterEE(query) {
+  const activeCat = document.querySelector("[data-ee-cat].is-active")?.dataset.eeCat || "All";
+  const activeEquip = document.querySelector("[data-ee-equip].is-active")?.dataset.eeEquip || "All";
+  const grid = document.getElementById("eeGrid");
+  const count = document.getElementById("eeCount");
+  if (!grid) return;
+
+  let filtered = EXERCISE_DATABASE.filter(ex => {
+    if (activeCat !== "All" && ex.category !== activeCat) return false;
+    if (activeEquip !== "All" && ex.equipment !== activeEquip) return false;
+    if (query) {
+      const qLower = query.toLowerCase();
+      const searchText = (ex.name + " " + ex.description + " " + ex.category + " " + ex.equipment + " " + ex.movementType + " " + ex.primaryMuscles.join(" ") + " " + ex.secondaryMuscles.join(" ") + " " + ex.keywords.join(" ")).toLowerCase();
+      if (!searchText.includes(qLower)) return false;
+    }
+    return true;
+  });
+
+  grid.innerHTML = filtered.length > 0 ? filtered.map(ex => renderEECard(ex)).join("") : `<div class="ee-empty">No exercises found. Try a different search or filter.</div>`;
+  count.textContent = `${filtered.length} Exercise${filtered.length !== 1 ? "s" : ""}`;
+
+  // Re-bind card clicks
+  grid.querySelectorAll("[data-ee-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
+  });
+}
+
+function renderExerciseDetailPage(exerciseId) {
+  const ex = getExerciseById(exerciseId);
+  if (!ex) return;
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  let html = `<div class="tr-page"><div class="ee-detail">`;
+
+  // Back button
+  html += `<div class="tr-section-header" style="padding:8px 16px;margin:0"><button class="tr-back-btn" id="eeDetailBackBtn">← Back</button></div>`;
+
+  // HERO
+  html += `<div class="ee-detail-hero">
+    <div class="ee-hero-category">${ex.category || "General"} · ${ex.movementType || "General"}</div>
+    <div class="ee-hero-title">${ex.name}</div>
+    <div class="ee-hero-meta-row">
+      <span class="ee-hero-meta-tag">${ex.equipment || "Any"}</span>
+      <span class="ee-hero-meta-tag">${ex.difficulty || "Intermediate"}</span>
+    </div>
+  </div>`;
+
+  // MUSCLE MAP
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Muscles Targeted</div>`;
+  html += `<div class="ee-muscle-grid">`;
+  ex.primaryMuscles.forEach(m => {
+    html += `<div class="ee-muscle-item"><span class="ee-muscle-name">${m}</span><span class="ee-muscle-label">Primary</span></div>`;
+  });
+  ex.secondaryMuscles.forEach(m => {
+    html += `<div class="ee-muscle-item"><span class="ee-muscle-name">${m}</span><span class="ee-muscle-label">Secondary</span></div>`;
+  });
+  if (ex.stabilizers && ex.stabilizers.length > 0) {
+    ex.stabilizers.forEach(m => {
+      html += `<div class="ee-muscle-item"><span class="ee-muscle-name">${m}</span><span class="ee-muscle-label">Stabilizer</span></div>`;
+    });
+  }
+  html += `</div></div>`;
+
+  // DESCRIPTION (Why This Exercise Exists)
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Why This Exercise Exists</div>
+    <div class="ee-detail-text">${ex.description}</div>
+  </div>`;
+
+  // WHY USE IT
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Why Use It</div>
+    <div class="ee-detail-text">${ex.whyUseIt}</div>
+  </div>`;
+
+  // WHEN TO USE
+  html += `<div class="ee-section"><div class="ee-detail-section-title">When To Use It</div>
+    <div class="ee-when-box">
+      <div><strong style="font-size:12px;color:var(--accent);text-transform:uppercase;letter-spacing:0.04em">Best For</strong></div>
+      <div class="ee-best-for">${ex.whenToUse.bestFor.map(b => `<span>${b}</span>`).join("")}</div>
+      ${ex.whenToUse.lessImportant && ex.whenToUse.lessImportant.length > 0 ? `<div style="margin-top:4px"><strong style="font-size:12px;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.04em">Less Important For</strong></div><div class="ee-less-important">${ex.whenToUse.lessImportant.map(l => `<span>${l}</span>`).join("")}</div>` : ""}
+    </div>
+  </div>`;
+
+  // STEP-BY-STEP
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Step-by-Step Guide</div>
+    <div class="ee-steps-list">${ex.stepByStep.map(s => `<div class="ee-step-item">${s}</div>`).join("")}</div>
+  </div>`;
+
+  // COACHING CUES
+  if (ex.coachingCues && ex.coachingCues.length > 0) {
+    html += `<div class="ee-section"><div class="ee-detail-section-title">Coaching Cues</div>
+      <div class="ee-cues-list">${ex.coachingCues.map(c => `<span class="ee-cue-item">${c}</span>`).join("")}</div>
+    </div>`;
+  }
+
+  // COMMON MISTAKES
+  if (ex.mistakes && ex.mistakes.length > 0) {
+    html += `<div class="ee-section"><div class="ee-detail-section-title">Common Mistakes</div>
+      <div class="ee-mistakes-list">${ex.mistakes.map(m => `<div class="ee-mistake-card"><div class="ee-mistake-problem">✕ ${m.problem}</div><div class="ee-mistake-why">${m.why}</div><div class="ee-mistake-fix">${m.fix}</div></div>`).join("")}</div>
+    </div>`;
+  }
+
+  // PROGRESSION GUIDE
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Progression Guide</div>
+    <div class="ee-progression-box">${ex.progressionGuide}</div>
+  </div>`;
+
+  // GOAL-SPECIFIC COACHING
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Goal-Specific Coaching</div>
+    <div class="ee-goal-coaching">
+      ${ex.goalSpecificCoaching.buildMuscle ? `<div class="ee-goal-item"><div class="ee-goal-item-label">Build Muscle</div><div class="ee-goal-item-text">${ex.goalSpecificCoaching.buildMuscle}</div></div>` : ""}
+      ${ex.goalSpecificCoaching.loseFat ? `<div class="ee-goal-item"><div class="ee-goal-item-label">Lose Fat</div><div class="ee-goal-item-text">${ex.goalSpecificCoaching.loseFat}</div></div>` : ""}
+      ${ex.goalSpecificCoaching.strength ? `<div class="ee-goal-item"><div class="ee-goal-item-label">Strength</div><div class="ee-goal-item-text">${ex.goalSpecificCoaching.strength}</div></div>` : ""}
+    </div>
+  </div>`;
+
+  // RATINGS
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Exercise Ratings</div>
+    <div class="ee-ratings-grid">
+      <div class="ee-rating-item"><span class="ee-rating-value">${ex.ratings && ex.ratings.strength != null ? ex.ratings.strength : "—"}/10</span><span class="ee-rating-label">Strength</span></div>
+      <div class="ee-rating-item"><span class="ee-rating-value">${ex.ratings && ex.ratings.hypertrophy != null ? ex.ratings.hypertrophy : "—"}/10</span><span class="ee-rating-label">Hypertrophy</span></div>
+      <div class="ee-rating-item"><span class="ee-rating-value">${ex.ratings && ex.ratings.fatLoss != null ? ex.ratings.fatLoss : "—"}/10</span><span class="ee-rating-label">Fat Loss</span></div>
+      <div class="ee-rating-item"><span class="ee-rating-value">${ex.ratings && ex.ratings.beginner != null ? ex.ratings.beginner : "—"}/10</span><span class="ee-rating-label">Beginner Friendly</span></div>
+      <div class="ee-rating-item"><span class="ee-rating-value">${ex.ratings && ex.ratings.recoveryCost != null ? ex.ratings.recoveryCost : "—"}/10</span><span class="ee-rating-label">Recovery Cost</span></div>
+    </div>
+  </div>`;
+
+  // PROGRAMMING TIPS
+  html += `<div class="ee-section"><div class="ee-detail-section-title">Programming</div>
+    <div class="ee-programming-grid">
+      <div class="ee-programming-item"><span class="ee-programming-label">Sets</span><span class="ee-programming-value">${ex.programmingTips.sets}</span></div>
+      <div class="ee-programming-item"><span class="ee-programming-label">Reps</span><span class="ee-programming-value">${ex.programmingTips.reps}</span></div>
+      <div class="ee-programming-item"><span class="ee-programming-label">Frequency</span><span class="ee-programming-value">${ex.programmingTips.frequency}</span></div>
+      <div class="ee-programming-item"><span class="ee-programming-label">Rest</span><span class="ee-programming-value">${ex.programmingTips.rest}</span></div>
+    </div>
+  </div>`;
+
+  // WHY IN PLAN
+  if (ex.whenInPlan) {
+    html += `<div class="ee-section"><div class="ee-detail-section-title">Why It's In Your Workout</div>
+      <div class="ee-in-plan-box">${ex.whenInPlan}</div>
+    </div>`;
+  }
+
+  // ALTERNATIVES
+  if (ex.alternatives && ex.alternatives.length > 0) {
+    html += `<div class="ee-section"><div class="ee-detail-section-title">Alternatives</div>
+      <div class="ee-alt-list">${ex.alternatives.map(a => `<span class="ee-alt-item">${a}</span>`).join("")}</div>
+    </div>`;
+  }
+
+  // PAIN-FRIENDLY ALTERNATIVES
+  if (ex.painFriendlyAlternatives && ex.painFriendlyAlternatives.length > 0) {
+    html += `<div class="ee-section"><div class="ee-detail-section-title">Pain-Friendly Alternatives</div>
+      <div class="ee-alt-list">${ex.painFriendlyAlternatives.map(a => `<span class="ee-alt-item">${a}</span>`).join("")}</div>
+    </div>`;
+  }
+
+  // RELATED EXERCISES
+  if (ex.relatedExercises && ex.relatedExercises.length > 0) {
+    const related = ex.relatedExercises.map(id => getExerciseById(id)).filter(Boolean);
+    if (related.length > 0) {
+      html += `<div class="ee-section"><div class="ee-detail-section-title">Related Exercises</div>
+        <div class="ee-related-grid">${related.map(r => `<button class="ee-related-card" data-ee-id="${r.id}">${r.name}</button>`).join("")}</div>
+      </div>`;
+    }
+  }
+
+  // Bottom CTAs
+  html += `<div class="ee-detail-ctas">
+    <button class="ee-cta-btn ee-cta-primary" id="eeAddToWorkout">Add To Workout</button>
+    <button class="ee-cta-btn ee-cta-secondary" id="eeSaveExercise">Save Exercise</button>
+  </div>`;
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+
+  // Back
+  document.getElementById("eeDetailBackBtn")?.addEventListener("click", () => renderExerciseEncyclopedia());
+
+  // Related exercise clicks
+  container.querySelectorAll("[data-ee-id]").forEach(btn => {
+    btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
+  });
+
+  // Save exercise to localStorage
+  document.getElementById("eeSaveExercise")?.addEventListener("click", () => {
+    const saved = getSavedExercises();
+    const idx = saved.indexOf(exerciseId);
+    const btn = document.getElementById("eeSaveExercise");
+    if (idx > -1) {
+      saved.splice(idx, 1);
+      btn.textContent = "Save Exercise";
+      btn.classList.remove("is-saved");
+      showToast("Removed from saved");
+    } else {
+      saved.push(exerciseId);
+      btn.textContent = "Saved";
+      btn.classList.add("is-saved");
+      showToast("Saved for later");
+    }
+    localStorage.setItem("ironlog_saved_exercises", JSON.stringify(saved));
+  });
+
+  // Check if already saved
+  if (getSavedExercises().includes(exerciseId)) {
+    document.getElementById("eeSaveExercise").textContent = "Saved";
+    document.getElementById("eeSaveExercise").classList.add("is-saved");
+  }
+
+  // Add to workout
+  document.getElementById("eeAddToWorkout")?.addEventListener("click", () => {
+    const el = document.getElementById("nwSearch");
+    if (el) {
+      el.value = ex.name;
+      el.dispatchEvent(new Event("input", { bubbles: true }));
+    }
+    showScreen("screen-new-workout");
+    showToast(`"${ex.name}" ready to add`);
+  });
+}
+
+function getSavedExercises() {
+  try { return JSON.parse(localStorage.getItem("ironlog_saved_exercises") || "[]"); }
+  catch { return []; }
+}
+
+function openExerciseEncyclopedia() {
+  renderExerciseEncyclopedia();
+}
+
+function openExerciseDetail(exerciseId) {
+  renderExerciseDetailPage(exerciseId);
+}
+
+// ===== GOAL CENTER V1 =====
+
+function renderGoalCenter() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const gc = GoalCenter.getAll();
+  if (!gc.hasGoal) {
+    renderGoalCenterEmpty();
+    return;
+  }
+  renderGoalCenterDashboard(gc);
+}
+
+function renderGoalCenterEmpty() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  container.innerHTML = `<div class="tr-page"><div class="gc-no-goal">
+    <div class="gc-no-goal-icon">🎯</div>
+    <div class="gc-no-goal-title">Set Your First Goal</div>
+    <div class="gc-no-goal-desc">Define what you want to achieve and let Goal Center guide every workout, meal, and milestone.</div>
+    <button class="gc-no-goal-btn" id="gcCreateFirstBtn">Create Goal</button>
+  </div></div>`;
+  document.getElementById("gcCreateFirstBtn")?.addEventListener("click", () => renderCreateGoalFlow());
+}
+
+function renderGoalCenterDashboard(gc) {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const p = gc.profile;
+  const pace = gc.pace;
+  const health = gc.health;
+  const strategy = gc.strategy;
+  const analysis = gc.analysis;
+  const actions = gc.actions;
+
+  let html = `<div class="tr-page gc-page">`;
+
+  // Back button
+  html += `<div class="tr-section-header" style="padding:12px 16px;border-bottom:1px solid var(--border);margin:0;flex-shrink:0"><button class="tr-back-btn" id="gcBackBtn">← Back</button><span class="tr-section-title">Goal Center</span></div>`;
+
+  // HERO CARD
+  const goalTypeLabels = { "fat-loss": "Fat Loss", "muscle-gain": "Muscle Gain", "strength": "Strength", "general-fitness": "General Fitness", "endurance": "Endurance" };
+  const goalLabel = goalTypeLabels[p.goalType] || p.goalType;
+  const progressPct = pace ? Math.round(pace.achieved) : 0;
+  const ringCircumference = 2 * Math.PI * 22;
+  const ringOffset = ringCircumference - (progressPct / 100) * ringCircumference;
+  const paceLabel = pace ? pace.label : "No Data";
+  let paceClass = "no-data";
+  if (pace && pace.status === "on-pace") paceClass = "on-track";
+  else if (pace && pace.status === "behind-pace") paceClass = "needs-attention";
+
+  html += `<div class="gc-hero-card">
+    <div class="gc-hero-top">
+      <div class="gc-hero-type">${goalLabel}</div>
+      <span class="gc-hero-status-badge ${paceClass}">${paceLabel}</span>
+    </div>
+    <div class="gc-hero-ring-wrap">
+      <div class="gc-hero-ring">
+        <svg viewBox="0 0 56 56">
+          <circle class="gc-hero-ring-bg" cx="28" cy="28" r="22"/>
+          <circle class="gc-hero-ring-fill" cx="28" cy="28" r="22" stroke-dasharray="${ringCircumference}" stroke-dashoffset="${ringOffset}"/>
+        </svg>
+        <span class="gc-hero-ring-text">${progressPct}%</span>
+      </div>
+      <div class="gc-hero-progress-info">
+        <div class="gc-hero-progress-pct">${progressPct}% Complete</div>
+        ${pace && pace.currentWeight && pace.targetWeight ? `<div class="gc-hero-progress-weight">${pace.currentWeight}kg → ${pace.targetWeight}kg</div>` : pace && pace.currentWeight ? `<div class="gc-hero-progress-weight">Current: ${pace.currentWeight}kg</div>` : ""}
+      </div>
+    </div>
+    ${pace && pace.projectedDateStr ? `<div class="gc-hero-bottom">
+      <div class="gc-hero-projected">Projected Goal Date<br><strong>${pace.projectedDateStr}</strong></div>
+      <button class="gc-hero-cta" id="gcViewStrategyBtn">View Strategy</button>
+    </div>` : `<div class="gc-hero-bottom">
+      <div class="gc-hero-projected">Set target weight and log consistently for projections</div>
+      <button class="gc-hero-cta" id="gcViewStrategyBtn">View Strategy</button>
+    </div>`}
+  </div>`;
+
+  // SECTION 2: Goal Progress
+  html += `<div class="gc-section"><div class="gc-section-title">Goal Progress</div>`;
+  if (pace) {
+    html += `<div class="gc-weight-timeline">
+      <div class="gc-weight-item">
+        <div class="gc-weight-line"></div>
+        <div class="gc-weight-dot start"></div>
+        <div class="gc-weight-value">${pace.startWeight || "--"}</div>
+        <div class="gc-weight-label">Start</div>
+      </div>
+      <div class="gc-weight-item">
+        <div class="gc-weight-line"></div>
+        <div class="gc-weight-dot current"></div>
+        <div class="gc-weight-value">${pace.currentWeight || "--"}</div>
+        <div class="gc-weight-label">Current</div>
+      </div>
+      <div class="gc-weight-item">
+        <div class="gc-weight-dot target"></div>
+        <div class="gc-weight-value">${pace.targetWeight || "--"}</div>
+        <div class="gc-weight-label">Target</div>
+      </div>
+    </div>`;
+    html += `<div class="gc-metrics-grid" style="margin-top:10px">
+      <div class="gc-metric"><span class="gc-metric-value">${pace.totalChange ? pace.totalChange + "kg" : "--"}</span><span class="gc-metric-label">Total Change</span></div>
+      <div class="gc-metric"><span class="gc-metric-value">${pace.remaining ? pace.remaining + "kg" : "--"}</span><span class="gc-metric-label">Remaining</span></div>
+      <div class="gc-metric"><span class="gc-metric-value">${progressPct}%</span><span class="gc-metric-label">Progress</span></div>
+    </div>`;
+    if (pace.actualWeeklyRate !== null) {
+      html += `<div style="display:flex;align-items:center;gap:8px;margin-top:8px">
+        <span style="font-size:12px;color:var(--text-secondary)">Pace: ${Math.abs(pace.actualWeeklyRate).toFixed(2)}kg/week</span>
+        <span class="gc-pace-badge ${pace.status === 'on-pace' ? 'on-track' : 'behind'}">${paceLabel}</span>
+      </div>`;
+    }
+  } else {
+    html += `<div class="gc-insight-item" style="text-align:center">Set start and target weights to see your progress timeline.</div>`;
+  }
+  html += `</div>`;
+
+  // SECTION 3: Goal Strategy
+  if (strategy) {
+    html += `<div class="gc-section"><div class="gc-section-title">Goal Strategy</div>
+    <div class="gc-strategy-grid">
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Calories</div><div class="gc-strategy-value">${strategy.targets.calories}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Protein</div><div class="gc-strategy-value">${strategy.targets.protein}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Water</div><div class="gc-strategy-value">${strategy.targets.water}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Steps</div><div class="gc-strategy-value">${strategy.targets.steps}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Cardio</div><div class="gc-strategy-value">${strategy.targets.cardio}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Sleep</div><div class="gc-strategy-value">${strategy.targets.sleep}</div></div>
+    </div>`;
+    if (strategy.expectedRate) {
+      html += `<div class="gc-strategy-rate">Expected Rate: ${strategy.expectedRate}</div>`;
+    }
+    if (strategy.warnings && strategy.warnings.length > 0) {
+      html += `<div class="gc-warnings-list">${strategy.warnings.map(w => `<div class="gc-warning-item">${w}</div>`).join("")}</div>`;
+    }
+    html += `</div>`;
+  }
+
+  // SECTION 4: Coach Analysis
+  html += `<div class="gc-section"><div class="gc-section-title">Coach Analysis</div>
+  <div class="gc-insights-list">${analysis.length > 0 ? analysis.map(a => `<div class="gc-insight-item">${a}</div>`).join("") : `<div class="gc-insight-item" style="text-align:center;color:var(--text-secondary)">Log your data to get coaching insights.</div>`}</div>
+  </div>`;
+
+  // SECTION 5: Goal Health Score
+  if (health && health.score !== null) {
+    const hc = 2 * Math.PI * 20;
+    const hOff = hc - (health.score / 100) * hc;
+    html += `<div class="gc-section"><div class="gc-section-title">Goal Health</div>
+    <div class="gc-health-card">
+      <div class="gc-health-ring">
+        <svg viewBox="0 0 56 56">
+          <circle class="gc-health-ring-bg" cx="28" cy="28" r="20"/>
+          <circle class="gc-health-ring-fill ${health.level}" cx="28" cy="28" r="20" stroke-dasharray="${hc}" stroke-dashoffset="${hOff}"/>
+        </svg>
+        <span class="gc-health-ring-text ${health.level}">${health.score}</span>
+      </div>
+      <div class="gc-health-body">
+        <div class="gc-health-label">${health.label}</div>
+        <div class="gc-health-desc">Based on your goal type, weight trend, training consistency, and nutrition compliance.</div>
+      </div>
+    </div>
+    </div>`;
+  }
+
+  // SECTION 6: Weight Intelligence
+  html += `<div class="gc-section">
+    <button class="tr-goal-summary" id="gcWeightIntelBtn" style="width:100%;text-align:left">
+      <div class="tr-goal-summary-left">
+        <span class="tr-goal-summary-label">Weight Intelligence</span>
+        <span class="tr-goal-summary-goal">Trends, pace, and analysis</span>
+      </div>
+      <div class="tr-goal-summary-right">
+        <span class="tr-goal-summary-arrow">→</span>
+      </div>
+    </button>
+  </div>`;
+
+  // SECTION 7: Next Actions
+  if (actions && actions.length > 0) {
+    html += `<div class="gc-section"><div class="gc-section-title">Next Actions</div>
+    <div class="gc-actions-list">${actions.map(a => `<button class="gc-action-btn ${a.type}" data-gc-action="${a.id}">${a.label}</button>`).join("")}</div>
+    </div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+
+  // Back
+  document.getElementById("gcBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+
+  // Weight Intelligence
+  document.getElementById("gcWeightIntelBtn")?.addEventListener("click", openWeightIntelligence);
+
+  // View Strategy scrolls to strategy section
+  document.getElementById("gcViewStrategyBtn")?.addEventListener("click", () => {
+    const s = document.querySelector(".gc-strategy-grid");
+    if (s) s.scrollIntoView({ behavior: "smooth", block: "center" });
+  });
+
+  // Action buttons
+  container.querySelectorAll("[data-gc-action]").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const action = btn.dataset.gcAction;
+      if (action === "log-weight") {
+        openWeightLogger();
+      } else if (action === "workout") {
+        showScreen("screen-home");
+        renderHome();
+      } else if (action === "review-plan") {
+        const s = document.querySelector(".gc-strategy-grid");
+        if (s) s.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else if (action === "increase-steps") {
+        showToast("Aim to add 2,000 more steps to your daily target");
+      } else if (action === "nutrition") {
+        const s = document.querySelector(".gc-strategy-grid");
+        if (s) s.scrollIntoView({ behavior: "smooth", block: "center" });
+      } else if (action === "view-progress") {
+        switchTab("progress");
+      }
+    });
+  });
+}
+
+// ===== CREATE GOAL FLOW =====
+
+const GOAL_CENTER_FLOW = {
+  steps: [
+    { id: "type", title: "What's Your Goal?", desc: "Choose your primary fitness objective" },
+    { id: "weight", title: "Current Weight", desc: "Your current body weight" },
+    { id: "target", title: "Target Weight", desc: "Your goal weight (optional for strength/endurance)" },
+    { id: "date", title: "Target Date", desc: "When do you want to achieve this? (optional)" },
+    { id: "details", title: "Training Details", desc: "Help us personalize your plan" }
+  ],
+  data: {
+    goalType: "",
+    startWeight: null,
+    targetWeight: null,
+    targetDate: null,
+    trainingDays: 3,
+    experienceLevel: "beginner",
+    activityLevel: "moderate"
+  },
+  currentStep: 0
+};
+
+function renderCreateGoalFlow() {
+  GOAL_CENTER_FLOW.currentStep = 0;
+  GOAL_CENTER_FLOW.data = {
+    goalType: "",
+    startWeight: null,
+    targetWeight: null,
+    targetDate: null,
+    trainingDays: 3,
+    experienceLevel: "beginner",
+    activityLevel: "moderate"
+  };
+  renderCreateGoalStep();
+}
+
+function renderCreateGoalStep() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const step = GOAL_CENTER_FLOW.steps[GOAL_CENTER_FLOW.currentStep];
+  const total = GOAL_CENTER_FLOW.steps.length;
+  const isFirst = GOAL_CENTER_FLOW.currentStep === 0;
+  const isLast = GOAL_CENTER_FLOW.currentStep === total - 1;
+
+  let html = `<div class="tr-page"><div class="gc-create-flow">
+    <div class="gc-create-header">
+      <button class="tr-back-btn" id="gcCreateBackBtn">← Back</button>
+      <span class="tr-section-title">Create Goal</span>
+    </div>
+    <div class="gc-create-step-indicator">Step ${GOAL_CENTER_FLOW.currentStep + 1} of ${total}</div>
+    <div class="gc-create-title">${step.title}</div>
+    <div class="gc-create-desc">${step.desc}</div>
+  `;
+
+  html += renderCreateStepContent(step.id);
+  html += `<div class="gc-step-footer">
+    ${!isFirst ? `<button class="btn-secondary" id="gcPrevBtn">Back</button>` : ""}
+    <button class="btn-primary" id="gcNextBtn" ${(step.id === "type" && !GOAL_CENTER_FLOW.data.goalType) || (step.id === "weight" && !GOAL_CENTER_FLOW.data.startWeight) ? "disabled" : ""}>${isLast ? "Create Goal" : "Next"}</button>
+    <button class="btn-secondary" id="gcCancelBtn">Cancel</button>
+  </div>`;
+
+  html += `</div></div>`;
+  container.innerHTML = html;
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+
+  document.getElementById("gcCreateBackBtn")?.addEventListener("click", () => renderGoalCenter());
+  document.getElementById("gcCancelBtn")?.addEventListener("click", () => renderGoalCenter());
+  document.getElementById("gcPrevBtn")?.addEventListener("click", () => {
+    GOAL_CENTER_FLOW.currentStep--;
+    renderCreateGoalStep();
+  });
+  document.getElementById("gcNextBtn")?.addEventListener("click", () => {
+    if (isLast) {
+      GoalCenter.createProfile(GOAL_CENTER_FLOW.data);
+      saveState();
+      renderGoalCenter();
+    } else {
+      GOAL_CENTER_FLOW.currentStep++;
+      renderCreateGoalStep();
+    }
+  });
+
+  bindStepEvents(step.id);
+}
+
+function renderCreateStepContent(stepId) {
+  let content = "";
+  if (stepId === "type") {
+    const types = [
+      { id: "fat-loss", name: "Fat Loss", desc: "Lose body fat while preserving muscle" },
+      { id: "muscle-gain", name: "Muscle Gain", desc: "Build lean muscle mass" },
+      { id: "strength", name: "Strength", desc: "Get stronger on compound lifts" },
+      { id: "general-fitness", name: "General Fitness", desc: "Overall health and fitness" },
+      { id: "endurance", name: "Endurance", desc: "Improve cardiovascular stamina" }
+    ];
+    content = `<div class="gc-option-grid">`;
+    content += types.map(t => `<button class="gc-option-btn${GOAL_CENTER_FLOW.data.goalType === t.id ? " is-selected" : ""}" data-gc-type="${t.id}"><span class="gc-option-name">${t.name}</span><span class="gc-option-desc">${t.desc}</span></button>`).join("");
+    content += `</div>`;
+  } else if (stepId === "weight") {
+    content = `<div class="gc-number-input-wrap"><input type="number" class="gc-number-input" id="gcWeightInput" placeholder="e.g. 70" min="20" max="400" step="0.1" value="${GOAL_CENTER_FLOW.data.startWeight || ""}" autocomplete="off" /></div>`;
+  } else if (stepId === "target") {
+    const showTarget = GOAL_CENTER_FLOW.data.goalType === "fat-loss" || GOAL_CENTER_FLOW.data.goalType === "muscle-gain";
+    content = `<div class="gc-number-input-wrap"><input type="number" class="gc-number-input" id="gcTargetInput" placeholder="${showTarget ? "e.g. 65" : "Optional"}" min="20" max="400" step="0.1" value="${GOAL_CENTER_FLOW.data.targetWeight || ""}" autocomplete="off" /></div>`;
+  } else if (stepId === "date") {
+    content = `<div class="gc-number-input-wrap"><input type="date" class="gc-date-input" id="gcDateInput" value="${GOAL_CENTER_FLOW.data.targetDate || ""}" /></div>`;
+  } else if (stepId === "details") {
+    content = `<div class="gc-section"><div class="gc-section-title">Training Days Per Week</div>
+    <div class="gc-option-grid" id="gcDaysGrid">
+      ${[2, 3, 4, 5, 6].map(d => `<button class="gc-option-btn${GOAL_CENTER_FLOW.data.trainingDays === d ? " is-selected" : ""}" data-gc-days="${d}"><span class="gc-option-name">${d}</span><span class="gc-option-desc">${d === 2 ? "Minimal" : d === 3 ? "Standard" : d === 4 ? "Frequent" : d === 5 ? "Dedicated" : "Intensive"} Days</span></button>`).join("")}
+    </div></div>
+    <div class="gc-section"><div class="gc-section-title">Experience Level</div>
+    <div class="gc-option-grid gc-single-col" id="gcExpGrid">
+      ${[{ id: "beginner", name: "Beginner", desc: "Less than 6 months of consistent training" }, { id: "intermediate", name: "Intermediate", desc: "6 months to 2 years of consistent training" }, { id: "advanced", name: "Advanced", desc: "2+ years of consistent training" }].map(e => `<button class="gc-option-btn full${GOAL_CENTER_FLOW.data.experienceLevel === e.id ? " is-selected" : ""}" data-gc-exp="${e.id}"><span><span class="gc-option-name" style="text-align:left">${e.name}</span><span class="gc-option-desc" style="text-align:left">${e.desc}</span></span></button>`).join("")}
+    </div></div>
+    <div class="gc-section"><div class="gc-section-title">Activity Level</div>
+    <div class="gc-option-grid gc-single-col" id="gcActGrid">
+      ${[{ id: "sedentary", name: "Sedentary", desc: "Desk job, little daily movement" }, { id: "light", name: "Lightly Active", desc: "Light movement throughout the day" }, { id: "moderate", name: "Moderately Active", desc: "Standing/walking job" }, { id: "active", name: "Active", desc: "Physically demanding job or lots of daily movement" }].map(a => `<button class="gc-option-btn full${GOAL_CENTER_FLOW.data.activityLevel === a.id ? " is-selected" : ""}" data-gc-act="${a.id}"><span><span class="gc-option-name" style="text-align:left">${a.name}</span><span class="gc-option-desc" style="text-align:left">${a.desc}</span></span></button>`).join("")}
+    </div></div>`;
+  }
+  return content;
+}
+
+function bindStepEvents(stepId) {
+  if (stepId === "type") {
+    document.querySelectorAll("[data-gc-type]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-gc-type]").forEach(b => b.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+        GOAL_CENTER_FLOW.data.goalType = btn.dataset.gcType;
+        document.getElementById("gcNextBtn").disabled = false;
+      });
+    });
+  } else if (stepId === "weight") {
+    const input = document.getElementById("gcWeightInput");
+    if (input) {
+      input.addEventListener("input", () => {
+        const val = parseFloat(input.value);
+        GOAL_CENTER_FLOW.data.startWeight = val > 0 ? val : null;
+        document.getElementById("gcNextBtn").disabled = !(val > 0);
+      });
+      setTimeout(() => input.focus(), 100);
+    }
+  } else if (stepId === "target") {
+    const input = document.getElementById("gcTargetInput");
+    if (input) {
+      input.addEventListener("input", () => {
+        const val = parseFloat(input.value);
+        GOAL_CENTER_FLOW.data.targetWeight = val > 0 ? val : null;
+        document.getElementById("gcNextBtn").disabled = false;
+      });
+    }
+  } else if (stepId === "date") {
+    const input = document.getElementById("gcDateInput");
+    if (input) {
+      input.addEventListener("input", () => {
+        GOAL_CENTER_FLOW.data.targetDate = input.value || null;
+        document.getElementById("gcNextBtn").disabled = false;
+      });
+    }
+  } else if (stepId === "details") {
+    document.querySelectorAll("[data-gc-days]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-gc-days]").forEach(b => b.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+        GOAL_CENTER_FLOW.data.trainingDays = parseInt(btn.dataset.gcDays);
+      });
+    });
+    document.querySelectorAll("[data-gc-exp]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-gc-exp]").forEach(b => b.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+        GOAL_CENTER_FLOW.data.experienceLevel = btn.dataset.gcExp;
+      });
+    });
+    document.querySelectorAll("[data-gc-act]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-gc-act]").forEach(b => b.classList.remove("is-selected"));
+        btn.classList.add("is-selected");
+        GOAL_CENTER_FLOW.data.activityLevel = btn.dataset.gcAct;
+      });
+    });
+  }
+}
+
+function openWeightLogger() {
+  const plusBtn = document.getElementById("wlPlus");
+  if (plusBtn) { plusBtn.click(); return; }
+  const overlay = document.getElementById("weightLogSheet");
+  if (overlay) overlay.classList.remove("is-hidden");
+}
+
+function openGoalCenter() {
+  renderGoalCenter();
+}
+
+function openWeightIntelligence() {
+  showTrainerScreen("weight-intelligence");
+}
+
+function renderWeightTrendChart(wi) {
+  const log = (state.weightLog || []).slice().sort((a, b) => a.date.localeCompare(b.date));
+  if (log.length < 2) return `<div class="wi-empty">Log your weight to see trends</div>`;
+
+  const recent = log.slice(-14);
+  const weights = recent.map(e => e.weight);
+  const minW = Math.min(...weights) - 1;
+  const maxW = Math.max(...weights) + 1;
+  const range = maxW - minW || 1;
+  const w = 400;
+  const h = 160;
+  const pad = { top: 16, right: 16, bottom: 24, left: 36 };
+  const plotW = w - pad.left - pad.right;
+  const plotH = h - pad.top - pad.bottom;
+
+  const xScale = (i) => pad.left + (i / (recent.length - 1)) * plotW;
+  const yScale = (v) => pad.top + plotH - ((v - minW) / range) * plotH;
+
+  let pathD = recent.map((e, i) => `${i === 0 ? "M" : "L"}${xScale(i).toFixed(1)},${yScale(e.weight).toFixed(1)}`).join(" ");
+  let sevenDayPath = "";
+  if (recent.length >= 7) {
+    const last7 = recent.slice(-7);
+    const avg = last7.reduce((s, e) => s + e.weight, 0) / last7.length;
+    const x1 = xScale(recent.length - 7);
+    const x2 = xScale(recent.length - 1);
+    sevenDayPath = `M${x1.toFixed(1)},${yScale(avg).toFixed(1)} L${x2.toFixed(1)},${yScale(avg).toFixed(1)}`;
+  }
+
+  const dateLabels = recent.map((e, i) => {
+    const d = new Date(e.date);
+    const label = `${d.getMonth() + 1}/${d.getDate()}`;
+    const x = xScale(i);
+    const show = i === 0 || i === recent.length - 1 || i % 3 === 0;
+    return show ? `<text x="${x.toFixed(1)}" y="${h - 4}" text-anchor="${i === 0 ? "start" : i === recent.length - 1 ? "end" : "middle"}" font-size="8" fill="var(--text-tertiary)">${label}</text>` : "";
+  }).join("");
+
+  let goalLine = "";
+  const gcWeightData = GoalCenter.getGoalWeightData();
+  if (gcWeightData && gcWeightData.targetWeight) {
+    const y = yScale(gcWeightData.targetWeight);
+    if (y >= pad.top && y <= pad.top + plotH) {
+      goalLine = `<line x1="${pad.left}" y1="${y.toFixed(1)}" x2="${pad.left + plotW}" y2="${y.toFixed(1)}" stroke="var(--orange)" stroke-width="1" stroke-dasharray="4,3" opacity="0.6"/>`;
+    }
+  }
+
+  return `<div class="wi-chart-wrap">
+    <svg class="wi-chart-svg" viewBox="0 0 ${w} ${h}" preserveAspectRatio="xMidYMid meet">
+      ${goalLine}
+      <path d="${sevenDayPath}" stroke="var(--blue)" stroke-width="2" stroke-dasharray="4,2" fill="none" opacity="0.7"/>
+      <path d="${pathD}" stroke="var(--accent)" stroke-width="2" fill="none" stroke-linejoin="round"/>
+      ${recent.map((e, i) => `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(e.weight).toFixed(1)}" r="2.5" fill="var(--accent)" opacity="0.8"/>`).join("")}
+      ${dateLabels}
+      <text x="4" y="${pad.top + 10}" font-size="7" fill="var(--text-tertiary)">${minW.toFixed(0)}</text>
+      <text x="4" y="${pad.top + plotH}" font-size="7" fill="var(--text-tertiary)">${maxW.toFixed(0)}</text>
+    </svg>
+    <div class="wi-chart-legend">
+      <span><span class="wi-chart-legend-line" style="background:var(--accent)"></span> Weight</span>
+      ${sevenDayPath ? '<span><span class="wi-chart-legend-line" style="background:var(--blue)"></span> 7-Day Avg</span>' : ""}
+      ${goalLine ? '<span><span class="wi-chart-legend-line" style="background:var(--orange)"></span> Goal</span>' : ""}
+    </div>
+  </div>`;
+}
+
+function renderWeightIntelligence() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const wi = GoalCenter.getWeightIntelligence();
+
+  let html = `<div class="wi-page">
+    <div class="wi-header">
+      <h2>Weight Intelligence</h2>
+      <button class="wi-back-btn" id="wiBackBtn">Back</button>
+    </div>`;
+
+  // Metrics row
+  html += `<div class="wi-metrics">
+    <div class="wi-metric-card">
+      <div class="wi-metric-value">${wi.currentWeight !== null ? displayWeight(wi.currentWeight) : "—"}</div>
+      <div class="wi-metric-label">Current</div>
+    </div>
+    <div class="wi-metric-card">
+      <div class="wi-metric-value">${wi.sevenDayAvg !== null ? displayWeight(wi.sevenDayAvg) : "—"}</div>
+      <div class="wi-metric-label">7-Day Avg</div>
+    </div>
+    <div class="wi-metric-card">
+      <div class="wi-metric-value">${wi.thirtyDayAvg !== null ? displayWeight(wi.thirtyDayAvg) : "—"}</div>
+      <div class="wi-metric-label">30-Day Avg</div>
+    </div>
+    <div class="wi-metric-card">
+      <div class="wi-metric-value">${wi.weeklyChange !== null ? (wi.weeklyChange > 0 ? "+" : "") + displayWeight(Math.abs(wi.weeklyChange)) : "—"}</div>
+      <div class="wi-metric-label">Weekly Change</div>
+      <div class="wi-metric-change ${wi.weeklyChange !== null ? (wi.weeklyChange < -0.2 ? "positive" : wi.weeklyChange > 0.2 ? "negative" : "neutral") : ""}">${wi.weeklyChange !== null ? (wi.weeklyChange < -0.2 ? "↓" : wi.weeklyChange > 0.2 ? "↑" : "→") : ""}</div>
+    </div>
+    <div class="wi-metric-card">
+      <div class="wi-metric-value">${wi.monthlyChange !== null ? (wi.monthlyChange > 0 ? "+" : "") + displayWeight(Math.abs(wi.monthlyChange)) : "—"}</div>
+      <div class="wi-metric-label">Monthly Change</div>
+      <div class="wi-metric-change ${wi.monthlyChange !== null ? (wi.monthlyChange < -0.5 ? "positive" : wi.monthlyChange > 0.5 ? "negative" : "neutral") : ""}">${wi.monthlyChange !== null ? (wi.monthlyChange < -0.5 ? "↓" : wi.monthlyChange > 0.5 ? "↑" : "→") : ""}</div>
+    </div>
+    <div class="wi-metric-card">
+      <div class="wi-metric-value" style="text-transform:capitalize;font-size:0.85rem">${wi.trendDirection}</div>
+      <div class="wi-metric-label">Trend</div>
+    </div>
+  </div>`;
+
+  // Trend chart
+  html += `<div class="wi-section">
+    <div class="wi-section-title">Weight Trend</div>
+    ${renderWeightTrendChart(wi)}
+  </div>`;
+
+  // Plateau alert
+  if (wi.plateau && wi.plateau.isPlateau) {
+    html += `<div class="wi-section">
+      <div class="wi-alert-card">
+        <div class="wi-alert-icon">📊</div>
+        <div class="wi-alert-body">
+          <h4>Possible Plateau Detected</h4>
+          <p>Your weight has remained unchanged for ${wi.plateau.daysUnchanged} days. Consider reviewing your calorie intake, protein, and activity level.</p>
+          <button class="wi-alert-cta" id="wiDiagnosePlateau">Diagnose Plateau</button>
+        </div>
+      </div>
+    </div>`;
+  }
+
+  // Rate analysis
+  if (wi.rateAnalysis) {
+    const ra = wi.rateAnalysis;
+    html += `<div class="wi-section">
+      <div class="wi-section-title">Rate Analysis</div>
+      <div class="wi-rate-card">
+        <div class="wi-rate-status">
+          <span class="wi-rate-dot ${ra.color}"></span>
+          <span class="wi-rate-label">${ra.label}</span>
+        </div>
+        <span class="wi-rate-value">${ra.rate !== undefined ? (ra.rate > 0 ? "+" : "") + ra.rate.toFixed(2) + " kg/week" : ""}</span>
+      </div>
+    </div>`;
+  }
+
+  // Goal pace projection
+  if (wi.goalPace && wi.goalPace.status !== "no-data" && wi.goalPace.status !== null) {
+    html += `<div class="wi-section">
+      <div class="wi-section-title">Goal Pace</div>
+      <div class="wi-rate-card">
+        <div class="wi-rate-status">
+          <span class="wi-rate-dot ${wi.goalPace.status === "on-pace" ? "green" : wi.goalPace.status === "behind-pace" ? "orange" : "gray"}"></span>
+          <span class="wi-rate-label">${wi.goalPace.label || wi.goalPace.status}</span>
+        </div>
+        <span class="wi-rate-value">${wi.goalPace.remaining ? displayWeight(wi.goalPace.remaining) + " remaining" : ""} ${wi.goalPace.projectedDateStr ? "· " + wi.goalPace.projectedDateStr : ""}</span>
+      </div>
+    </div>`;
+  }
+
+  // Streak + Score
+  html += `<div class="wi-section">
+    <div class="wi-section-title">Logging Consistency</div>
+    <div class="wi-streak-row">
+      <div class="wi-streak-card">
+        <div class="wi-streak-value">${wi.streak.current}</div>
+        <div class="wi-streak-label">Current Streak</div>
+      </div>
+      <div class="wi-streak-card">
+        <div class="wi-streak-value">${wi.streak.longest}</div>
+        <div class="wi-streak-label">Longest Streak</div>
+      </div>
+      <div class="wi-streak-card">
+        <div class="wi-score-bar">
+          <div class="wi-score-track">
+            <div class="wi-score-fill ${wi.loggingScore >= 7 ? "full" : wi.loggingScore >= 4 ? "good" : wi.loggingScore >= 1 ? "low" : "empty"}" style="width:${wi.loggingScore * 10}%"></div>
+          </div>
+          <span class="wi-score-text">${wi.loggingScore}/10</span>
+        </div>
+        <div class="wi-streak-label" style="margin-top:4px">Logging Score</div>
+      </div>
+    </div>
+  </div>`;
+
+  // Education card
+  html += `<div class="wi-section">
+    <div class="wi-section-title">Why Daily Weigh-Ins Matter</div>
+    <div class="wi-edu-card">
+      <div class="wi-edu-title">Trends Beat Daily Readings</div>
+      <div class="wi-edu-text">
+        Daily weight fluctuates due to water, food, and hormones. A single measurement is unreliable.
+      </div>
+      <ul class="wi-edu-list">
+        <li>Your 7-day average smooths out daily noise</li>
+        <li>Weekly change is more meaningful than day-to-day</li>
+        <li>Goal pace uses trends, not single weigh-ins</li>
+        <li>Consistent logging gives the coach better data</li>
+      </ul>
+      <div class="wi-edu-text" style="margin-top:var(--space-xs)">
+        <strong>Tip:</strong> Weigh at the same time each morning, before eating, for consistent data.
+      </div>
+    </div>
+  </div>`;
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("wiBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.getElementById("wiDiagnosePlateau")?.addEventListener("click", () => {
+    const p = PROBLEM_DATABASE.find(pb => pb.id === "cant-lose-weight");
+    if (p) renderProblemDetail("cant-lose-weight");
+  });
+
+  document.querySelector(".main-area")?.scrollTo(0,0);
+  window.scrollTo(0,0);
+}
+
+// ===== REPORT PAGES =====
+function renderWeeklyReportPage(weekKey) {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  let rpt;
+  if (weekKey) {
+    rpt = getWeeklyReport(weekKey);
+  } else {
+    const coach = CoachEngine.runAll();
+    rpt = coach.reports.weekly.full || coach.reports.weekly;
+    saveWeeklyReport(coach.reports.weekly);
+  }
+  if (!rpt) { container.innerHTML = `<div class="tr-page"><div class="wi-empty">No weekly report data available.</div></div>`; return; }
+
+  const f = rpt.full || rpt;
+  const wf = f.scoreBreakdown || {};
+  const sb = f.summary || f;
+  const ga = f.goalAnalysis || {};
+  const tr = f.training || {};
+  const na = f.nutritionAnalysis || {};
+  const ra = f.recoveryAnalysis || {};
+  const parent = rpt.full ? rpt : null;
+
+  const cScore = f.coachScore;
+  const grade = cScore >= 85 ? "A" : cScore >= 75 ? "B" : cScore >= 60 ? "C" : cScore >= 40 ? "D" : "F";
+  const gradeColor = cScore >= 85 ? "var(--accent)" : cScore >= 60 ? "var(--orange)" : "var(--red)";
+
+  let html = `<div class="wr-page"><div class="wr-back" id="wrBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  // HEADER
+  html += `<div class="wr-header"><div class="wr-header-top">
+    <div class="wr-header-left"><span class="wr-header-label">Weekly Report</span><span class="wr-header-week">${f.weekStr || "This Week"}</span></div>
+    <div class="wr-grade" style="color:${gradeColor};border-color:${gradeColor}">${grade}</div>
+  </div>
+  <div class="wr-coach-score"><span class="wr-coach-score-val" style="color:${gradeColor}">${cScore}</span><span class="wr-coach-score-label">Coach Score</span></div>
+  <div class="wr-coach-status ${f.status === "excellent" ? "wr-status-green" : f.status === "good" ? "wr-status-yellow" : f.status === "needs-work" ? "wr-status-orange" : "wr-status-red"}">${f.status === "excellent" ? "Excellent" : f.status === "good" ? "Good" : f.status === "needs-work" ? "Needs Work" : "Inactive"}</div>
+  </div>`;
+
+  // SUMMARY
+  html += `<div class="wr-section"><div class="wr-section-title">Weekly Summary</div><div class="wr-summary-grid">
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.weeksWorkouts ? sb.weeksWorkouts.completed + "/" + sb.weeksWorkouts.target : "—"}</span><span class="wr-summary-lbl">Workouts</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.weightChange !== null && sb.weightChange !== undefined ? (sb.weightChange > 0 ? "+" : "") + sb.weightChange.toFixed(1) + "kg" : "—"}</span><span class="wr-summary-lbl">Weight Change</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.protein ? sb.protein.daysMet + "/" + sb.protein.total : "—"}</span><span class="wr-summary-lbl">Protein Days</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.recoveryScore !== null && sb.recoveryScore !== undefined ? sb.recoveryScore + "%" : "—"}</span><span class="wr-summary-lbl">Recovery</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.steps ? sb.steps.daysMet + "/" + sb.steps.total : "—"}</span><span class="wr-summary-lbl">Active Days</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${sb.consistencyPct !== undefined ? sb.consistencyPct + "%" : "—"}</span><span class="wr-summary-lbl">Consistency</span></div>
+  </div></div>`;
+
+  // COACH SCORE BREAKDOWN
+  html += `<div class="wr-section"><div class="wr-section-title">Coach Score Breakdown</div><div class="wr-breakdown">
+    ${[ 
+      { key: "workout", label: "Workouts", max: 30, icon: "🏋️" },
+      { key: "protein", label: "Protein", max: 20, icon: "🥩" },
+      { key: "recovery", label: "Recovery", max: 15, icon: "😴" },
+      { key: "activity", label: "Activity", max: 15, icon: "🚶" },
+      { key: "tracking", label: "Tracking", max: 10, icon: "📊" },
+      { key: "consistency", label: "Consistency", max: 10, icon: "🔥" },
+    ].map(item => {
+      const data = wf[item.key] || { score: 0, max: item.max, pct: 0 };
+      const barColor = data.pct >= 80 ? "var(--accent)" : data.pct >= 50 ? "var(--orange)" : "var(--red)";
+      return `<div class="wr-breakdown-row"><div class="wr-breakdown-left"><span class="wr-breakdown-icon">${item.icon}</span><span class="wr-breakdown-name">${item.label}</span></div><div class="wr-breakdown-right"><div class="wr-breakdown-bar"><div class="wr-breakdown-fill" style="width:${data.pct}%;background:${barColor}"></div></div><span class="wr-breakdown-score">${data.score}/${item.max}</span></div></div>`;
+    }).join("")}
+  </div></div>`;
+
+  // GOAL ANALYSIS
+  html += `<div class="wr-section"><div class="wr-section-title">Goal Analysis</div><div class="wr-card">
+    <div class="wr-goal-row"><span class="wr-goal-label">Goal</span><span class="wr-goal-val">${ga.goalLabel || ga.goal || "—"}</span></div>
+    <div class="wr-goal-row"><span class="wr-goal-label">Current Weight</span><span class="wr-goal-val">${ga.currentWeight ? displayWeight(ga.currentWeight) : "—"}</span></div>
+    <div class="wr-goal-row"><span class="wr-goal-label">Weekly Change</span><span class="wr-goal-val ${ga.weeklyChange !== null && ga.weeklyChange !== undefined ? (ga.weeklyChange < 0 ? "wr-val-green" : "wr-val-red") : ""}">${ga.weeklyChange !== null && ga.weeklyChange !== undefined ? (ga.weeklyChange > 0 ? "+" : "") + ga.weeklyChange.toFixed(1) + "kg" : "—"}</span></div>
+    <div class="wr-goal-row"><span class="wr-goal-label">Pace</span><span class="wr-goal-val">${ga.paceStatus || "—"}</span></div>
+    ${ga.projectedDate ? `<div class="wr-goal-row"><span class="wr-goal-label">Projected</span><span class="wr-goal-val wr-val-accent">${ga.projectedDate}</span></div>` : ""}
+    ${ga.rateAnalysis && ga.rateAnalysis.label ? `<div class="wr-goal-row"><span class="wr-goal-label">Rate</span><span class="wr-goal-val"><span class="wr-rate-dot ${ga.rateAnalysis.color}"></span> ${ga.rateAnalysis.label}</span></div>` : ""}
+  </div></div>`;
+
+  // TRAINING ANALYSIS
+  html += `<div class="wr-section"><div class="wr-section-title">Training Analysis</div><div class="wr-card">
+    <div class="wr-goal-row"><span class="wr-goal-label">Workouts</span><span class="wr-goal-val">${tr.frequency ? tr.frequency.current + " this week" : "—"}</span></div>
+    ${tr.frequency && tr.frequency.previous !== undefined ? `<div class="wr-goal-row"><span class="wr-goal-label">vs Last Week</span><span class="wr-goal-val ${tr.frequency.change > 0 ? "wr-val-green" : tr.frequency.change < 0 ? "wr-val-red" : ""}">${tr.frequency.change > 0 ? "+" : ""}${tr.frequency.change}</span></div>` : ""}
+    ${tr.volume ? `<div class="wr-goal-row"><span class="wr-goal-label">Total Volume</span><span class="wr-goal-val">${tr.volume >= 1000 ? (tr.volume / 1000).toFixed(1) + "k" : tr.volume} kg</span></div>` : ""}
+    ${tr.prs ? `<div class="wr-goal-row"><span class="wr-goal-label">PRs</span><span class="wr-goal-val wr-val-accent">${tr.prs}</span></div>` : ""}
+    ${tr.missedWorkouts > 0 ? `<div class="wr-goal-row"><span class="wr-goal-label">Missed</span><span class="wr-goal-val wr-val-red">${tr.missedWorkouts} workouts</span></div>` : ""}
+  </div></div>`;
+
+  // NUTRITION ANALYSIS
+  html += `<div class="wr-section"><div class="wr-section-title">Nutrition Analysis</div><div class="wr-card">
+    <div class="wr-goal-row"><span class="wr-goal-label">Protein</span><span class="wr-goal-val">${na.protein ? na.protein.daysMet + "/" + na.protein.total + " days" : "—"}</span></div>
+    ${na.protein && na.protein.target ? `<div class="wr-goal-row"><span class="wr-goal-label">Target</span><span class="wr-goal-val">${na.protein.target}g/day</span></div>` : ""}
+    <div class="wr-goal-row"><span class="wr-goal-label">Steps</span><span class="wr-goal-val">${na.steps ? na.steps.daysMet + "/" + na.steps.total + " days" : "—"}</span></div>
+    ${na.steps && na.steps.target ? `<div class="wr-goal-row"><span class="wr-goal-label">Target</span><span class="wr-goal-val">${na.steps.target.toLocaleString()}/day</span></div>` : ""}
+  </div></div>`;
+
+  // RECOVERY ANALYSIS
+  html += `<div class="wr-section"><div class="wr-section-title">Recovery Analysis</div><div class="wr-card">
+    <div class="wr-goal-row"><span class="wr-goal-label">Recovery Score</span><span class="wr-goal-val ${(ra.score || 0) >= 70 ? "wr-val-green" : (ra.score || 0) >= 40 ? "wr-val-orange" : "wr-val-red"}">${ra.score !== null && ra.score !== undefined ? ra.score : "—"}/100</span></div>
+    <div class="wr-goal-row"><span class="wr-goal-label">Status</span><span class="wr-goal-val">${ra.label || ra.status || "—"}</span></div>
+    ${ra.consecutiveDays !== undefined ? `<div class="wr-goal-row"><span class="wr-goal-label">Cons Days</span><span class="wr-goal-val">${ra.consecutiveDays}</span></div>` : ""}
+    ${ra.weeklyAvg !== null && ra.weeklyAvg !== undefined ? `<div class="wr-goal-row"><span class="wr-goal-label">Weekly Avg</span><span class="wr-goal-val">${ra.weeklyAvg}</span></div>` : ""}
+    ${ra.sleepAvg !== null && ra.sleepAvg !== undefined ? `<div class="wr-goal-row"><span class="wr-goal-label">Avg Sleep</span><span class="wr-goal-val">${ra.sleepAvg.toFixed(1)}h</span></div>` : ""}
+    ${ra.recommendations && ra.recommendations.length ? `<div class="wr-recs">${ra.recommendations.slice(0, 2).map(r => `<div class="wr-rec">• ${r}</div>`).join("")}</div>` : ""}
+  </div></div>`;
+
+  // BIGGEST WIN
+  html += `<div class="wr-section"><div class="wr-section-title">Biggest Win</div><div class="wr-card wr-card-highlight">${f.biggestWin || "—"}</div></div>`;
+
+  // BIGGEST LIMITER
+  html += `<div class="wr-section"><div class="wr-section-title">Biggest Limiter</div><div class="wr-card wr-card-warning">${f.biggestLimiter || "—"}</div></div>`;
+
+  // NEXT WEEK FOCUS
+  if (f.nextWeekFocus && f.nextWeekFocus.length) {
+    html += `<div class="wr-section"><div class="wr-section-title">Next Week Focus</div><div class="wr-card">${f.nextWeekFocus.map((item, i) => `<div class="wr-focus-item"><span class="wr-focus-num">${i + 1}</span><span class="wr-focus-text">${item}</span></div>`).join("")}</div></div>`;
+  }
+
+  // COACH MESSAGE
+  html += `<div class="wr-section"><div class="wr-section-title">Coach Message</div><div class="wr-card wr-card-message">${f.coachMessage || "—"}</div></div>`;
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("wrBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function renderMonthlyReportPage(monthKey) {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  let rpt;
+  if (monthKey) {
+    rpt = getMonthlyReport(monthKey);
+  } else {
+    const coach = CoachEngine.runAll();
+    rpt = coach.reports.monthly.full || coach.reports.monthly;
+    saveMonthlyReport(coach.reports.monthly);
+  }
+  if (!rpt) { container.innerHTML = `<div class="tr-page"><div class="wi-empty">No monthly report data available.</div></div>`; return; }
+
+  const f = rpt.full || rpt;
+  const parent = rpt.full ? rpt : null;
+
+  let html = `<div class="wr-page"><div class="wr-back" id="mrBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  // HEADER
+  html += `<div class="wr-header"><div class="wr-header-top">
+    <div class="wr-header-left"><span class="wr-header-label">Monthly Analysis</span><span class="wr-header-week">${f.month || "This Month"}</span></div>
+  </div>
+  <div class="wr-coach-score"><span class="wr-coach-score-val">${f.coachScore || "—"}</span><span class="wr-coach-score-label">Coach Score</span></div>
+  <div class="wr-coach-verdict">${f.coachVerdict || "—"}</div>
+  </div>`;
+
+  // SUMMARY
+  html += `<div class="wr-section"><div class="wr-section-title">Monthly Summary</div><div class="wr-summary-grid">
+    <div class="wr-summary-item"><span class="wr-summary-val">${f.goalProgress !== null && f.goalProgress !== undefined ? f.goalProgress + "%" : "—"}</span><span class="wr-summary-lbl">Goal Progress</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${f.weightChange !== null && f.weightChange !== undefined ? (f.weightChange > 0 ? "+" : "") + f.weightChange.toFixed(1) + "kg" : "—"}</span><span class="wr-summary-lbl">Weight Change</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${f.strengthChange || "—"}</span><span class="wr-summary-lbl">Strength</span></div>
+    <div class="wr-summary-item"><span class="wr-summary-val">${f.coachScoreChange !== null ? (f.coachScoreChange > 0 ? "+" : "") + f.coachScoreChange : "—"}</span><span class="wr-summary-lbl">Score Change</span></div>
+  </div></div>`;
+
+  // TRENDS
+  if (f.trend) {
+    html += `<div class="wr-section"><div class="wr-section-title">Trends</div><div class="wr-card">${Object.entries(f.trend).filter(([, v]) => v).map(([k, v]) => {
+      const upOrDown = v === "up" ? "↑" : v === "down" ? "↓" : "→";
+      const trendColor = v === "up" ? "var(--accent)" : v === "down" ? "var(--red)" : "var(--text-secondary)";
+      return `<div class="wr-goal-row"><span class="wr-goal-label">${k.charAt(0).toUpperCase() + k.slice(1)}</span><span class="wr-goal-val" style="color:${trendColor}">${upOrDown}</span></div>`;
+    }).join("")}</div></div>`;
+  }
+
+  // PLATEAU ALERTS
+  if (f.plateauAlerts && f.plateauAlerts.length) {
+    html += `<div class="wr-section"><div class="wr-section-title">Alerts</div><div class="wr-card wr-card-warning">${f.plateauAlerts.map(a => `<div class="wr-rec">🔴 ${a}</div>`).join("")}</div></div>`;
+  }
+
+  // RECOMMENDATIONS
+  if (f.recommendations && f.recommendations.length) {
+    html += `<div class="wr-section"><div class="wr-section-title">Recommendations</div><div class="wr-card">${f.recommendations.map((r, i) => `<div class="wr-focus-item"><span class="wr-focus-num">${i + 1}</span><span class="wr-focus-text">${r}</span></div>`).join("")}</div></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("mrBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function renderReportHistory() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  const keys = getAllReportKeys();
+  let html = `<div class="wr-page"><div class="wr-back" id="rhBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>
+  <div class="wr-header"><div class="wr-header-top">
+    <div class="wr-header-left"><span class="wr-header-label">Report History</span></div>
+  </div></div>`;
+
+  html += `<div class="wr-section"><div class="wr-section-title">Weekly Reports</div>`;
+  if (keys.weekly.length === 0) {
+    html += `<div class="wr-card" style="color:var(--text-secondary);text-align:center">No weekly reports saved yet. Reports are auto-saved when viewed.</div>`;
+  } else {
+    html += `<div class="wr-history-list">${keys.weekly.slice(0, 12).map(k => {
+      const r = getWeeklyReport(k);
+      const f = r && r.full;
+      return `<button class="wr-history-item" data-week-key="${k}"><span class="wr-history-left"><span class="wr-history-title">Week ${k}</span>${f && f.coachScore ? `<span class="wr-history-score">Score: ${f.coachScore}</span>` : ""}</span><span class="wr-history-arrow">→</span></button>`;
+    }).join("")}</div>`;
+  }
+  html += `</div>`;
+
+  html += `<div class="wr-section"><div class="wr-section-title">Monthly Reports</div>`;
+  if (keys.monthly.length === 0) {
+    html += `<div class="wr-card" style="color:var(--text-secondary);text-align:center">No monthly reports saved yet.</div>`;
+  } else {
+    html += `<div class="wr-history-list">${keys.monthly.slice(0, 12).map(k => {
+      const r = getMonthlyReport(k);
+      const f = r && r.full;
+      const label = k.split("-");
+      const monthNames = ["January","February","March","April","May","June","July","August","September","October","November","December"];
+      const monthName = monthNames[parseInt(label[1]) - 1] || k;
+      return `<button class="wr-history-item" data-month-key="${k}"><span class="wr-history-left"><span class="wr-history-title">${monthName} ${label[0]}</span>${f && f.coachScore ? `<span class="wr-history-score">Score: ${f.coachScore}</span>` : ""}</span><span class="wr-history-arrow">→</span></button>`;
+    }).join("")}</div>`;
+  }
+  html += `</div>`;
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("rhBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  container.querySelectorAll("[data-week-key]").forEach(btn => {
+    btn.addEventListener("click", () => renderWeeklyReportPage(btn.dataset.weekKey));
+  });
+  container.querySelectorAll("[data-month-key]").forEach(btn => {
+    btn.addEventListener("click", () => renderMonthlyReportPage(btn.dataset.monthKey));
+  });
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+// ===== RECOVERY & READINESS PAGE =====
+function renderReadinessPage() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const coach = CoachEngine.runAll();
+  const rec = coach.recovery;
+  const rd = coach.readiness();
+  const rdComp = rec.components || {};
+  const rdDet = rec.details || {};
+
+  const score = rec.score;
+  const color = score >= 75 ? "var(--accent)" : score >= 60 ? "var(--orange)" : "var(--red)";
+  const ringCirc = 2 * Math.PI * 40;
+  const ringOff = ringCirc - (score / 100) * ringCirc;
+
+  const barColor = (pct) => pct >= 80 ? "var(--accent)" : pct >= 50 ? "var(--orange)" : "var(--red)";
+  const pctOfMax = (comp) => comp && comp.max > 0 ? Math.round((comp.score / comp.max) * 100) : 0;
+
+  let html = `<div class="rr-page"><div class="wr-back" id="rrBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  // Readiness Ring
+  html += `<div class="rr-hero-full">
+    <div class="rr-hero-full-ring">
+      <svg viewBox="0 0 96 96">
+        <circle class="rr-ring-bg" cx="48" cy="48" r="40"/>
+        <circle class="rr-ring-fill" cx="48" cy="48" r="40" stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" style="stroke:${color}"/>
+      </svg>
+      <div class="rr-hero-full-text"><span class="rr-hero-full-score" style="color:${color}">${score}</span><span class="rr-hero-full-label">${rec.label}</span></div>
+    </div>
+    <div class="rr-hero-full-message">${rec.coachMessage}</div>
+    ${rd.weekAvg !== null ? `<div class="rr-hero-full-avg">7-Day Avg: <strong>${rd.weekAvg}</strong></div>` : ""}
+  </div>`;
+
+  // Score Breakdown
+  const components = [
+    { key: "sleep", label: "Sleep", icon: "🌙", comp: rdComp.sleep },
+    { key: "trainingLoad", label: "Training Load", icon: "🏋️", comp: rdComp.trainingLoad },
+    { key: "recoveryDays", label: "Recovery Days", icon: "🔄", comp: rdComp.recoveryDays },
+    { key: "protein", label: "Protein", icon: "🥩", comp: rdComp.protein },
+    { key: "consistency", label: "Consistency", icon: "🔥", comp: rdComp.consistency },
+    { key: "goalStress", label: "Goal Stress", icon: "🎯", comp: rdComp.goalStress },
+  ];
+  html += `<div class="rr-section"><div class="rr-section-title">Recovery Score Breakdown</div><div class="rr-breakdown">`;
+  components.forEach((c) => {
+    const pct = pctOfMax(c.comp);
+    html += `<div class="rr-breakdown-row">
+      <div class="rr-breakdown-left"><span class="rr-breakdown-icon">${c.icon}</span><span class="rr-breakdown-name">${c.label}</span></div>
+      <div class="rr-breakdown-right"><div class="rr-breakdown-bar"><div class="rr-breakdown-fill" style="width:${pct}%;background:${barColor(pct)}"></div></div><span class="rr-breakdown-score">${c.comp ? c.comp.score + "/" + c.comp.max : "—"}</span></div>
+    </div>`;
+  });
+  html += `</div></div>`;
+
+  // Fatigue Flags
+  if (rdDet.fatigueFlags && rdDet.fatigueFlags.length > 0) {
+    html += `<div class="rr-section"><div class="rr-section-title">Fatigue Detection</div><div class="rr-card">`;
+    rdDet.fatigueFlags.forEach((f) => {
+      const fColor = f.severity === "high" ? "var(--red)" : f.severity === "moderate" ? "var(--orange)" : "var(--text-secondary)";
+      html += `<div class="rr-fatigue-item"><span class="rr-fatigue-dot" style="background:${fColor}"></span><span class="rr-fatigue-text">${f.text}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Details
+  html += `<div class="rr-section"><div class="rr-section-title">Details</div><div class="rr-card rr-card-grid">
+    <div class="rr-detail-item"><span class="rr-detail-label">Sleep</span><span class="rr-detail-val">${rdDet.avgSleep ? rdDet.avgSleep.toFixed(1) + "h" : "—"}</span></div>
+    <div class="rr-detail-item"><span class="rr-detail-label">Weekly Sets</span><span class="rr-detail-val">${rdDet.weeklySets || 0}</span></div>
+    <div class="rr-detail-item"><span class="rr-detail-label">Consecutive Days</span><span class="rr-detail-val">${rdDet.consecutiveTrainingDays || 0}d</span></div>
+    <div class="rr-detail-item"><span class="rr-detail-label">Recovery Days</span><span class="rr-detail-val">${rdDet.recoveryDays || 0}/7</span></div>
+    <div class="rr-detail-item"><span class="rr-detail-label">Protein Adherence</span><span class="rr-detail-val">${rdDet.proteinDays || 0}/7</span></div>
+    <div class="rr-detail-item"><span class="rr-detail-label">Volume Ratio</span><span class="rr-detail-val">${rdDet.volumeRatio ? rdDet.volumeRatio.toFixed(1) + "x" : "—"}</span></div>
+  </div></div>`;
+
+  // 7-Day Trend
+  if (rd.history && rd.history.length >= 2) {
+    const recent7 = rd.history.slice(-7);
+    const scores7 = recent7.map((h) => h.score);
+    const minS = Math.min(...scores7) - 5;
+    const maxS = Math.max(...scores7) + 5;
+    const rangeS = maxS - minS || 10;
+    const chartW = 320;
+    const chartH = 80;
+    const pad = { top: 8, right: 8, bottom: 16, left: 28 };
+    const plotW = chartW - pad.left - pad.right;
+    const plotH = chartH - pad.top - pad.bottom;
+    const xScale = (i) => pad.left + (i / (recent7.length - 1)) * plotW;
+    const yScale = (v) => pad.top + plotH - ((v - minS) / rangeS) * plotH;
+    const pathD = recent7.map((h, i) => `${i === 0 ? "M" : "L"}${xScale(i).toFixed(1)},${yScale(h.score).toFixed(1)}`).join(" ");
+    const dateLabels = recent7.map((h, i) => {
+      const d = new Date(h.date);
+      const show = i === 0 || i === recent7.length - 1 || i % 2 === 0;
+      return show ? `<text x="${xScale(i).toFixed(1)}" y="${chartH - 4}" text-anchor="${i === 0 ? "start" : "end"}" font-size="7" fill="var(--text-tertiary)">${d.getMonth()+1}/${d.getDate()}</text>` : "";
+    }).join("");
+    html += `<div class="rr-section"><div class="rr-section-title">7-Day Recovery Trend</div><div class="rr-chart-wrap">
+      <svg viewBox="0 0 ${chartW} ${chartH}" style="width:100%;height:auto">
+        <path d="${pathD}" stroke="${color}" stroke-width="2" fill="none" stroke-linejoin="round"/>
+        ${recent7.map((h, i) => `<circle cx="${xScale(i).toFixed(1)}" cy="${yScale(h.score).toFixed(1)}" r="2.5" fill="${color}" opacity="0.8"/>`).join("")}
+        ${dateLabels}
+        <text x="2" y="${pad.top + 10}" font-size="6" fill="var(--text-tertiary)">${maxS.toFixed(0)}</text>
+        <text x="2" y="${pad.top + plotH}" font-size="6" fill="var(--text-tertiary)">${minS.toFixed(0)}</text>
+      </svg>
+    </div></div>`;
+  }
+
+  // Recommendations
+  if (rec.recommendations && rec.recommendations.length > 0) {
+    html += `<div class="rr-section"><div class="rr-section-title">Recommendations</div><div class="rr-card">`;
+    rec.recommendations.forEach((r) => {
+      const actionIcon = r.action === "push" ? "🔥" : r.action === "rest" ? "😴" : r.action === "reduce" ? "⚡" : r.action === "sleep" ? "🌙" : r.action === "nutrition" ? "🥩" : "💧";
+      html += `<div class="rr-rec-item"><span class="rr-rec-icon">${actionIcon}</span><span class="rr-rec-text">${r.text}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("rrBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// CHALLENGES, ACHIEVEMENTS & STREAKS PAGES
+// ============================================================
+
+function renderChallengesPage() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const coach = CoachEngine.runAll();
+  const cas = coach.cas;
+  if (!cas) { container.innerHTML = "<div class='tr-page'><div class='tr-section'>CAS data unavailable.</div></div>"; return; }
+
+  const ch = cas.challenges;
+  const todayKey = getDateKey(new Date());
+
+  let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  // XP/Level header
+  html += `<div class="cas-header"><div class="cas-level-badge"><span class="cas-level-num">${cas.level}</span><span class="cas-level-label">${cas.levelTitle}</span></div><div class="cas-xp-info"><div class="cas-xp-total">${cas.totalXP} XP</div><div class="cas-xp-bar"><div class="cas-xp-fill" style="width:${cas.xp.xpNeeded > 0 ? (cas.xp.xp / cas.xp.xpNeeded) * 100 : 0}%"></div></div><div class="cas-xp-progress">${cas.xp.xp} / ${cas.xp.xpNeeded} XP to Level ${cas.level + 1}</div></div></div>`;
+
+  // Empty state for new users
+  const hasAnyChallenge = ch.daily || (ch.weekly || []).length > 0 || (ch.monthly || []).length > 0;
+  if (!hasAnyChallenge) {
+    html += `<div class="cas-section"><div class="tr-empty-state" style="padding:1.5rem 0">
+      <div class="tr-empty-icon">🏆</div>
+      <div class="tr-empty-title">No Active Challenges</div>
+      <div class="tr-empty-desc">Create a goal to receive personalized challenges.</div>
+    </div></div>`;
+    html += `</div>`;
+    container.innerHTML = html;
+    document.getElementById("casBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+    document.querySelector(".main-area")?.scrollTo(0, 0);
+    window.scrollTo(0, 0);
+    return;
+  }
+
+  // Daily Challenge
+  if (ch.daily) {
+    const d = ch.daily;
+    const dpct = d.target > 0 ? Math.min(100, Math.round((d.progress / d.target) * 100)) : 0;
+    const ringCirc = 2 * Math.PI * 30;
+    const ringOff = d.completed ? 0 : ringCirc - (dpct / 100) * ringCirc;
+    html += `<div class="cas-section"><div class="cas-section-label">Today's Challenge</div>
+      <div class="cas-challenge-card ${d.completed ? "cas-completed" : ""}">
+        <div class="cas-challenge-ring">
+          <svg viewBox="0 0 72 72">
+            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="4" opacity="0.3"/>
+            <circle cx="36" cy="36" r="30" fill="none" stroke="${d.completed ? "var(--accent)" : "var(--blue)"}" stroke-width="4" stroke-linecap="round"
+              stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" transform="rotate(-90 36 36)"/>
+          </svg>
+          <span class="cas-challenge-ring-text">${d.completed ? "✓" : dpct + "%"}</span>
+        </div>
+        <div class="cas-challenge-body">
+          <div class="cas-challenge-icon">${d.icon}</div>
+          <div class="cas-challenge-name">${d.label}</div>
+          <div class="cas-challenge-desc">${d.desc}</div>
+          <div class="cas-challenge-progress-text">${d.target > 0 ? Math.min(d.progress || 0, d.target) : 0} / ${d.target > 0 ? d.target : "—"} ${d.unit || ""}</div>
+          <div class="cas-challenge-reward">${d.reward ? "Reward: " + (d.reward.xp || 0) + " XP" + (d.reward.coachScore > 0 ? " · +" + d.reward.coachScore + " Coach" : "") : ""}</div>
+        </div>
+      </div></div>`;
+  }
+
+  // Weekly Challenges
+  const weeklies = ch.weekly || [];
+  if (weeklies.length > 0) {
+    html += `<div class="cas-section"><div class="cas-section-label">Weekly Challenges</div><div class="cas-challenge-list">`;
+    weeklies.forEach((w) => {
+      const wpct = w.target > 0 ? Math.min(100, Math.round((w.progress / w.target) * 100)) : 0;
+      html += `<div class="cas-challenge-card ${w.completed ? "cas-completed" : ""}">
+        <div class="cas-challenge-icon-lg">${w.icon}</div>
+        <div class="cas-challenge-body">
+          <div class="cas-challenge-name">${w.label}</div>
+          <div class="cas-challenge-progress-wrap">
+            <div class="cas-challenge-bar"><div class="cas-challenge-fill" style="width:${wpct}%;background:${w.completed ? "var(--accent)" : "var(--blue)"}"></div></div>
+            <span class="cas-challenge-pct">${wpct}%</span>
+          </div>
+          <div class="cas-challenge-meta">
+            <span>${w.target > 0 ? Math.min(w.progress || 0, w.target) : 0} / ${w.target > 0 ? w.target : "—"} ${w.unit || ""}</span>
+            <span>${w.reward ? w.reward.xp + " XP" : ""}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Monthly Challenges
+  const monthlies = ch.monthly || [];
+  if (monthlies.length > 0) {
+    html += `<div class="cas-section"><div class="cas-section-label">Monthly Challenges</div><div class="cas-challenge-list">`;
+    monthlies.forEach((m) => {
+      const mpct = m.target > 0 ? Math.min(100, Math.round((m.progress / m.target) * 100)) : 0;
+      html += `<div class="cas-challenge-card ${m.completed ? "cas-completed" : ""}">
+        <div class="cas-challenge-icon-lg">${m.icon}</div>
+        <div class="cas-challenge-body">
+          <div class="cas-challenge-name">${m.label}</div>
+          <div class="cas-challenge-progress-wrap">
+            <div class="cas-challenge-bar"><div class="cas-challenge-fill" style="width:${mpct}%;background:${m.completed ? "var(--accent)" : "var(--orange)"}"></div></div>
+            <span class="cas-challenge-pct">${mpct}%</span>
+          </div>
+          <div class="cas-challenge-meta">
+            <span>${m.target > 0 ? Math.min(m.progress || 0, m.target) : 0} / ${m.target > 0 ? m.target : "—"} ${m.unit || ""}</span>
+            <span>${m.reward ? m.reward.xp + " XP" : ""}</span>
+          </div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Completed challenges
+  if (ch.completed > 0) {
+    html += `<div class="cas-section"><div class="cas-section-label">Completed (${ch.completed})</div></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("casBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function renderAchievementsPage() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const coach = CoachEngine.runAll();
+  const cas = coach.cas;
+  if (!cas) { container.innerHTML = "<div class='tr-page'><div class='tr-section'>CAS data unavailable.</div></div>"; return; }
+
+  const unlocked = new Set(cas.achievements.unlocked.map((a) => a.id));
+  const allAch = ACHIEVEMENT_DB || cas.achievements.all || [];
+  const categories = ["consistency", "nutrition", "tracking", "goals", "strength", "learning"];
+  const catLabels = { consistency: "Consistency", nutrition: "Nutrition", tracking: "Weight Tracking", goals: "Goals", strength: "Strength", learning: "Learning" };
+  const catIcons = { consistency: "🔥", nutrition: "🥩", tracking: "⚖️", goals: "🎯", strength: "🏆", learning: "📖" };
+
+  let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  html += `<div class="cas-header"><div class="cas-ach-summary"><span class="cas-ach-count">${cas.achievements.count}</span><span class="cas-ach-total">/${cas.achievements.total}</span><span class="cas-ach-label">Achievements Unlocked</span></div></div>`;
+
+  categories.forEach((cat) => {
+    const catAchs = allAch.filter((a) => a.category === cat);
+    const catUnlocked = catAchs.filter((a) => unlocked.has(a.id)).length;
+    html += `<div class="cas-section"><div class="cas-section-label">${catIcons[cat] || "•"} ${catLabels[cat] || cat} <span class="cas-section-count">${catUnlocked}/${catAchs.length}</span></div>
+      <div class="cas-ach-grid">`;
+    catAchs.forEach((a) => {
+      const isUnlocked = unlocked.has(a.id);
+      html += `<div class="cas-ach-card ${isUnlocked ? "cas-ach-unlocked" : "cas-ach-locked"}">
+        <div class="cas-ach-icon">${isUnlocked ? a.icon : "🔒"}</div>
+        <div class="cas-ach-info">
+          <div class="cas-ach-name">${a.label}</div>
+          <div class="cas-ach-desc">${a.desc}</div>
+        </div>
+        ${isUnlocked ? '<span class="cas-ach-check">✓</span>' : ""}
+      </div>`;
+    });
+    html += `</div></div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("casBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+function renderStreaksPage() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const coach = CoachEngine.runAll();
+  const cas = coach.cas;
+  if (!cas) { container.innerHTML = "<div class='tr-page'><div class='tr-section'>CAS data unavailable.</div></div>"; return; }
+
+  const streakKeys = [
+    { key: "workout", label: "Workout Streak", icon: "🏋️", color: "var(--accent)" },
+    { key: "protein", label: "Protein Streak", icon: "🥩", color: "var(--blue)" },
+    { key: "weightLogging", label: "Weight Log Streak", icon: "⚖️", color: "var(--orange)" },
+    { key: "learning", label: "Learning Streak", icon: "📖", color: "var(--yellow)" },
+  ];
+
+  let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  html += `<div class="cas-header"><div class="cas-streak-header"><span class="cas-streak-title">Streaks</span><span class="cas-streak-sub">Your consistency across all areas</span></div></div>`;
+
+  streakKeys.forEach((sk) => {
+    const s = cas.streak[sk.key];
+    if (!s) return;
+    const milestones = [7, 14, 30, 60, 90, 180, 365];
+    const nextMilestone = milestones.find((m) => m > s.current) || "max";
+    const nextLabel = nextMilestone === "max" ? "Maxed out!" : nextMilestone + " days";
+    const ringCirc = 2 * Math.PI * 16;
+    const pct = nextMilestone !== "max" && nextMilestone !== "max" ? (s.current / nextMilestone) * 100 : 100;
+    const ringOff = ringCirc - (Math.min(100, pct) / 100) * ringCirc;
+
+    html += `<div class="cas-streak-card">
+      <div class="cas-streak-ring-wrap">
+        <svg width="44" height="44" viewBox="0 0 44 44">
+          <circle cx="22" cy="22" r="16" fill="none" stroke="var(--border)" stroke-width="3" opacity="0.3"/>
+          <circle cx="22" cy="22" r="16" fill="none" stroke="${sk.color}" stroke-width="3" stroke-linecap="round"
+            stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" transform="rotate(-90 22 22)"/>
+        </svg>
+        <span class="cas-streak-ring-icon">${sk.icon}</span>
+      </div>
+      <div class="cas-streak-body">
+        <div class="cas-streak-name">${sk.label}</div>
+        <div class="cas-streak-current">${s.current} days</div>
+        <div class="cas-streak-meta">Longest: ${s.longest} days · Next: ${nextLabel}</div>
+      </div>
+    </div>`;
+  });
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("casBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+// ============================================================
+// COACH COMMAND CENTER — unified fitness dashboard
+// ============================================================
+function renderCoachCommandCenter() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+  const coach = CoachEngine.runAll();
+  const ad = coach.adaptive;
+  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    OnboardingEngine.markFirst7Day("day6CoachScore");
+  }
+  const dc = coach.daily;
+  const gs = coach.goalStrategy;
+  const prog = coach.progress;
+  const rep = coach.reports;
+  const rec = coach.recovery;
+  const cas = coach.cas;
+  const nut = coach.nutrition;
+
+  const profile = ad && ad.profile;
+  const wrFull = rep.weekly && rep.weekly.full;
+
+  let html = `<div class="rr-page"><div class="wr-back" id="ccBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+  html += `<div class="cc-header"><div class="cc-title">Coach Command Center</div><div class="cc-sub">Your entire fitness journey in one place</div></div>`;
+
+  // Goal Status + Coach Score row
+  const gsColor = prog.gcHealthLevel === "good" ? "var(--accent)" : prog.gcHealthLevel === "warning" ? "var(--orange)" : "var(--red)";
+  const csScore = wrFull ? wrFull.coachScore : 0;
+  const csColor = csScore >= 80 ? "var(--accent)" : csScore >= 60 ? "var(--orange)" : "var(--red)";
+  html += `<div class="cc-metrics-row">
+    <div class="cc-metric-card"><div class="cc-metric-label">Goal Health</div><div class="cc-metric-value" style="color:${gsColor}">${prog.gcHealthScore !== null ? prog.gcHealthScore : "—"}</div></div>
+    <div class="cc-metric-card"><div class="cc-metric-label">Coach Score</div><div class="cc-metric-value" style="color:${csColor}">${csScore}</div></div>
+    <div class="cc-metric-card"><div class="cc-metric-label">Recovery</div><div class="cc-metric-value" style="color:${rec.score >= 75 ? "var(--accent)" : rec.score >= 60 ? "var(--orange)" : "var(--red)"}">${rec.score}</div></div>
+    <div class="cc-metric-card"><div class="cc-metric-label">Level</div><div class="cc-metric-value" style="color:var(--accent)">${cas ? cas.level : "—"}</div></div>
+  </div>`;
+
+  // Focus area (big card)
+  if (ad && ad.focus) {
+    html += `<div class="cc-focus-card"><div class="cc-focus-top"><span class="cc-focus-label">Primary Focus</span><span class="cc-focus-badge">${ad.focus.label}</span></div><div class="cc-focus-msg">${ad.focus.message}</div>${ad.focus.improvement ? `<div class="cc-focus-action">${ad.focus.improvement}</div>` : ""}</div>`;
+  }
+
+  // Active alerts
+  if (ad && ad.alerts && ad.alerts.length > 0) {
+    html += `<div class="cc-section"><div class="cc-section-label">Active Alerts (${ad.alerts.length})</div>`;
+    ad.alerts.forEach((a) => {
+      const sevColor = a.severity === "critical" ? "var(--red)" : a.severity === "high" ? "var(--orange)" : a.severity === "medium" ? "var(--yellow)" : "var(--accent)";
+      html += `<div class="cc-alert"><span class="cc-alert-dot" style="background:${sevColor}"></span><span class="cc-alert-text">${a.text}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Coach Score Breakdown
+  if (wrFull && wrFull.scoreBreakdown) {
+    const breakdown = wrFull.scoreBreakdown;
+    html += `<div class="cc-section"><div class="cc-section-label">Coach Score Breakdown</div><div class="cc-breakdown-grid">`;
+    Object.entries(breakdown).forEach(([key, comp]) => {
+      const pct = comp.pct || 0;
+      const barColor = pct >= 80 ? "var(--accent)" : pct >= 50 ? "var(--orange)" : "var(--red)";
+      const labelMap = { workout: "Workout", protein: "Protein", recovery: "Recovery", activity: "Activity", tracking: "Tracking", consistency: "Consistency" };
+      html += `<div class="cc-breakdown-row"><span class="cc-breakdown-label">${labelMap[key] || key}</span><div class="cc-breakdown-bar"><div class="cc-breakdown-fill" style="width:${pct}%;background:${barColor}"></div></div><span class="cc-breakdown-val">${comp.score}/${comp.max}</span></div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Next actions
+  if (ad && ad.recommendations && ad.recommendations.length > 0) {
+    html += `<div class="cc-section"><div class="cc-section-label">Recommended Actions</div>`;
+    ad.recommendations.slice(0, 4).forEach((r) => {
+      const recIcon = r.type === "lesson" ? "📖" : r.type === "challenge" ? "🎯" : r.type === "recovery" ? "🔄" : r.type === "action" ? "⚡" : r.type === "insight" ? "💡" : "•";
+      html += `<div class="cc-rec-item"><span class="cc-rec-icon">${recIcon}</span><span class="cc-rec-text">${r.label}</span></div>`;
+    });
+    html += `</div>`;
+  }
+
+  // Key stats grid
+  const streak = prog.monthly ? prog.monthly.streak : 0;
+  const weekCount = prog.weekly ? prog.weekly.workouts : 0;
+  html += `<div class="cc-section"><div class="cc-section-label">Quick Stats</div><div class="cc-stats-grid">
+    <div class="cc-stat"><span class="cc-stat-val">${weekCount}</span><span class="cc-stat-label">Workouts/Week</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${streak}d</span><span class="cc-stat-label">Best Streak</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${nut.proteinTarget || "—"}</span><span class="cc-stat-label">Protein Target</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${profile ? Math.round(profile.workoutCompliance) + "%" : "—"}</span><span class="cc-stat-label">Compliance</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${profile ? Math.round(profile.proteinCompliance) + "%" : "—"}</span><span class="cc-stat-label">Protein Adherence</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${cas ? cas.achievements.count : "—"}</span><span class="cc-stat-label">Achievements</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${cas ? cas.challenges.completed : "—"}</span><span class="cc-stat-label">Challenges Done</span></div>
+    <div class="cc-stat"><span class="cc-stat-val">${prog.curWeight ? Math.round(prog.curWeight) + "kg" : "—"}</span><span class="cc-stat-label">Current Weight</span></div>
+  </div></div>`;
+
+  // Goal progress bar
+  if (prog.goalProgress !== null) {
+    html += `<div class="cc-section"><div class="cc-section-label">Goal Progress</div><div class="cc-goal-bar"><div class="cc-goal-fill" style="width:${Math.round(prog.goalProgress)}%"></div></div><div class="cc-goal-text">${Math.round(prog.goalProgress)}% toward ${gs.goalLabel}</div></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("ccBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+// ===== PROGRAM REVIEW =====
+function renderProgramReview() {
+  const container = document.getElementById("trainerPageContent");
+  if (!container) return;
+
+  if (typeof ProgramReviewEngine === "undefined") {
+    container.innerHTML = `<div class="tr-page"><div class="tr-back" id="prBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div><div class="wi-empty">Program Review engine not available.</div></div>`;
+    document.getElementById("prBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+    return;
+  }
+
+  const review = ProgramReviewEngine.runReview();
+  const o = review.outcome;
+  const ph = review.programHealth;
+  const gp = review.goalProgress;
+  const tr = review.training;
+  const rc = review.recovery;
+  const nt = review.nutrition;
+  const ex = review.exercise;
+  const adj = review.adjustments;
+  const recs = review.topRecommendations;
+
+  const strokeDash = (ph.score / 100) * 283;
+  const ringColor = ph.score >= 80 ? "var(--accent)" : ph.score >= 65 ? "var(--orange)" : ph.score >= 45 ? "var(--yellow)" : "var(--red)";
+
+  let html = `<div class="pr-page"><div class="pr-back" id="prBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
+
+  // HEADER
+  html += `
+  <div class="pr-header">
+    <div class="pr-header-top">
+      <div class="pr-header-left">
+        <span class="pr-header-label">Program Review</span>
+        <span class="pr-header-week">${gp.goalType ? (typeof GoalCenter !== "undefined" ? GoalCenter.getGoalLabel() : gp.goalType) : "General"} · Week ${review.weekNumber}</span>
+      </div>
+      <div class="pr-outcome-badge" style="color:${o.color}">${o.icon} ${o.label}</div>
+    </div>
+  </div>`;
+
+  // HEALTH RING + COACH SUMMARY
+  html += `
+  <div class="pr-health-row">
+    <div class="pr-ring-card">
+      <div class="pr-ring">
+        <svg width="100" height="100" viewBox="0 0 100 100">
+          <circle cx="50" cy="50" r="45" fill="none" stroke="var(--surface-3)" stroke-width="8" />
+          <circle cx="50" cy="50" r="45" fill="none" stroke="${ringColor}" stroke-width="8" stroke-linecap="round" stroke-dasharray="283" stroke-dashoffset="${283 - strokeDash}" transform="rotate(-90 50 50)" />
+        </svg>
+        <div class="pr-ring-score" style="color:${ringColor}">${ph.score}</div>
+      </div>
+      <div class="pr-ring-label">Program Health</div>
+    </div>
+    <div class="pr-summary-card">
+      <div class="pr-summary-text">${review.coachSummary}</div>
+      <div class="pr-summary-confidence">Confidence: ${ph.score >= 45 ? Math.round(60 + ph.score * 0.35) : 45}%</div>
+    </div>
+  </div>`;
+
+  // SECTION 1: Goal Progress Review
+  html += `
+  <div class="pr-section">
+    <div class="pr-section-header"><span class="pr-section-title">Goal Progress Review</span></div>
+    <div class="pr-metrics-grid">
+      ${gp.goalType ? `
+      <div class="pr-metric-card"><span class="pr-metric-label">Goal Type</span><span class="pr-metric-value">${typeof GoalCenter !== "undefined" ? GoalCenter.getGoalLabel() : gp.goalType}</span></div>
+      ` : ""}
+      ${gp.startWeight ? `<div class="pr-metric-card"><span class="pr-metric-label">Start</span><span class="pr-metric-value">${gp.startWeight}kg</span></div>` : ""}
+      ${gp.currentWeight ? `<div class="pr-metric-card"><span class="pr-metric-label">Current</span><span class="pr-metric-value">${gp.currentWeight}kg</span></div>` : ""}
+      ${gp.targetWeight ? `<div class="pr-metric-card"><span class="pr-metric-label">Target</span><span class="pr-metric-value">${gp.targetWeight}kg</span></div>` : ""}
+      ${gp.weeklyRate !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Weekly Rate</span><span class="pr-metric-value" style="color:${gp.status === "on-pace" || gp.status === "fast" ? "var(--accent)" : "var(--orange)"}">${gp.goalType === "lose-fat" ? "-" : ""}${Math.abs(gp.weeklyRate).toFixed(2)}kg</span></div>` : ""}
+      ${gp.progress !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Progress</span><span class="pr-metric-value">${Math.round(gp.progress)}%</span></div>` : ""}
+    </div>
+    <div class="pr-status-row">
+      <span class="pr-status-badge" style="background:${gp.status === "on-pace" ? "var(--accent)" : gp.status === "slow" || gp.status === "plateau" ? "var(--orange)" : gp.status === "off-track" ? "var(--red)" : "var(--surface-3)"}">${gp.status === "on-pace" ? "On Pace" : gp.status === "slow" ? "Slow" : gp.status === "plateau" ? "Plateau" : gp.status === "fast" ? "Fast" : gp.status === "off-track" ? "Off Track" : gp.status === "maintaining" ? "Maintaining" : gp.status === "stable" ? "Stable" : "Insufficient Data"}</span>
+      <span class="pr-status-text">${gp.summary}</span>
+    </div>
+  </div>`;
+
+  // SECTION 2: Training Effectiveness
+  html += `
+  <div class="pr-section">
+    <div class="pr-section-header"><span class="pr-section-title">Training Effectiveness</span></div>
+    <div class="pr-metrics-grid">
+      <div class="pr-metric-card"><span class="pr-metric-label">Workouts/Week</span><span class="pr-metric-value" style="color:${tr.weekCount >= 3 ? "var(--accent)" : tr.weekCount >= 1 ? "var(--orange)" : "var(--red)"}">${tr.weekCount}</span></div>
+      ${tr.monthCount ? `<div class="pr-metric-card"><span class="pr-metric-label">Monthly</span><span class="pr-metric-value">${tr.monthCount}</span></div>` : ""}
+      ${tr.prCount > 0 ? `<div class="pr-metric-card"><span class="pr-metric-label">PRs This Month</span><span class="pr-metric-value" style="color:var(--accent)">${tr.prCount}</span></div>` : ""}
+      ${tr.missedWorkouts > 0 ? `<div class="pr-metric-card"><span class="pr-metric-label">Missed</span><span class="pr-metric-value" style="color:var(--red)">${tr.missedWorkouts}</span></div>` : ""}
+      ${tr.avgVolumePerSession ? `<div class="pr-metric-card"><span class="pr-metric-label">Avg Exercises</span><span class="pr-metric-value">${tr.avgVolumePerSession.toFixed(1)}</span></div>` : ""}
+      <div class="pr-metric-card"><span class="pr-metric-label">Trend</span><span class="pr-metric-value" style="color:${tr.frequencyTrend === "up" ? "var(--accent)" : tr.frequencyTrend === "down" ? "var(--red)" : "var(--text)"}">${tr.frequencyTrend === "up" ? "↑ Increasing" : tr.frequencyTrend === "down" ? "↓ Decreasing" : "→ Stable"}</span></div>
+    </div>
+    <div class="pr-verdict">${tr.verdict}</div>
+  </div>`;
+
+  // SECTION 3: Recovery Review
+  html += `
+  <div class="pr-section">
+    <div class="pr-section-header"><span class="pr-section-title">Recovery Review</span></div>
+    <div class="pr-metrics-grid">
+      <div class="pr-metric-card"><span class="pr-metric-label">Recovery Score</span><span class="pr-metric-value" style="color:${rc.score >= 80 ? "var(--accent)" : rc.score >= 65 ? "var(--orange)" : "var(--red)"}">${rc.score !== null ? rc.score : "—"}</span></div>
+      ${rc.avgSleep !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Avg Sleep</span><span class="pr-metric-value" style="color:${rc.avgSleep >= 7.5 ? "var(--accent)" : rc.avgSleep >= 6.5 ? "var(--orange)" : "var(--red)"}">${rc.avgSleep.toFixed(1)}h</span></div>` : ""}
+      <div class="pr-metric-card"><span class="pr-metric-label">Training Load</span><span class="pr-metric-value">${rc.trainingLoad} exercises</span></div>
+      <div class="pr-metric-card"><span class="pr-metric-label">Avg Load/Session</span><span class="pr-metric-value">${rc.avgTrainingLoad.toFixed(1)}</span></div>
+    </div>
+    <div class="pr-verdict">${rc.verdict}</div>
+    ${rc.sleepVerdict ? `<div class="pr-verdict pr-verdict-sub">${rc.sleepVerdict}</div>` : ""}
+  </div>`;
+
+  // SECTION 4: Nutrition Review
+  html += `
+  <div class="pr-section">
+    <div class="pr-section-header"><span class="pr-section-title">Nutrition Review</span></div>
+    <div class="pr-metrics-grid">
+      ${nt.proteinDays !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Protein (7 days)</span><span class="pr-metric-value" style="color:${nt.proteinCompliance >= 85 ? "var(--accent)" : nt.proteinCompliance >= 60 ? "var(--orange)" : "var(--red)"}">${nt.proteinDays}/7</span></div>` : ""}
+      ${nt.proteinCompliance !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Compliance</span><span class="pr-metric-value" style="color:${nt.proteinCompliance >= 85 ? "var(--accent)" : nt.proteinCompliance >= 60 ? "var(--orange)" : "var(--red)"}">${Math.round(nt.proteinCompliance)}%</span></div>` : ""}
+      ${nt.proteinTarget ? `<div class="pr-metric-card"><span class="pr-metric-label">Target</span><span class="pr-metric-value">${nt.proteinTarget}g</span></div>` : ""}
+    </div>
+    <div class="pr-verdict">${nt.verdict}</div>
+  </div>`;
+
+  // SECTION 5: Exercise Analysis
+  if (ex.lifts.some(e => e.status !== "untracked")) {
+    html += `
+    <div class="pr-section">
+      <div class="pr-section-header"><span class="pr-section-title">Exercise Analysis</span></div>
+      <div class="pr-ex-grid">`;
+    ex.lifts.filter(e => e.status !== "untracked").forEach((lift) => {
+      const liftColor = lift.status === "progressing" ? "var(--accent)" : lift.isStalled ? "var(--red)" : lift.status === "declining" ? "var(--red)" : "var(--text)";
+      const changeStr = lift.change !== null ? (lift.change > 0 ? `+${lift.change}` : lift.change) + "kg" : "";
+      html += `
+      <div class="pr-ex-card">
+        <div class="pr-ex-top">
+          <span class="pr-ex-name">${lift.name}</span>
+          <span class="pr-ex-status" style="color:${liftColor}">${lift.isStalled ? "Stalled" : lift.status === "progressing" ? "Progressing" : lift.status === "maintained" ? "Maintained" : lift.status === "declining" ? "Declining" : lift.currentWeight ? "Tracked" : "Untracked"}</span>
+        </div>
+        <div class="pr-ex-metrics">
+          ${lift.currentWeight !== null ? `<span class="pr-ex-weight">${lift.currentWeight}kg</span>` : ""}
+          ${changeStr ? `<span class="pr-ex-change" style="color:${liftColor}">${changeStr}</span>` : ""}
+          ${lift.weeksSinceLastPR !== null ? `<span class="pr-ex-weeks">${lift.weeksSinceLastPR}w since PR</span>` : ""}
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // SECTION 6: Adjustments & Recommendations
+  if (recs.length > 0) {
+    html += `
+    <div class="pr-section">
+      <div class="pr-section-header"><span class="pr-section-title">Top Recommendations</span></div>
+      <div class="pr-recs-list">`;
+    recs.forEach((r, i) => {
+      const priorityLabels = ["First", "Second", "Third"];
+      html += `
+      <div class="pr-rec-card">
+        <div class="pr-rec-num">${i + 1}</div>
+        <div class="pr-rec-content">
+          <div class="pr-rec-action">${r.text}</div>
+          <div class="pr-rec-area"><span class="pr-rec-badge">${r.area}</span> ${priorityLabels[i] || ""} priority</div>
+          <div class="pr-rec-detail">${r.detail}</div>
+        </div>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // SECTION 7: Program Health Breakdown
+  if (ph.components && ph.components.length > 0) {
+    html += `
+    <div class="pr-section">
+      <div class="pr-section-header"><span class="pr-section-title">Program Health Breakdown</span></div>
+      <div class="pr-breakdown">`;
+    ph.components.forEach((comp) => {
+      const pct = comp.max > 0 ? (comp.score / comp.max) * 100 : 0;
+      const barColor = pct >= 80 ? "var(--accent)" : pct >= 50 ? "var(--orange)" : "var(--red)";
+      html += `
+      <div class="pr-breakdown-row">
+        <span class="pr-breakdown-label">${comp.name}</span>
+        <div class="pr-breakdown-bar"><div class="pr-breakdown-fill" style="width:${pct}%;background:${barColor}"></div></div>
+        <span class="pr-breakdown-val">${comp.score}/${comp.max}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  // Review History (last 3)
+  const history = ProgramReviewEngine.loadHistory();
+  if (history.reviews && history.reviews.length > 1) {
+    const prevReviews = history.reviews.slice(-4, -1).reverse();
+    html += `
+    <div class="pr-section">
+      <div class="pr-section-header"><span class="pr-section-title">Review History</span></div>
+      <div class="pr-history">`;
+    prevReviews.forEach((r) => {
+      const hColor = r.outcome === "excellent" ? "var(--accent)" : r.outcome === "good" ? "var(--orange)" : r.outcome === "needs-adjustment" ? "var(--yellow)" : "var(--red)";
+      html += `
+      <div class="pr-history-row">
+        <span class="pr-history-date">${r.date}</span>
+        <span class="pr-history-score" style="color:${hColor}">${r.programHealth}</span>
+        <span class="pr-history-outcome" style="color:${hColor}">${r.outcome}</span>
+      </div>`;
+    });
+    html += `</div></div>`;
+  }
+
+  html += `</div>`;
+  container.innerHTML = html;
+
+  document.getElementById("prBackBtn")?.addEventListener("click", () => showTrainerScreen("home"));
+  document.querySelector(".main-area")?.scrollTo(0, 0);
+  window.scrollTo(0, 0);
+}
+
+const ACHIEVEMENT_DB = typeof CASEngine !== "undefined" ? CASEngine.getAllAchievements() : [];
+
+// ===== RECOVERY HISTORY STORAGE (legacy compat) =====
+// Recovery history is now stored via CoachEngine internally
+// This function loads it for external use
+function getRecoveryHistory() {
+  try { return JSON.parse(localStorage.getItem("ironlog_recovery_history")) || {}; }
+  catch { return {}; }
+}
+
+function renderWeightCheckInCard() {
+  const log = (state.weightLog || []).slice().sort((a, b) => b.date.localeCompare(a.date));
+  const today = new Date();
+  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
+  const loggedToday = log.length > 0 && log[0].date === todayKey;
+  const daysSince = log.length > 0 ? Math.round((today - new Date(log[0].date)) / 86400000) : null;
+
+  if (loggedToday) {
+    return `<div class="wi-checkin-card" style="margin-bottom:var(--space-sm)">
+      <div class="wi-checkin-left">
+        <span class="wi-checkin-label">Daily Check-In</span>
+        <span class="wi-checkin-status" style="color:var(--accent)">Logged ${displayWeight(log[0].weight)} ✓</span>
+      </div>
+      <button class="wi-checkin-btn done">Done</button>
+    </div>`;
+  }
+
+  let statusText = "Log your weight today";
+  if (daysSince !== null && daysSince >= 7) statusText = "Not logged in ${daysSince} days — data degrading";
+  else if (daysSince !== null && daysSince >= 3) statusText = `${daysSince} days since last weigh-in`;
+
+  return `<div class="wi-checkin-card" style="margin-bottom:var(--space-sm)">
+    <div class="wi-checkin-left">
+      <span class="wi-checkin-label">Daily Check-In</span>
+      <span class="wi-checkin-status">${statusText}</span>
+    </div>
+    <button class="wi-checkin-btn" id="wiCheckInBtn">Log Weight</button>
+  </div>`;
+}
 function openCalendarDateSheet(session) {
   const sheet = document.getElementById("calendarDateSheet");
   if (!sheet) return;
@@ -5810,6 +8618,15 @@ function mapGoalType(raw) {
 }
 
 function getWeightGoal() {
+  const gcGoal = GoalCenter.getCurrentGoal();
+  if (GoalCenter.hasGoal(gcGoal)) {
+    return {
+      startWeight: gcGoal.startWeight,
+      targetWeight: gcGoal.targetWeight,
+      goalType: gcGoal.goalType,
+      createdAt: gcGoal.createdDate,
+    };
+  }
   if (state.weightGoal) return state.weightGoal;
   const u = state.user;
   if (!u || !u.targetWeight) return null;
@@ -6331,6 +9148,12 @@ document.addEventListener("click", (e) => {
     e.preventDefault();
     openOnboarding(true);
   }
+  const settingsGcBtn = e.target.closest("#settingsGoalCenterBtn");
+  if (settingsGcBtn) {
+    e.preventDefault();
+    showTrainerScreen("goal-center");
+    openPanel("panel-trainer");
+  }
 });
 
 // ===== ONBOARDING =====
@@ -6344,7 +9167,55 @@ function isProfileComplete() {
 let onboardStep = 1;
 let onboardData = {};
 
+// ===== ONBOARDING V2 =====
+
+const OB_STEPS_CONFIG = [
+  {
+    id: "welcome",
+    title: "Welcome to IronLog",
+    desc: "Your personal fitness coach, workout tracker and progress companion.",
+  },
+  {
+    id: "about-you",
+    title: "About You",
+    desc: "Help us personalize your experience.",
+  },
+  {
+    id: "main-goal",
+    title: "What is your primary goal?",
+    desc: "This will shape your entire training plan.",
+  },
+  {
+    id: "experience",
+    title: "Experience Level",
+    desc: "How long have you been training?",
+  },
+  {
+    id: "availability",
+    title: "Training Availability",
+    desc: "How many days can you train per week?",
+  },
+  {
+    id: "goal-details",
+    title: "Goal Details",
+    desc: "Let's get specific about your target.",
+  },
+  {
+    id: "coach-setup",
+    title: "Your Starting Strategy",
+    desc: "Here's what your IronLog Coach recommends.",
+  },
+  {
+    id: "create-program",
+    title: "Create Your First Program",
+    desc: "Almost there! Generate your workout plan.",
+  },
+];
+
+let obData = {};
+
 function openOnboarding(animateIn) {
+  obData = {};
   const modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
   if (animateIn) {
@@ -6352,7 +9223,7 @@ function openOnboarding(animateIn) {
     const onAnimEnd = () => { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onAnimEnd); };
     modal.addEventListener("animationend", onAnimEnd);
   }
-  resetOnboarding();
+  obGoToStep(0);
 }
 
 function closeOnboarding(animateOut, callback) {
@@ -6372,153 +9243,609 @@ function closeOnboarding(animateOut, callback) {
   }
 }
 
-function resetOnboarding() {
-  onboardStep = 1;
-  onboardData = {};
-  document.getElementById("onboardStep1").style.display = "";
-  document.getElementById("onboardStep2").style.display = "none";
-  document.getElementById("onboardStep3").style.display = "none";
-  document.getElementById("onboardStep4").style.display = "none";
-  document.getElementById("onboardTitle").textContent = "Welcome to IronLog";
-  document.getElementById("onboardSub").textContent = "Let's get to know you.";
-  document.getElementById("onboardName").value = "";
-  document.getElementById("onboardAge").value = "";
-  document.getElementById("onboardHeight").value = "";
-  document.getElementById("onboardWeight").value = "";
-  document.getElementById("onboardTargetWeight").value = "";
-  document.querySelectorAll(".onboard-chip").forEach((c) => c.classList.remove("is-active"));
-  document.getElementById("onboardName").focus();
-}
+function obGoToStep(index) {
+  const cfg = OB_STEPS_CONFIG[index];
+  if (!cfg) return;
+  OnboardingEngine.setStep(index);
 
-function onboardGoToStep(step) {
-  document.getElementById("onboardStep1").style.display = step === 1 ? "" : "none";
-  document.getElementById("onboardStep2").style.display = step === 2 ? "" : "none";
-  document.getElementById("onboardStep3").style.display = step === 3 ? "" : "none";
-  document.getElementById("onboardStep4").style.display = step === 4 ? "" : "none";
+  const total = OB_STEPS_CONFIG.length;
+  document.getElementById("obStepsFill").style.width = ((index + 1) / total * 100) + "%";
+  document.getElementById("obStepsLabel").textContent = "Step " + (index + 1) + " of " + total;
 
-  if (step === 2) {
-    document.getElementById("onboardTitle").textContent = "What's Your Goal?";
-    document.getElementById("onboardSub").textContent = "We'll personalize your experience.";
-  } else if (step === 3) {
-    document.getElementById("onboardTitle").textContent = "Experience Level";
-    document.getElementById("onboardSub").textContent = "So we can set the right intensity.";
-  } else if (step === 4) {
-    document.getElementById("onboardTitle").textContent = "Almost Done!";
-    document.getElementById("onboardSub").textContent = "Final details for your profile.";
-  } else {
-    document.getElementById("onboardTitle").textContent = "Welcome to IronLog";
-    document.getElementById("onboardSub").textContent = "Let's get to know you.";
-  }
+  const body = document.getElementById("obBody");
+  let html = `<div class="ob-title">${cfg.title}</div><div class="ob-desc">${cfg.desc}</div>`;
+  html += obRenderStepContent(cfg.id);
+  body.innerHTML = html;
+  obBindStepEvents(cfg.id, index);
 
-  onboardStep = step;
-}
-
-function saveOnboardData(data) {
-  state.user = {
-    name: (data.name || "Athlete").trim(),
-    age: Number(data.age) || 0,
-    height: Number(data.height) || 0,
-    weight: Number(data.weight) || 0,
-    goal: data.goal || "",
-    experience: data.experience || "",
-    trainingLocation: data.trainingLocation || "",
-    targetWeight: Number(data.targetWeight) || 0,
+  // Re-bind skip & confirm
+  document.getElementById("onboardSkipBtn").onclick = () => {
+    document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
   };
-  if (data.goal) state.bodyGoal = data.goal;
-  if (data.weight > 0) {
-    if (!state.weightLog) state.weightLog = [];
-    state.weightLog.push({ weight: Number(data.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+
+  setTimeout(() => {
+    const firstInput = body.querySelector("input, button");
+    if (firstInput) firstInput.focus();
+  }, 100);
+}
+
+function obRenderStepContent(stepId) {
+  if (stepId === "welcome") {
+    return `<div style="text-align:center;padding:0.75rem 0">
+      <div style="font-size:3rem;margin-bottom:0.5rem">🏋️</div>
+      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.75rem">
+        <button class="btn-primary" id="obWelcomeStart">Get Started</button>
+        <button class="btn-secondary" id="obWelcomeImport" disabled style="opacity:0.5;cursor:not-allowed">Import Existing Data (Future)</button>
+      </div>
+    </div>`;
   }
-  if (data.targetWeight > 0 && data.weight > 0) {
+
+  if (stepId === "about-you") {
+    return `<div class="ob-fields">
+      <div class="ob-field">
+        <label class="ob-field-label">Name</label>
+        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${obData.name || ""}" autocomplete="name" />
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+        <div class="ob-field">
+          <label class="ob-field-label">Age</label>
+          <input type="number" class="ob-input" id="obAge" placeholder="23" min="10" max="120" value="${obData.age || ""}" />
+        </div>
+        <div class="ob-field">
+          <label class="ob-field-label">Gender</label>
+          <select class="ob-input" id="obGender"><option value="">Select</option><option value="male"${obData.gender==="male"?" selected":""}>Male</option><option value="female"${obData.gender==="female"?" selected":""}>Female</option><option value="other"${obData.gender==="other"?" selected":""}>Other</option></select>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+        <div class="ob-field">
+          <label class="ob-field-label">Height (cm)</label>
+          <input type="number" class="ob-input" id="obHeight" placeholder="175" min="100" max="250" value="${obData.height || ""}" />
+        </div>
+        <div class="ob-field">
+          <label class="ob-field-label">Weight (kg)</label>
+          <input type="text" class="ob-input" id="obWeight" placeholder="71" inputmode="decimal" value="${obData.weight || ""}" />
+        </div>
+      </div>
+      <div class="ob-actions">
+        <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+        <button class="btn-primary" id="obNextBtn" ${(!obData.name || !obData.age || !obData.height || !obData.weight) ? "disabled" : ""}>Next</button>
+      </div>
+    </div>`;
+  }
+
+  if (stepId === "main-goal") {
+    const goals = [
+      { id: "fat-loss", label: "Fat Loss", icon: "🔥" },
+      { id: "muscle-gain", label: "Muscle Gain", icon: "💪" },
+      { id: "strength", label: "Strength", icon: "🏋️" },
+      { id: "general-fitness", label: "General Fitness", icon: "✅" },
+      { id: "endurance", label: "Endurance", icon: "🏃" },
+    ];
+    return `<div class="ob-options">${goals.map(g => `<button class="ob-option${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}"><span style="margin-right:0.4rem">${g.icon}</span>${g.label}</button>`).join("")}</div>
+    <div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn" ${!obData.goalType ? "disabled" : ""}>Next</button>
+    </div>`;
+  }
+
+  if (stepId === "experience") {
+    const exps = [
+      { id: "beginner", label: "Beginner", desc: "Less than 6 months" },
+      { id: "intermediate", label: "Intermediate", desc: "6 months to 2 years" },
+      { id: "advanced", label: "Advanced", desc: "2+ years" },
+    ];
+    return `<div class="ob-options">${exps.map(e => `<button class="ob-option${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}"><span class="ob-option-name">${e.label}</span><span style="display:block;font-size:0.72rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem">${e.desc}</span></button>`).join("")}</div>
+    <div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn" ${!obData.experience ? "disabled" : ""}>Next</button>
+    </div>`;
+  }
+
+  if (stepId === "availability") {
+    const daysLabels = { 2: "Minimal", 3: "Standard", 4: "Frequent", 5: "Dedicated", 6: "Intensive" };
+    let html = `<div class="ob-field"><label class="ob-field-label">Days Per Week</label><div class="ob-option-row">`;
+    [2,3,4,5,6].forEach(d => {
+      html += `<button class="ob-option ob-option-compact${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}">${d} <span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-secondary)">${daysLabels[d]}</span></button>`;
+    });
+    html += `</div></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Equipment</label><div class="ob-options">`;
+    const equipOpts = [
+      { id: "gym", label: "Gym" },
+      { id: "home", label: "Home" },
+      { id: "minimal", label: "Minimal Equipment" },
+      { id: "bodyweight", label: "Bodyweight" },
+    ];
+    equipOpts.forEach(e => {
+      html += `<button class="ob-option${obData.equipment === e.id ? " is-active" : ""}" data-ob-equip="${e.id}">${e.label}</button>`;
+    });
+    html += `</div></div>`;
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn" ${!obData.trainingDays || !obData.equipment ? "disabled" : ""}>Next</button>
+    </div>`;
+    return html;
+  }
+
+  if (stepId === "goal-details") {
+    let html = `<div class="ob-fields">`;
+    const gt = obData.goalType;
+    if (gt === "fat-loss" || gt === "muscle-gain") {
+      html += `<div class="ob-field"><label class="ob-field-label">Target Weight (kg)</label><input type="text" class="ob-input" id="obTargetWeight" placeholder="e.g. 75" inputmode="decimal" value="${obData.targetWeight || ""}" /></div>`;
+      html += `<div class="ob-field"><label class="ob-field-label">Target Date (Optional)</label><input type="date" class="ob-input" id="obTargetDate" value="${obData.targetDate || ""}" /></div>`;
+    } else if (gt === "strength") {
+      const lifts = ["Bench", "Squat", "Deadlift", "General Strength"];
+      html += `<div class="ob-field"><label class="ob-field-label">Primary Lift</label><div class="ob-options">${lifts.map(l => `<button class="ob-option${obData.primaryLift === l ? " is-active" : ""}" data-ob-lift="${l}">${l}</button>`).join("")}</div></div>`;
+    } else {
+      html += `<div class="ob-field"><label class="ob-field-label">Target Weight (Optional)</label><input type="text" class="ob-input" id="obTargetWeight" placeholder="e.g. 75" inputmode="decimal" value="${obData.targetWeight || ""}" /></div>`;
+      html += `<div class="ob-field"><label class="ob-field-label">Target Date (Optional)</label><input type="date" class="ob-input" id="obTargetDate" value="${obData.targetDate || ""}" /></div>`;
+    }
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next</button>
+    </div></div>`;
+    return html;
+  }
+
+  if (stepId === "coach-setup") {
+    const strategy = obGenerateStrategy();
+    let html = `<div class="ob-coach-strategy">`;
+    Object.entries(strategy).forEach(([k, v]) => {
+      html += `<div class="ob-coach-strategy-row"><span class="ob-coach-strategy-label">${k}</span><span class="ob-coach-strategy-value">${v}</span></div>`;
+    });
+    html += `</div>`;
+    html += `<div class="ob-actions" style="margin-top:0.5rem">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next →</button>
+    </div>`;
+    return html;
+  }
+
+  if (stepId === "create-program") {
+    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const preview = obGenerateProgramPreview();
+    let html = `<div class="ob-preview-grid">`;
+    Object.entries(preview).forEach(([k, v]) => {
+      html += `<div class="ob-preview-item"><div class="ob-preview-label">${k}</div><div class="ob-preview-value">${v}</div></div>`;
+    });
+    html += `</div>`;
+    html += `<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text-secondary);line-height:1.3">Your program will be ready in <strong>Coach</strong> tab. Let's go!</div>`;
+    html += `<div class="ob-actions" style="margin-top:0.5rem">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obFinishBtn">Finish Setup</button>
+    </div>`;
+    return html;
+  }
+
+  return "";
+}
+
+function obBindStepEvents(stepId, index) {
+  const back = document.getElementById("obBackBtn");
+  if (back) {
+    back.addEventListener("click", () => {
+      if (index > 0) obGoToStep(index - 1);
+    });
+  }
+
+  if (stepId === "welcome") {
+    document.getElementById("obWelcomeStart").addEventListener("click", () => obGoToStep(1));
+    return;
+  }
+
+  if (stepId === "about-you") {
+    const nameIn = document.getElementById("obName");
+    const ageIn = document.getElementById("obAge");
+    const genderIn = document.getElementById("obGender");
+    const heightIn = document.getElementById("obHeight");
+    const weightIn = document.getElementById("obWeight");
+    const nextBtn = document.getElementById("obNextBtn");
+
+    function checkAbout() {
+      const valid = nameIn.value.trim() && Number(ageIn.value) > 0 && Number(ageIn.value) <= 120 && Number(heightIn.value) > 0 && Number(weightIn.value) > 0;
+      nextBtn.disabled = !valid;
+    }
+    [nameIn, ageIn, heightIn, weightIn].forEach(el => {
+      el.addEventListener("input", checkAbout);
+    });
+
+    nextBtn.addEventListener("click", () => {
+      const name = nameIn.value.trim();
+      const age = Number(ageIn.value);
+      const height = Number(heightIn.value);
+      const weight = Number(weightIn.value);
+      if (!name) { showToast("Please enter your name."); return; }
+      if (!(age > 0 && age <= 120)) { showToast("Please enter a valid age."); return; }
+      if (!(height > 0)) { showToast("Please enter a valid height."); return; }
+      if (!(weight > 0)) { showToast("Please enter a valid weight."); return; }
+      obData.name = name;
+      obData.age = age;
+      obData.gender = genderIn.value;
+      obData.height = height;
+      obData.weight = weight;
+      OnboardingEngine.updateData(obData);
+      obGoToStep(2);
+    });
+    return;
+  }
+
+  if (stepId === "main-goal") {
+    document.querySelectorAll("[data-ob-goal]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.goalType = btn.dataset.obGoal;
+        document.getElementById("obNextBtn").disabled = false;
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      OnboardingEngine.updateData(obData);
+      obGoToStep(3);
+    });
+    return;
+  }
+
+  if (stepId === "experience") {
+    document.querySelectorAll("[data-ob-exp]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-exp]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.experience = btn.dataset.obExp;
+        document.getElementById("obNextBtn").disabled = false;
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      OnboardingEngine.updateData(obData);
+      obGoToStep(4);
+    });
+    return;
+  }
+
+  if (stepId === "availability") {
+    document.querySelectorAll("[data-ob-days]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-days]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.trainingDays = parseInt(btn.dataset.obDays);
+        obCheckAvailNext();
+      });
+    });
+    document.querySelectorAll("[data-ob-equip]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-equip]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.equipment = btn.dataset.obEquip;
+        obCheckAvailNext();
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      OnboardingEngine.updateData(obData);
+      obGoToStep(5);
+    });
+    return;
+  }
+
+  if (stepId === "goal-details") {
+    const tw = document.getElementById("obTargetWeight");
+    const td = document.getElementById("obTargetDate");
+    if (tw) {
+      tw.addEventListener("input", () => { obData.targetWeight = tw.value; OnboardingEngine.updateData(obData); });
+    }
+    if (td) {
+      td.addEventListener("input", () => { obData.targetDate = td.value; OnboardingEngine.updateData(obData); });
+    }
+    document.querySelectorAll("[data-ob-lift]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-lift]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.primaryLift = btn.dataset.obLift;
+        OnboardingEngine.updateData(obData);
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      OnboardingEngine.updateData(obData);
+      obGoToStep(6);
+    });
+    return;
+  }
+
+  if (stepId === "coach-setup") {
+    document.getElementById("obNextBtn").addEventListener("click", () => obGoToStep(7));
+    return;
+  }
+
+  if (stepId === "create-program") {
+    document.getElementById("obFinishBtn").addEventListener("click", () => obFinishSetup());
+    return;
+  }
+}
+
+function obCheckAvailNext() {
+  document.getElementById("obNextBtn").disabled = !(obData.trainingDays && obData.equipment);
+}
+
+function obGenerateStrategy() {
+  const gt = obData.goalType || "general-fitness";
+  const w = Number(obData.weight) || 70;
+  const isFatLoss = gt === "fat-loss";
+  const isMuscle = gt === "muscle-gain";
+
+  const protein = isFatLoss ? Math.round(w * 2.2) : isMuscle ? Math.round(w * 2.0) : Math.round(w * 1.8);
+  const calories = isFatLoss ? Math.round(w * 28) : isMuscle ? Math.round(w * 34) : Math.round(w * 30);
+  const steps = isFatLoss ? "10,000" : "8,000";
+  const water = Math.round(w * 0.033) + "L";
+  const sleep = "7-9 hours";
+  const cardio = isFatLoss ? "3x/week" : "2x/week";
+
+  return {
+    "Calories": calories + " kcal",
+    "Protein": protein + "g",
+    "Steps": steps + "/day",
+    "Water": water + "/day",
+    "Sleep": sleep + "/night",
+    "Cardio": cardio,
+  };
+}
+
+function obGenerateProgramPreview() {
+  const goalLabels = {
+    "fat-loss": "Fat Loss",
+    "muscle-gain": "Muscle Gain",
+    "strength": "Strength",
+    "general-fitness": "General Fitness",
+    "endurance": "Endurance",
+  };
+  return {
+    "Goal": goalLabels[obData.goalType] || "General Fitness",
+    "Experience": obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner",
+    "Days/Week": obData.trainingDays || "3",
+    "Equipment": obData.equipment || "Gym",
+    "Style": "Full Body",
+    "Duration": "45-60 min",
+  };
+}
+
+function obFinishSetup() {
+  // Save user profile to state
+  const goalTypeMap = {
+    "fat-loss": "lose-fat",
+    "muscle-gain": "build-muscle",
+    "strength": "strength",
+    "general-fitness": "general",
+    "endurance": "athletic",
+  };
+  const mappedGoal = goalTypeMap[obData.goalType] || "general";
+
+  state.user = state.user || {};
+  state.user.name = (obData.name || "Athlete").trim();
+  state.user.age = Number(obData.age) || 0;
+  state.user.height = Number(obData.height) || 0;
+  state.user.weight = Number(obData.weight) || 0;
+  state.user.gender = obData.gender || "";
+  state.user.goal = mappedGoal;
+  state.user.experience = obData.experience || "beginner";
+  state.user.trainingDays = obData.trainingDays || 3;
+  state.user.equipment = obData.equipment || "gym";
+  state.bodyGoal = mappedGoal;
+
+  // Log initial weight
+  if (Number(obData.weight) > 0) {
+    if (!state.weightLog) state.weightLog = [];
+    state.weightLog.push({ weight: Number(obData.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+  }
+
+  // Set up weight goal via GoalCenter
+  const gcGoalData = {
+    goalType: obData.goalType || "general-fitness",
+    startWeight: Number(obData.weight) || 0,
+    targetWeight: Number(obData.targetWeight) || 0,
+    targetDate: obData.targetDate || null,
+    trainingDays: obData.trainingDays || 3,
+    experienceLevel: obData.experience || "beginner",
+    activityLevel: "moderate",
+  };
+
+  if (typeof GoalCenter !== "undefined") {
+    GoalCenter.createProfile(gcGoalData);
+  }
+
+  if (Number(obData.targetWeight) > 0 && Number(obData.weight) > 0) {
     state.weightGoal = {
-      startWeight: Number(data.weight),
-      targetWeight: Number(data.targetWeight),
-      goalType: mapGoalType(data.goal || ""),
+      startWeight: Number(obData.weight),
+      targetWeight: Number(obData.targetWeight),
+      goalType: obData.goalType,
       createdAt: new Date().toISOString(),
     };
   }
+
   saveState();
+
+  // Mark onboarding complete
+  OnboardingEngine.markComplete();
+  OnboardingEngine.updateData(obData);
+
+  // Close onboarding and show activation
+  closeOnboarding(true, () => {
+    render();
+    showCoachActivation();
+  });
 }
 
-// Chip selection
-document.addEventListener("click", (e) => {
-  const chip = e.target.closest(".onboard-chip");
-  if (!chip) return;
-  const parent = chip.closest(".onboard-options");
-  if (!parent) return;
-  parent.querySelectorAll(".onboard-chip").forEach((c) => c.classList.remove("is-active"));
-  chip.classList.add("is-active");
+// ===== COACH ACTIVATION SCREEN =====
+function showCoachActivation() {
+  const modal = document.getElementById("coachActivationModal");
+  modal.classList.remove("is-hidden");
 
-  if (parent.id === "onboardGoalOptions") document.getElementById("onboardGoalNext").disabled = false;
-  if (parent.id === "onboardExperienceOptions") document.getElementById("onboardExpNext").disabled = false;
-  if (parent.id === "onboardLocationOptions") {
-    const tw = document.getElementById("onboardTargetWeight").value;
-    document.getElementById("onboardFinishBtn").disabled = !(Number(tw) > 0);
+  const items = [
+    { icon: "🎯", text: "Goal Created" },
+    { icon: "🤖", text: "Coach Activated" },
+    { icon: "💪", text: "Recovery Tracking" },
+    { icon: "⚖️", text: "Weight Intelligence" },
+    { icon: "🏆", text: "Challenges Enabled" },
+    { icon: "📊", text: "Reports Enabled" },
+  ];
+
+  document.getElementById("obActivationGrid").innerHTML = items.map(i =>
+    `<div class="ob-activation-item"><div class="ob-activation-item-icon">${i.icon}</div><div class="ob-activation-item-text">${i.text}</div></div>`
+  ).join("");
+
+  document.getElementById("obActivationStartBtn").onclick = () => {
+    modal.classList.add("is-hidden");
+    activateTab("trainer");
+    // Also trigger the workout generator
+    openNewWorkoutGenerator();
+  };
+}
+
+// ===== FIRST 7 DAYS EXPERIENCE =====
+function getFirst7DayFocus() {
+  const status = OnboardingEngine.getFirst7DayStatus();
+  const daysSinceStart = obDaysSinceActivation();
+  const dayMap = [
+    { day: 1, key: "day1Workout", focus: "First Workout", desc: "Complete your first workout", icon: "💪" },
+    { day: 2, key: "day2Weight", focus: "Log Weight", desc: "Log your body weight", icon: "⚖️" },
+    { day: 3, key: "day3Protein", focus: "Protein Education", desc: "Learn about protein", icon: "🥩" },
+    { day: 4, key: "day4Learning", focus: "Learning Hub", desc: "Explore the Learning Hub", icon: "📚" },
+    { day: 5, key: "day5Challenge", focus: "Challenge Introduction", desc: "Try your first challenge", icon: "🏆" },
+    { day: 6, key: "day6CoachScore", focus: "Coach Score", desc: "Understand your Coach Score", icon: "📈" },
+    { day: 7, key: "day7Report", focus: "First Weekly Report", desc: "Review your first report", icon: "📊" },
+  ];
+
+  // Figure out which day the user is on
+  let currentDayIdx = 0;
+  for (let i = 0; i < dayMap.length; i++) {
+    if (!status[dayMap[i].key]) {
+      currentDayIdx = i;
+      break;
+    }
+    currentDayIdx = i + 1;
   }
-});
 
-// Step navigation
-document.getElementById("onboardNextBtn")?.addEventListener("click", () => {
-  const name = document.getElementById("onboardName").value.trim();
-  const age = document.getElementById("onboardAge").value;
-  const height = document.getElementById("onboardHeight").value;
-  const weight = document.getElementById("onboardWeight").value;
-  if (!name) { showToast("Please enter your name."); return; }
-  if (!age || Number(age) <= 0) { showToast("Please enter a valid age."); return; }
-  if (!height || Number(height) <= 0) { showToast("Please enter a valid height."); return; }
-  if (!weight || Number(weight) <= 0) { showToast("Please enter a valid weight."); return; }
-  onboardData.name = name;
-  onboardData.age = Number(age);
-  onboardData.height = Number(height);
-  onboardData.weight = Number(weight);
-  onboardGoToStep(2);
-});
+  if (currentDayIdx >= dayMap.length) return null; // All 7 days complete
 
-document.getElementById("onboardGoalBack")?.addEventListener("click", () => onboardGoToStep(1));
-document.getElementById("onboardGoalNext")?.addEventListener("click", () => {
-  const active = document.querySelector("#onboardGoalOptions .onboard-chip.is-active");
-  if (!active) return;
-  onboardData.goal = active.dataset.value;
-  onboardGoToStep(3);
-});
+  // If the user has been active for more than 7 days, no banner
+  if (daysSinceStart > 7) return null;
 
-document.getElementById("onboardExpBack")?.addEventListener("click", () => onboardGoToStep(2));
-document.getElementById("onboardExpNext")?.addEventListener("click", () => {
-  const active = document.querySelector("#onboardExperienceOptions .onboard-chip.is-active");
-  if (!active) return;
-  onboardData.experience = active.dataset.value;
-  onboardGoToStep(4);
-});
+  return {
+    day: currentDayIdx + 1,
+    total: 7,
+    ...dayMap[currentDayIdx],
+    progress: currentDayIdx,
+  };
+}
 
-document.getElementById("onboardTargetBack")?.addEventListener("click", () => onboardGoToStep(3));
+function obDaysSinceActivation() {
+  const state = OnboardingEngine.loadState();
+  if (!state.activatedAt) return 0;
+  const activated = new Date(state.activatedAt);
+  const now = new Date();
+  return Math.floor((now - activated) / 86400000);
+}
 
-document.getElementById("onboardTargetWeight")?.addEventListener("input", () => {
-  const tw = document.getElementById("onboardTargetWeight").value;
-  const loc = document.querySelector("#onboardLocationOptions .onboard-chip.is-active");
-  document.getElementById("onboardFinishBtn").disabled = !(loc && Number(tw) > 0);
-});
+function renderFirst7DaysBanner(container) {
+  const focus = getFirst7DayFocus();
+  if (!focus) return;
 
-document.getElementById("onboardFinishBtn")?.addEventListener("click", () => {
-  const activeLoc = document.querySelector("#onboardLocationOptions .onboard-chip.is-active");
-  const targetWeight = document.getElementById("onboardTargetWeight").value;
-  if (!activeLoc) { showToast("Please select where you train."); return; }
-  if (!targetWeight || Number(targetWeight) <= 0) { showToast("Please enter a target weight."); return; }
-  onboardData.trainingLocation = activeLoc.dataset.value;
-  onboardData.targetWeight = targetWeight;
-  saveOnboardData(onboardData);
-  closeOnboarding(true, () => render());
-});
+  // Check if the specific action is done
+  const status = OnboardingEngine.getFirst7DayStatus();
 
-// Skip
-document.getElementById("onboardSkipBtn")?.addEventListener("click", () => {
+  const banner = document.createElement("div");
+  banner.className = "f7d-banner";
+  banner.id = "f7dBanner";
+  banner.innerHTML = `
+    <div class="f7d-banner-icon">${focus.icon}</div>
+    <div class="f7d-banner-text">
+      <div class="f7d-banner-title">Day ${focus.day}: ${focus.focus}</div>
+      <div class="f7d-banner-desc">${focus.desc}</div>
+      <div class="f7d-banner-bar"><div class="f7d-banner-fill" style="width:${(focus.progress / focus.total) * 100}%"></div></div>
+    </div>
+    <div class="f7d-banner-arrow">→</div>
+  `;
+
+  banner.addEventListener("click", () => obNavigateToDay(focus.day, focus.key));
+  container.prepend(banner);
+}
+
+function obNavigateToDay(day, key) {
+  if (day === 1) {
+    // First workout - show workout generator
+    openNewWorkoutGenerator();
+  } else if (day === 2) {
+    // Log weight
+    openWeightLogger();
+  } else if (day === 3) {
+    // Protein education - show learning hub with protein focus
+    showTrainerScreen("learning-hub");
+  } else if (day === 4) {
+    // Learning hub
+    showTrainerScreen("learning-hub");
+  } else if (day === 5) {
+    // Challenges
+    renderChallengesPage();
+  } else if (day === 6) {
+    // Coach score
+    renderCoachCommandCenter();
+  } else if (day === 7) {
+    // Weekly report
+    showTrainerScreen("weekly-report");
+  }
+}
+
+// Check and auto-mark first-7-days progress
+function checkFirst7DayProgress() {
+  if (!OnboardingEngine.isOnboardingComplete()) return;
+
+  const sessions = state.sessions || [];
+  const hasWorkout = sessions.some(s => s.finishedAt);
+  const weightLog = state.weightLog || [];
+  const hasWeight = weightLog.length > 1; // more than just initial
+
+  // Learning hub: check if any lessons completed
+  let hasLearning = false;
+  try {
+    const lhProg = JSON.parse(localStorage.getItem("il_learning_progress"));
+    hasLearning = lhProg && lhProg.completed && lhProg.completed.length > 0;
+  } catch (e) { /* ignore */ }
+
+  // Challenges: check CAS if available
+  let hasChallenge = false;
+  try {
+    const casRaw = localStorage.getItem("ironlog_cas_data");
+    if (casRaw) {
+      const casData = JSON.parse(casRaw);
+      hasChallenge = casData.challenges && casData.challenges.personalized && casData.challenges.personalized.length > 0;
+    }
+  } catch (e) { /* ignore */ }
+
+  // Reports: check if weekly reports exist
+  let hasReport = false;
+  try {
+    const repKeys = JSON.parse(localStorage.getItem("ironlog_report_keys") || "[]");
+    hasReport = Array.isArray(repKeys) && repKeys.length > 0;
+  } catch (e) { /* ignore */ }
+
+  const status = OnboardingEngine.getFirst7DayStatus();
+
+  if (hasWorkout && !status.day1Workout) OnboardingEngine.markFirst7Day("day1Workout");
+  if (hasWeight && !status.day2Weight) OnboardingEngine.markFirst7Day("day2Weight");
+  if (hasWeight && !status.day3Protein) OnboardingEngine.markFirst7Day("day3Protein");
+  if (hasLearning && !status.day4Learning) OnboardingEngine.markFirst7Day("day4Learning");
+  if (hasChallenge && !status.day5Challenge) OnboardingEngine.markFirst7Day("day5Challenge");
+  if (hasReport && !status.day7Report) OnboardingEngine.markFirst7Day("day7Report");
+}
+
+// ===== ONBOARDING EVENT LISTENERS =====
+document.getElementById("onboardSkipBtn").addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
 });
-document.getElementById("onboardConfirmCancel")?.addEventListener("click", () => {
+document.getElementById("onboardConfirmCancel").addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.add("is-hidden");
 });
-document.getElementById("onboardConfirmSkip")?.addEventListener("click", () => {
+document.getElementById("onboardConfirmSkip").addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.add("is-hidden");
-  saveOnboardData({ name: "Athlete", age: 0, height: 0, weight: 0, goal: "", experience: "", trainingLocation: "", targetWeight: 0 });
+  state.user = { name: "Athlete", goal: "general", experience: "beginner" };
+  state.bodyGoal = "general";
+  saveState();
+  if (typeof OnboardingEngine !== "undefined") OnboardingEngine.markComplete();
   closeOnboarding(true, () => render());
 });
 
@@ -7293,9 +10620,73 @@ document.getElementById("settingsBackBtn").addEventListener("click", () => {
   }
 });
 
-// Topbar gear icon → settings
-document.getElementById("topbarSettingsBtn").addEventListener("click", () => {
+// Topbar avatar → profile menu
+document.getElementById("topbarAvatarBtn").addEventListener("click", (e) => {
+  e.stopPropagation();
+  const menu = document.getElementById("profileMenu");
+  menu.classList.toggle("is-hidden");
+});
+
+// Profile menu handlers
+document.getElementById("profileMenuProfile")?.addEventListener("click", () => {
+  document.getElementById("profileMenu").classList.add("is-hidden");
   activateTab("settings");
+});
+
+document.getElementById("profileMenuData")?.addEventListener("click", () => {
+  document.getElementById("profileMenu").classList.add("is-hidden");
+  activateTab("settings");
+  // Scroll to export option after settings render
+  setTimeout(() => {
+    const exportRow = document.querySelector('[data-setting="export-json"]');
+    if (exportRow) exportRow.scrollIntoView({ behavior: "smooth", block: "center" });
+  }, 100);
+});
+
+document.getElementById("profileMenuDelete")?.addEventListener("click", () => {
+  document.getElementById("profileMenu").classList.add("is-hidden");
+  document.getElementById("deleteDataModal").classList.remove("is-hidden");
+});
+
+// Today screen focus item clicks
+document.addEventListener("click", (e) => {
+  const focusItem = e.target.closest(".today-focus-item");
+  if (focusItem) {
+    const type = focusItem.dataset.focus;
+    if (type === "workout") activateTab("sets");
+    if (type === "protein") showToast("Set your protein goal in Settings");
+    if (type === "weight") document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
+    return;
+  }
+  // Coach score card tap → Progress
+  if (e.target.closest(".coach-score-card")) {
+    activateTab("progress");
+    return;
+  }
+  // Insight card tap → Trainer
+  if (e.target.closest(".insight-card")) {
+    activateTab("trainer");
+    return;
+  }
+  // Challenge card tap → Trainer
+  if (e.target.closest(".challenge-card")) {
+    activateTab("trainer");
+    return;
+  }
+  // Win card tap → Progress
+  if (e.target.closest(".win-card")) {
+    activateTab("progress");
+    return;
+  }
+});
+
+// Close profile menu on outside click
+document.addEventListener("click", (e) => {
+  const menu = document.getElementById("profileMenu");
+  const btn = document.getElementById("topbarAvatarBtn");
+  if (menu && !menu.classList.contains("is-hidden") && !menu.contains(e.target) && !btn?.contains(e.target)) {
+    menu.classList.add("is-hidden");
+  }
 });
 
 function openProfileEditor() {
@@ -7305,7 +10696,7 @@ function openProfileEditor() {
   document.getElementById("peGender").value = user.gender || "";
   document.getElementById("peHeight").value = user.height || "";
   document.getElementById("peWeight").value = user.weight || "";
-  document.getElementById("peGoal").value = user.goal || state.bodyGoal || "recomp";
+  document.getElementById("peGoal").value = GoalCenter.getGoalType() || user.goal || state.bodyGoal || "recomp";
   document.getElementById("peActivity").value = user.activity || "";
   document.getElementById("profileEditorModal").classList.remove("is-hidden");
 }
@@ -7433,6 +10824,10 @@ document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
     wlEntryId = null;
   } else {
     logWeight(Number(w), d, wlN.value);
+  }
+  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    OnboardingEngine.markFirst7Day("day2Weight");
+    checkFirst7DayProgress();
   }
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
   renderSettings();
@@ -7982,6 +11377,10 @@ function finishWorkoutComplete() {
     session.notes = document.getElementById("ssNotesInput")?.value || session.notes || "";
     saveState();
   }
+  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    OnboardingEngine.markFirst7Day("day1Workout");
+    checkFirst7DayProgress();
+  }
   renderHome();
 }
 
@@ -8161,8 +11560,18 @@ document.addEventListener("DOMContentLoaded", () => {
     startStopwatch();
   }
 
-  if (!state.user) {
+  // Check onboarding
+  if (typeof OnboardingEngine !== "undefined" && !OnboardingEngine.isOnboardingComplete()) {
+    if (!state.user) {
+      state.user = {};
+      saveState();
+    }
     openOnboarding(true);
+  }
+
+  // Check first 7 days progress
+  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+    checkFirst7DayProgress();
   }
 
   // Apply persisted settings
@@ -8178,6 +11587,18 @@ document.addEventListener("DOMContentLoaded", () => {
 
   requestNotificationPermission();
   checkReminders();
+
+  // Auto-generate weekly report on Sunday
+  const todayDay = new Date().getDay();
+  if (todayDay === 0) {
+    const weekKey = getCurrentWeekKey();
+    const existing = getWeeklyReport(weekKey);
+    if (!existing) {
+      const coach = CoachEngine.runAll();
+      const rep = coach.reports.weekly;
+      saveWeeklyReport(rep);
+    }
+  }
 
   // Exit protection while workout is active
   window.addEventListener("beforeunload", (e) => {
@@ -8236,6 +11657,15 @@ document.addEventListener("click", (e) => {
   // Trainer: View All Problems button
   if (e.target.closest("#viewAllProblemsBtn")) {
     showTrainerScreen("problems");
+    return;
+  }
+
+  // Trainer: exercise card click (EE)
+  const eeCard = e.target.closest("[data-ee-id]");
+  if (eeCard && document.getElementById("trainerPageContent")?.contains(eeCard)) {
+    const id = eeCard.dataset.eeId;
+    const ex = getExerciseById(id);
+    if (ex) renderExerciseDetailPage(id);
     return;
   }
 });
@@ -9025,7 +12455,7 @@ function openGenerateWorkout() {
     "advanced": "Advanced",
   };
   genState.step = 1;
-  genState.goal = (u && goalMap[u.goal]) || null;
+  genState.goal = goalMap[GoalCenter.getGoalType()] || goalMap[u.goal] || null;
   genState.experience = (u && expMap[u.experience]) || null;
   genState.days = (u && u.trainingDays) || null;
   genState.time = null;
@@ -9207,6 +12637,13 @@ document.getElementById("gmViewProgramBtn")?.addEventListener("click", () => {
 
 document.getElementById("gmFailureClose")?.addEventListener("click", () => {
   showGmOverlay(null);
+});
+
+// Close profile menu on Escape key
+document.addEventListener("keydown", (e) => {
+  if (e.key === "Escape") {
+    document.getElementById("profileMenu")?.classList.add("is-hidden");
+  }
 });
 
 function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }

@@ -21,10 +21,10 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">IronLog</div>
         <nav class="sidebar-nav" id="sidebarNav">
-          <button class="nav-btn is-active" data-tab="sets">Sets</button>
-          <button class="nav-btn" data-tab="sessions">Sessions</button>
+          <button class="nav-btn is-active" data-tab="today">Today</button>
+          <button class="nav-btn" data-tab="sets">Workout</button>
           <button class="nav-btn" data-tab="progress">Progress</button>
-          <button class="nav-btn" data-tab="body">Body</button>
+          <button class="nav-btn" data-tab="trainer">Trainer</button>
         </nav>
         <div class="sidebar-footer">
           <span class="streak-pill" id="streakBadge"></span>
@@ -39,12 +39,121 @@
           </div>
           <div class="topbar-right">
             <span class="topbar-timer" id="topbarTimer"></span>
-            <button class="topbar-icon-btn" id="topbarSettingsBtn" title="Settings">⚙️</button>
+            <button class="topbar-avatar" id="topbarAvatarBtn" title="Profile" aria-label="Open profile">
+              <div class="avatar-circle" id="avatarCircle">IL</div>
+            </button>
           </div>
         </header>
 
+        <!-- ===== TODAY PANEL ===== -->
+        <section class="panel is-active" id="panel-today">
+          <div id="todayPageContent" class="page-container">
+            <!-- Section 1: Daily Fitness Rings -->
+            <div class="today-rings" id="todayRings">
+              <svg width="200" height="200" viewBox="0 0 200 200" class="rings-svg">
+                <circle cx="100" cy="100" r="85" fill="none" stroke="var(--border)" stroke-width="12" />
+                <circle cx="100" cy="100" r="85" fill="none" stroke="var(--accent)" stroke-width="12" stroke-linecap="round"
+                  transform="rotate(-90 100 100)" stroke-dasharray="534" stroke-dashoffset="534" id="trainRing" />
+                <circle cx="100" cy="100" r="65" fill="none" stroke="var(--border)" stroke-width="12" />
+                <circle cx="100" cy="100" r="65" fill="none" stroke="#f59e0b" stroke-width="12" stroke-linecap="round"
+                  transform="rotate(-90 100 100)" stroke-dasharray="408" stroke-dashoffset="408" id="fuelRing" />
+                <circle cx="100" cy="100" r="45" fill="none" stroke="var(--border)" stroke-width="12" />
+                <circle cx="100" cy="100" r="45" fill="none" stroke="#3b82f6" stroke-width="12" stroke-linecap="round"
+                  transform="rotate(-90 100 100)" stroke-dasharray="282" stroke-dashoffset="282" id="recoverRing" />
+              </svg>
+              <div class="rings-center" id="ringsCenter">
+                <div class="rings-score" id="ringsScore">85</div>
+                <div class="rings-label">Today</div>
+              </div>
+              <div class="rings-legend">
+                <div class="ring-legend-item"><span class="ring-dot" style="background:var(--accent)"></span>Train <span id="trainPercent">85%</span></div>
+                <div class="ring-legend-item"><span class="ring-dot" style="background:#f59e0b"></span>Fuel <span id="fuelPercent">72%</span></div>
+                <div class="ring-legend-item"><span class="ring-dot" style="background:#3b82f6"></span>Recover <span id="recoverPercent">90%</span></div>
+              </div>
+            </div>
+
+            <!-- Section 2: Coach Score -->
+            <div class="today-card coach-score-card" id="coachScoreCard">
+              <div class="coach-score-value" id="coachScoreValue">82</div>
+              <div class="coach-score-label">Coach Score</div>
+              <div class="coach-score-trend" id="coachScoreTrend">↑ 4 This Week</div>
+            </div>
+
+            <!-- Section 3: Today's Focus -->
+            <div class="today-section">
+              <div class="today-section-header">
+                <span class="today-section-label">Today's Focus</span>
+              </div>
+              <div class="today-focus-list" id="todayFocusList">
+                <div class="today-focus-item" data-focus="workout">
+                  <div class="focus-checkbox" id="focusWorkout"></div>
+                  <div class="focus-text">Push Workout</div>
+                </div>
+                <div class="today-focus-item" data-focus="protein">
+                  <div class="focus-checkbox" id="focusProtein"></div>
+                  <div class="focus-text">Hit 150g Protein</div>
+                </div>
+                <div class="today-focus-item" data-focus="weight">
+                  <div class="focus-checkbox" id="focusWeight"></div>
+                  <div class="focus-text">Log Weight</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 4: Coach Insight -->
+            <div class="today-section">
+              <div class="today-card insight-card" id="coachInsightCard">
+                <div class="insight-icon">💡</div>
+                <div class="insight-content">
+                  <div class="insight-label">Coach Insight</div>
+                  <div class="insight-text" id="coachInsightText">Protein consistency is currently limiting progress.</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 5: Current Challenge -->
+            <div class="today-section">
+              <div class="today-card challenge-card" id="challengeCard">
+                <div class="challenge-header">
+                  <span class="challenge-title">Current Challenge</span>
+                  <span class="challenge-badge" id="challengeBadge">🔥</span>
+                </div>
+                <div class="challenge-name" id="challengeName">Protein Streak</div>
+                <div class="challenge-progress">
+                  <div class="challenge-bar-bg">
+                    <div class="challenge-bar-fill" id="challengeBarFill" style="width:86%"></div>
+                  </div>
+                  <span class="challenge-count" id="challengeCount">6 / 7 Days</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 6: Recent Win -->
+            <div class="today-section">
+              <div class="today-card win-card" id="recentWinCard">
+                <div class="win-icon">🏆</div>
+                <div class="win-content">
+                  <div class="win-label">Recent Win</div>
+                  <div class="win-text" id="recentWinText">Bench +2.5kg</div>
+                  <div class="win-meta" id="recentWinMeta">7 Day Streak</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Section 7: Today Timeline -->
+            <div class="today-section">
+              <div class="today-section-header">
+                <span class="today-section-label">Today Timeline</span>
+              </div>
+              <div class="today-timeline" id="todayTimeline">
+                <div class="timeline-empty">No activity yet today.</div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         <!-- ===== SETS PANEL ===== -->
-        <section class="panel is-active" id="panel-sets">
+        <section class="panel" id="panel-sets">
           <!-- Home Dashboard Screen -->
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
@@ -591,6 +700,13 @@
     <!-- PILL-SHAPED FLOATING BOTTOM NAV -->
     <nav class="bottom-nav" id="bottomNav">
       <div class="nav-indicator" id="navIndicator"></div>
+      <button class="nav-tab is-active" data-tab="today">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
+        </svg>
+        <span>Today</span>
+      </button>
       <button class="nav-tab" data-tab="sets">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7" />
@@ -598,7 +714,13 @@
           <rect x="3" y="14" width="7" height="7" />
           <rect x="14" y="14" width="7" height="7" />
         </svg>
-        <span>Sets</span>
+        <span>Workout</span>
+      </button>
+      <button class="nav-tab" data-tab="progress">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 20V10M18 20V4M6 20v-4" />
+        </svg>
+        <span>Progress</span>
       </button>
       <button class="nav-tab" data-tab="trainer">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -607,20 +729,29 @@
         </svg>
         <span>Trainer</span>
       </button>
-      <button class="nav-tab" data-tab="progress">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
-        </svg>
-        <span>Progress</span>
-      </button>
-      <button class="nav-tab" data-tab="body">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="12" cy="8" r="3" />
-          <path d="M6 21v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3" />
-        </svg>
-        <span>Body</span>
-      </button>
     </nav>
+
+    <!-- PROFILE DROPDOWN (hidden by default) -->
+    <div class="profile-menu is-hidden" id="profileMenu">
+      <div class="profile-menu-header">
+        <div class="profile-menu-avatar" id="profileMenuAvatar">IL</div>
+        <div class="profile-menu-name" id="profileMenuName">User</div>
+      </div>
+      <div class="profile-menu-items">
+        <button class="profile-menu-item" id="profileMenuProfile">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3"/><path d="M6 21v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3"/></svg>
+          Profile & Settings
+        </button>
+        <button class="profile-menu-item" id="profileMenuData">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Export Data
+        </button>
+        <button class="profile-menu-item" style="color:var(--error)" id="profileMenuDelete">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
+          Delete All Data
+        </button>
+      </div>
+    </div>
 
     <!-- FLOATING REST TIMER -->
     <div id="restTimer" class="rest-timer is-hidden">
@@ -850,94 +981,32 @@
     <!-- MUSCLE DETAIL BOTTOM SHEET -->
 
 
-    <!-- ONBOARDING MODAL -->
+    <!-- ONBOARDING MODAL V2 -->
     <div class="modal-overlay is-hidden" id="onboardingModal">
-      <div class="modal-card" style="max-width: 380px; position: relative">
+      <div class="modal-card ob-modal-card" style="position: relative">
         <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">✕</button>
-        <div class="modal-header">
-          <h2 id="onboardTitle">Welcome to IronLog</h2>
-        </div>
-        <p class="onboard-sub" id="onboardSub">Let's get to know you.</p>
 
-        <!-- STEP 1: Basic Info -->
-        <div id="onboardStep1">
-          <div id="onboardForm">
-            <div class="onboard-field">
-              <label class="onboard-label" for="onboardName">Name</label>
-              <input type="text" id="onboardName" class="modal-input" placeholder="Your name" maxlength="30" autocomplete="name" autocapitalize="words" enterkeyhint="next" />
-            </div>
-            <div class="onboard-field">
-              <label class="onboard-label" for="onboardAge">Age</label>
-              <input type="number" id="onboardAge" class="modal-input" placeholder="23" min="10" max="100" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
-            </div>
-            <div class="onboard-field">
-              <label class="onboard-label" for="onboardHeight">Height (cm)</label>
-              <input type="number" id="onboardHeight" class="modal-input" placeholder="175" min="100" max="250" inputmode="numeric" pattern="[0-9]*" enterkeyhint="next" />
-            </div>
-            <div class="onboard-field">
-              <label class="onboard-label" for="onboardWeight">Weight (kg)</label>
-              <input type="text" id="onboardWeight" class="modal-input" placeholder="71" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" enterkeyhint="done" />
-            </div>
-          </div>
-          <div class="modal-actions" style="margin-top: 1rem">
-            <button class="btn-primary" id="onboardNextBtn">Next</button>
-          </div>
+        <!-- Progress Bar -->
+        <div class="ob-steps" id="obSteps">
+          <div class="ob-steps-bar"><div class="ob-steps-fill" id="obStepsFill"></div></div>
+          <div class="ob-steps-label" id="obStepsLabel">Step 1 of 8</div>
         </div>
 
-        <!-- STEP 2: Goal -->
-        <div id="onboardStep2" style="display:none">
-          <div class="onboard-field">
-            <label class="onboard-label">What Is Your Main Goal?</label>
-            <div class="onboard-options" id="onboardGoalOptions">
-              <button class="onboard-chip" data-value="build-muscle">Build Muscle</button>
-              <button class="onboard-chip" data-value="lose-fat">Lose Fat</button>
-              <button class="onboard-chip" data-value="strength">Increase Strength</button>
-              <button class="onboard-chip" data-value="general">General Fitness</button>
-              <button class="onboard-chip" data-value="athletic">Athletic Performance</button>
-            </div>
-          </div>
-          <div class="modal-actions" style="margin-top:1rem">
-            <button class="btn-secondary" id="onboardGoalBack" style="flex:1">Back</button>
-            <button class="btn-primary" id="onboardGoalNext" style="flex:1" disabled>Next</button>
-          </div>
-        </div>
+        <!-- Dynamic Content -->
+        <div class="ob-body" id="obBody"></div>
+      </div>
+    </div>
 
-        <!-- STEP 3: Experience -->
-        <div id="onboardStep3" style="display:none">
-          <div class="onboard-field">
-            <label class="onboard-label">Training Experience</label>
-            <div class="onboard-options" id="onboardExperienceOptions">
-              <button class="onboard-chip" data-value="beginner">Beginner</button>
-              <button class="onboard-chip" data-value="intermediate">Intermediate</button>
-              <button class="onboard-chip" data-value="advanced">Advanced</button>
-            </div>
-          </div>
-          <div class="modal-actions" style="margin-top:1rem">
-            <button class="btn-secondary" id="onboardExpBack" style="flex:1">Back</button>
-            <button class="btn-primary" id="onboardExpNext" style="flex:1" disabled>Next</button>
-          </div>
+    <!-- COACH ACTIVATION MODAL -->
+    <div class="modal-overlay is-hidden" id="coachActivationModal">
+      <div class="modal-card ob-activation-card">
+        <div class="ob-activation-header">
+          <div class="ob-activation-icon">🎉</div>
+          <h2 class="ob-activation-title">You're All Set!</h2>
+          <p class="ob-activation-sub">Your IronLog Coach is activated and ready.</p>
         </div>
-
-        <!-- STEP 4: Location + Target Weight -->
-        <div id="onboardStep4" style="display:none">
-          <div class="onboard-field">
-            <label class="onboard-label">Where Do You Train?</label>
-            <div class="onboard-options" id="onboardLocationOptions">
-              <button class="onboard-chip" data-value="commercial">Commercial Gym</button>
-              <button class="onboard-chip" data-value="home-gym">Home Gym</button>
-              <button class="onboard-chip" data-value="home">Home</button>
-            </div>
-          </div>
-          <div class="onboard-field">
-            <label class="onboard-label" for="onboardTargetWeight">Target Weight (kg)</label>
-            <input type="text" id="onboardTargetWeight" class="modal-input" placeholder="75" inputmode="decimal" pattern="[0-9]*\.?[0-9]*" enterkeyhint="done" />
-          </div>
-          <div class="modal-actions" style="margin-top:1rem">
-            <button class="btn-secondary" id="onboardTargetBack" style="flex:1">Back</button>
-            <button class="btn-primary" id="onboardFinishBtn" style="flex:1" disabled>Get Started</button>
-          </div>
-        </div>
-
+        <div class="ob-activation-grid" id="obActivationGrid"></div>
+        <button class="btn-primary ob-activation-btn" id="obActivationStartBtn">Start My First Workout</button>
       </div>
     </div>
 
@@ -1155,8 +1224,15 @@
 
   <script src="js/data/prs.js"></script>
   <script src="js/problem-database.js"></script>
+  <script src="js/lesson-database.js"></script>
+  <script src="js/exercise-database.js"></script>
   <script src="js/script.js"></script>
+  <script src="js/goal-center.js"></script>
+  <script src="js/cas-engine.js"></script>
+  <script src="js/adaptive-engine.js"></script>
   <script src="js/coach-engine.js"></script>
+  <script src="js/onboarding-engine.js"></script>
+  <script src="js/program-review-engine.js"></script>
   <script>
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.register("sw.js");
