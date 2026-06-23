@@ -25,6 +25,9 @@ const GoalCenter = (() => {
 
   // ---- Storage --------------------------------------------------------
   function load() {
+    if (typeof state !== "undefined" && state && state.goalCenter) {
+      return { ...getDefaults(), ...state.goalCenter };
+    }
     try {
       const raw = localStorage.getItem(GC_KEY);
       return raw ? JSON.parse(raw) : getDefaults();
@@ -35,6 +38,10 @@ const GoalCenter = (() => {
 
   function save(profile) {
     localStorage.setItem(GC_KEY, JSON.stringify(profile));
+    if (typeof state !== "undefined" && state) {
+      state.goalCenter = { ...profile };
+      if (typeof saveState === "function") saveState();
+    }
   }
 
   function hasGoal(profile) {

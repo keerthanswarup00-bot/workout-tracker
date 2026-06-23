@@ -1284,6 +1284,7 @@ function loadState() {
     weightLog: [],
     goals: [],
     weightGoal: null,
+    goalCenter: null,
     restTimer: 90,
     weightUnit: "kg",
     heightUnit: "cm",
@@ -1358,6 +1359,18 @@ function loadState() {
         }
       }
     }
+
+    // Migrate GoalCenter data into unified state
+    if (!loaded.goalCenter) {
+      try {
+        const gcRaw = localStorage.getItem("ironlog_goal_center");
+        if (gcRaw) {
+          const gcData = JSON.parse(gcRaw);
+          if (gcData && gcData.goalType) loaded.goalCenter = gcData;
+        }
+      } catch (e) { /* ignore stale GoalCenter key */ }
+    }
+
     return loaded;
   } catch {
     return fallback;
