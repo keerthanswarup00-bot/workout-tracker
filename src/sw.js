@@ -1,11 +1,17 @@
-const CACHE = "ironlog-v2";
+const CACHE = "ironlog-v3";
 const ASSETS = [
   "/",
   "/index.html",
   "/css/styles.css",
   "/js/script.js",
-  "/js/body-map-svg.js",
   "/js/data/prs.js",
+  "/js/problem-database.js",
+  "/js/lesson-database.js",
+  "/js/goal-center.js",
+  "/js/cas-engine.js",
+  "/js/adaptive-engine.js",
+  "/js/coach-engine.js",
+  "/js/program-review-engine.js",
   "/assets/icons/favicon.svg",
   "/manifest.json",
   "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js",
