@@ -1311,6 +1311,13 @@ function loadState() {
     goals: [],
     weightGoal: null,
     goalCenter: null,
+    onboardingComplete: false,
+    onboardingStep: 0,
+    onboardingData: { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", targetWeight: "", targetDate: "", primaryLift: "" },
+    coachActivated: false,
+    activatedAt: null,
+    firstWorkoutDone: false,
+    first7Days: { day1Workout: false, day2Weight: false, day3Protein: false, day4Learning: false, day5Challenge: false, day6CoachScore: false, day7Report: false },
     restTimer: 90,
     weightUnit: "kg",
     heightUnit: "cm",
@@ -1395,6 +1402,25 @@ function loadState() {
           if (gcData && gcData.goalType) loaded.goalCenter = gcData;
         }
       } catch (e) { /* ignore stale GoalCenter key */ }
+    }
+
+    // Migrate onboarding-engine.js data into unified state
+    if (!loaded.onboardingComplete) {
+      try {
+        const obRaw = localStorage.getItem("ironlog_onboarding");
+        if (obRaw) {
+          const obData = JSON.parse(obRaw);
+          if (obData) {
+            if (obData.completed) loaded.onboardingComplete = obData.completed;
+            if (obData.currentStep !== undefined) loaded.onboardingStep = obData.currentStep;
+            if (obData.data) loaded.onboardingData = { ...loaded.onboardingData, ...obData.data };
+            if (obData.coachActivated) loaded.coachActivated = obData.coachActivated;
+            if (obData.activatedAt) loaded.activatedAt = obData.activatedAt;
+            if (obData.firstWorkoutDone) loaded.firstWorkoutDone = obData.firstWorkoutDone;
+            if (obData.first7Days) loaded.first7Days = { ...loaded.first7Days, ...obData.first7Days };
+          }
+        }
+      } catch (e) { /* ignore stale onboarding key */ }
     }
 
     return loaded;
@@ -2467,12 +2493,12 @@ function renderHome() {
       setTimeout(() => banner.remove(), 300);
       state.profileBannerDismissed = true;
       saveState();
-      if (typeof OnboardingEngine !== "undefined") openOnboarding(true);
+      openOnboarding(true);
     });
   }
 
   // First 7 Days banner on home screen
-  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+  if (state.onboardingComplete) {
     const homeGreeting = document.getElementById("homeGreeting");
     if (homeGreeting) {
       const existing = document.getElementById("f7dBanner");
@@ -5575,7 +5601,7 @@ function renderTrainerTab() {
   container.innerHTML = html;
 
   // First 7 Days banner (only when Trainer has data)
-  if (sessions.length && curWeight && typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+  if (sessions.length && curWeight && state.onboardingComplete) {
     renderFirst7DaysBanner(container);
   }
 
@@ -8006,8 +8032,8 @@ function renderCoachCommandCenter() {
   if (!container) return;
   const coach = CoachEngine.runAll();
   const ad = coach.adaptive;
-  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
-    OnboardingEngine.markFirst7Day("day6CoachScore");
+  if (state.onboardingComplete) {
+    state.first7Days["day6CoachScore"] = true; saveState();
   }
   const dc = coach.daily;
   const gs = coach.goalStrategy;
@@ -8969,7 +8995,7 @@ function closeOnboarding(animateOut, callback) {
 function obGoToStep(index) {
   const cfg = OB_STEPS_CONFIG[index];
   if (!cfg) return;
-  OnboardingEngine.setStep(index);
+  state.onboardingStep = index; saveState();
 
   const total = OB_STEPS_CONFIG.length;
   document.getElementById("obStepsFill").style.width = ((index + 1) / total * 100) + "%";
@@ -9185,7 +9211,7 @@ function obBindStepEvents(stepId, index) {
       obData.gender = genderIn.value;
       obData.height = height;
       obData.weight = weight;
-      OnboardingEngine.updateData(obData);
+      Object.assign(state.onboardingData, obData); saveState();
       obGoToStep(2);
     });
     return;
@@ -9201,7 +9227,7 @@ function obBindStepEvents(stepId, index) {
       });
     });
     document.getElementById("obNextBtn").addEventListener("click", () => {
-      OnboardingEngine.updateData(obData);
+      Object.assign(state.onboardingData, obData); saveState();
       obGoToStep(3);
     });
     return;
@@ -9217,7 +9243,7 @@ function obBindStepEvents(stepId, index) {
       });
     });
     document.getElementById("obNextBtn").addEventListener("click", () => {
-      OnboardingEngine.updateData(obData);
+      Object.assign(state.onboardingData, obData); saveState();
       obGoToStep(4);
     });
     return;
@@ -9241,7 +9267,7 @@ function obBindStepEvents(stepId, index) {
       });
     });
     document.getElementById("obNextBtn").addEventListener("click", () => {
-      OnboardingEngine.updateData(obData);
+      Object.assign(state.onboardingData, obData); saveState();
       obGoToStep(5);
     });
     return;
@@ -9251,21 +9277,21 @@ function obBindStepEvents(stepId, index) {
     const tw = document.getElementById("obTargetWeight");
     const td = document.getElementById("obTargetDate");
     if (tw) {
-      tw.addEventListener("input", () => { obData.targetWeight = tw.value; OnboardingEngine.updateData(obData); });
+      tw.addEventListener("input", () => { obData.targetWeight = tw.value; Object.assign(state.onboardingData, obData); saveState(); });
     }
     if (td) {
-      td.addEventListener("input", () => { obData.targetDate = td.value; OnboardingEngine.updateData(obData); });
+      td.addEventListener("input", () => { obData.targetDate = td.value; Object.assign(state.onboardingData, obData); saveState(); });
     }
     document.querySelectorAll("[data-ob-lift]").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll("[data-ob-lift]").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
         obData.primaryLift = btn.dataset.obLift;
-        OnboardingEngine.updateData(obData);
+        Object.assign(state.onboardingData, obData); saveState();
       });
     });
     document.getElementById("obNextBtn").addEventListener("click", () => {
-      OnboardingEngine.updateData(obData);
+      Object.assign(state.onboardingData, obData); saveState();
       obGoToStep(6);
     });
     return;
@@ -9383,8 +9409,11 @@ function obFinishSetup() {
   saveState();
 
   // Mark onboarding complete
-  OnboardingEngine.markComplete();
-  OnboardingEngine.updateData(obData);
+  state.onboardingComplete = true;
+  state.coachActivated = true;
+  state.activatedAt = state.activatedAt || getDateKey(new Date());
+  Object.assign(state.onboardingData, obData);
+  saveState();
 
   // Close onboarding and show activation
   closeOnboarding(true, () => {
@@ -9421,7 +9450,7 @@ function showCoachActivation() {
 
 // ===== FIRST 7 DAYS EXPERIENCE =====
 function getFirst7DayFocus() {
-  const status = OnboardingEngine.getFirst7DayStatus();
+  const status = state.first7Days;
   const daysSinceStart = obDaysSinceActivation();
   const dayMap = [
     { day: 1, key: "day1Workout", focus: "First Workout", desc: "Complete your first workout", icon: "💪" },
@@ -9457,7 +9486,7 @@ function getFirst7DayFocus() {
 }
 
 function obDaysSinceActivation() {
-  const state = OnboardingEngine.loadState();
+  // Use global state directly
   if (!state.activatedAt) return 0;
   const activated = new Date(state.activatedAt);
   const now = new Date();
@@ -9469,7 +9498,7 @@ function renderFirst7DaysBanner(container) {
   if (!focus) return;
 
   // Check if the specific action is done
-  const status = OnboardingEngine.getFirst7DayStatus();
+  const status = state.first7Days;
 
   const banner = document.createElement("div");
   banner.className = "f7d-banner";
@@ -9515,7 +9544,7 @@ function obNavigateToDay(day, key) {
 
 // Check and auto-mark first-7-days progress
 function checkFirst7DayProgress() {
-  if (!OnboardingEngine.isOnboardingComplete()) return;
+  if (!state.onboardingComplete) return;
 
   const sessions = state.sessions || [];
   const hasWorkout = sessions.some(s => s.finishedAt);
@@ -9546,14 +9575,14 @@ function checkFirst7DayProgress() {
     hasReport = Array.isArray(repKeys) && repKeys.length > 0;
   } catch (e) { /* ignore */ }
 
-  const status = OnboardingEngine.getFirst7DayStatus();
+  const status = state.first7Days;
 
-  if (hasWorkout && !status.day1Workout) OnboardingEngine.markFirst7Day("day1Workout");
-  if (hasWeight && !status.day2Weight) OnboardingEngine.markFirst7Day("day2Weight");
-  if (hasWeight && !status.day3Protein) OnboardingEngine.markFirst7Day("day3Protein");
-  if (hasLearning && !status.day4Learning) OnboardingEngine.markFirst7Day("day4Learning");
-  if (hasChallenge && !status.day5Challenge) OnboardingEngine.markFirst7Day("day5Challenge");
-  if (hasReport && !status.day7Report) OnboardingEngine.markFirst7Day("day7Report");
+  if (hasWorkout && !status.day1Workout) state.first7Days["day1Workout"] = true; saveState();
+  if (hasWeight && !status.day2Weight) state.first7Days["day2Weight"] = true; saveState();
+  if (hasWeight && !status.day3Protein) state.first7Days["day3Protein"] = true; saveState();
+  if (hasLearning && !status.day4Learning) state.first7Days["day4Learning"] = true; saveState();
+  if (hasChallenge && !status.day5Challenge) state.first7Days["day5Challenge"] = true; saveState();
+  if (hasReport && !status.day7Report) state.first7Days["day7Report"] = true; saveState();
 }
 
 // ===== ONBOARDING EVENT LISTENERS =====
@@ -9568,7 +9597,10 @@ document.getElementById("onboardConfirmSkip").addEventListener("click", () => {
   state.user = { name: "Athlete", goal: "general", experience: "beginner" };
   state.bodyGoal = "general";
   saveState();
-  if (typeof OnboardingEngine !== "undefined") OnboardingEngine.markComplete();
+  state.onboardingComplete = true;
+  state.coachActivated = true;
+  state.activatedAt = state.activatedAt || getDateKey(new Date());
+  saveState();
   closeOnboarding(true, () => render());
 });
 
@@ -10548,8 +10580,8 @@ document.getElementById("wlSaveBtn")?.addEventListener("click", () => {
   } else {
     logWeight(Number(w), d, wlN.value);
   }
-  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
-    OnboardingEngine.markFirst7Day("day2Weight");
+  if (state.onboardingComplete) {
+    state.first7Days["day2Weight"] = true; saveState();
     checkFirst7DayProgress();
   }
   document.getElementById("weightLogModal")?.classList.add("is-hidden");
@@ -11099,8 +11131,8 @@ function finishWorkoutComplete() {
     session.notes = document.getElementById("ssNotesInput")?.value || session.notes || "";
     saveState();
   }
-  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
-    OnboardingEngine.markFirst7Day("day1Workout");
+  if (state.onboardingComplete) {
+state.first7Days["day1Workout"] = true; saveState();
     checkFirst7DayProgress();
   }
   renderHome();
@@ -11283,7 +11315,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check onboarding
-  if (typeof OnboardingEngine !== "undefined" && !OnboardingEngine.isOnboardingComplete()) {
+  if (!state.onboardingComplete) {
     if (!state.user) {
       state.user = {};
       saveState();
@@ -11292,7 +11324,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // Check first 7 days progress
-  if (typeof OnboardingEngine !== "undefined" && OnboardingEngine.isOnboardingComplete()) {
+  if (state.onboardingComplete) {
     checkFirst7DayProgress();
   }
 
