@@ -2866,110 +2866,74 @@ function renderProfileAvatar() {
 
 // ===== TODAY PANEL =====
 function renderTodayTab() {
-  // Rings
-  const trainPct = state.coachScore || 85;
-  const fuelPct = state.protein?.pct || 72;
-  const recoverPct = state.recoveryScore || 90;
-  
-  const trainRing = document.getElementById("trainRing");
-  const fuelRing = document.getElementById("fuelRing");
-  const recoverRing = document.getElementById("recoverRing");
-  if (trainRing) trainRing.style.strokeDashoffset = 534 - (534 * trainPct / 100);
-  if (fuelRing) fuelRing.style.strokeDashoffset = 408 - (408 * fuelPct / 100);
-  if (recoverRing) recoverRing.style.strokeDashoffset = 282 - (282 * recoverPct / 100);
-  
-  document.getElementById("ringsScore").textContent = Math.round(trainPct);
-  document.getElementById("trainPercent").textContent = trainPct + "%";
-  document.getElementById("fuelPercent").textContent = fuelPct + "%";
-  document.getElementById("recoverPercent").textContent = recoverPct + "%";
-  
-  // Coach Score
-  document.getElementById("coachScoreValue").textContent = state.coachScore || 82;
-  document.getElementById("coachScoreTrend").textContent = "↑ 4 This Week";
-  
-  // Today's Focus
-  const todaySession = getTodaySession?.() || state.sessions?.find(s => {
-    const sd = new Date(s.date);
-    const today = new Date();
-    return sd.toDateString() === today.toDateString();
-  });
-  
-  const focusItems = document.querySelectorAll(".today-focus-item");
-  focusItems.forEach(item => {
-    const type = item.dataset.focus;
-    const checkbox = item.querySelector(".focus-checkbox");
-    if (type === "workout" && todaySession) {
-      checkbox.classList.add("is-checked");
-      item.classList.add("is-done");
-    }
-    if (type === "protein" && state.protein?.today >= state.protein?.goal * 0.8) {
-      checkbox.classList.add("is-checked");
-      item.classList.add("is-done");
-    }
-    if (type === "weight") {
-      const weights = state.weightLog || [];
-      if (weights.some(w => {
-        const wd = new Date(w.date);
-        const today = new Date();
-        return wd.toDateString() === today.toDateString();
-      })) {
-        checkbox.classList.add("is-checked");
-        item.classList.add("is-done");
-      }
-    }
-  });
-  
-  // Coach Insight
-  const goals = GoalCenter?.getGoals?.() || [];
-  const proteinConsistent = state.protein?.streak >= 3;
-  const insightText = proteinConsistent 
-    ? "Your protein consistency is excellent! Focus on sleep quality for better recovery." 
-    : "Protein consistency is currently limiting progress. Try to hit your daily target for 7 consecutive days.";
-  document.getElementById("coachInsightText").textContent = insightText;
-  
-  // Challenge
+  const container = document.getElementById("todayPageContent");
+  if (!container) return;
+
+  const user = state.user || {};
+  const greeting = getGreeting();
+  const todaySession = getTodaySession();
   const streak = state.workoutStreak?.current || 0;
-  document.getElementById("challengeName").textContent = streak >= 3 ? "Streak Master" : "Protein Streak";
-  document.getElementById("challengeCount").textContent = streak + " / 7 Days";
-  document.getElementById("challengeBarFill").style.width = Math.min(100, (streak / 7) * 100) + "%";
-  
-  // Recent Win
-  const recentPR = state.recentPR || (todaySession?.prs?.length ? todaySession.prs[0] : null);
-  if (recentPR) {
-    document.getElementById("recentWinText").textContent = recentPR.exercise + " " + recentPR.value;
-    document.getElementById("recentWinMeta").textContent = streak + " Day Streak";
-  } else {
-    document.getElementById("recentWinText").textContent = streak > 0 ? streak + " Day Streak 🔥" : "Complete your first workout!";
-    document.getElementById("recentWinMeta").textContent = "Keep going!";
-  }
-  
-  // Timeline
-  const timeline = document.getElementById("todayTimeline");
-  const entries = [];
-  if (state.weightLog?.some(w => new Date(w.date).toDateString() === new Date().toDateString())) {
-    entries.push({ time: "Morning", text: "Weight Logged" });
-  }
-  if (todaySession) {
-    const timeOfDay = todaySession.timeOfDay || "Afternoon";
-    entries.push({ time: timeOfDay, text: todaySession.name + " Completed" });
-  }
-  if (state.protein?.today >= state.protein?.goal * 0.8) {
-    entries.push({ time: "Evening", text: "Protein Goal Achieved" });
-  }
-  
-  if (entries.length === 0) {
-    timeline.innerHTML = '<div class="timeline-empty">No activity yet today.</div>';
-  } else {
-    timeline.innerHTML = entries.map(e => `
-      <div class="timeline-item">
-        <div class="timeline-dot"></div>
-        <div class="timeline-content">
-          <div class="timeline-time">${e.time}</div>
-          <div class="timeline-text">${e.text}</div>
+  const latestWeight = state.weightLog?.length ? state.weightLog[state.weightLog.length - 1] : null;
+  const hasWorkoutToday = todaySession || (state.sessions || []).some(s => {
+    const sd = new Date(s.dateKey + "T00:00:00");
+    const today = new Date();
+    return !s.finishedAt && sd.toDateString() === today.toDateString();
+  });
+
+  container.innerHTML = `
+    <div class="today-home">
+      <div class="today-greeting">
+        <div class="today-greeting-line">${greeting.text} ${greeting.emoji}</div>
+        <div class="today-name">${user.name || "Athlete"}</div>
+        <div class="today-message">${getDailyMessage()}</div>
+      </div>
+
+      <div class="today-cards">
+        <div class="today-card" id="todayStreakCard">
+          <div class="today-card-icon">🔥</div>
+          <div class="today-card-body">
+            <div class="today-card-value">${streak}</div>
+            <div class="today-card-label">Day Streak</div>
+            <div class="today-card-meta">Longest: ${state.workoutStreak?.longestStreak || 0}</div>
+          </div>
+        </div>
+
+        <div class="today-card" id="todayWeightCard">
+          <div class="today-card-icon">⚖️</div>
+          <div class="today-card-body">
+            <div class="today-card-value">${latestWeight ? displayWeight(latestWeight.weight) : "—"}</div>
+            <div class="today-card-label">Weight</div>
+            <div class="today-card-meta">${latestWeight ? "Logged " + formatRelativeDate(latestWeight.date) : "Log today"}</div>
+          </div>
+        </div>
+
+        <div class="today-card" id="todayWorkoutCard">
+          <div class="today-card-icon">💪</div>
+          <div class="today-card-body">
+            <div class="today-card-value">${hasWorkoutToday ? "Active" : "Ready"}</div>
+            <div class="today-card-label">Workout</div>
+            <div class="today-card-meta">${hasWorkoutToday ? "Session in progress" : "Tap to start"}</div>
+          </div>
+        </div>
+
+        <div class="today-card" id="todayGoalCard">
+          <div class="today-card-icon">🎯</div>
+          <div class="today-card-body">
+            <div class="today-card-value">${user.targetWeight ? displayWeight(user.targetWeight) : "—"}</div>
+            <div class="today-card-label">Target</div>
+            <div class="today-card-meta">${user.goal ? user.goal.replace("-", " ") : "Set a goal"}</div>
+          </div>
         </div>
       </div>
-    `).join("");
-  }
+    </div>
+  `;
+
+  document.getElementById("todayStreakCard")?.addEventListener("click", openStreakDrawer);
+  document.getElementById("todayWeightCard")?.addEventListener("click", () => {
+    document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
+  });
+  document.getElementById("todayWorkoutCard")?.addEventListener("click", () => activateTab("sets"));
+  document.getElementById("todayGoalCard")?.addEventListener("click", openGoalCenter);
 }
 
 // ===== SETS PANEL =====
