@@ -10413,26 +10413,6 @@ document.addEventListener("click", (e) => {
     if (type === "weight") document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
     return;
   }
-  // Coach score card tap → Progress
-  if (e.target.closest(".coach-score-card")) {
-    activateTab("progress");
-    return;
-  }
-  // Insight card tap → Trainer
-  if (e.target.closest(".insight-card")) {
-    activateTab("trainer");
-    return;
-  }
-  // Challenge card tap → Trainer
-  if (e.target.closest(".challenge-card")) {
-    activateTab("trainer");
-    return;
-  }
-  // Win card tap → Progress
-  if (e.target.closest(".win-card")) {
-    activateTab("progress");
-    return;
-  }
 });
 
 // Close profile menu on outside click
