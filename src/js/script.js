@@ -2175,7 +2175,6 @@ function activateTab(tabName) {
   if (tabName === "today") renderTodayTab();
   if (tabName === "progress") renderProgressPage();
   if (tabName === "trainer") renderTrainerTab();
-  if (tabName === "body") renderBodyTab();
   if (tabName === "sets") renderSetsPanel();
   if (tabName === "settings") {
     showScreen("screen-settings");
@@ -2203,7 +2202,6 @@ function render() {
   if (currentTab === "today") renderTodayTab();
   if (currentTab === "progress") renderProgressPage();
   if (currentTab === "trainer") renderTrainerTab();
-  if (currentTab === "body") renderBodyTab();
   updateTopbarTimer();
 }
 
@@ -8530,9 +8528,6 @@ function closeWorkoutReport() {
 
 
 
-// ===== BODY TAB =====
-let bodyChartInstance = null;
-
 const GOAL_DESCRIPTIONS = {
   "Muscle Gain": "Build strength and increase lean muscle mass.",
   "Fat Loss": "Reduce body fat while maintaining muscle.",
@@ -8687,242 +8682,21 @@ function goalDescription(goal) {
   return GOAL_DESCRIPTIONS[goal] || "";
 }
 
-// ===== BODY TAB: NEW 7-SECTION REDESIGN =====
-function renderBodyTab() {
-  const container = document.getElementById("bodyPageContent");
-  container.innerHTML = "";
 
-  renderWeightGoalProgress(container);
-  renderBodyMetrics(container);
-  renderWeightTrend(container);
-  renderMilestoneCards(container);
-  renderWorkoutStreak(container);
-  renderConsistencyScore(container);
-  renderMilestones(container);
-  renderEditGoalsBtn(container);
-}
 
-function renderWeightGoalProgress(container) {
-  const result = computeGoalProgress();
-  const div = document.createElement("div");
-  div.className = "body-card body-weight-progress";
 
-  if (!result) {
-    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Weight Goal Set</div><p class="body-empty-text">Set a target weight to track progress</p></div>`;
-    container.appendChild(div);
-    return;
-  }
 
-  const { progress, status, remaining, changeSinceStart, currentWeight, startWeight, targetWeight, goalType, milestones, currentMilestone, totalMilestones } = result;
 
-  const statusMeta = {
-    "on-track": { label: "On Track", icon: "🟢" },
-    "moving-away": { label: "Moving Away From Goal", icon: "🔴" },
-    "maintaining": { label: "Maintaining", icon: "🟡" },
-    "achieved": { label: "Goal Achieved", icon: "🏆" },
-  };
 
-  const goalLabels = {
-    "fat-loss": "Fat Loss",
-    "muscle-gain": "Muscle Gain",
-    "recomposition": "Recomposition",
-    "general-fitness": "General Fitness",
-  };
 
-  const goalLabel = goalLabels[goalType] || "General Fitness";
-  const sm = statusMeta[status];
-  const isLossGoal = goalType === "fat-loss" || (goalType === "general-fitness" && targetWeight < startWeight);
 
-  let html = `
-    <div class="bcg-header"><span class="bcg-label">Current Goal</span></div>
-    <div class="bcg-name">${goalLabel}</div>
-    <div class="wgp-status">${sm.icon} ${sm.label}</div>
-    <div class="wgp-grid">
-      <div class="wgp-stat"><span class="wgp-stat-label">Start</span><span class="wgp-stat-value">${displayWeight(startWeight)}</span></div>
-      <div class="wgp-stat"><span class="wgp-stat-label">Current</span><span class="wgp-stat-value">${displayWeight(currentWeight)}</span></div>
-      <div class="wgp-stat"><span class="wgp-stat-label">Target</span><span class="wgp-stat-value">${displayWeight(targetWeight)}</span></div>
-    </div>`;
 
-  if (goalType !== "recomposition") {
-    const barColor = status === "achieved" ? "var(--accent)" : status === "moving-away" ? "var(--red)" : "var(--accent)";
-    html += `<div class="wgp-bar-wrap"><div class="wgp-bar" style="width:${progress}%;background:${barColor}"></div></div>
-      <div class="wgp-pct" style="color:${barColor}">${progress}%</div>`;
-  }
 
-  if (goalType !== "recomposition") {
-    if (status === "achieved") {
-      const direction = isLossGoal ? "Lost" : "Gained";
-      html += `<div class="wgp-meta"><span class="wgp-meta-item wgp-meta-bonus">🎯 Goal Complete</span><span class="wgp-meta-item">${direction} ${displayWeight(Math.abs(changeSinceStart))}</span></div>`;
-    } else if (status === "moving-away") {
-      const direction = isLossGoal ? "gained" : "lost";
-      html += `<div class="wgp-meta"><span class="wgp-meta-item">${displayWeight(remaining)} to goal</span><span class="wgp-meta-item">${direction} ${displayWeight(Math.abs(changeSinceStart))} since start</span></div>`;
-    } else {
-      const direction = isLossGoal ? "Lost" : "Gained";
-      const dispChange = changeSinceStart;
-      html += `<div class="wgp-meta"><span class="wgp-meta-item">${displayWeight(remaining)} Remaining</span><span class="wgp-meta-item">${direction} ${displayWeight(dispChange)}</span></div>`;
-    }
-  }
 
-  if (goalType === "recomposition") {
-    const diff = changeSinceStart;
-    const absDiff = Math.abs(diff);
-    const trend = diff > 0.5 ? "▲ Gained" : diff < -0.5 ? "▼ Lost" : "— Stable";
-    html += `<div class="wgp-meta"><span class="wgp-meta-item">${trend} ${absDiff > 0.5 ? displayWeight(absDiff) : ""}</span><span class="wgp-meta-item">Tracking body composition</span></div>`;
-  }
 
-  div.innerHTML = html;
-  container.appendChild(div);
-}
 
-function renderBodyMetrics(container) {
-  const u = state.user || {};
-  const entry = latestWeight();
-  const weight = entry ? entry.weight : null;
-  const bmi = u.height && weight ? (weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
-  let status = "—";
-  if (bmi !== null) {
-    if (bmi < 18.5) status = "Underweight";
-    else if (bmi < 25) status = "Healthy Weight";
-    else if (bmi < 30) status = "Overweight";
-    else status = "Obese";
-  }
 
-  const div = document.createElement("div");
-  div.className = "body-card body-metrics";
-  div.innerHTML = `
-    <div class="bm-header"><span class="bm-label">Body Metrics</span></div>
-    <div class="bm-grid">
-      <div class="bm-item"><span class="bm-value">${weight ? displayWeight(weight) : "—"}</span><span class="bm-sub">Current Weight</span></div>
-      <div class="bm-item"><span class="bm-value">${bmi !== null ? bmi : "—"}</span><span class="bm-sub">BMI</span></div>
-      <div class="bm-item"><span class="bm-value">${status}</span><span class="bm-sub">Body Status</span></div>
-    </div>`;
-  container.appendChild(div);
-}
 
-function renderWeightTrend(container) {
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const change = weeklyWeightChange();
-  const monthlyChg = monthlyWeightChange();
-
-  const div = document.createElement("div");
-  div.className = "body-card body-weight-trend";
-  const changeCls = (val) => val !== null && val !== 0 ? (val > 0 ? " is-up" : " is-down") : "";
-  const fmtChange = (val) => val !== null ? (val > 0 ? "+" : "") + val.toFixed(1) + " kg" : "—";
-  div.innerHTML = `
-    <div class="bw-header">
-      <div class="bw-stat"><span class="bw-stat-label">Current</span><span class="bw-stat-value">${log.length > 0 ? displayWeight(log[log.length - 1].weight) : "—"}</span></div>
-      <div class="bw-stat${changeCls(change)}"><span class="bw-stat-label">Weekly</span><span class="bw-stat-value">${fmtChange(change)}</span></div>
-      <div class="bw-stat${changeCls(monthlyChg)}"><span class="bw-stat-label">Monthly</span><span class="bw-stat-value">${fmtChange(monthlyChg)}</span></div>
-    </div>
-    <div class="bw-chart-wrap"><canvas id="bodyWeightChart" style="width:100%;height:180px"></canvas></div>`;
-  container.appendChild(div);
-
-  if (bodyChartInstance) { bodyChartInstance.destroy(); bodyChartInstance = null; }
-  const canvas = document.getElementById("bodyWeightChart");
-  if (!canvas) return;
-  if (log.length < 2) {
-    canvas.style.display = "none";
-    div.querySelector(".bw-chart-wrap").innerHTML = '<div class="bw-skeleton"><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-line"></div><div class="bw-skel-text">Track your weight to unlock trends</div></div>';
-    return;
-  }
-  canvas.style.display = "block";
-  const recent = log.slice(-30);
-  const labels = recent.map((e) => {
-    const d = parseDateKey(e.date);
-    return d.toLocaleDateString("en-IN", { day: "numeric", month: "short" });
-  });
-  const data = recent.map((e) => e.weight);
-  const ctx = canvas.getContext("2d");
-  bodyChartInstance = new Chart(ctx, {
-    type: "line",
-    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.4, pointRadius: 2, pointBackgroundColor: "#00d26a", fill: { target: "origin", above: "rgba(0, 210, 106, 0.08)" } }] },
-    options: {
-      plugins: { legend: { display: false }, tooltip: { enabled: true } },
-      scales: {
-        x: { ticks: { maxTicksLimit: 6, color: "#737373", font: { size: 10 } }, grid: { display: false } },
-        y: { ticks: { color: "#737373", font: { size: 10 } }, grid: { color: "rgba(255,255,255,0.04)" } },
-      },
-      maintainAspectRatio: false,
-    },
-  });
-}
-
-function renderWorkoutStreak(container) {
-  const streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
-
-  const div = document.createElement("div");
-  div.className = "body-card body-streak";
-  div.innerHTML = `
-    <div class="str-grid">
-      <div class="str-item"><span class="str-value">${streak.currentStreak || 0}</span><span class="str-label">Current Streak</span></div>
-      <div class="str-item"><span class="str-value">${streak.longestStreak || 0}</span><span class="str-label">Longest Streak</span></div>
-    </div>`;
-  container.appendChild(div);
-}
-
-function renderConsistencyScore(container) {
-  const sessions = state.sessions || [];
-  const now = new Date();
-  const thirtyDaysAgo = getDateKey(new Date(now.getTime() - 30 * 86400000));
-  const finished = sessions.filter((s) => s.finishedAt && s.dateKey >= thirtyDaysAgo).length;
-  const totalDays = 30;
-  const pct = Math.min(100, Math.round((finished / totalDays) * 100));
-
-  const div = document.createElement("div");
-  div.className = "body-card body-consistency";
-  const deg = (pct / 100) * 360;
-  div.innerHTML = `
-    <div class="cons-ring" style="background: conic-gradient(var(--accent) ${deg}deg, var(--surface-2) 0deg)">
-      <div class="cons-ring-inner">${pct}%</div>
-    </div>
-    <div class="cons-info">
-      <div class="cons-label">Consistency</div>
-      <div class="cons-sub">${finished} / ${totalDays} days trained</div>
-    </div>`;
-  container.appendChild(div);
-}
-
-function renderProfileSummary(container) {
-  const u = state.user || {};
-  const entry = latestWeight();
-  const weight = entry ? entry.weight : u.weight || null;
-  const activePlan = loadCustomProgram() || plan;
-  const splitName = activePlan.length > 0 ? activePlan.map((w) => w.name).join(", ") : "—";
-  const goalDisplay = u.goal || "—";
-
-  const fields = [
-    { label: "Name", value: u.name || "—" },
-    { label: "Age", value: u.age || "—" },
-    { label: "Height", value: u.height ? displayHeight(u.height) : "—" },
-    { label: "Weight", value: weight ? displayWeight(weight) : "—" },
-    { label: "Goal", value: goalDisplay },
-    { label: "Experience", value: u.experience || "—" },
-    { label: "Split", value: splitName },
-  ];
-
-  const div = document.createElement("div");
-  div.className = "body-card body-profile-summary";
-
-  if (!state.user) {
-    div.innerHTML = `<div class="body-empty-card"><div class="body-empty-title">No Profile Yet</div><p class="body-empty-text">Complete onboarding to set up your profile</p></div>`;
-    container.appendChild(div);
-    return;
-  }
-
-  div.innerHTML = `
-    <div class="bps-label">Profile Summary</div>
-    <div class="bps-grid">
-      ${fields.map((f) => `<div class="bps-item"><span class="bps-item-label">${f.label}</span><span class="bps-item-value">${f.value}</span></div>`).join("")}
-    </div>`;
-  container.appendChild(div);
-}
-
-function renderEditGoalsBtn(container) {
-  const div = document.createElement("div");
-  div.className = "body-edit-goals";
-  div.innerHTML = `<button class="beg-btn" id="bodyEditGoalBtn">Edit Goal</button>`;
-  container.appendChild(div);
-}
 
 function openGoalSelector() {
   const list = document.getElementById("gsList");
@@ -8956,69 +8730,9 @@ document.getElementById("gsList")?.addEventListener("click", (e) => {
   saveState();
   document.getElementById("goalSelectorSheet").classList.add("is-hidden");
   renderHome();
-  if (typeof renderBodyTab === "function") renderBodyTab();
   if (typeof renderSettings === "function") renderSettings();
 });
 
-function renderMilestoneCards(container) {
-  const result = computeGoalProgress();
-  if (!result || !result.milestones || result.milestones.length === 0) return;
-  const { milestones, currentMilestone, totalMilestones } = result;
-  if (result.goalType === "recomposition") return;
-
-  const div = document.createElement("div");
-  div.className = "body-card body-milestones";
-  let html = '<div class="bm-header"><span class="bm-label">Milestone Progress</span></div>';
-  for (const m of milestones) {
-    const isReached = m.index <= currentMilestone;
-    const isCurrent = m.index === currentMilestone + 1;
-    const isGoal = m.index === totalMilestones;
-    let lbl = "";
-    if (isReached) lbl = "✓ Completed";
-    else if (isCurrent) lbl = "○ Next";
-    else if (isGoal) lbl = "🎯 Goal";
-    else lbl = "🔒 Locked";
-    const cls = isReached ? " is-done" : isCurrent ? " is-next" : isGoal ? " is-goal" : " is-locked";
-    html += '<div class="ms-card' + cls + '"><span class="ms-weight">' + displayWeight(m.weight) + '</span><span class="ms-status">' + lbl + '</span></div>';
-  }
-  div.innerHTML = html;
-  container.appendChild(div);
-}
-
-function renderMilestones(container) {
-  const sessions = state.sessions || [];
-  const totalWorkouts = sessions.filter(function(s) { return s.finishedAt; }).length;
-  const prs = state.prs || {};
-  var totalPRs = 0;
-  for (const key in prs) {
-    if (prs[key] && prs[key].history) totalPRs += prs[key].history.length;
-  }
-  const streak = getStreak();
-  const longestStreak = getLongestStreak();
-  const goalResult = computeGoalProgress();
-  const hasMilestone = goalResult && goalResult.currentMilestone >= 1;
-  const isGoalReached = goalResult && goalResult.status === "achieved";
-
-  const achievements = [
-    { icon: "🏆", label: "First Workout", unlocked: totalWorkouts >= 1 },
-    { icon: "⭐", label: "First PR", unlocked: totalPRs >= 1 },
-    { icon: "🔥", label: "7 Day Streak", unlocked: longestStreak >= 7 },
-    { icon: "💪", label: "10 Workouts Logged", unlocked: totalWorkouts >= 10 },
-    { icon: "🎯", label: "First Weight Milestone", unlocked: hasMilestone },
-    { icon: "📅", label: "Consistent For 30 Days", unlocked: totalWorkouts >= 30 },
-    { icon: "🏋️", label: "Complete 50 Workouts", unlocked: totalWorkouts >= 50 },
-    { icon: "🎉", label: "Reach Goal Weight", unlocked: isGoalReached },
-    { icon: "🔥", label: "100 Day Streak", unlocked: longestStreak >= 100 },
-  ];
-
-  const div = document.createElement("div");
-  div.className = "body-card body-achievements";
-  div.innerHTML = '<div class="bm-header"><span class="bm-label">Milestones</span></div><div class="ach-grid">' +
-    achievements.map(function(a) {
-      return '<div class="ach-item' + (a.unlocked ? ' is-unlocked' : ' is-locked') + '"><span class="ach-icon">' + (a.unlocked ? a.icon : "🔒") + '</span><span class="ach-label">' + a.label + '</span></div>';
-    }).join("") + '</div>';
-  container.appendChild(div);
-}
 
 
 // ===== MODALS =====
@@ -11035,7 +10749,6 @@ if (setting === "theme") {
     saveState();
     renderSettings();
     renderHome();
-    if (typeof renderBodyTab === "function") renderBodyTab();
     return;
   }
 });
@@ -11475,7 +11188,7 @@ document.getElementById("eaBackBtn").addEventListener("click", () => {
     analyticsChart.destroy();
     analyticsChart = null;
   }
-  activateTab("sessions");
+  activateTab("progress");
 });
 document.getElementById("eaTabs").addEventListener("click", (e) => {
   const tab = e.target.closest(".ea-tab");
@@ -11656,7 +11369,6 @@ document.getElementById("wlSave")?.addEventListener("click", () => {
   saveBodyLogEntry({ date: getDateKey(), weight: w });
   document.getElementById("weightLogSheet").classList.add("is-hidden");
   renderHome();
-  renderBodyTab();
   showToast("Weight Updated");
 });
 document.getElementById("wlPlus")?.addEventListener("click", () => {
