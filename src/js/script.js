@@ -6,6 +6,19 @@ const CAL_GOAL = 2100;
 const WATER_TARGET = 3000;
 const DEFAULT_REST = 90;
 
+let _chartJsPromise = null;
+function loadChartJS() {
+  if (typeof Chart !== "undefined") return Promise.resolve();
+  if (_chartJsPromise) return _chartJsPromise;
+  _chartJsPromise = new Promise((resolve, reject) => {
+    const s = document.createElement("script");
+    s.src = "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js";
+    s.onload = resolve;
+    s.onerror = () => { _chartJsPromise = null; reject(new Error("Chart.js failed to load")); };
+    document.head.appendChild(s);
+  });
+  return _chartJsPromise;
+}
 
 function isWorkingSet(s) {
   return s.done && !s.isWarmup && Number(s.weight) > 0;
@@ -3927,6 +3940,11 @@ function renderEaVolume(container) {
     container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Complete at least 2 sessions to see volume trend.</p>`;
     return;
   }
+  if (typeof Chart === "undefined") {
+    container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Loading chart…</p>`;
+    loadChartJS().then(() => renderEaVolume(container)).catch(() => {});
+    return;
+  }
   if (analyticsChart) {
     analyticsChart.destroy();
     analyticsChart = null;
@@ -3967,6 +3985,11 @@ function renderEaStrength(container) {
   container.innerHTML = `<div class="ea-chart-wrap"><canvas id="eaStrChart"></canvas></div>`;
   if (filtered.length < 2) {
     container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Complete at least 2 sessions to see strength trend.</p>`;
+    return;
+  }
+  if (typeof Chart === "undefined") {
+    container.innerHTML = `<p style="font-size:0.75rem;color:var(--text-secondary);padding:1rem;text-align:center">Loading chart…</p>`;
+    loadChartJS().then(() => renderEaStrength(container)).catch(() => {});
     return;
   }
   if (analyticsChart) {

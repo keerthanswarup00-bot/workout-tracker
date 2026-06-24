@@ -12830,3 +12830,87 @@ h4,
 .profile-menu-item:active {
   background: var(--surface-3);
 }
+
+/* ===== LANDSCAPE MODE ===== */
+@media (orientation: landscape) and (max-height: 500px) {
+  .bottom-nav { height: 46px; padding-bottom: 4px; }
+  .bottom-nav .nav-btn { padding: 4px 8px 2px; gap: 0; font-size: 0.6rem; }
+  .bottom-nav .nav-btn svg { width: 18px; height: 18px; }
+  .bottom-nav .nav-indicator { top: 0; height: 2px; }
+  #mainArea { padding-bottom: 50px; }
+
+  .home-stat-cards { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+  .home-stat-card { padding: 8px; }
+  .home-stat-card .stat-value { font-size: 1rem; }
+  .home-stat-card .stat-label { font-size: 0.6rem; }
+
+  .set-row { padding: 6px 8px; min-height: 36px; }
+  .set-row .set-weight,
+  .set-row .set-reps { font-size: 0.85rem; }
+  .set-row .set-rpe { font-size: 0.7rem; }
+
+  .ex-header { padding: 8px 12px; }
+  .ex-header .ex-name { font-size: 0.9rem; }
+
+  .ws-topbar { padding: 4px 12px; }
+  .ws-topbar .ws-timer { font-size: 0.85rem; }
+  .ws-topbar .ws-ex-name { font-size: 0.8rem; }
+
+  .ex-card-compact { padding: 6px 10px; }
+  .ex-card-compact .ex-card-name { font-size: 0.8rem; }
+
+  .wo-card-item { padding: 10px; }
+  .wo-card-item .wo-card-title { font-size: 0.85rem; }
+
+  .tt-hero { padding: 10px 14px; }
+  .tt-hero .tt-hero-message { font-size: 0.85rem; }
+  .tt-challenges-grid { grid-template-columns: repeat(4, 1fr); gap: 6px; }
+
+  .ob-body { padding: 8px; }
+  .ob-fields { gap: 6px; }
+  .ob-input { padding: 8px; font-size: 0.85rem; }
+  .ob-title { font-size: 1rem; }
+  .ob-desc { font-size: 0.8rem; }
+
+  #restTimer { bottom: 56px; right: 10px; width: 48px; height: 48px; }
+  #restTimer .rt-text { font-size: 0.75rem; }
+
+  .gc-hero { padding: 12px; }
+  .gc-hero .gc-hero-value { font-size: 1.5rem; }
+  .gc-metrics { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  .settings-section { padding: 8px 12px; }
+  .settings-group { padding: 8px 0; }
+  .settings-row { min-height: 36px; padding: 4px 0; }
+
+  .progress-calendar { gap: 2px; }
+  .progress-calendar .cal-day { width: 28px; height: 28px; font-size: 0.7rem; }
+
+  .tr-content { padding: 8px; }
+  .tr-card { padding: 10px; }
+
+  .rr-hero { padding: 10px; }
+  .rr-stats { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+  .pr-board { grid-template-columns: repeat(3, 1fr); gap: 6px; }
+  .pr-card { padding: 8px; }
+}
+
+@media (orientation: landscape) and (min-height: 501px) and (max-height: 768px) {
+  .bottom-nav { height: 50px; padding-bottom: 4px; }
+  #mainArea { padding-bottom: 54px; }
+  .home-stat-cards { grid-template-columns: repeat(4, 1fr); }
+  .tt-challenges-grid { grid-template-columns: repeat(3, 1fr); }
+}
+
+@media (orientation: landscape) and (min-width: 768px) {
+  .ws-topbar { padding: 8px 24px; }
+  .set-row { padding: 10px 16px; }
+  .home-stat-cards { grid-template-columns: repeat(4, 1fr); }
+  .ex-card-compact { padding: 10px 16px; }
+  .tt-content { max-width: 800px; margin: 0 auto; }
+  .ob-body { max-width: 600px; margin: 0 auto; }
+
+  .wo-card-grid { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+  .tr-cards-2col { grid-template-columns: repeat(2, 1fr); gap: 12px; }
+}
