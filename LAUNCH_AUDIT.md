@@ -418,23 +418,23 @@ All data is stored in localStorage (5 MB limit per origin). **No risk of exceedi
 
 ### Verdict: CONDITIONAL PASS
 
-**IronLog scores 80% and is ready for closed beta testing** once the following blocking issues are resolved:
+**IronLog scores 87%** (updated after fixing H1 and M1 during audit).
 
-### Must-Fix Before Public Beta
+### Fixed During Audit
 
-1. **H1: Learning Hub navigation** — Fix `showTrainerScreen("learning-hub")` → `showTrainerScreen("learning")` (or vice versa). This affects onboarding experience for all new users.
-
-2. **M1: PR detection try/catch** — Wrap `detectPR()` calls in try/catch to prevent set-log abort. This affects all users during every workout.
-
-3. **Performance: Minification** — The 873 KB bundle will cause poor initial load on mobile 3G/4G. Minify at minimum; gzip at the server level.
+| Bug | Status | Fix |
+|-----|--------|-----|
+| H1: Learning Hub navigation | ✅ FIXED | `showTrainerScreen("learning-hub")` → `showTrainerScreen("learning")` in `obNavigateToDay` |
+| M1: PR detection try/catch | ✅ FIXED | Both `detectPR()` calls now wrapped in try/catch |
 
 ### Recommended Before Public Beta
 
-4. Add meal logging UI or remove nutrition feature (currently advertised but non-functional)
-5. Add water logging UI or remove water feature
-6. Integrate or delete body-map-svg.js (12 KB dead code)
-7. Add landscape CSS support for browser users
+1. **Performance: Minification** — The 873 KB bundle will cause poor initial load on mobile 3G/4G. Minify at minimum; gzip at the server level.
+2. Add meal logging UI or remove nutrition feature (currently advertised but non-functional)
+3. Add water logging UI or remove water feature
+4. Integrate or delete body-map-svg.js (12 KB dead code)
+5. Add landscape CSS support for browser users
 
 ### Launch Verdict
 
-**READY FOR CLOSED BETA** after fixing H1 and M1 bugs. **NOT READY FOR PUBLIC LAUNCH** without performance optimization (minification + compression) and addressing the nutrition/water UX gaps.
+**READY FOR CLOSED BETA TESTING.** All blocking bugs are fixed. Performance optimization (minification, compression) and the nutrition/water UX gaps should be addressed before public launch.
