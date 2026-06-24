@@ -1368,6 +1368,10 @@ function loadState() {
     showWorkoutProgress: true,
     recoveryAnalysis: true,
     workoutStreak: { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
+    heroDismissed: false,
+    quickStartDismissed: false,
+    quickStartProgress: {},
+    feedbackGiven: false,
     customExercises: [],
   };
   try {
@@ -2384,11 +2388,18 @@ function renderSettings() {
     <button class="sg-row sg-row-danger" data-setting="delete-all"><span>Delete All Data</span><span class="sg-chevron">›</span></button>
   </div>
 
-  <!-- SECTION 7: ABOUT -->
+  <!-- SECTION 7: FEEDBACK -->
+  <div class="sg">
+    <div class="sg-label">FEEDBACK</div>
+    <button class="sg-row" data-setting="feedback-bug"><span>🐛 Report a Bug</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" data-setting="feedback-feature"><span>💡 Suggest a Feature</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" data-setting="feedback-general"><span>⭐ Share Feedback</span><span class="sg-chevron">›</span></button>
+  </div>
+
+  <!-- SECTION 8: ABOUT -->
   <div class="sg">
     <div class="sg-label">ABOUT</div>
     <div class="sg-row"><span>Version</span><span class="sg-row-val">2.0</span></div>
-    <div class="sg-row"><span>IronLog</span><span class="sg-row-val">Track. Lift. Progress.</span></div>
     <button class="sg-row" data-setting="about-developer"><span>About The Developer</span><span class="sg-chevron">›</span></button>
     <div class="sg-row" style="cursor:default"><span style="font-size:0.7rem;color:var(--text-secondary)">Built with ❤️</span></div>
   </div>`;
@@ -2508,16 +2519,16 @@ function showScreen(screenId) {
 
 function getDailyMessage() {
   const messages = [
-    "Have a great workout today.",
-    "Ready to hit your goals?",
-    "Let's build consistency today.",
-    "Focus on today's training.",
-    "Stay strong and keep moving.",
-    "Make every rep count.",
-    "You're building something great.",
-    "Trust the process.",
-    "Small steps lead to big results.",
+    "Build muscle. Lose fat. Stay consistent.",
+    "Ready to get stronger today?",
+    "Consistency beats intensity — keep showing up.",
+    "Focus on today's training. Progress adds up.",
+    "Stay strong. Recover better. Repeat.",
+    "Make every rep count toward your goal.",
+    "You're building something great. Trust the process.",
+    "Small steps lead to big results. Keep lifting.",
     "Today's effort = tomorrow's progress.",
+    "Train smart. Eat right. Recover well.",
   ];
   const dayOfYear = Math.floor((new Date() - new Date(new Date().getFullYear(), 0, 0)) / 86400000);
   return messages[dayOfYear % messages.length];
@@ -2588,10 +2599,10 @@ function renderHome() {
     container.innerHTML = `
       <div class="empty-state">
         <div class="empty-state-icon">💪</div>
-        <div class="empty-state-title">Create Your First Workout</div>
-        <div class="empty-state-text">Build a workout manually or generate one automatically.</div>
-        <button class="empty-state-btn" id="emptyStateBuildBtn">Build Workout</button>
-        <button class="empty-state-btn secondary" id="emptyStateGenerateBtn">Generate Workout</button>
+        <div class="empty-state-title">No Workouts Yet</div>
+        <div class="empty-state-text">Create your first workout and start building strength today.</div>
+        <button class="empty-state-btn" id="emptyStateBuildBtn">Create Workout</button>
+        <button class="empty-state-btn secondary" id="emptyStateGenerateBtn">Generate Program</button>
       </div>`;
     document.getElementById("emptyStateBuildBtn")?.addEventListener("click", showNewWorkoutBuilder);
     document.getElementById("emptyStateGenerateBtn")?.addEventListener("click", openGenerateWorkout);
@@ -3188,6 +3199,116 @@ function renderWaterWidget() {
 }
 
 // ===== TODAY PANEL =====
+function renderHeroWelcome() {
+  const finishedWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
+  if (finishedWorkouts >= 3 || state.heroDismissed) return "";
+  return `
+    <div class="hero-welcome" id="heroWelcome">
+      <div class="hero-welcome-bg"></div>
+      <button class="hero-welcome-dismiss" id="heroWelcomeDismiss" aria-label="Dismiss welcome">✕</button>
+      <div class="hero-welcome-brand">IronLog</div>
+      <div class="hero-welcome-sub">Build Muscle. Lose Fat. Stay Consistent.</div>
+      <div class="hero-welcome-body">Track workouts, monitor progress, improve recovery, and achieve your fitness goals with your personal training system.</div>
+      <div class="hero-welcome-features">
+        <div class="hero-welcome-feature">✓ Workout Tracking</div>
+        <div class="hero-welcome-feature">✓ Progress Analytics</div>
+        <div class="hero-welcome-feature">✓ Nutrition Tracking</div>
+        <div class="hero-welcome-feature">✓ Recovery Insights</div>
+      </div>
+      <button class="hero-welcome-cta" id="heroWelcomeStart">Start First Workout</button>
+      <button class="hero-welcome-cta secondary" id="heroWelcomeBuild">Build My Program</button>
+    </div>`;
+}
+
+function renderQuickStartGuide() {
+  if (!state.heroDismissed) return "";
+  const finishedWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
+  if (finishedWorkouts >= 6 || state.quickStartDismissed) return "";
+  const qs = state.quickStartProgress || {};
+  const items = [
+    { key: "profile", label: "Complete Profile", check: () => isProfileComplete() },
+    { key: "workout", label: "Create First Workout", check: () => (state.plan || []).length > 0 || (loadCustomProgram() || []).length > 0 },
+    { key: "session", label: "Log First Session", check: () => finishedWorkouts >= 1 },
+    { key: "goal", label: "Set Goal", check: () => GoalCenter.hasGoal(GoalCenter.load()) },
+    { key: "water", label: "Track Water", check: () => {
+      const today = getDateKey();
+      const water = parseInt(localStorage.getItem("wl_water_" + today)) || 0;
+      return water > 0;
+    }},
+    { key: "measurement", label: "Add First Measurement", check: () => (state.measurements || []).length > 0 },
+  ];
+  const done = items.filter(i => i.check()).length;
+  const total = items.length;
+  const pct = Math.round((done / total) * 100);
+  if (done >= total) return "";
+  return `
+    <div class="quick-start-card" id="quickStartCard">
+      <div class="quick-start-header">
+        <span class="quick-start-title">Getting Started</span>
+        <button class="quick-start-dismiss" id="quickStartDismiss" aria-label="Dismiss">✕</button>
+      </div>
+      <div class="quick-start-bar"><div class="quick-start-fill" style="width:${pct}%"></div></div>
+      <div class="quick-start-label">${done}/${total} complete</div>
+      <div class="quick-start-items">
+        ${items.map(item => {
+          const isDone = item.check();
+          return `<div class="quick-start-item ${isDone ? "done" : ""}"><span class="quick-start-check">${isDone ? "✓" : "○"}</span><span>${item.label}</span></div>`;
+        }).join("")}
+      </div>
+    </div>`;
+}
+
+function renderTodayMotivation() {
+  const finishedWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
+  if (finishedWorkouts < 1) return "";
+  const streak = state.workoutStreak?.current || 0;
+  const gcProfile = GoalCenter.load();
+  const hasGoal = GoalCenter.hasGoal(gcProfile);
+  const goalLabel = GoalCenter.getGoalLabel();
+  const allPRs = getAllPRs();
+  const recentPRs = [];
+  for (const [exName, data] of Object.entries(allPRs)) {
+    (data.history || []).forEach(h => recentPRs.push({ ...h, exerciseName: exName }));
+  }
+  recentPRs.sort((a, b) => b.date.localeCompare(a.date));
+  const latestPR = recentPRs[0];
+  const today = getDateKey();
+  const water = parseInt(localStorage.getItem("wl_water_" + today)) || 0;
+  const waterTarget = state.waterGoal || WATER_TARGET;
+  const dailyLog = state.dailyLogs?.[today];
+  const proteinHit = dailyLog && dailyLog.protein >= (state.proteinGoal || PROTEIN_GOAL) * 0.9;
+
+  let message = "";
+  let icon = "";
+  if (streak >= 3) {
+    message = `${streak} Day Streak. Keep showing up.`;
+    icon = "🔥";
+  } else if (latestPR) {
+    const prName = latestPR.exerciseName.replace(/([A-Z])/g, " $1").trim();
+    message = `New Personal Record. Great work on ${prName}.`;
+    icon = "🏆";
+  } else if (proteinHit) {
+    message = "Protein Target Hit Yesterday. Recovery starts with consistency.";
+    icon = "🥩";
+  } else if (hasGoal) {
+    message = `Current Goal: ${goalLabel}. Stay consistent and trust the process.`;
+    icon = "🎯";
+  } else if (water >= waterTarget * 0.8) {
+    message = "Great hydration today. Your body will thank you.";
+    icon = "💧";
+  } else if (finishedWorkouts >= 1) {
+    message = `${finishedWorkouts} workout${finishedWorkouts > 1 ? "s" : ""} completed. Every rep counts.`;
+    icon = "💪";
+  } else {
+    return "";
+  }
+  return `
+    <div class="today-motivation-card">
+      <span class="today-motivation-icon">${icon}</span>
+      <span class="today-motivation-text">${message}</span>
+    </div>`;
+}
+
 function renderTodayTab() {
   const container = document.getElementById("todayPageContent");
   if (!container) return;
@@ -3203,8 +3324,12 @@ function renderTodayTab() {
     return !s.finishedAt && sd.toDateString() === today.toDateString();
   });
 
+  const hasData = state.weightLog?.length > 0 || (state.sessions || []).filter(s => s.finishedAt).length > 0 || state.user?.name;
+
   container.innerHTML = `
     <div class="today-home">
+      ${renderHeroWelcome()}
+
       <div class="today-greeting">
         <div class="today-greeting-line">${greeting.text} ${greeting.emoji}</div>
         <div class="today-name">${user.name || "Athlete"}</div>
@@ -3249,13 +3374,33 @@ function renderTodayTab() {
         </div>
       </div>
 
+      ${renderQuickStartGuide()}
+      ${renderTodayMotivation()}
+
       <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.75rem" id="todayHealthWidgets">
-        ${renderNutritionWidget()}
-        ${renderWaterWidget()}
+        ${hasData ? renderNutritionWidget() : ""}
+        ${hasData ? renderWaterWidget() : ""}
       </div>
     </div>
   `;
 
+  // Hero welcome card events
+  const heroWelcome = document.getElementById("heroWelcome");
+  if (heroWelcome) {
+    document.getElementById("heroWelcomeDismiss")?.addEventListener("click", () => {
+      state.heroDismissed = true;
+      saveState();
+      renderTodayTab();
+    });
+    document.getElementById("heroWelcomeStart")?.addEventListener("click", () => activateTab("sets"));
+    document.getElementById("heroWelcomeBuild")?.addEventListener("click", showNewWorkoutBuilder);
+  }
+
+  document.getElementById("quickStartDismiss")?.addEventListener("click", () => {
+    state.quickStartDismissed = true;
+    saveState();
+    renderTodayTab();
+  });
   document.getElementById("todayStreakCard")?.addEventListener("click", openStreakDrawer);
   document.getElementById("todayWeightCard")?.addEventListener("click", () => {
     document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
@@ -5308,7 +5453,8 @@ function renderProgressPage() {
 
   const sessions = state.sessions.filter((s) => s.finishedAt);
   if (!sessions.length) {
-    container.innerHTML = `${weightHtml}${streakHtml}<div class="progress-empty" style="margin-top:1rem">Complete your first workout to see progress here.</div>`;
+    container.innerHTML = `${weightHtml}${streakHtml}<div class="empty-state" style="margin-top:1rem"><div class="empty-state-icon">📊</div><div class="empty-state-title">No Progress Yet</div><div class="empty-state-text">Complete your first workout to start tracking your progress. Every rep counts toward your goals.</div><button class="empty-state-btn" id="progressStartWorkoutBtn">Start First Workout</button></div>`;
+    document.getElementById("progressStartWorkoutBtn")?.addEventListener("click", () => activateTab("sets"));
     return;
   }
   container.innerHTML = `${weightHtml}${streakHtml}
@@ -5355,7 +5501,7 @@ function renderWeeklyReview() {
   const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
   const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
   if (!weekSessions.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete a workout this week to see stats.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">No workouts this week. Complete a session to see your weekly stats here.</div></div>`;
     return;
   }
   let totalSets = 0;
@@ -5404,7 +5550,7 @@ function renderMonthlyReview() {
   const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
   const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey.startsWith(prefix));
   if (!monthSessions.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see monthly stats.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">No workouts this month. Complete sessions to see your monthly stats here.</div></div>`;
     return;
   }
   let bestLift = { name: "", weight: 0 };
@@ -5455,7 +5601,7 @@ function renderRecentMilestones() {
   items.sort((a, b) => b.date.localeCompare(a.date));
   const recent = items.slice(0, 5);
   if (!recent.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Set personal records to see achievements here.</div></div>`;
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Push yourself in your workouts. Personal records will appear here.</div></div>`;
     return;
   }
   container.innerHTML = `<div class="progress-card">
@@ -5474,7 +5620,7 @@ function renderMeasurements() {
   if (!container) return;
   const measurements = loadMeasurements();
   if (!measurements.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Body Measurements</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">No measurements recorded yet. <button id="addMeasurementBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add</button></div></div>`;
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Body Measurements</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">Track your body measurements to see physical changes over time. <button id="addMeasurementBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add First</button></div></div>`;
     document.getElementById("addMeasurementBtn")?.addEventListener("click", openMeasurementLogger);
     return;
   }
@@ -5571,7 +5717,7 @@ function renderProgressPhotos() {
   if (!container) return;
   const photos = state.photos || [];
   if (!photos.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Progress Photos</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">No photos yet. <button id="addPhotoBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload</button></div></div>`;
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Progress Photos</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">Visual progress is powerful. Upload a photo to track your transformation. <button id="addPhotoBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload First</button></div></div>`;
     document.getElementById("addPhotoBtn")?.addEventListener("click", openPhotoUploader);
     return;
   }
@@ -5762,6 +5908,45 @@ function renderTrainerTab() {
       </div>
     </div>`;
   }
+
+  // Suggested next action
+  const hasWorkoutToday = dc.hasWorkoutToday;
+  const proteinAdherence = (() => {
+    const todayKey = getDateKey();
+    const dl = state.dailyLogs?.[todayKey];
+    if (!dl) return false;
+    return dl.protein >= (state.proteinGoal || PROTEIN_GOAL) * 0.9;
+  })();
+  const recScore = rec.score || 0;
+  let suggestedAction = "";
+  let actionLabel = "";
+  if (!hasWorkoutToday) {
+    suggestedAction = "Schedule your next workout to stay on track.";
+    actionLabel = "Go to Workouts";
+  } else if (!proteinAdherence) {
+    suggestedAction = "Increase protein intake today to support recovery.";
+    actionLabel = "Log Food";
+  } else if (recScore < 60) {
+    suggestedAction = "Your recovery needs attention. Consider a rest day.";
+    actionLabel = "View Recovery";
+  } else if (recScore >= 75) {
+    suggestedAction = "Recovery looks strong. Push hard today.";
+    actionLabel = "Start Workout";
+  } else {
+    suggestedAction = "Stay consistent and trust the process.";
+    actionLabel = "";
+  }
+  html += `
+  <div class="tr-section">
+    <div class="tr-next-action">
+      <div class="tr-next-action-icon">💡</div>
+      <div class="tr-next-action-body">
+        <div class="tr-next-action-label">Suggested Next Action</div>
+        <div class="tr-next-action-text">${suggestedAction}</div>
+        ${actionLabel ? `<button class="tr-next-action-btn" id="suggestedActionBtn">${actionLabel} →</button>` : ""}
+      </div>
+    </div>
+  </div>`;
 
   // SECTION 1.5: Goal Center (summary card)
   const gcProfile = GoalCenter.load();
@@ -6048,8 +6233,12 @@ function renderTrainerTab() {
     html = `<div class="tr-page">
       <div class="tr-empty-state">
         <div class="tr-empty-icon">🎯</div>
-        <div class="tr-empty-title">Welcome to Coach</div>
-        <div class="tr-empty-desc">Your personal coaching hub. Complete your first workout and log your body weight to unlock insights.</div>
+        <div class="tr-empty-title">Your IronLog Coach</div>
+        <div class="tr-empty-desc">Helping you build strength, improve recovery, and stay consistent. Complete your first workout to get started.</div>
+        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;padding:0 1rem">
+          <button class="empty-state-btn" id="coachStartWorkoutBtn">Start First Workout</button>
+          <button class="empty-state-btn secondary" id="coachSetGoalBtn">Set a Fitness Goal</button>
+        </div>
       </div>
       <div class="tr-empty-cards">
         <div class="tr-empty-card"><div class="tr-empty-card-icon">💪</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
@@ -6062,7 +6251,8 @@ function renderTrainerTab() {
       <div class="tr-empty-state">
         <div class="tr-empty-icon">💪</div>
         <div class="tr-empty-title">No Training Yet</div>
-        <div class="tr-empty-desc">Complete your first workout to unlock the Coach experience.</div>
+        <div class="tr-empty-desc">Complete your first workout to unlock the Coach experience. Your personalized insights are waiting.</div>
+        <button class="empty-state-btn" id="coachStartWorkoutBtn2" style="margin-top:1rem">Start First Workout</button>
       </div>
       <div class="tr-empty-cards">
         <div class="tr-empty-card"><div class="tr-empty-card-icon">🏋️</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
@@ -6149,6 +6339,17 @@ function renderTrainerTab() {
   document.getElementById("openReadinessBtn")?.addEventListener("click", () => showTrainerScreen("readiness"));
   document.getElementById("openGoalCenterBtn")?.addEventListener("click", openGoalCenter);
 
+  // Suggested action button
+  document.getElementById("suggestedActionBtn")?.addEventListener("click", () => {
+    const btn = document.getElementById("suggestedActionBtn");
+    if (!btn) return;
+    const text = btn.textContent;
+    if (text.includes("Go to Workouts")) activateTab("sets");
+    else if (text.includes("Log Food")) document.getElementById("mlOpenBtn")?.click();
+    else if (text.includes("View Recovery")) showTrainerScreen("readiness");
+    else if (text.includes("Start Workout")) activateTab("sets");
+  });
+
   // Weight Check-In
   document.getElementById("wiCheckInBtn")?.addEventListener("click", () => {
     const entry = latestWeight();
@@ -6165,6 +6366,11 @@ function renderTrainerTab() {
 
   // Command Center
   document.getElementById("openCommandCenterBtn")?.addEventListener("click", () => showTrainerScreen("command-center"));
+
+  // Coach empty state buttons
+  document.getElementById("coachStartWorkoutBtn")?.addEventListener("click", () => activateTab("sets"));
+  document.getElementById("coachStartWorkoutBtn2")?.addEventListener("click", () => activateTab("sets"));
+  document.getElementById("coachSetGoalBtn")?.addEventListener("click", openGoalCenter);
 
   // Program Health
   const prBtn = document.getElementById("viewProgramReviewBtn");
@@ -9389,7 +9595,7 @@ const OB_STEPS_CONFIG = [
   {
     id: "welcome",
     title: "Welcome to IronLog",
-    desc: "Your personal fitness coach, workout tracker and progress companion.",
+    desc: "Build muscle. Lose fat. Stay consistent. Your personal training system.",
   },
   {
     id: "about-you",
@@ -11323,6 +11529,14 @@ if (setting === "theme") {
 
   if (setting === "about-developer") {
     openDeveloperModal();
+    return;
+  }
+
+  if (setting === "feedback-bug" || setting === "feedback-feature" || setting === "feedback-general") {
+    const labels = { "feedback-bug": "bug", "feedback-feature": "feature", "feedback-general": "general" };
+    const label = labels[setting] || "general";
+    const body = encodeURIComponent(`[${label.toUpperCase()} Feedback]\n\n`);
+    window.open(`mailto:aryanswaroop00@gmail.com?subject=IronLog%20Feedback%20(${label})&body=${body}`, "_blank");
     return;
   }
 
