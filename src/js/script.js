@@ -3530,8 +3530,10 @@ function saveAddSet() {
   saveState();
   startStopwatch();
   if (weight > 0) {
-    const newPRs = detectPR(currentExName, weight, reps, session.id || "", getDateKey());
-    if (newPRs) showPRToast(newPRs);
+    try {
+      const newPRs = detectPR(currentExName, weight, reps, session.id || "", getDateKey());
+      if (newPRs) showPRToast(newPRs);
+    } catch (e) { /* PR detection failed, continue */ }
   }
   if (state.autoRest) startRestTimer();
 
@@ -3598,8 +3600,10 @@ function completeSetFromSheet() {
 
   // PR detection
   if (Number(set.weight) > 0) {
-    const newPRs = detectPR(currentExName, Number(set.weight), Number(set.reps) || 0, session?.id || "", getDateKey());
-    if (newPRs) showPRToast(newPRs);
+    try {
+      const newPRs = detectPR(currentExName, Number(set.weight), Number(set.reps) || 0, session?.id || "", getDateKey());
+      if (newPRs) showPRToast(newPRs);
+    } catch (e) { /* PR detection failed, continue */ }
   }
 
   closeEditBottomSheet();
@@ -9526,10 +9530,10 @@ function obNavigateToDay(day, key) {
     openWeightLogger();
   } else if (day === 3) {
     // Protein education - show learning hub with protein focus
-    showTrainerScreen("learning-hub");
+    showTrainerScreen("learning");
   } else if (day === 4) {
     // Learning hub
-    showTrainerScreen("learning-hub");
+    showTrainerScreen("learning");
   } else if (day === 5) {
     // Challenges
     renderChallengesPage();
