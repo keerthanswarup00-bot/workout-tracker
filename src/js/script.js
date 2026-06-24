@@ -1311,6 +1311,7 @@ function loadState() {
   const fallback = {
     sessions: [],
     nutrition: {},
+    dailyLogs: {},
     planOffset: 0,
     recoveryLog: [],
     bodyGoal: "recomp",
@@ -1447,7 +1448,13 @@ function loadState() {
 function saveState() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
-  } catch {}
+  } catch (e) {
+    if (e.name === "QuotaExceededError" || e.name === "NS_ERROR_DOM_QUOTA_REACHED" || e.code === 22) {
+      showToast("Storage full. Free up space or export data to save.");
+    } else {
+      showToast("Could not save data. Try again.");
+    }
+  }
 }
 function saveAndRender() {
   saveState();
@@ -1786,6 +1793,21 @@ function saveMeals(dateKey, meals) {
   try {
     localStorage.setItem(`wl_meals_${dateKey}`, JSON.stringify(meals));
   } catch {}
+  syncDailyLogs(dateKey);
+}
+
+function syncDailyLogs(dateKey) {
+  const meals = loadMeals(dateKey);
+  const totals = { protein: 0, carbs: 0, fat: 0, cal: 0 };
+  meals.forEach((m) => {
+    totals.protein += Number(m.protein) || 0;
+    totals.carbs += Number(m.carbs) || 0;
+    totals.fat += Number(m.fat) || 0;
+    totals.cal += Number(m.cal) || 0;
+  });
+  if (!state.dailyLogs) state.dailyLogs = {};
+  state.dailyLogs[dateKey] = { protein: totals.protein, carbs: totals.carbs, fat: totals.fat, cal: totals.cal };
+  saveState();
 }
 
 function loadWater(dateKey) {
@@ -1869,6 +1891,40 @@ function saveRecentFoods(name) {
 function getTodayMealsSnapshot() {
   const today = getDateKey();
   return loadMeals(today).map((m) => ({ food: m.food, qty: m.qty, protein: m.protein, carbs: m.carbs, fat: m.fat, cal: m.cal }));
+}
+
+function collectWaterLog() {
+  const log = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("wl_water_")) {
+        log[key] = localStorage.getItem(key);
+      }
+    }
+  } catch {}
+  return log;
+}
+
+function collectMealLog() {
+  const log = {};
+  try {
+    for (let i = 0; i < localStorage.length; i++) {
+      const key = localStorage.key(i);
+      if (key && key.startsWith("wl_meals_")) {
+        log[key] = localStorage.getItem(key);
+      }
+    }
+  } catch {}
+  return log;
+}
+
+function loadLearningProgress() {
+  try {
+    return JSON.parse(localStorage.getItem("ironlog_learning_progress")) || { completed: [] };
+  } catch {
+    return { completed: [] };
+  }
 }
 
 function getDailyMacros(dateKey) {
@@ -9960,16 +10016,14 @@ function checkFirst7DayProgress() {
   const sessions = state.sessions || [];
   const hasWorkout = sessions.some(s => s.finishedAt);
   const weightLog = state.weightLog || [];
-  const hasWeight = weightLog.length > 1; // more than just initial
+  const hasWeight = weightLog.length > 1;
 
-  // Learning hub: check if any lessons completed
   let hasLearning = false;
   try {
-    const lhProg = JSON.parse(localStorage.getItem("il_learning_progress"));
+    const lhProg = JSON.parse(localStorage.getItem("ironlog_learning_progress"));
     hasLearning = lhProg && lhProg.completed && lhProg.completed.length > 0;
   } catch (e) { /* ignore */ }
 
-  // Challenges: check CAS if available
   let hasChallenge = false;
   try {
     const casRaw = localStorage.getItem("ironlog_cas_data");
@@ -9979,7 +10033,6 @@ function checkFirst7DayProgress() {
     }
   } catch (e) { /* ignore */ }
 
-  // Reports: check if weekly reports exist
   let hasReport = false;
   try {
     const repKeys = JSON.parse(localStorage.getItem("ironlog_report_keys") || "[]");
@@ -9987,13 +10040,16 @@ function checkFirst7DayProgress() {
   } catch (e) { /* ignore */ }
 
   const status = state.first7Days;
+  let changed = false;
 
-  if (hasWorkout && !status.day1Workout) state.first7Days["day1Workout"] = true; saveState();
-  if (hasWeight && !status.day2Weight) state.first7Days["day2Weight"] = true; saveState();
-  if (hasWeight && !status.day3Protein) state.first7Days["day3Protein"] = true; saveState();
-  if (hasLearning && !status.day4Learning) state.first7Days["day4Learning"] = true; saveState();
-  if (hasChallenge && !status.day5Challenge) state.first7Days["day5Challenge"] = true; saveState();
-  if (hasReport && !status.day7Report) state.first7Days["day7Report"] = true; saveState();
+  if (hasWorkout && !status.day1Workout) { state.first7Days["day1Workout"] = true; changed = true; }
+  if (hasWeight && !status.day2Weight) { state.first7Days["day2Weight"] = true; changed = true; }
+  if (hasLearning && !status.day3Protein) { state.first7Days["day3Protein"] = true; changed = true; }
+  if (hasLearning && !status.day4Learning) { state.first7Days["day4Learning"] = true; changed = true; }
+  if (hasChallenge && !status.day5Challenge) { state.first7Days["day5Challenge"] = true; changed = true; }
+  if (hasReport && !status.day7Report) { state.first7Days["day7Report"] = true; changed = true; }
+
+  if (changed) saveState();
 }
 
 // ===== ONBOARDING EVENT LISTENERS =====
@@ -11134,6 +11190,7 @@ if (setting === "theme") {
   }
   if (setting === "export-json") {
     const exportData = {
+      dailyLogs: state.dailyLogs || {},
       sessions: state.sessions || [],
       nutrition: state.nutrition || {},
       user: state.user || null,
@@ -11143,6 +11200,8 @@ if (setting === "theme") {
       weightLog: state.weightLog || [],
       goals: state.goals || [],
       recoveryLog: state.recoveryLog || [],
+      measurements: state.measurements || [],
+      photos: state.photos || [],
       bodyGoal: state.bodyGoal || "recomp",
       calorieTarget: state.calorieTarget || CAL_GOAL,
       proteinGoal: state.proteinGoal || PROTEIN_GOAL,
@@ -11174,6 +11233,23 @@ if (setting === "theme") {
       nutritionReminder: !!state.nutritionReminder,
       weeklyReview: state.weeklyReview !== false,
       recoveryAnalysis: state.recoveryAnalysis !== false,
+      showRecoveryAdvice: state.showRecoveryAdvice !== false,
+      coolDownDuration: state.coolDownDuration || 5,
+      autoSummary: state.autoSummary !== false,
+      autoCooldown: state.autoCooldown !== false,
+      autoAdvanceStretches: state.autoAdvanceStretches !== false,
+      showTomorrowPreview: state.showTomorrowPreview !== false,
+      showWorkoutProgress: state.showWorkoutProgress !== false,
+      profileBannerDismissed: !!state.profileBannerDismissed,
+      workoutStreak: state.workoutStreak || { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
+      first7Days: state.first7Days || { day1Workout: false, day2Weight: false, day3Protein: false, day4Learning: false, day5Challenge: false, day6CoachScore: false, day7Report: false },
+      coachActivated: !!state.coachActivated,
+      activatedAt: state.activatedAt || null,
+      onboardingComplete: !!state.onboardingComplete,
+      onboardingData: state.onboardingData || { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", targetWeight: "", targetDate: "", primaryLift: "" },
+      waterLog: collectWaterLog(),
+      mealLog: collectMealLog(),
+      learningProgress: loadLearningProgress(),
     };
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
     const url = URL.createObjectURL(blob);
@@ -11200,10 +11276,10 @@ if (setting === "theme") {
             return;
           }
           // Whitelist allowed keys and validate types
-          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "nutrition", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "coolDownDuration", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed"]);
-          const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog"]);
-          const objKeys = new Set(["user", "nutrition", "recoveryAnalysis", "workoutStreak"]);
-          const boolKeys = new Set(["autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupReminder", "stretchReminder", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "profileBannerDismissed"]);
+          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "nutrition", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "coolDownDuration", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed", "first7Days", "coachActivated", "activatedAt", "onboardingComplete", "onboardingData", "measurements", "photos", "waterLog", "mealLog", "learningProgress"]);
+          const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog", "measurements", "photos"]);
+          const objKeys = new Set(["user", "nutrition", "recoveryAnalysis", "workoutStreak", "onboardingData", "first7Days", "waterLog", "mealLog", "learningProgress"]);
+          const boolKeys = new Set(["autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupReminder", "stretchReminder", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "profileBannerDismissed", "coachActivated", "onboardingComplete"]);
           for (const key of Object.keys(data)) {
             if (!allowedKeys.has(key)) continue;
             if (arrayKeys.has(key) && !Array.isArray(data[key])) { data[key] = []; }
@@ -11212,6 +11288,21 @@ if (setting === "theme") {
           }
           Object.assign(state, data);
           saveState();
+          // Restore water log and meal log to localStorage
+          if (data.waterLog && typeof data.waterLog === "object") {
+            for (const [key, val] of Object.entries(data.waterLog)) {
+              try { localStorage.setItem(key, val); } catch {}
+            }
+          }
+          if (data.mealLog && typeof data.mealLog === "object") {
+            for (const [key, val] of Object.entries(data.mealLog)) {
+              try { localStorage.setItem(key, val); } catch {}
+            }
+          }
+          // Restore learning progress
+          if (data.learningProgress && typeof data.learningProgress === "object") {
+            try { localStorage.setItem("ironlog_learning_progress", JSON.stringify(data.learningProgress)); } catch {}
+          }
           render();
           renderHome();
           renderSettings();
@@ -11283,6 +11374,7 @@ document.getElementById("ddConfirmBtn").addEventListener("click", () => {
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
     "wl_fav_exercises", "wl_recent_exercises", "wl_profile", "wl_theme",
     "wl_preferred_unit", "wl_nutrition_mode", "wl_generator_profile", "wt_autosave",
+    "ironlog_learning_progress", "ironlog_goal_center", "ironlog_onboarding",
   ];
   // Gather all date-prefixed keys
   const allKeys = Object.keys(localStorage);
@@ -11729,7 +11821,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
   const todaySession = getTodaySession();
   if (todaySession && todaySession.exercises.some((e) => e.sets.some((s) => s.done))) {
+    currentWorkoutId = todaySession.workoutId || null;
     startStopwatch();
+    renderSetsPanel();
   }
 
   // Check onboarding
@@ -12784,9 +12878,15 @@ document.getElementById("gmFailureClose")?.addEventListener("click", () => {
   showGmOverlay(null);
 });
 
-// Close profile menu on Escape key
+// Close modals on Escape key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
+    document.querySelectorAll("[class*='overlay'], .modal.is-hidden, .modal:not(.is-hidden)").forEach((el) => {
+      if (el.classList.contains("bottom-sheet-overlay") || el.id?.includes("Modal") || el.classList.contains("modal")) {
+        el.remove ? el.remove() : el.classList.add("is-hidden");
+      }
+    });
+    document.querySelectorAll(".bottom-sheet-overlay").forEach((el) => el.remove());
     document.getElementById("profileMenu")?.classList.add("is-hidden");
   }
 });
