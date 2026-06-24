@@ -18,7 +18,6 @@ export default [
         crypto: "readonly",
         console: "readonly",
         prompt: "readonly",
-        BODY_MAP_SVG: "readonly",
         alert: "readonly",
         confirm: "readonly",
         fetch: "readonly",

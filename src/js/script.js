@@ -5833,9 +5833,6 @@ function showTrainerScreen(screen, searchQuery) {
     renderProblemList(searchQuery);
     return;
   }
-  if (screen === "detail") {
-    return;
-  }
   if (screen === "learning") {
     renderLearningHub();
     return;
@@ -5846,9 +5843,6 @@ function showTrainerScreen(screen, searchQuery) {
   }
   if (screen === "ee") {
     renderExerciseEncyclopedia();
-    return;
-  }
-  if (screen === "ee-detail") {
     return;
   }
   if (screen === "goal-center") {
