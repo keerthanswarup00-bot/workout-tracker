@@ -1348,7 +1348,9 @@ function loadState() {
     show7dAvg: true,
     show30dAvg: true,
     progressPhotos: false,
+    photos: [],
     bodyMeasurements: false,
+    measurements: [],
     weightReminder: false,
     nutritionReminder: false,
     weeklyReview: true,
@@ -1799,6 +1801,22 @@ function saveWater(dateKey, ml) {
   } catch {}
 }
 
+function loadMeasurements() {
+  return state.measurements || [];
+}
+function saveMeasurement(entry) {
+  if (!state.measurements) state.measurements = [];
+  const idx = state.measurements.findIndex((m) => m.date === entry.date);
+  if (idx >= 0) state.measurements[idx] = entry;
+  else state.measurements.push(entry);
+  saveState();
+}
+function deleteMeasurement(date) {
+  if (!state.measurements) return;
+  state.measurements = state.measurements.filter((m) => m.date !== date);
+  saveState();
+}
+
 function loadBodyLog() {
   return state.weightLog || [];
 }
@@ -1851,6 +1869,114 @@ function saveRecentFoods(name) {
 function getTodayMealsSnapshot() {
   const today = getDateKey();
   return loadMeals(today).map((m) => ({ food: m.food, qty: m.qty, protein: m.protein, carbs: m.carbs, fat: m.fat, cal: m.cal }));
+}
+
+function getDailyMacros(dateKey) {
+  const meals = loadMeals(dateKey || getDateKey());
+  const totals = { protein: 0, carbs: 0, fat: 0, cal: 0, meals: meals.length };
+  meals.forEach((m) => {
+    totals.protein += Number(m.protein) || 0;
+    totals.carbs += Number(m.carbs) || 0;
+    totals.fat += Number(m.fat) || 0;
+    totals.cal += Number(m.cal) || 0;
+  });
+  return totals;
+}
+
+function addMealEntry(dateKey, meal) {
+  const meals = loadMeals(dateKey);
+  meals.push({ food: meal.food, qty: meal.qty || 1, protein: Number(meal.protein) || 0, carbs: Number(meal.carbs) || 0, fat: Number(meal.fat) || 0, cal: Number(meal.cal) || 0 });
+  saveMeals(dateKey, meals);
+}
+
+function removeMealEntry(dateKey, index) {
+  const meals = loadMeals(dateKey);
+  if (index >= 0 && index < meals.length) {
+    meals.splice(index, 1);
+    saveMeals(dateKey, meals);
+  }
+}
+
+function getTodayWater() {
+  return loadWater(getDateKey());
+}
+
+function addWater(ml) {
+  const today = getDateKey();
+  const current = loadWater(today);
+  saveWater(today, current + ml);
+}
+
+function renderMealLogger() {
+  const today = getDateKey();
+  const meals = loadMeals(today);
+  const macros = getDailyMacros(today);
+  const recent = loadRecentFoods();
+  const favs = loadFavoriteMeals();
+  let html = `
+    <div class="bottom-sheet-overlay" id="mealLoggerOverlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center">
+      <div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-weight:600;font-size:1rem">Meal Logger</div>
+          <button id="mlClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>
+        </div>
+        <div style="margin-bottom:1rem;display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;text-align:center;font-size:0.75rem">
+          <div><div style="color:var(--accent);font-weight:600;font-size:1rem">${Math.round(macros.cal)}</div><div style="color:var(--text-secondary)">Cal</div></div>
+          <div><div style="color:#ff6b6b;font-weight:600;font-size:1rem">${Math.round(macros.protein)}g</div><div style="color:var(--text-secondary)">Protein</div></div>
+          <div><div style="color:#ffd43b;font-weight:600;font-size:1rem">${Math.round(macros.carbs)}g</div><div style="color:var(--text-secondary)">Carbs</div></div>
+          <div><div style="color:#69db7c;font-weight:600;font-size:1rem">${Math.round(macros.fat)}g</div><div style="color:var(--text-secondary)">Fat</div></div>
+        </div>
+        <div style="display:flex;gap:0.5rem;margin-bottom:1rem">
+          <input id="mlFood" placeholder="Food name" style="flex:1;background:var(--surface-3);border:none;border-radius:8px;padding:0.6rem 0.75rem;color:var(--text);font-size:0.875rem">
+          <input id="mlCal" placeholder="Cal" type="number" style="width:60px;background:var(--surface-3);border:none;border-radius:8px;padding:0.6rem;color:var(--text);font-size:0.875rem;text-align:center">
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.5rem;margin-bottom:1rem">
+          <input id="mlProtein" placeholder="P" type="number" style="background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.75rem;text-align:center">
+          <input id="mlCarbs" placeholder="C" type="number" style="background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.75rem;text-align:center">
+          <input id="mlFat" placeholder="F" type="number" style="background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.75rem;text-align:center">
+        </div>
+        <button id="mlSaveBtn" style="width:100%;background:var(--accent);color:#000;border:none;border-radius:8px;padding:0.6rem;font-weight:600;cursor:pointer;margin-bottom:1rem">Add Food</button>
+        <div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.5rem">Recent Foods</div>
+        <div style="display:flex;flex-wrap:wrap;gap:0.4rem;margin-bottom:1rem">
+          ${recent.slice(0, 6).map((f) => `<button class="ml-recent-btn" data-food="${f}" style="background:var(--surface-3);border:none;border-radius:16px;padding:0.35rem 0.7rem;color:var(--text-secondary);font-size:0.75rem;cursor:pointer">${f}</button>`).join("")}
+        </div>`;
+  if (meals.length > 0) {
+    html += `<div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.5rem">Today's Meals</div>`;
+    meals.forEach((m, i) => {
+      html += `<div style="display:flex;justify-content:space-between;align-items:center;padding:0.4rem 0;border-bottom:1px solid var(--border);font-size:0.8rem">
+        <span>${m.food} <span style="color:var(--text-secondary)">(${m.qty || 1}x)</span></span>
+        <span><span style="color:var(--text-secondary)">${Math.round(m.cal || 0)}cal</span> <button class="ml-remove-btn" data-index="${i}" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.75rem">✕</button></span>
+      </div>`;
+    });
+  }
+  html += `</div></div>`;
+  const el = document.createElement("div");
+  el.id = "mealLoggerWrap";
+  el.innerHTML = html;
+  document.body.appendChild(el);
+  document.getElementById("mlClose").onclick = () => { el.remove(); renderTodayTab(); };
+  document.getElementById("mlSaveBtn").onclick = () => {
+    const food = document.getElementById("mlFood").value.trim();
+    if (!food) return;
+    const meal = { food, qty: 1, protein: document.getElementById("mlProtein").value, carbs: document.getElementById("mlCarbs").value, fat: document.getElementById("mlFat").value, cal: document.getElementById("mlCal").value };
+    addMealEntry(today, meal);
+    saveRecentFoods(food);
+    el.remove();
+    renderTodayTab();
+  };
+  el.querySelectorAll(".ml-recent-btn").forEach((b) => {
+    b.onclick = () => {
+      document.getElementById("mlFood").value = b.dataset.food;
+      document.getElementById("mlFood").focus();
+    };
+  });
+  el.querySelectorAll(".ml-remove-btn").forEach((b) => {
+    b.onclick = () => {
+      removeMealEntry(today, parseInt(b.dataset.index));
+      el.remove();
+      renderMealLogger();
+    };
+  });
 }
 
 // ===== MUSCLE COMPUTATION =====
@@ -2175,7 +2301,15 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
   </div>
 
-  <!-- SECTION 5: APPEARANCE -->
+  <!-- SECTION 5: HEALTH -->
+  <div class="sg">
+    <div class="sg-label">HEALTH</div>
+    <div class="sg-row" data-setting="calorie-target"><span>Daily Calorie Target</span><span class="sg-row-val">${state.calorieTarget || CAL_GOAL}</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="protein-goal"><span>Daily Protein Goal</span><span class="sg-row-val">${state.proteinGoal || PROTEIN_GOAL}g</span><span class="sg-chevron">›</span></div>
+    <div class="sg-row" data-setting="water-goal"><span>Daily Water Goal</span><span class="sg-row-val">${state.waterGoal || WATER_TARGET}ml</span><span class="sg-chevron">›</span></div>
+  </div>
+
+  <!-- SECTION 6: APPEARANCE -->
   <div class="sg">
     <div class="sg-label">APPEARANCE</div>
     <div class="sg-row" data-setting="theme"><span>Theme</span><span class="sg-row-val">${state.theme || "Dark"}</span><span class="sg-chevron">›</span></div>
@@ -2940,6 +3074,63 @@ function renderProfileAvatar() {
   if (menuName) menuName.textContent = name;
 }
 
+// ===== NUTRITION & WATER WIDGETS =====
+function renderNutritionWidget() {
+  const macros = getDailyMacros(getDateKey());
+  const pGoal = state.proteinGoal || PROTEIN_GOAL;
+  const cGoal = CARBS_GOAL;
+  const fGoal = FAT_GOAL;
+  const calGoal = state.calorieTarget || CAL_GOAL;
+  const pPct = Math.min(100, Math.round((macros.protein / pGoal) * 100));
+  const cPct = Math.min(100, Math.round((macros.carbs / cGoal) * 100));
+  const fPct = Math.min(100, Math.round((macros.fat / fGoal) * 100));
+  const calPct = Math.min(100, Math.round((macros.cal / calGoal) * 100));
+  return `
+    <div class="today-card" style="flex-direction:column;padding:1rem;gap:0.75rem" id="todayNutritionCard">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <div style="display:flex;align-items:center;gap:0.5rem">
+          <span style="font-size:0.85rem;font-weight:600">Nutrition</span>
+          <span style="font-size:0.7rem;color:var(--text-secondary)">${Math.round(macros.cal)} / ${calGoal} cal</span>
+        </div>
+        <button id="mlOpenBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add Food</button>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem">
+        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#ff6b6b">Protein</span><span>${Math.round(macros.protein)}/${pGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pPct}%;background:#ff6b6b;border-radius:2px;transition:width 0.3s"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#ffd43b">Carbs</span><span>${Math.round(macros.carbs)}/${cGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${cPct}%;background:#ffd43b;border-radius:2px;transition:width 0.3s"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#69db7c">Fat</span><span>${Math.round(macros.fat)}/${fGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${fPct}%;background:#69db7c;border-radius:2px;transition:width 0.3s"></div></div></div>
+      </div>
+      ${macros.meals > 0 ? `<div style="font-size:0.65rem;color:var(--text-secondary)">${macros.meals} meal${macros.meals > 1 ? "s" : ""} logged</div>` : ""}
+    </div>`;
+}
+
+function renderWaterWidget() {
+  const current = getTodayWater();
+  const goal = state.waterGoal || WATER_TARGET;
+  const pct = Math.min(100, Math.round((current / goal) * 100));
+  const radius = 28;
+  const circ = 2 * Math.PI * radius;
+  const offset = circ - (pct / 100) * circ;
+  return `
+    <div class="today-card" style="flex-direction:row;align-items:center;padding:1rem;gap:0.75rem" id="todayWaterCard">
+      <div style="position:relative;width:64px;height:64px;flex-shrink:0">
+        <svg width="64" height="64" viewBox="0 0 64 64">
+          <circle cx="32" cy="32" r="${radius}" fill="none" stroke="var(--surface-3)" stroke-width="5"/>
+          <circle cx="32" cy="32" r="${radius}" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 32 32)"/>
+        </svg>
+        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600">${pct}%</div>
+      </div>
+      <div style="flex:1">
+        <div style="font-size:0.8rem;font-weight:600">Water</div>
+        <div style="font-size:0.7rem;color:var(--text-secondary)">${current}ml / ${goal}ml</div>
+        <div style="display:flex;gap:0.4rem;margin-top:0.4rem">
+          <button id="waterAdd250" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+250ml</button>
+          <button id="waterAdd500" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+500ml</button>
+          <button id="waterAdd750" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+750ml</button>
+        </div>
+      </div>
+    </div>`;
+}
+
 // ===== TODAY PANEL =====
 function renderTodayTab() {
   const container = document.getElementById("todayPageContent");
@@ -3001,6 +3192,11 @@ function renderTodayTab() {
           </div>
         </div>
       </div>
+
+      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.75rem" id="todayHealthWidgets">
+        ${renderNutritionWidget()}
+        ${renderWaterWidget()}
+      </div>
     </div>
   `;
 
@@ -3010,6 +3206,10 @@ function renderTodayTab() {
   });
   document.getElementById("todayWorkoutCard")?.addEventListener("click", () => activateTab("sets"));
   document.getElementById("todayGoalCard")?.addEventListener("click", openGoalCenter);
+  document.getElementById("mlOpenBtn")?.addEventListener("click", renderMealLogger);
+  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderTodayTab(); });
+  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderTodayTab(); });
+  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderTodayTab(); });
 }
 
 // ===== SETS PANEL =====
@@ -5072,6 +5272,14 @@ function renderProgressPage() {
       <div id="progressMilestones"></div>
     </div>
     <div class="progress-section">
+      <div class="section-label">Body Measurements</div>
+      <div id="progressMeasurements"></div>
+    </div>
+    <div class="progress-section">
+      <div class="section-label">Progress Photos</div>
+      <div id="progressPhotos"></div>
+    </div>
+    <div class="progress-section">
       <button class="btn-secondary" id="progressViewReportsBtn" style="width:100%">View Weekly & Monthly Reports →</button>
     </div>
   `;
@@ -5079,6 +5287,8 @@ function renderProgressPage() {
   renderWeeklyReview();
   renderMonthlyReview();
   renderRecentMilestones();
+  renderMeasurements();
+  renderProgressPhotos();
   renderSessionsTab();
   document.getElementById("progressViewReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
 }
@@ -5201,6 +5411,186 @@ function renderRecentMilestones() {
       return `<div class="ach-item"><span class="ach-icon">${icon}</span>${name} · ${displayWeight(pr.weight)} × ${pr.reps}<span class="ach-date">${date}</span></div>`;
     }).join("")}</div>
   </div>`;
+}
+
+function renderMeasurements() {
+  const container = document.getElementById("progressMeasurements");
+  if (!container) return;
+  const measurements = loadMeasurements();
+  if (!measurements.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Body Measurements</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">No measurements recorded yet. <button id="addMeasurementBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add</button></div></div>`;
+    document.getElementById("addMeasurementBtn")?.addEventListener("click", openMeasurementLogger);
+    return;
+  }
+  const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date));
+  const latest = sorted[0];
+  const fields = [
+    { key: "weight", label: "Weight", unit: state.weightUnit || "kg", color: "var(--accent)" },
+    { key: "waist", label: "Waist", unit: "cm", color: "#ff6b6b" },
+    { key: "chest", label: "Chest", unit: "cm", color: "#ffd43b" },
+    { key: "arms", label: "Arms", unit: "cm", color: "#69db7c" },
+    { key: "thighs", label: "Thighs", unit: "cm", color: "#74c0fc" },
+  ];
+  let html = `<div class="progress-card"><div class="progress-card-title" style="display:flex;justify-content:space-between;align-items:center">Body Measurements <button id="addMeasurementBtn2" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Log</button></div>`;
+  html += `<div style="display:grid;grid-template-columns:repeat(${fields.length},1fr);gap:0.5rem;margin-bottom:0.75rem">`;
+  fields.forEach((f) => {
+    const val = latest[f.key];
+    const prev = sorted.length > 1 ? sorted[1][f.key] : null;
+    const trend = val && prev ? (val > prev ? "▲" : val < prev ? "▼" : "—") : "—";
+    const trendColor = val && prev ? (val > prev && f.key === "weight" ? "var(--red)" : val < prev && f.key === "weight" ? "var(--accent)" : "var(--text-secondary)") : "var(--text-secondary)";
+    html += `<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text-secondary)">${f.label}</div><div style="font-weight:600;font-size:0.9rem">${val ? val + f.unit : "—"}</div><div style="font-size:0.6rem;color:${trendColor}">${trend}</div></div>`;
+  });
+  html += `</div>`;
+  if (sorted.length > 1) {
+    html += `<div style="font-size:0.65rem;color:var(--text-secondary);margin-bottom:0.4rem">History (last 5)</div>`;
+    html += `<div style="display:flex;flex-direction:column;gap:0.2rem">`;
+    sorted.slice(0, 5).forEach((m) => {
+      html += `<div style="display:flex;justify-content:space-between;font-size:0.7rem;padding:0.3rem 0;border-bottom:1px solid var(--border)">
+        <span style="color:var(--text-secondary)">${formatReadableDate(parseDateKey(m.date))}</span>
+        <span>${m.weight ? m.weight + (state.weightUnit || "kg") : "—"} · ${m.waist ? m.waist + "cm" : "—"} · ${m.chest ? m.chest + "cm" : "—"} · ${m.arms ? m.arms + "cm" : "—"} · ${m.thighs ? m.thighs + "cm" : "—"}</span>
+      </div>`;
+    });
+    html += `</div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("addMeasurementBtn2")?.addEventListener("click", openMeasurementLogger);
+  document.getElementById("addMeasurementBtn")?.addEventListener("click", openMeasurementLogger);
+}
+
+function openMeasurementLogger() {
+  const existing = document.getElementById("measurementLoggerWrap");
+  if (existing) existing.remove();
+  const today = getDateKey();
+  const existingEntry = loadMeasurements().find((m) => m.date === today);
+  const el = document.createElement("div");
+  el.id = "measurementLoggerWrap";
+  el.innerHTML = `
+    <div class="bottom-sheet-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center">
+      <div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;padding:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-weight:600;font-size:1rem">Log Measurements</div>
+          <button id="mlClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem">
+          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Weight (${state.weightUnit || "kg"})</label><input id="mWeight" type="number" step="0.1" value="${existingEntry?.weight || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
+          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Waist (cm)</label><input id="mWaist" type="number" step="0.1" value="${existingEntry?.waist || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
+          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Chest (cm)</label><input id="mChest" type="number" step="0.1" value="${existingEntry?.chest || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
+          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Arms (cm)</label><input id="mArms" type="number" step="0.1" value="${existingEntry?.arms || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
+          <div style="grid-column:1/-1"><label style="font-size:0.65rem;color:var(--text-secondary)">Thighs (cm)</label><input id="mThighs" type="number" step="0.1" value="${existingEntry?.thighs || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
+        </div>
+        <div style="display:flex;gap:0.5rem">
+          ${existingEntry ? `<button id="mDeleteBtn" style="flex:1;background:var(--red);color:#fff;border:none;border-radius:8px;padding:0.6rem;font-weight:600;cursor:pointer">Delete Today</button>` : ""}
+          <button id="mSaveBtn" style="flex:1;background:var(--accent);color:#000;border:none;border-radius:8px;padding:0.6rem;font-weight:600;cursor:pointer">${existingEntry ? "Update" : "Save"}</button>
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  document.getElementById("mlClose").onclick = () => { el.remove(); };
+  document.getElementById("mSaveBtn").onclick = () => {
+    const entry = {
+      date: today,
+      weight: parseFloat(document.getElementById("mWeight").value) || null,
+      waist: parseFloat(document.getElementById("mWaist").value) || null,
+      chest: parseFloat(document.getElementById("mChest").value) || null,
+      arms: parseFloat(document.getElementById("mArms").value) || null,
+      thighs: parseFloat(document.getElementById("mThighs").value) || null,
+    };
+    if (!entry.weight && !entry.waist && !entry.chest && !entry.arms && !entry.thighs) return;
+    saveMeasurement(entry);
+    el.remove();
+    renderProgressPage();
+  };
+  if (document.getElementById("mDeleteBtn")) {
+    document.getElementById("mDeleteBtn").onclick = () => {
+      deleteMeasurement(today);
+      el.remove();
+      renderProgressPage();
+    };
+  }
+}
+
+function renderProgressPhotos() {
+  const container = document.getElementById("progressPhotos");
+  if (!container) return;
+  const photos = state.photos || [];
+  if (!photos.length) {
+    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Progress Photos</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">No photos yet. <button id="addPhotoBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload</button></div></div>`;
+    document.getElementById("addPhotoBtn")?.addEventListener("click", openPhotoUploader);
+    return;
+  }
+  const sorted = [...photos].sort((a, b) => b.date.localeCompare(a.date));
+  const latest = sorted[0];
+  const prev = sorted.length > 1 ? sorted[1] : null;
+  let html = `<div class="progress-card"><div class="progress-card-title" style="display:flex;justify-content:space-between;align-items:center">Progress Photos <button id="addPhotoBtn2" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload</button></div>`;
+  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
+  sorted.slice(0, 2).forEach((p) => {
+    html += `<div style="display:flex;flex-direction:column;gap:0.3rem">
+      <img src="${p.data}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--surface-3)" alt="Progress photo ${formatReadableDate(parseDateKey(p.date))}">
+      <div style="font-size:0.6rem;color:var(--text-secondary);text-align:center">${formatReadableDate(parseDateKey(p.date))}</div>
+    </div>`;
+  });
+  html += `</div>`;
+  if (sorted.length > 2) {
+    html += `<div style="margin-top:0.5rem;text-align:center"><button id="showAllPhotosBtn" style="background:none;border:none;color:var(--accent);font-size:0.7rem;cursor:pointer">View all ${sorted.length} photos →</button></div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
+  document.getElementById("addPhotoBtn2")?.addEventListener("click", openPhotoUploader);
+  document.getElementById("showAllPhotosBtn")?.addEventListener("click", showFullPhotoTimeline);
+}
+
+function openPhotoUploader() {
+  const input = document.createElement("input");
+  input.type = "file";
+  input.accept = "image/*";
+  input.onchange = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Photo too large. Max 5MB.");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      if (!state.photos) state.photos = [];
+      state.photos.push({ date: getDateKey(), data: ev.target.result, uploadedAt: new Date().toISOString() });
+      state.progressPhotos = true;
+      saveState();
+      renderProgressPage();
+    };
+    reader.readAsDataURL(file);
+  };
+  input.click();
+}
+
+function showFullPhotoTimeline() {
+  const photos = state.photos || [];
+  if (!photos.length) return;
+  const sorted = [...photos].sort((a, b) => b.date.localeCompare(a.date));
+  const existing = document.getElementById("photoTimelineWrap");
+  if (existing) existing.remove();
+  const el = document.createElement("div");
+  el.id = "photoTimelineWrap";
+  el.innerHTML = `
+    <div class="bottom-sheet-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center">
+      <div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:1.25rem">
+        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
+          <div style="font-weight:600;font-size:1rem">Photo Timeline</div>
+          <button id="ptClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>
+        </div>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+          ${sorted.map((p) => `
+            <div style="display:flex;flex-direction:column;gap:0.3rem">
+              <img src="${p.data}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--surface-3)" alt="Progress photo">
+              <div style="font-size:0.6rem;color:var(--text-secondary);text-align:center">${formatReadableDate(parseDateKey(p.date))}</div>
+            </div>
+          `).join("")}
+        </div>
+      </div>
+    </div>`;
+  document.body.appendChild(el);
+  document.getElementById("ptClose").onclick = () => el.remove();
 }
 
 // ===== TRAINER PAGE =====
@@ -10679,6 +11069,33 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
   }
   if (setting === "height-unit") {
     state.heightUnit = state.heightUnit === "cm" ? "ft/in" : "cm";
+    saveState();
+    renderSettings();
+    return;
+  }
+  if (setting === "calorie-target") {
+    const vals = [1800, 2000, 2100, 2200, 2400, 2500, 2700, 3000];
+    const cur = state.calorieTarget || CAL_GOAL;
+    const next = vals[(vals.indexOf(cur) + 1) % vals.length];
+    state.calorieTarget = next;
+    saveState();
+    renderSettings();
+    return;
+  }
+  if (setting === "protein-goal") {
+    const vals = [100, 120, 146, 160, 180, 200];
+    const cur = state.proteinGoal || PROTEIN_GOAL;
+    const next = vals[(vals.indexOf(cur) + 1) % vals.length];
+    state.proteinGoal = next;
+    saveState();
+    renderSettings();
+    return;
+  }
+  if (setting === "water-goal") {
+    const vals = [1500, 2000, 2500, 3000, 3500, 4000];
+    const cur = state.waterGoal || WATER_TARGET;
+    const next = vals[(vals.indexOf(cur) + 1) % vals.length];
+    state.waterGoal = next;
     saveState();
     renderSettings();
     return;
