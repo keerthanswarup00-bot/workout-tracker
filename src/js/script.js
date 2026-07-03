@@ -2042,6 +2042,8 @@ function renderMealLogger() {
 // ===== MUSCLE COMPUTATION =====
 // ===== MUSCLE COMPUTATION =====
 let bodyMapCache = null;
+let bodyMapMode = "weekly";
+let weightChartInstance = null;
 
 function computeMuscleSummary(mode) {
   const summary = {};
@@ -2447,13 +2449,13 @@ function activateTab(tabName) {
   if (tabName === "settings") {
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === "panel-sets"));
   } else {
-    const panelId = tabName === "today" ? "panel-today" : tabName === "trainer" ? "panel-trainer" : tabName === "progress" ? "panel-progress" : "panel-" + tabName;
+    const panelId = "panel-" + tabName;
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === panelId));
   }
   positionNavIndicator();
-  if (tabName === "today") renderTodayTab();
   if (tabName === "progress") renderProgressPage();
-  if (tabName === "trainer") renderTrainerTab();
+  if (tabName === "sessions") renderSessionsTab();
+  if (tabName === "body") renderBodyTab();
   if (tabName === "sets") renderSetsPanel();
   if (tabName === "settings") {
     showScreen("screen-settings");
@@ -2473,14 +2475,464 @@ function positionNavIndicator() {
   }
 }
 
+// ===== BODY ANALYSIS / MUSCLE MAP =====
+function getMuscleCoverageScore(summary) {
+  const active = Object.values(summary).filter((m) => m.weeklySets > 0).length;
+  return Math.round((active / Object.keys(summary).length) * 100);
+}
+
+function getMuscleStatus(weeklySets) {
+  if (weeklySets === 0) return "untrained";
+  if (weeklySets < 6) return "undertrained";
+  if (weeklySets <= 12) return "optimal";
+  if (weeklySets <= 18) return "high";
+  return "overtrained";
+}
+
+function getStrengthTrend(muscleId) {
+  const exercises = MUSCLE_GROUPS.filter((m) => m.id === muscleId).flatMap((m) =>
+    Object.entries(EXERCISE_MUSCLE_CONTRIBUTION).filter(([, c]) => c.some((x) => x.id === m.id)).map(([name]) => name)
+  );
+  const allSessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
+  const recentSessions = allSessions.slice(0, 6);
+  const weights = [];
+  for (const exName of [...new Set(exercises)]) {
+    for (const s of recentSessions) {
+      const ex = s.exercises.find((e) => e.name === exName);
+      if (!ex) continue;
+      const done = ex.sets.filter((x) => x.done && Number(x.weight) > 0);
+      if (done.length === 0) continue;
+      const avgWeight = done.reduce((sum, x) => sum + Number(x.weight), 0) / done.length;
+      weights.push({ weight: avgWeight, reps: done[0].reps || 0, date: s.dateKey });
+    }
+  }
+  if (weights.length < 4) return null;
+  const half = Math.floor(weights.length / 2);
+  const recentAvg = weights.slice(0, half).reduce((s, w) => s + w.weight, 0) / half;
+  const earlierAvg = weights.slice(half).reduce((s, w) => s + w.weight, 0) / (weights.length - half);
+  if (earlierAvg === 0) return null;
+  return ((recentAvg - earlierAvg) / earlierAvg) * 100;
+}
+
+function getMuscleColor(muscleId, mode, summary) {
+  const data = summary[muscleId];
+  const sets = data ? data.weeklySets : 0;
+  if (mode === "today") {
+    if (data && data.doneToday) return "#00d26a";
+    return "#3a3a3a";
+  }
+  if (mode === "weekly") {
+    return getMuscleStatus(sets) === "untrained" ? "#3a3a3a"
+      : getMuscleStatus(sets) === "undertrained" ? "#3b82f6"
+      : getMuscleStatus(sets) === "optimal" ? "#00d26a"
+      : getMuscleStatus(sets) === "high" ? "#ff9f0a"
+      : "#ef4444";
+  }
+  if (mode === "recovery") {
+    const days = data ? getRecoveryDays(data.lastTrained) : 99;
+    if (days === 0) return "#ef4444";
+    if (days <= 1) return "#ff9f0a";
+    if (days <= 3) return "#ffd60a";
+    return "#00d26a";
+  }
+  if (mode === "strength") {
+    const trend = getStrengthTrend(muscleId);
+    if (trend === null) return "#3a3a3a";
+    if (trend > 2) return "#00d26a";
+    if (trend > -2) return "#ffd60a";
+    return "#ef4444";
+  }
+  return "#3a3a3a";
+}
+
+function getBodyMapColor(muscleId, mode, summary) {
+  return getMuscleColor(muscleId, mode, summary);
+}
+
+function renderBodyMuscleMap(container, summary) {
+  container.innerHTML = `<div class="body-map-layout"><div class="body-view">${BODY_MAP_SVG}</div></div>`;
+
+  container.querySelectorAll("[data-muscle]").forEach((path) => {
+    const detailedId = path.dataset.muscle;
+    const groupId = MUSCLE_GROUP_MAP[detailedId] || detailedId;
+    const data = summary[groupId];
+    const sets = data ? data.weeklySets : 0;
+    const color = getBodyMapColor(groupId, bodyMapMode, summary);
+    const opacity = sets > 0 ? "0.85" : "0.3";
+    path.setAttribute("fill", color);
+    path.setAttribute("fill-opacity", opacity);
+    path.style.cursor = "pointer";
+
+    path.addEventListener("mouseenter", (e) => {
+      path.style.filter = "brightness(1.3)";
+      showMuscleTooltip(e, detailedId, groupId, summary);
+    });
+    path.addEventListener("mousemove", (e) => moveMuscleTooltip(e));
+    path.addEventListener("mouseleave", () => {
+      path.style.filter = "";
+      hideMuscleTooltip();
+    });
+    path.addEventListener("click", (e) => {
+      e.stopPropagation();
+      showMuscleSheet(detailedId, summary);
+    });
+  });
+}
+
+function showMuscleTooltip(e, detailedId, groupId, summary) {
+  const tip = document.getElementById("muscleTooltip");
+  if (!tip) return;
+  const label = MUSCLE_LABEL_MAP[detailedId] || detailedId;
+  const group = MUSCLE_GROUPS.find((g) => g.id === groupId);
+  const data = summary[groupId] || {};
+  const days = getRecoveryDays(data.lastTrained);
+  const sets = data.weeklySets || 0;
+  document.getElementById("mtName").textContent = label;
+  document.getElementById("mtGroup").textContent = group ? group.label : groupId;
+  document.getElementById("mtSets").textContent = sets;
+  document.getElementById("mtVolume").textContent = `${Math.round((data.weeklyVolume || 0) / 100) / 10 || 0}k kg`;
+  document.getElementById("mtLast").textContent = data.lastTrained
+    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
+    : "Not trained";
+  document.getElementById("mtRecovery").textContent = days === 0 ? "Just trained"
+    : days <= 1 ? "Low"
+    : days <= 3 ? "Recovering"
+    : "Recovered";
+  tip.classList.remove("is-hidden");
+  moveMuscleTooltip(e);
+}
+
+function moveMuscleTooltip(e) {
+  const tip = document.getElementById("muscleTooltip");
+  if (!tip) return;
+  let x = e.clientX + 12, y = e.clientY - 10;
+  if (x + 200 > window.innerWidth) x = e.clientX - 210;
+  if (y < 0) y = 10;
+  tip.style.left = x + "px";
+  tip.style.top = y + "px";
+}
+
+function hideMuscleTooltip() {
+  const tip = document.getElementById("muscleTooltip");
+  if (tip) tip.classList.add("is-hidden");
+}
+
+function showMuscleSheet(muscleId, summary) {
+  const groupId = MUSCLE_GROUP_MAP[muscleId] || muscleId;
+  const mg = MUSCLE_GROUPS.find((m) => m.id === groupId);
+  if (!mg) return;
+  const label = MUSCLE_LABEL_MAP[muscleId] || mg.label;
+  const data = summary[groupId] || { weeklySets: 0, weeklyVolume: 0, lastTrained: null, exercises: [] };
+  const days = getRecoveryDays(data.lastTrained);
+  const trend = getStrengthTrend(groupId);
+  const trendStr = trend === null ? "—" : `${trend > 0 ? "+" : ""}${trend.toFixed(1)}%`;
+  const trendColor = trend === null ? "#737373" : trend > 2 ? "#00d26a" : trend > -2 ? "#ffd60a" : "#ef4444";
+  const lastTrainedStr = data.lastTrained
+    ? days === 0 ? "Today" : days === 1 ? "Yesterday" : `${days} days ago`
+    : "Not trained";
+  const recColor = days === 0 ? "#ef4444" : days <= 1 ? "#ff9f0a" : days <= 3 ? "#ffd60a" : "#00d26a";
+
+  const sheet = document.getElementById("muscleSheet");
+  const body = document.getElementById("muscleSheetBody");
+  body.innerHTML = `
+    <div class="ms-header">${label}</div>
+    <div class="ms-sub">${mg.label}</div>
+    <div class="ms-grid">
+      <div class="ms-item"><span class="ms-label">Weekly Sets</span><span class="ms-value">${data.weeklySets}</span></div>
+      <div class="ms-item"><span class="ms-label">Volume</span><span class="ms-value">${Math.round(data.weeklyVolume / 100) / 10 || 0}k kg</span></div>
+      <div class="ms-item"><span class="ms-label">Last Trained</span><span class="ms-value">${lastTrainedStr}</span></div>
+      <div class="ms-item"><span class="ms-label">Recovery</span><span class="ms-value" style="color:${recColor}">${days === 0 ? "Just trained" : days <= 1 ? "Low" : days <= 3 ? "Recovering" : "Recovered"}</span></div>
+      <div class="ms-item"><span class="ms-label">Strength Trend</span><span class="ms-value" style="color:${trendColor}">${trendStr}</span></div>
+    </div>
+    ${data.exercises.length > 0 ? `
+    <div class="ms-exercises-label">Exercises</div>
+    <div class="ms-exercises">${data.exercises.map((ex) =>
+      `<span class="ms-ex-chip">${ex.replace(/([A-Z])/g, " $1").trim()}</span>`
+    ).join("")}</div>` : ""}`;
+  sheet.classList.remove("is-hidden");
+}
+
+function generateMuscleInsights(summary) {
+  const insights = [];
+  const coverage = getMuscleCoverageScore(summary);
+
+  const undertrained = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets > 0 && data.weeklySets < 5;
+  }).slice(0, 3);
+  if (undertrained.length > 0) {
+    insights.push({
+      icon: "⚠️", severity: "yellow",
+      text: `${undertrained.map((m) => m.label).join(", ")} ${undertrained.length === 1 ? "is" : "are"} undertrained. Currently getting <5 weekly sets. Add targeted work.`,
+    });
+  }
+
+  const overtrained = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets > 18;
+  }).slice(0, 3);
+  if (overtrained.length > 0) {
+    insights.push({
+      icon: "⚠️", severity: "red",
+      text: `${overtrained.map((m) => m.label).join(", ")} ${overtrained.length === 1 ? "has" : "have"} unusually high volume (>18 weekly sets). Monitor recovery.`,
+    });
+  }
+
+  const neglected = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return !data || data.weeklySets === 0;
+  });
+  if (neglected.length > 0 && coverage < 90) {
+    const topNeglected = neglected.slice(0, 3);
+    insights.push({
+      icon: "🎯", severity: "yellow",
+      text: `${topNeglected.map((m) => m.label).join(", ")} ${topNeglected.length === 1 ? "has" : "have"} received no direct training. Coverage: <strong>${coverage}%</strong>.`,
+    });
+  }
+
+  const optimal = MUSCLE_GROUPS.filter((mg) => {
+    const data = summary[mg.id];
+    return data && data.weeklySets >= 5 && data.weeklySets <= 14;
+  }).length;
+  if (optimal >= 8) {
+    insights.push({
+      icon: "✅", severity: "green",
+      text: `${optimal} muscle groups are in the optimal training range (5-14 weekly sets). Excellent balance.`,
+    });
+  }
+
+  return insights;
+}
+
+function renderBodyAnalysis() {
+  const container = document.getElementById("bodyAnalysis");
+  const summary = computeMuscleSummary(bodyMapMode || "weekly");
+  const coverageScore = getMuscleCoverageScore(summary);
+
+  const statusLabels = { untrained: "Not trained", undertrained: "Undertrained", optimal: "Optimal", high: "High volume", overtrained: "Overtrained" };
+  const modeLabels = { today: "Trained Today", weekly: "Weekly Coverage", recovery: "Recovery", strength: "Strength Trend" };
+
+  let html = `<div class="bm-mode-row">
+    ${Object.entries(modeLabels).map(([key, label]) =>
+      `<button class="bm-mode-btn${bodyMapMode === key ? " is-active" : ""}" data-mode="${key}">${label}</button>`
+    ).join("")}
+  </div>`;
+
+  html += `<div id="bmContainer" class="bm-container"></div>`;
+
+  html += `<div class="bm-stats">
+    <div class="bm-coverage"><span class="bm-coverage-pct">${coverageScore}%</span> Coverage</div>
+    <div class="bm-trained">${Object.values(summary).filter((m) => m.weeklySets > 0).length}/${Object.keys(summary).length} trained</div>
+  </div>`;
+
+  const sorted = MUSCLE_GROUPS.map((mg) => ({
+    ...mg,
+    ...summary[mg.id],
+    sets: summary[mg.id] ? summary[mg.id].weeklySets : 0,
+  }));
+
+  html += `<div class="bm-muscle-list">`;
+  sorted.forEach((mg) => {
+    const color = getBodyMapColor(mg.id, bodyMapMode, summary);
+    const sets = mg.sets || 0;
+    html += `<div class="bm-muscle-row" data-muscle="${mg.id}">
+      <span class="bm-muscle-dot" style="background:${color};opacity:${sets > 0 ? 1 : 0.3}"></span>
+      <span class="bm-muscle-name">${mg.label}</span>
+      <span class="bm-muscle-sets">${sets} sets</span>
+      <span class="bm-muscle-chevron">›</span>
+    </div>`;
+  });
+  html += `</div>`;
+
+  const insights = generateMuscleInsights(summary);
+  if (insights.length > 0) {
+    html += `<div class="bm-insights">`;
+    insights.slice(0, 4).forEach((ins) => {
+      html += `<div class="alert-item is-${ins.severity}"><span class="alert-icon">${ins.icon}</span><div class="alert-body">${ins.text}</div></div>`;
+    });
+    html += `</div>`;
+  }
+
+  container.innerHTML = html;
+
+  renderBodyMuscleMap(document.getElementById("bmContainer"), summary);
+
+  container.querySelectorAll(".bm-mode-btn").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      bodyMapMode = btn.dataset.mode;
+      renderBodyAnalysis();
+    });
+  });
+
+  container.querySelectorAll(".bm-muscle-row").forEach((row) => {
+    row.addEventListener("click", () => {
+      showMuscleSheet(row.dataset.muscle, summary);
+    });
+  });
+}
+
+// ===== BODY TAB =====
+function renderWeighIn() {
+  const container = document.getElementById("weighInCard");
+  const log = loadBodyLog();
+  const today = getDateKey();
+  const entry = log.find((e) => e.date === today);
+  if (entry) {
+    container.innerHTML = `
+      <div class="weigh-in-current">${displayWeight(entry.weight)}</div>
+      <div class="weigh-in-changes">
+        ${entry.bf ? `<span>BF: ${entry.bf}%</span>` : ""}
+      </div>
+      <button class="btn-text" id="editWeighInBtn">Edit</button>
+    `;
+    document.getElementById("editWeighInBtn")?.addEventListener("click", () => { container.innerHTML = buildWeighInForm(entry.weight, entry.bf); attachWeighInListener(); });
+  } else {
+    container.innerHTML = buildWeighInForm("", "");
+    attachWeighInListener();
+  }
+}
+
+function buildWeighInForm(w, bf) {
+  return `<div class="weigh-in-form">
+    <label>Weight (kg) <input type="number" step="0.1" id="weightInput" value="${w}" placeholder="e.g. 67" /></label>
+    <label>BF % <input type="number" step="0.1" id="bfInput" value="${bf || ""}" placeholder="optional" /></label>
+  </div>
+  <button class="btn-primary" id="saveWeighInBtn">Save</button>`;
+}
+
+function attachWeighInListener() {
+  document.getElementById("saveWeighInBtn")?.addEventListener("click", () => {
+    const w = Number(document.getElementById("weightInput").value);
+    const bf = document.getElementById("bfInput").value ? Number(document.getElementById("bfInput").value) : null;
+    if (!w) return;
+    saveBodyLogEntry({ date: getDateKey(), weight: w, bf });
+    renderBodyTab();
+  });
+}
+
+function renderTrendAverages() {
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const container = document.getElementById("trendAverages");
+  if (log.length < 2) {
+    container.innerHTML = "";
+    return;
+  }
+  const now = new Date();
+  const avg = (days) => {
+    const cutoff = getDateKey(new Date(now.getTime() - days * 86400000));
+    const entries = log.filter((e) => e.date >= cutoff);
+    if (entries.length < 2) return null;
+    return entries.reduce((s, e) => s + e.weight, 0) / entries.length;
+  };
+  const a7 = avg(7);
+  const a14 = avg(14);
+  const a30 = avg(30);
+  container.innerHTML = `
+    <div class="trend-avg"><strong>${a7 ? a7.toFixed(1) : "--"}</strong><small>7-day avg</small></div>
+    <div class="trend-avg"><strong>${a14 ? a14.toFixed(1) : "--"}</strong><small>14-day avg</small></div>
+    <div class="trend-avg"><strong>${a30 ? a30.toFixed(1) : "--"}</strong><small>30-day avg</small></div>
+  `;
+  const badge = document.getElementById("trendBadge");
+  if (a7 && a14) {
+    const diff = a7 - a14;
+    const goal = GOALS.find((g) => g.id === state.bodyGoal);
+    const expected = goal ? goal.expectedWeekly : 0;
+    if (Math.abs(diff) < 0.2) {
+      badge.textContent = "Stable";
+      badge.className = "trend-badge is-green";
+    } else if (expected <= 0 && diff > 0.3) {
+      badge.textContent = "↑ Increasing";
+      badge.className = "trend-badge is-yellow";
+    } else if (expected >= 0 && diff < -0.3) {
+      badge.textContent = "↓ Decreasing";
+      badge.className = "trend-badge is-yellow";
+    } else {
+      badge.textContent = diff > 0 ? "↑ Rising" : "↓ Falling";
+      badge.className = "trend-badge " + (Math.abs(diff) > 0.5 ? "is-red" : "is-green");
+    }
+  } else {
+    badge.textContent = "Need more data";
+    badge.className = "trend-badge is-blue";
+  }
+}
+
+function renderWeightChart() {
+  if (weightChartInstance) { weightChartInstance.destroy(); weightChartInstance = null; }
+  const canvas = document.getElementById("weightChart");
+  if (!canvas) return;
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const recent = log.slice(-30);
+  if (recent.length < 3) return;
+  const labels = recent.map((e) => formatReadableDate(parseDateKey(e.date)));
+  const data = recent.map((e) => e.weight);
+  if (typeof Chart === "undefined") { loadChartJS().then(() => renderWeightChart()); return; }
+  const ctx = canvas.getContext("2d");
+  weightChartInstance = new Chart(ctx, {
+    type: "line",
+    data: { labels, datasets: [{ data, borderColor: "#00d26a", tension: 0.4, pointRadius: 2, fill: false }] },
+    options: { plugins: { legend: { display: false } }, scales: { y: { min: Math.min(...data) - 0.5, max: Math.max(...data) + 0.5 } } },
+  });
+}
+
+function renderGoalPrediction() {
+  const container = document.getElementById("goalPredictionContent");
+  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
+  const goal = GOALS.find((g) => g.id === state.bodyGoal);
+  if (log.length < 4 || !goal) {
+    container.innerHTML = `<p class="empty-state">More data needed for prediction.</p>`;
+    return;
+  }
+  const current = log[log.length - 1].weight;
+  const recent = log.slice(-7);
+  const avgRecent = recent.length >= 2 ? recent.reduce((s, e) => s + e.weight, 0) / recent.length : current;
+  const weeklyRate = goal.expectedWeekly;
+  const goalWeight = (goal.id === "fat-loss") ? current - 5 : current + 5;
+  const diff = goalWeight - avgRecent;
+  const weeksNeeded = weeklyRate !== 0 ? Math.abs(diff / weeklyRate) : 0;
+  const targetDate = new Date(Date.now() + weeksNeeded * 7 * 86400000);
+  const estDate = weeksNeeded > 0 ? targetDate.toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "--";
+  container.innerHTML = `
+    <div class="prediction-grid">
+      <div class="prediction-row"><span>Current</span><span>${displayWeight(avgRecent)}</span></div>
+      <div class="prediction-row"><span>Target</span><span>~${displayWeight(goalWeight)}</span></div>
+      <div class="prediction-row"><span>Rate</span><span>${weeklyRate > 0 ? "+" : ""}${weeklyRate} kg/week</span></div>
+      ${weeksNeeded > 0 ? `<div class="prediction-highlight">Goal by ${estDate} (${Math.ceil(weeksNeeded)} weeks)</div>` : `<div class="prediction-highlight">Maintaining current phase.</div>`}
+    </div>
+  `;
+}
+
+function renderGoalSelector() {
+  const container = document.getElementById("goalSelector");
+  if (!container) return;
+  const current = state.bodyGoal || "recomp";
+  container.innerHTML = GOALS.map((g) =>
+    `<button class="goal-btn ${g.id === current ? "is-active" : ""}" data-goal="${g.id}">${g.label}</button>`
+  ).join("");
+  container.querySelectorAll("[data-goal]").forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.bodyGoal = btn.dataset.goal;
+      saveState();
+      renderBodyTab();
+    });
+  });
+}
+
+function renderBodyTab() {
+  renderWeighIn();
+  renderTrendAverages();
+  renderWeightChart();
+  renderGoalPrediction();
+  renderBodyAnalysis();
+}
+
 function render() {
   document.getElementById("todayLabel").textContent = formatReadableDate(new Date());
   updateStreak();
   renderSetsPanel();
   renderProfileAvatar();
-  if (currentTab === "today") renderTodayTab();
   if (currentTab === "progress") renderProgressPage();
-  if (currentTab === "trainer") renderTrainerTab();
+  if (currentTab === "sessions") renderSessionsTab();
+  if (currentTab === "body") renderBodyTab();
   updateTopbarTimer();
 }
 
@@ -5237,6 +5689,59 @@ function renderEdAnalyze() {
 function renderSessionsTab() {
   renderSessionLog();
   renderPRBoard();
+  renderWeeklyReport();
+  renderMonthlyReport();
+  renderAdherenceGrid();
+}
+
+function renderMonthlyReport() {
+  const container = document.getElementById("monthlyReportContent");
+  if (!container) return;
+  const now = new Date();
+  const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+  const monthKey = getDateKey(monthStart);
+  const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= monthKey);
+  if (!monthSessions.length) {
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts this month to see your monthly report.</div></div>`;
+    return;
+  }
+  const totalSets = monthSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.length, 0), 0);
+  const totalVolume = monthSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.filter(st => st.done).reduce((s3, st) => s3 + (Number(st.weight)||0) * (st.reps||0), 0), 0), 0);
+  const totalDuration = monthSessions.reduce((sum, s) => sum + (s.duration || 0), 0);
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0.4rem">
+      <div class="pr-card" style="text-align:center"><strong>${monthSessions.length}</strong><span>Workouts</span></div>
+      <div class="pr-card" style="text-align:center"><strong>${totalSets}</strong><span>Sets</span></div>
+      <div class="pr-card" style="text-align:center"><strong>${totalVolume >= 1000 ? (totalVolume/1000).toFixed(1)+"k" : totalVolume}</strong><span>Volume (kg)</span></div>
+    </div>`;
+}
+
+function renderAdherenceGrid() {
+  const container = document.getElementById("adherenceCard");
+  if (!container) return;
+  const sessions = state.sessions.filter((s) => s.finishedAt) || [];
+  if (!sessions.length) {
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see your adherence grid.</div></div>`;
+    return;
+  }
+  const today = new Date();
+  const weeks = 12;
+  let html = `<div class="adherence-header"><span class="streak-label">🔥 ${state.workoutStreak?.currentStreak || 0} day streak</span></div><div class="adherence-grid">`;
+  for (let w = 0; w < weeks; w++) {
+    html += `<div class="adherence-week">`;
+    for (let d = 0; d < 7; d++) {
+      const date = new Date(today);
+      date.setDate(date.getDate() - (weeks * 7 - w * 7 - d));
+      const dk = getDateKey(date);
+      const hasSession = sessions.some((s) => s.dateKey === dk);
+      const isToday = dk === getDateKey(today);
+      const isFuture = date > today;
+      html += `<div class="adherence-day${hasSession ? " cell-trained" : isFuture ? " cell-future" : isToday ? " cell-today" : ""}"></div>`;
+    }
+    html += `</div>`;
+  }
+  html += `</div>`;
+  container.innerHTML = html;
 }
 
 function renderSessionLog() {
@@ -5427,72 +5932,70 @@ function renderTrainingCalendar() {
 function renderProgressPage() {
   const container = document.getElementById("progressPageContent");
   if (!container) return;
+  renderTrainingCalendar();
+  renderProgressInsights();
+  renderRecoveryStatus();
+  renderGoalsSection();
+}
 
-  const u = state.user || {};
-  const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const curWeight = latestLog ? latestLog.weight : (u.weight || null);
-  const gcWeightData = GoalCenter.getGoalWeightData();
-  const targetWeight = gcWeightData.targetWeight || u.targetWeight || null;
-  const bmi = u.height && curWeight ? (curWeight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
-
-  // Weight goal card
-  let weightHtml = "";
-  if (curWeight && targetWeight) {
-    const diff = (targetWeight - curWeight).toFixed(1);
-    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Current Weight</div><div class="progress-value">${displayWeight(curWeight)}</div></div><div class="progress-stat"><div class="progress-label">Target Weight</div><div class="progress-value">${displayWeight(targetWeight)}</div></div><div class="progress-stat"><div class="progress-label">Difference</div><div class="progress-value">${diff >= 0 ? "+" : ""}${displayWeight(Math.abs(diff))}</div></div><div class="progress-stat"><div class="progress-label">BMI</div><div class="progress-value">${bmi}</div></div></div>`;
-  } else if (!curWeight && !targetWeight) {
-    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">Log your first weight</div></div><div class="progress-stat"><div class="progress-label">Target</div><div class="progress-value">Set target weight in onboarding</div></div></div>`;
-  } else if (!curWeight) {
-    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">Log your first weight</div></div></div>`;
-  } else if (!targetWeight) {
-    weightHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Weight</div><div class="progress-value">${displayWeight(curWeight)}</div></div><div class="progress-stat"><div class="progress-label">Target</div><div class="progress-value">Set target weight in onboarding</div></div></div>`;
-  }
-
-  // Streak card
-  const streakHtml = `<div class="progress-card"><div class="progress-stat"><div class="progress-label">Current Streak</div><div class="progress-value">${state.workoutStreak?.currentStreak || 0} days</div></div><div class="progress-stat"><div class="progress-label">Longest Streak</div><div class="progress-value">${state.workoutStreak?.longestStreak || 0} days</div></div></div>`;
-
+function renderProgressInsights() {
+  const container = document.getElementById("coachInsights");
+  if (!container) return;
   const sessions = state.sessions.filter((s) => s.finishedAt);
   if (!sessions.length) {
-    container.innerHTML = `${weightHtml}${streakHtml}<div class="empty-state" style="margin-top:1rem"><div class="empty-state-icon">📊</div><div class="empty-state-title">No Progress Yet</div><div class="empty-state-text">Complete your first workout to start tracking your progress. Every rep counts toward your goals.</div><button class="empty-state-btn" id="progressStartWorkoutBtn">Start First Workout</button></div>`;
-    document.getElementById("progressStartWorkoutBtn")?.addEventListener("click", () => activateTab("sets"));
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see training insights.</div></div>`;
     return;
   }
-  container.innerHTML = `${weightHtml}${streakHtml}
-    <div class="progress-card">
-      <div id="progressCalendarHero"></div>
-    </div>
-    <div class="progress-section">
-      <div class="section-label">This Week</div>
-      <div id="progressWeekly"></div>
-    </div>
-    <div class="progress-section">
-      <div class="section-label">Monthly</div>
-      <div id="progressMonthly"></div>
-    </div>
-    <div class="progress-section">
-      <div class="section-label">Milestones</div>
-      <div id="progressMilestones"></div>
-    </div>
-    <div class="progress-section">
-      <div class="section-label">Body Measurements</div>
-      <div id="progressMeasurements"></div>
-    </div>
-    <div class="progress-section">
-      <div class="section-label">Progress Photos</div>
-      <div id="progressPhotos"></div>
-    </div>
-    <div class="progress-section">
-      <button class="btn-secondary" id="progressViewReportsBtn" style="width:100%">View Weekly & Monthly Reports →</button>
-    </div>
-  `;
-  renderCalendarHero();
-  renderWeeklyReview();
-  renderMonthlyReview();
-  renderRecentMilestones();
-  renderMeasurements();
-  renderProgressPhotos();
-  renderSessionsTab();
-  document.getElementById("progressViewReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
+  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
+  const weekSessions = sessions.filter((s) => s.dateKey >= weekAgo);
+  const totalVolume = weekSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.filter(st => st.done).reduce((s3, st) => s3 + (Number(st.weight)||0) * (st.reps||0), 0), 0), 0);
+  container.innerHTML = `
+    <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.4rem">
+      <div class="pr-card" style="text-align:center"><strong>${weekSessions.length}</strong><span>Workouts</span></div>
+      <div class="pr-card" style="text-align:center"><strong>${totalVolume >= 1000 ? (totalVolume/1000).toFixed(1)+"k" : totalVolume}</strong><span>Volume</span></div>
+    </div>`;
+}
+
+function renderRecoveryStatus() {
+  const container = document.getElementById("recoveryContent");
+  if (!container) return;
+  const sessions = state.sessions.filter((s) => s.finishedAt);
+  if (!sessions.length) {
+    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see recovery status.</div></div>`;
+    return;
+  }
+  const lastSession = sessions.sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
+  const daysSince = Math.floor((new Date() - new Date(lastSession.dateKey + "T00:00:00")) / 86400000);
+  const recoveryPct = Math.min(100, Math.round(daysSince * 20));
+  const dot = document.getElementById("recoveryDot");
+  if (dot) {
+    dot.className = "recovery-dot";
+    if (recoveryPct >= 80) dot.classList.add("is-green");
+    else if (recoveryPct >= 40) dot.classList.add("is-yellow");
+    else dot.classList.add("is-red");
+  }
+  container.innerHTML = `
+    <div style="text-align:center;padding:0.5rem">
+      <div style="font-size:1.5rem;font-weight:800">${recoveryPct}%</div>
+      <div style="font-size:0.72rem;color:var(--text-secondary)">Recovery</div>
+      <div style="font-size:0.72rem;color:var(--text-secondary);margin-top:0.25rem">${daysSince} day${daysSince !== 1 ? "s" : ""} since last workout</div>
+    </div>`;
+}
+
+function renderGoalsSection() {
+  const container = document.getElementById("goalsContent");
+  if (!container) return;
+  const user = state.user || {};
+  const goalName = user.goal ? user.goal.replace(/-/g, " ") : "Not set";
+  container.innerHTML = `
+    <div class="card-content" style="display:flex;flex-direction:column;gap:0.4rem">
+      <div class="log-item"><strong>Fitness Goal</strong><span style="text-transform:capitalize">${goalName}</span></div>
+      ${user.targetWeight ? `<div class="log-item"><strong>Target Weight</strong><span>${displayWeight(user.targetWeight)}</span></div>` : ""}
+      <button class="btn-secondary" id="goalsOpenCoachBtn" style="width:100%;margin-top:0.25rem">Open Goal Center →</button>
+    </div>`;
+  document.getElementById("goalsOpenCoachBtn")?.addEventListener("click", () => {
+    if (typeof openGoalCenter === "function") openGoalCenter();
+  });
 }
 
 function renderWeeklyReview() {
@@ -9574,7 +10077,6 @@ document.addEventListener("click", (e) => {
   if (settingsGcBtn) {
     e.preventDefault();
     showTrainerScreen("goal-center");
-    openPanel("panel-trainer");
   }
 });
 
@@ -10115,7 +10617,7 @@ function showCoachActivation() {
 
   document.getElementById("obActivationStartBtn").onclick = () => {
     modal.classList.add("is-hidden");
-    activateTab("trainer");
+    activateTab("sets");
     // Also trigger the workout generator
     openNewWorkoutGenerator();
   };
@@ -13103,6 +13605,23 @@ document.addEventListener("keydown", (e) => {
     document.querySelectorAll(".bottom-sheet-overlay").forEach((el) => el.remove());
     document.getElementById("profileMenu")?.classList.add("is-hidden");
   }
+});
+
+// ===== MUSCLE SHEET =====
+document.getElementById("muscleSheetOverlay")?.addEventListener("click", () => {
+  document.getElementById("muscleSheet").classList.add("is-hidden");
+});
+document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
+  if (e.target === e.currentTarget) e.currentTarget.classList.add("is-hidden");
+});
+
+// ===== MUSCLE SEARCH =====
+document.getElementById("muscleSearch")?.addEventListener("input", (e) => {
+  const q = e.target.value.toLowerCase();
+  document.querySelectorAll(".bm-muscle-row").forEach((row) => {
+    const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
+    row.style.display = name.includes(q) ? "" : "none";
+  });
 });
 
 function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }

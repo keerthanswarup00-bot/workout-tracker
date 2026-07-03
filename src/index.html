@@ -21,10 +21,10 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">IronLog</div>
         <nav class="sidebar-nav" id="sidebarNav">
-          <button class="nav-btn is-active" data-tab="today">Today</button>
-          <button class="nav-btn" data-tab="sets">Train</button>
+          <button class="nav-btn is-active" data-tab="sets">Sets</button>
+          <button class="nav-btn" data-tab="sessions">Sessions</button>
           <button class="nav-btn" data-tab="progress">Progress</button>
-          <button class="nav-btn" data-tab="trainer">Coach</button>
+          <button class="nav-btn" data-tab="body">Body</button>
         </nav>
         <div class="sidebar-footer">
           <span class="streak-pill" id="streakBadge"></span>
@@ -45,13 +45,8 @@
           </div>
         </header>
 
-        <!-- ===== TODAY PANEL ===== -->
-        <section class="panel is-active" id="panel-today">
-          <div id="todayPageContent" class="page-container"></div>
-        </section>
-
         <!-- ===== SETS PANEL ===== -->
-        <section class="panel" id="panel-sets">
+        <section class="panel is-active" id="panel-sets">
           <!-- Home Dashboard Screen -->
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
@@ -571,21 +566,54 @@
           </div>
         </section>
 
-        <!-- ===== PROGRESS PANEL ===== -->
-        <section class="panel" id="panel-progress">
-          <div id="progressPageContent" class="page-container">
-            <div id="progressSessionsSection" style="margin-top:0.5rem">
-              <div class="section-label">Session Log</div>
-              <div class="session-log" id="sessionLog"></div>
-              <div class="section-label" style="margin-top:1rem">Personal Records</div>
-              <div class="pr-grid" id="prGrid"></div>
-            </div>
+        <!-- ===== SESSIONS PANEL ===== -->
+        <section class="panel" id="panel-sessions">
+          <div id="sessionsPageContent" class="page-container">
+            <div class="section-label">Session Log</div>
+            <div class="session-log" id="sessionLog"></div>
+            <div class="section-label" style="margin-top:1.25rem">Personal Records</div>
+            <div class="pr-grid" id="prGrid"></div>
+            <div class="section-label" style="margin-top:1.25rem">Weekly Review</div>
+            <div id="weeklyReviewCard" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Monthly Report</div>
+            <div id="monthlyReportContent" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Adherence</div>
+            <div id="adherenceCard" class="card-content"></div>
           </div>
         </section>
 
-        <!-- ===== TRAINER PANEL ===== -->
-        <section class="panel" id="panel-trainer">
-          <div id="trainerPageContent" class="page-container"></div>
+        <!-- ===== PROGRESS PANEL ===== -->
+        <section class="panel" id="panel-progress">
+          <div id="progressPageContent" class="page-container">
+            <div class="section-label">Workout Calendar</div>
+            <div id="trainingCalendar" class="calendar-wrap"></div>
+            <div class="section-label" style="margin-top:1.25rem">Training Summary</div>
+            <div id="coachInsights" class="insights-list"></div>
+            <div class="section-label" style="margin-top:1.25rem">Recovery Status</div>
+            <div class="recovery-header"><span class="recovery-dot" id="recoveryDot"></span></div>
+            <div id="recoveryContent" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Goals</div>
+            <div id="goalsContent"></div>
+          </div>
+        </section>
+
+        <!-- ===== BODY PANEL ===== -->
+        <section class="panel" id="panel-body">
+          <div id="bodyPageContent" class="page-container">
+            <div class="section-label">Weigh-In</div>
+            <div id="weighInCard" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
+            <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
+            <div class="trend-averages" id="trendAverages"></div>
+            <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+            <div class="section-label" style="margin-top:1.25rem">Goal Prediction</div>
+            <div id="goalPredictionContent" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Body Analysis</div>
+            <div class="bm-search-wrap">
+              <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
+            </div>
+            <div id="bodyAnalysis" class="card-content"></div>
+          </div>
         </section>
 
       </main>
@@ -594,21 +622,21 @@
     <!-- PILL-SHAPED FLOATING BOTTOM NAV -->
     <nav class="bottom-nav" id="bottomNav">
       <div class="nav-indicator" id="navIndicator"></div>
-      <button class="nav-tab is-active" data-tab="today" aria-label="Today">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
-          <polyline points="9 22 9 12 15 12 15 22" />
-        </svg>
-        <span>Today</span>
-      </button>
-      <button class="nav-tab" data-tab="sets" aria-label="Train">
+      <button class="nav-tab is-active" data-tab="sets" aria-label="Sets">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <rect x="3" y="3" width="7" height="7" />
           <rect x="14" y="3" width="7" height="7" />
           <rect x="3" y="14" width="7" height="7" />
           <rect x="14" y="14" width="7" height="7" />
         </svg>
-        <span>Train</span>
+        <span>Sets</span>
+      </button>
+      <button class="nav-tab" data-tab="sessions" aria-label="Sessions">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <circle cx="12" cy="12" r="10" />
+          <polyline points="12 6 12 12 16 14" />
+        </svg>
+        <span>Sessions</span>
       </button>
       <button class="nav-tab" data-tab="progress" aria-label="Progress">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -616,12 +644,11 @@
         </svg>
         <span>Progress</span>
       </button>
-      <button class="nav-tab" data-tab="trainer" aria-label="Coach">
+      <button class="nav-tab" data-tab="body" aria-label="Body">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <path d="M12 20h9" />
-          <path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z" />
+          <path d="M12 20V10M18 20V4M6 20v-4" />
         </svg>
-        <span>Coach</span>
+        <span>Body</span>
       </button>
     </nav>
 
@@ -1114,6 +1141,26 @@
       </div>
     </div>
 
+    <!-- MUSCLE TOOLTIP -->
+    <div id="muscleTooltip" class="muscle-tooltip is-hidden">
+      <div class="mt-name" id="mtName"></div>
+      <div class="mt-row"><span>Group</span><span id="mtGroup"></span></div>
+      <div class="mt-row"><span>Weekly Sets</span><span id="mtSets">0</span></div>
+      <div class="mt-row"><span>Volume</span><span id="mtVolume">0 kg</span></div>
+      <div class="mt-row"><span>Last Trained</span><span id="mtLast">—</span></div>
+      <div class="mt-row"><span>Recovery</span><span id="mtRecovery">100%</span></div>
+    </div>
+
+    <!-- MUSCLE BOTTOM SHEET -->
+    <div class="muscle-sheet is-hidden" id="muscleSheet">
+      <div class="muscle-sheet-overlay" id="muscleSheetOverlay"></div>
+      <div class="muscle-sheet-card">
+        <div class="muscle-sheet-handle"></div>
+        <div class="muscle-sheet-body" id="muscleSheetBody"></div>
+      </div>
+    </div>
+
+  <script defer src="js/body-map-svg.js"></script>
   <script defer src="js/data/prs.js"></script>
   <script defer src="js/problem-database.js"></script>
   <script defer src="js/lesson-database.js"></script>
