@@ -765,7 +765,6 @@ function isCompoundExercise(exName) {
 }
 
 const state = loadState();
-migrateLegacyPRs();
 
 function displayWeight(kg) {
   const n = Number(kg) || 0;
@@ -1327,7 +1326,7 @@ function loadState() {
     goalCenter: null,
     onboardingComplete: false,
     onboardingStep: 0,
-    onboardingData: { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", targetWeight: "", targetDate: "", primaryLift: "" },
+    onboardingData: { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", equipmentDetails: [], injuries: [], injuryNotes: "", nutritionCal: "", nutritionProtein: "", dietPreference: "none", supplements: [], metrics: {}, targetWeight: "", targetDate: "", primaryLift: "" },
     coachActivated: false,
     activatedAt: null,
     firstWorkoutDone: false,
@@ -2363,7 +2362,15 @@ function renderSettings() {
     <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
   </div>
 
-  <!-- SECTION 5: HEALTH -->
+  <!-- SECTION 5: NOTIFICATIONS -->
+  <div class="sg">
+    <div class="sg-label">NOTIFICATIONS</div>
+    <label class="sg-row sg-toggle"><span>Weight Reminder</span><input type="checkbox" ${state.weightReminder ? "checked" : ""} data-setting="weight-reminder" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Nutrition Reminder</span><input type="checkbox" ${state.nutritionReminder ? "checked" : ""} data-setting="nutrition-reminder" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Weekly Review Summary</span><input type="checkbox" ${state.weeklyReview !== false ? "checked" : ""} data-setting="weekly-review" /><span class="sg-toggle-track"></span></label>
+  </div>
+
+  <!-- SECTION 6: HEALTH -->
   <div class="sg">
     <div class="sg-label">HEALTH</div>
     <div class="sg-row" data-setting="calorie-target"><span>Daily Calorie Target</span><span class="sg-row-val">${state.calorieTarget || CAL_GOAL}</span><span class="sg-chevron">›</span></div>
@@ -2371,7 +2378,7 @@ function renderSettings() {
     <div class="sg-row" data-setting="water-goal"><span>Daily Water Goal</span><span class="sg-row-val">${state.waterGoal || WATER_TARGET}ml</span><span class="sg-chevron">›</span></div>
   </div>
 
-  <!-- SECTION 6: APPEARANCE -->
+  <!-- SECTION 7: APPEARANCE -->
   <div class="sg">
     <div class="sg-label">APPEARANCE</div>
     <div class="sg-row" data-setting="theme"><span>Theme</span><span class="sg-row-val">${state.theme || "Dark"}</span><span class="sg-chevron">›</span></div>
@@ -2379,7 +2386,21 @@ function renderSettings() {
     <div class="sg-row" data-setting="font-size"><span>Font Size</span><span class="sg-row-val">${state.fontSize || "Medium"}</span><span class="sg-chevron">›</span></div>
   </div>
 
-  <!-- SECTION 6: DATA & BACKUP -->
+  <!-- SECTION 8: ADVANCED -->
+  <div class="sg">
+    <div class="sg-label">ADVANCED</div>
+    <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Auto Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Warm-Up Reminder</span><input type="checkbox" ${state.warmupReminder !== false ? "checked" : ""} data-setting="warmup-reminder" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Stretch Reminder</span><input type="checkbox" ${state.stretchReminder !== false ? "checked" : ""} data-setting="stretch-reminder" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Auto Summary After Workout</span><input type="checkbox" ${state.autoSummary !== false ? "checked" : ""} data-setting="auto-summary" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Auto Cool-Down</span><input type="checkbox" ${state.autoCooldown !== false ? "checked" : ""} data-setting="auto-cooldown" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Show Tomorrow Preview</span><input type="checkbox" ${state.showTomorrowPreview !== false ? "checked" : ""} data-setting="tomorrow-preview" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Show Workout Progress</span><input type="checkbox" ${state.showWorkoutProgress !== false ? "checked" : ""} data-setting="workout-progress" /><span class="sg-toggle-track"></span></label>
+    <label class="sg-row sg-toggle"><span>Compact Mode</span><input type="checkbox" ${state.compactMode ? "checked" : ""} data-setting="compact-mode" /><span class="sg-toggle-track"></span></label>
+  </div>
+
+  <!-- SECTION 9: DATA & BACKUP -->
   <div class="sg">
     <div class="sg-label">DATA</div>
     <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
@@ -2387,6 +2408,7 @@ function renderSettings() {
     <div class="sg-row" data-setting="height-unit"><span>Height Unit</span><span class="sg-row-val">${state.heightUnit || "cm"}</span><span class="sg-chevron">›</span></div>
     <button class="sg-row" data-setting="export-json"><span>Export Data (JSON)</span><span class="sg-chevron">›</span></button>
     <button class="sg-row" data-setting="import-json"><span>Import Data (JSON)</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" data-setting="restore-backup"><span>Restore Pre-Import Backup</span><span class="sg-chevron">›</span></button>
     <button class="sg-row sg-row-danger" data-setting="delete-all"><span>Delete All Data</span><span class="sg-chevron">›</span></button>
   </div>
 
@@ -10120,6 +10142,26 @@ const OB_STEPS_CONFIG = [
     desc: "How many days can you train per week?",
   },
   {
+    id: "equipment",
+    title: "Your Equipment",
+    desc: "What equipment do you have access to?",
+  },
+  {
+    id: "injury",
+    title: "Injuries & Limitations",
+    desc: "Any past or present injuries we should be aware of?",
+  },
+  {
+    id: "nutrition-setup",
+    title: "Nutrition Setup",
+    desc: "Set some basic nutrition targets for your plan.",
+  },
+  {
+    id: "body-metrics",
+    title: "Body Metrics",
+    desc: "Track your starting measurements for progress.",
+  },
+  {
     id: "goal-details",
     title: "Goal Details",
     desc: "Let's get specific about your target.",
@@ -10161,6 +10203,15 @@ function closeOnboarding(animateOut, callback) {
       if (callback) callback();
     };
     modal.addEventListener("animationend", onAnimEnd);
+    // Fallback: fire callback after animation timeout if animationend doesn't fire
+    setTimeout(() => {
+      if (modal.classList.contains("animate-out")) {
+        modal.classList.add("is-hidden");
+        modal.classList.remove("animate-out");
+        modal.removeEventListener("animationend", onAnimEnd);
+        if (callback) callback();
+      }
+    }, 600);
   } else {
     modal.classList.add("is-hidden");
     if (callback) callback();
@@ -10287,6 +10338,115 @@ function obRenderStepContent(stepId) {
       <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
       <button class="btn-primary" id="obNextBtn" ${!obData.trainingDays || !obData.equipment ? "disabled" : ""}>Next</button>
     </div>`;
+    return html;
+  }
+
+  if (stepId === "equipment") {
+    const equipItems = [
+      { id: "barbell", label: "Barbell" },
+      { id: "dumbbells", label: "Dumbbells" },
+      { id: "kettlebell", label: "Kettlebell" },
+      { id: "cables", label: "Cable Machine" },
+      { id: "machines", label: "Weight Machines" },
+      { id: "bands", label: "Resistance Bands" },
+      { id: "pullup", label: "Pull-Up Bar" },
+      { id: "bench", label: "Weight Bench" },
+      { id: "squat-rack", label: "Squat Rack" },
+      { id: "cardio", label: "Cardio Machine" },
+      { id: "swiss-ball", label: "Swiss Ball" },
+      { id: "mat", label: "Exercise Mat" },
+    ];
+    const selected = obData.equipmentDetails || [];
+    let html = `<div class="ob-field"><label class="ob-field-label">Select the equipment you have access to:</label><div class="ob-options">`;
+    equipItems.forEach(eq => {
+      html += `<button class="ob-option${selected.includes(eq.id) ? " is-active" : ""}" data-ob-equip-det="${eq.id}">${eq.label}</button>`;
+    });
+    html += `</div></div>`;
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next</button>
+    </div>`;
+    return html;
+  }
+
+  if (stepId === "injury") {
+    const injuries = [
+      { id: "shoulder", label: "Shoulder" },
+      { id: "back", label: "Lower Back" },
+      { id: "knee", label: "Knee" },
+      { id: "wrist", label: "Wrist" },
+      { id: "hip", label: "Hip" },
+      { id: "neck", label: "Neck" },
+      { id: "ankle", label: "Ankle" },
+      { id: "elbow", label: "Elbow" },
+    ];
+    const selected = obData.injuries || [];
+    let html = `<div class="ob-field"><label class="ob-field-label">Select any injuries or limitations (optional):</label><div class="ob-options">`;
+    injuries.forEach(inj => {
+      html += `<button class="ob-option${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}">${inj.label}</button>`;
+    });
+    html += `</div></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Other (describe)</label><input type="text" class="ob-input" id="obInjuryOther" placeholder="Describe any other injuries..." maxlength="200" value="${obData.injuryNotes || ""}" /></div>`;
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next</button>
+    </div>`;
+    return html;
+  }
+
+  if (stepId === "nutrition-setup") {
+    const diets = [
+      { id: "none", label: "No Preference" },
+      { id: "vegetarian", label: "Vegetarian" },
+      { id: "vegan", label: "Vegan" },
+      { id: "keto", label: "Keto" },
+      { id: "paleo", label: "Paleo" },
+      { id: "mediterranean", label: "Mediterranean" },
+    ];
+    const supplements = [
+      { id: "protein", label: "Protein Powder" },
+      { id: "creatine", label: "Creatine" },
+      { id: "preworkout", label: "Pre-Workout" },
+      { id: "bcaa", label: "BCAAs" },
+      { id: "vitamins", label: "Vitamins" },
+    ];
+    const selectedSupps = obData.supplements || [];
+    const w = Number(obData.weight) || 70;
+    const isFatLoss = obData.goalType === "fat-loss";
+    const isMuscle = obData.goalType === "muscle-gain";
+    const defaultCal = isFatLoss ? Math.round(w * 28) : isMuscle ? Math.round(w * 34) : Math.round(w * 30);
+    const defaultProtein = isFatLoss ? Math.round(w * 2.2) : isMuscle ? Math.round(w * 2.0) : Math.round(w * 1.8);
+    let html = `<div class="ob-fields">`;
+    html += `<div class="ob-field"><label class="ob-field-label">Daily Calorie Goal</label><input type="number" class="ob-input" id="obNutritionCal" placeholder="${defaultCal}" min="1200" max="8000" value="${obData.nutritionCal || ""}" /></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Daily Protein Goal (g)</label><input type="number" class="ob-input" id="obNutritionProtein" placeholder="${defaultProtein}" min="30" max="500" value="${obData.nutritionProtein || ""}" /></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Diet Preference</label><div class="ob-options" style="flex-wrap:wrap">${diets.map(d => `<button class="ob-option${obData.dietPreference === d.id ? " is-active" : ""}" data-ob-diet="${d.id}" style="flex:0 0 auto">${d.label}</button>`).join("")}</div></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Supplements (optional)</label><div class="ob-options">${supplements.map(s => `<button class="ob-option${selectedSupps.includes(s.id) ? " is-active" : ""}" data-ob-supp="${s.id}">${s.label}</button>`).join("")}</div></div>`;
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next</button>
+    </div></div>`;
+    return html;
+  }
+
+  if (stepId === "body-metrics") {
+    let html = `<div class="ob-fields"><div class="ob-field"><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
+    const metrics = [
+      { id: "chest", label: "Chest (cm)" },
+      { id: "waist", label: "Waist (cm)" },
+      { id: "arms", label: "Arms (cm)" },
+      { id: "thighs", label: "Thighs (cm)" },
+      { id: "hips", label: "Hips (cm)" },
+      { id: "neck", label: "Neck (cm)" },
+    ];
+    metrics.forEach(m => {
+      html += `<div><label style="font-size:0.72rem;color:var(--text-secondary)">${m.label}</label><input type="text" class="ob-input" id="obMetric${m.id}" placeholder="--" inputmode="decimal" value="${obData.metrics?.[m.id] || ""}" /></div>`;
+    });
+    html += `</div></div>`;
+    html += `<div class="ob-field"><label class="ob-field-label">Body Fat % (estimated)</label><input type="text" class="ob-input" id="obMetricBodyfat" placeholder="Optional" inputmode="decimal" value="${obData.metrics?.bodyfat || ""}" style="max-width:200px" /></div>`;
+    html += `<div class="ob-actions">
+      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn">Next</button>
+    </div></div>`;
     return html;
   }
 
@@ -10448,6 +10608,93 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
+  if (stepId === "equipment") {
+    document.querySelectorAll("[data-ob-equip-det]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("is-active");
+        if (!obData.equipmentDetails) obData.equipmentDetails = [];
+        const id = btn.dataset.obEquipDet;
+        const idx = obData.equipmentDetails.indexOf(id);
+        if (idx >= 0) obData.equipmentDetails.splice(idx, 1);
+        else obData.equipmentDetails.push(id);
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(6);
+    });
+    return;
+  }
+
+  if (stepId === "injury") {
+    document.querySelectorAll("[data-ob-injury]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("is-active");
+        if (!obData.injuries) obData.injuries = [];
+        const id = btn.dataset.obInjury;
+        const idx = obData.injuries.indexOf(id);
+        if (idx >= 0) obData.injuries.splice(idx, 1);
+        else obData.injuries.push(id);
+      });
+    });
+    const injOther = document.getElementById("obInjuryOther");
+    if (injOther) {
+      injOther.addEventListener("input", () => { obData.injuryNotes = injOther.value; });
+    }
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(7);
+    });
+    return;
+  }
+
+  if (stepId === "nutrition-setup") {
+    const calIn = document.getElementById("obNutritionCal");
+    const protIn = document.getElementById("obNutritionProtein");
+    if (calIn) calIn.addEventListener("input", () => { obData.nutritionCal = calIn.value; });
+    if (protIn) protIn.addEventListener("input", () => { obData.nutritionProtein = protIn.value; });
+    document.querySelectorAll("[data-ob-diet]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-diet]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.dietPreference = btn.dataset.obDiet;
+      });
+    });
+    document.querySelectorAll("[data-ob-supp]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        btn.classList.toggle("is-active");
+        if (!obData.supplements) obData.supplements = [];
+        const id = btn.dataset.obSupp;
+        const idx = obData.supplements.indexOf(id);
+        if (idx >= 0) obData.supplements.splice(idx, 1);
+        else obData.supplements.push(id);
+      });
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(8);
+    });
+    return;
+  }
+
+  if (stepId === "body-metrics") {
+    const metricFields = ["chest", "waist", "arms", "thighs", "hips", "neck", "bodyfat"];
+    metricFields.forEach(m => {
+      const el = document.getElementById(`obMetric${m}`);
+      if (el) {
+        el.addEventListener("input", () => {
+          if (!obData.metrics) obData.metrics = {};
+          obData.metrics[m] = el.value;
+        });
+      }
+    });
+    document.getElementById("obNextBtn").addEventListener("click", () => {
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(9);
+    });
+    return;
+  }
+
   if (stepId === "goal-details") {
     const tw = document.getElementById("obTargetWeight");
     const td = document.getElementById("obTargetDate");
@@ -10467,13 +10714,13 @@ function obBindStepEvents(stepId, index) {
     });
     document.getElementById("obNextBtn").addEventListener("click", () => {
       Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(6);
+      obGoToStep(10);
     });
     return;
   }
 
   if (stepId === "coach-setup") {
-    document.getElementById("obNextBtn").addEventListener("click", () => obGoToStep(7));
+    document.getElementById("obNextBtn").addEventListener("click", () => obGoToStep(11));
     return;
   }
 
@@ -10518,11 +10765,13 @@ function obGenerateProgramPreview() {
     "general-fitness": "General Fitness",
     "endurance": "Endurance",
   };
+  const dietLabels = { none: "No Preference", vegetarian: "Vegetarian", vegan: "Vegan", keto: "Keto", paleo: "Paleo", mediterranean: "Mediterranean" };
   return {
     "Goal": goalLabels[obData.goalType] || "General Fitness",
     "Experience": obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner",
     "Days/Week": obData.trainingDays || "3",
     "Equipment": obData.equipment || "Gym",
+    "Diet": dietLabels[obData.dietPreference] || "No Preference",
     "Style": "Full Body",
     "Duration": "45-60 min",
   };
@@ -10549,12 +10798,28 @@ function obFinishSetup() {
   state.user.experience = obData.experience || "beginner";
   state.user.trainingDays = obData.trainingDays || 3;
   state.user.equipment = obData.equipment || "gym";
+  state.user.equipmentDetails = obData.equipmentDetails || [];
+  state.user.injuries = obData.injuries || [];
+  state.user.injuryNotes = obData.injuryNotes || "";
+  state.user.dietPreference = obData.dietPreference || "none";
+  state.user.supplements = obData.supplements || [];
   state.bodyGoal = mappedGoal;
+  state.calorieTarget = Number(obData.nutritionCal) || state.calorieTarget || 0;
+  state.proteinGoal = Number(obData.nutritionProtein) || state.proteinGoal || 0;
 
   // Log initial weight
   if (Number(obData.weight) > 0) {
     if (!state.weightLog) state.weightLog = [];
     state.weightLog.push({ weight: Number(obData.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
+  }
+
+  // Save body metrics
+  if (obData.metrics) {
+    const hasMetric = Object.values(obData.metrics).some(v => v);
+    if (hasMetric) {
+      state.user.bodyMeasurements = state.user.bodyMeasurements || {};
+      Object.assign(state.user.bodyMeasurements, obData.metrics);
+    }
   }
 
   // Set up weight goal via GoalCenter
@@ -11954,7 +12219,7 @@ if (setting === "theme") {
       coachActivated: !!state.coachActivated,
       activatedAt: state.activatedAt || null,
       onboardingComplete: !!state.onboardingComplete,
-      onboardingData: state.onboardingData || { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", targetWeight: "", targetDate: "", primaryLift: "" },
+      onboardingData: state.onboardingData || { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", equipmentDetails: [], injuries: [], injuryNotes: "", nutritionCal: "", nutritionProtein: "", dietPreference: "none", supplements: [], metrics: {}, targetWeight: "", targetDate: "", primaryLift: "" },
       waterLog: collectWaterLog(),
       mealLog: collectMealLog(),
       learningProgress: loadLearningProgress(),
@@ -11983,6 +12248,11 @@ if (setting === "theme") {
             alert("Invalid file: missing required data (sessions, user, or weightLog).");
             return;
           }
+          // Auto-backup current data before import
+          try {
+            const backup = { ...state, waterLog: collectWaterLog(), mealLog: collectMealLog(), learningProgress: loadLearningProgress() };
+            localStorage.setItem("ironlog_pre_import_backup", JSON.stringify(backup));
+          } catch {}
           // Whitelist allowed keys and validate types
           const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "nutrition", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "coolDownDuration", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed", "first7Days", "coachActivated", "activatedAt", "onboardingComplete", "onboardingData", "measurements", "photos", "waterLog", "mealLog", "learningProgress"]);
           const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog", "measurements", "photos"]);
@@ -12029,6 +12299,39 @@ if (setting === "theme") {
     return;
   }
 
+  if (setting === "restore-backup") {
+    const raw = localStorage.getItem("ironlog_pre_import_backup");
+    if (!raw) {
+      alert("No pre-import backup found.");
+      return;
+    }
+    try {
+      const backup = JSON.parse(raw);
+      if (backup.waterLog && typeof backup.waterLog === "object") {
+        for (const [key, val] of Object.entries(backup.waterLog)) {
+          try { localStorage.setItem(key, val); } catch {}
+        }
+      }
+      if (backup.mealLog && typeof backup.mealLog === "object") {
+        for (const [key, val] of Object.entries(backup.mealLog)) {
+          try { localStorage.setItem(key, val); } catch {}
+        }
+      }
+      if (backup.learningProgress && typeof backup.learningProgress === "object") {
+        try { localStorage.setItem("ironlog_learning_progress", JSON.stringify(backup.learningProgress)); } catch {}
+      }
+      Object.assign(state, backup);
+      saveState();
+      render();
+      renderHome();
+      renderSettings();
+      alert("Backup restored successfully!");
+    } catch {
+      alert("Failed to restore backup. Data may be corrupted.");
+    }
+    return;
+  }
+
   if (setting === "about-developer") {
     openDeveloperModal();
     return;
@@ -12066,6 +12369,18 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
     "auto-rest": "autoRest",
     "auto-next": "autoNext",
     "focus-mode": "focusMode",
+    "weight-reminder": "weightReminder",
+    "nutrition-reminder": "nutritionReminder",
+    "weekly-review": "weeklyReview",
+    "screen-awake": "screenAwake",
+    "auto-warmup": "autoWarmup",
+    "warmup-reminder": "warmupReminder",
+    "stretch-reminder": "stretchReminder",
+    "auto-summary": "autoSummary",
+    "auto-cooldown": "autoCooldown",
+    "tomorrow-preview": "showTomorrowPreview",
+    "workout-progress": "showWorkoutProgress",
+    "compact-mode": "compactMode",
   };
   if (map[setting] !== undefined) {
     state[map[setting]] = checked;
@@ -12074,6 +12389,13 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
 
   if (setting === "focus-mode") {
     document.documentElement.classList.toggle("focus-mode", checked);
+  }
+  if (setting === "screen-awake") {
+    if (checked) requestWakeLock();
+    else releaseWakeLock();
+  }
+  if (setting === "compact-mode") {
+    document.querySelector(".main-area")?.classList.toggle("compact-mode", checked);
   }
 });
 
