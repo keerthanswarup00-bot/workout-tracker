@@ -530,6 +530,31 @@ const GoalCenter = (() => {
     Object.assign(profile, updates);
     if (updates.currentWeight) profile.lastLogDate = new Date().toISOString();
     save(profile);
+
+    // Sync back to application state (mirrors createProfile logic)
+    if (profile.goalType && typeof state !== "undefined" && state) {
+      const goalTypeMap = {
+        "fat-loss": "lose-fat",
+        "muscle-gain": "build-muscle",
+        "strength": "strength",
+        "general-fitness": "general",
+        "endurance": "athletic"
+      };
+      const mappedGoal = goalTypeMap[profile.goalType] || "general";
+      state.user = state.user || {};
+      state.user.goal = mappedGoal;
+      state.bodyGoal = mappedGoal;
+      if (profile.startWeight || profile.targetWeight) {
+        state.weightGoal = {
+          startWeight: profile.startWeight || state.weightGoal?.startWeight || null,
+          targetWeight: profile.targetWeight || state.weightGoal?.targetWeight || null,
+          goalType: profile.goalType,
+          createdAt: profile.createdDate || state.weightGoal?.createdAt || new Date().toISOString()
+        };
+      }
+      if (typeof saveState === "function") saveState();
+    }
+
     return profile;
   }
 

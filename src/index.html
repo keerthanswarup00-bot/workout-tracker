@@ -14,6 +14,7 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="css/styles.css" />
+    <link rel="stylesheet" href="css/coach.css" />
   </head>
   <body>
     <div class="app-layout">
@@ -41,6 +42,10 @@
             <span class="topbar-timer" id="topbarTimer"></span>
             <button class="topbar-avatar" id="topbarAvatarBtn" title="Profile" aria-label="Open profile">
               <div class="avatar-circle" id="avatarCircle">IL</div>
+              <div class="topbar-profile-info">
+                <span class="topbar-profile-name" id="topbarProfileName">User</span>
+                <span class="topbar-profile-goal" id="topbarProfileGoal">Set Goal</span>
+              </div>
             </button>
           </div>
         </header>
@@ -428,6 +433,16 @@
             <div id="eaContent"></div>
           </div>
 
+          <!-- Profile Screen -->
+          <div id="screen-profile" class="screen is-hidden">
+            <div class="profile-header">
+              <button class="btn-back" id="profileBackBtn">←</button>
+              <span class="profile-header-title">My Fitness Identity</span>
+              <button class="profile-header-btn" id="profileEditBtn" style="font-size:0.75rem;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:none;border-radius:8px;padding:0.35rem 0.75rem;cursor:pointer">Edit</button>
+            </div>
+            <div class="profile-scroll" id="profileContent"></div>
+          </div>
+
           <!-- Settings Screen -->
           <div id="screen-settings" class="screen is-hidden">
             <div class="settings-header">
@@ -444,35 +459,21 @@
                 <h2>Edit Profile</h2>
                 <button class="modal-close" id="peClose">✕</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
-                <input
-                  type="text"
-                  id="peName"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Name"
-                  maxlength="30"
-                  autocomplete="off"
-                />
-                <input type="number" id="peAge" class="modal-input" style="min-height: 44px; resize: none" placeholder="Age" min="10" max="120" />
-                <select id="peGender" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+              <div class="modal-body" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 70vh; overflow-y: auto; padding-right: 0.25rem">
+                <div class="section-label" style="margin-top:0.25rem">Personal</div>
+                <input type="text" id="peName" class="modal-input" style="min-height:44px" placeholder="Name" maxlength="30" autocomplete="off" />
+                <input type="number" id="peAge" class="modal-input" style="min-height:44px" placeholder="Age" min="10" max="120" />
+                <select id="peGender" class="modal-input" style="min-height:44px;padding:0 0.75rem">
                   <option value="">Gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
-                <input type="number" id="peHeight" class="modal-input" style="min-height: 44px; resize: none" placeholder="Height (cm)" min="100" max="250" />
-                <input
-                  type="number"
-                  id="peWeight"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Weight (kg)"
-                  min="20"
-                  max="300"
-                  step="0.1"
-                />
-                <select id="peGoal" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+                <input type="number" id="peHeight" class="modal-input" style="min-height:44px" placeholder="Height (cm)" min="100" max="250" />
+                <input type="number" id="peWeight" class="modal-input" style="min-height:44px" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+
+                <div class="section-label" style="margin-top:0.5rem">Goal &amp; Training</div>
+                <select id="peGoal" class="modal-input" style="min-height:44px;padding:0 0.75rem">
                   <option value="">Fitness Goal</option>
                   <option value="fat-loss">Fat Loss</option>
                   <option value="build-muscle">Build Muscle</option>
@@ -482,7 +483,7 @@
                   <option value="general">General Fitness</option>
                   <option value="custom">Custom</option>
                 </select>
-                <select id="peActivity" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+                <select id="peActivity" class="modal-input" style="min-height:44px;padding:0 0.75rem">
                   <option value="">Activity Level</option>
                   <option value="sedentary">Sedentary</option>
                   <option value="light">Lightly Active</option>
@@ -490,8 +491,54 @@
                   <option value="very">Very Active</option>
                   <option value="athlete">Athlete</option>
                 </select>
+                <select id="peExperience" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                  <option value="">Experience</option>
+                  <option value="beginner">Beginner</option>
+                  <option value="intermediate">Intermediate</option>
+                  <option value="advanced">Advanced</option>
+                </select>
+                <input type="number" id="peTrainingDays" class="modal-input" style="min-height:44px" placeholder="Training days/week" min="1" max="7" />
+                <select id="peEquipment" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                  <option value="">Equipment Access</option>
+                  <option value="gym">Full Gym</option>
+                  <option value="home">Home Gym</option>
+                  <option value="minimal">Minimal</option>
+                </select>
+
+                <div class="section-label" style="margin-top:0.5rem">Nutrition</div>
+                <input type="number" id="peCalories" class="modal-input" style="min-height:44px" placeholder="Daily calorie target" min="1200" max="6000" step="50" />
+                <input type="number" id="peProtein" class="modal-input" style="min-height:44px" placeholder="Daily protein goal (g)" min="30" max="500" />
+                <select id="peDiet" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                  <option value="">Diet Preference</option>
+                  <option value="none">No Preference</option>
+                  <option value="vegetarian">Vegetarian</option>
+                  <option value="vegan">Vegan</option>
+                  <option value="keto">Keto</option>
+                  <option value="paleo">Paleo</option>
+                  <option value="mediterranean">Mediterranean</option>
+                  <option value="low-carb">Low Carb</option>
+                  <option value="high-protein">High Protein</option>
+                </select>
+
+                <div class="section-label" style="margin-top:0.5rem">Health</div>
+                <input type="text" id="peInjuries" class="modal-input" style="min-height:44px" placeholder="Injuries (comma separated)" maxlength="200" autocomplete="off" />
+                <textarea id="peInjuryNotes" class="modal-input" style="min-height:60px;resize:none;padding:0.6rem 0.75rem" placeholder="Injury notes" maxlength="300"></textarea>
+                <input type="text" id="peSupplements" class="modal-input" style="min-height:44px" placeholder="Supplements (comma separated)" maxlength="200" autocomplete="off" />
+                <input type="text" id="peEquipmentDetails" class="modal-input" style="min-height:44px" placeholder="Equipment details (comma separated)" maxlength="200" autocomplete="off" />
+
+                <div class="section-label" style="margin-top:0.5rem">Hydration</div>
+                <input type="number" id="peWaterGoal" class="modal-input" style="min-height:44px" placeholder="Daily water goal (ml)" min="500" max="8000" step="100" />
+
+                <div class="section-label" style="margin-top:0.5rem">Body Measurements</div>
+                <input type="number" id="peBodyFat" class="modal-input" style="min-height:44px" placeholder="Body fat %" min="3" max="60" step="0.1" />
+                <input type="number" id="peChest" class="modal-input" style="min-height:44px" placeholder="Chest (cm)" min="50" max="200" />
+                <input type="number" id="peWaist" class="modal-input" style="min-height:44px" placeholder="Waist (cm)" min="40" max="200" />
+                <input type="number" id="peArms" class="modal-input" style="min-height:44px" placeholder="Arms (cm)" min="10" max="80" />
+                <input type="number" id="peThighs" class="modal-input" style="min-height:44px" placeholder="Thighs (cm)" min="20" max="120" />
+                <input type="number" id="peNeck" class="modal-input" style="min-height:44px" placeholder="Neck (cm)" min="20" max="80" />
+                <input type="number" id="peHips" class="modal-input" style="min-height:44px" placeholder="Hips (cm)" min="40" max="200" />
               </div>
-              <div class="modal-actions">
+              <div class="modal-actions" style="border-top:1px solid var(--border);padding-top:0.75rem;margin-top:0.25rem">
                 <button class="btn-primary" id="peSaveBtn">Save Profile</button>
               </div>
             </div>
@@ -602,6 +649,8 @@
           <div id="bodyPageContent" class="page-container">
             <div class="section-label">Weigh-In</div>
             <div id="weighInCard" class="card-content"></div>
+            <div class="section-label" style="margin-top:1.25rem">Body Measurements</div>
+            <div id="bodyMeasurementsCard" class="card-content"></div>
             <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
             <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
             <div class="trend-averages" id="trendAverages"></div>
@@ -614,6 +663,11 @@
             </div>
             <div id="bodyAnalysis" class="card-content"></div>
           </div>
+        </section>
+
+        <!-- ===== TRAINER/COACH PANEL ===== -->
+        <section class="panel" id="panel-trainer">
+          <div id="trainerPageContent" class="page-container"></div>
         </section>
 
       </main>
@@ -650,29 +704,16 @@
         </svg>
         <span>Body</span>
       </button>
+      <button class="nav-tab" data-tab="trainer" aria-label="Coach">
+        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
+          <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+        </svg>
+        <span>Coach</span>
+      </button>
     </nav>
 
     <!-- PROFILE DROPDOWN (hidden by default) -->
-    <div class="profile-menu is-hidden" id="profileMenu">
-      <div class="profile-menu-header">
-        <div class="profile-menu-avatar" id="profileMenuAvatar">IL</div>
-        <div class="profile-menu-name" id="profileMenuName">User</div>
-      </div>
-      <div class="profile-menu-items">
-        <button class="profile-menu-item" id="profileMenuProfile">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="8" r="3"/><path d="M6 21v-3a4 4 0 0 1 4-4h4a4 4 0 0 1 4 4v3"/></svg>
-          Profile & Settings
-        </button>
-        <button class="profile-menu-item" id="profileMenuData">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
-          Export Data
-        </button>
-        <button class="profile-menu-item" style="color:var(--error)" id="profileMenuDelete">
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="3 6 5 6 21 6"/><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/></svg>
-          Delete All Data
-        </button>
-      </div>
-    </div>
+
 
     <!-- FLOATING REST TIMER -->
     <div id="restTimer" class="rest-timer is-hidden">
@@ -1168,6 +1209,7 @@
   <script defer src="js/cas-engine.js"></script>
   <script defer src="js/adaptive-engine.js"></script>
   <script defer src="js/coach-engine.js"></script>
+  <script defer src="js/coach-system.js"></script>
   <script src="js/script.js"></script>
   <script defer src="js/program-review-engine.js"></script>
   <script>

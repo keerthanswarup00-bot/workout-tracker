@@ -2013,7 +2013,7 @@ function renderMealLogger() {
   el.id = "mealLoggerWrap";
   el.innerHTML = html;
   document.body.appendChild(el);
-  document.getElementById("mlClose").onclick = () => { el.remove(); renderTodayTab(); };
+  document.getElementById("mlClose").onclick = () => { el.remove(); renderHome(); };
   document.getElementById("mlSaveBtn").onclick = () => {
     const food = document.getElementById("mlFood").value.trim();
     if (!food) return;
@@ -2021,7 +2021,7 @@ function renderMealLogger() {
     addMealEntry(today, meal);
     saveRecentFoods(food);
     el.remove();
-    renderTodayTab();
+    renderHome();
   };
   el.querySelectorAll(".ml-recent-btn").forEach((b) => {
     b.onclick = () => {
@@ -2308,6 +2308,7 @@ function renderSettings() {
     </div>
     ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi / 40) * 100 + "%;background:" + (bmiCat === "Underweight" ? "#4a9eff" : bmiCat === "Normal" ? "#00d26a" : bmiCat === "Overweight" ? "#ff9500" : "#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ""}
     ${!isProfileComplete() ? '<button class="sg-card sg-card-cta" id="settingsCompleteProfile"><div class="sg-card-body"><div class="sg-card-name">Complete Your Profile</div><div class="sg-card-meta">Add your stats to unlock features</div></div><span class="sg-chevron">›</span></button>' : ""}
+    <button class="sg-row" style="color:var(--accent)" data-setting="profile"><span>View Full Profile</span><span class="sg-chevron">›</span></button>
     <button class="sg-row" id="settingsGoalCenterBtn"><span>Goals</span><span class="sg-chevron">›</span></button>
   </div>
 
@@ -2465,8 +2466,6 @@ function activateTab(tabName) {
   document.querySelectorAll(".nav-btn").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tabName));
   document.querySelectorAll(".nav-tab").forEach((b) => b.classList.toggle("is-active", b.dataset.tab === tabName));
   
-  // Close profile menu if open
-  document.getElementById("profileMenu")?.classList.add("is-hidden");
   
   if (tabName === "settings") {
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === "panel-sets"));
@@ -2482,6 +2481,9 @@ function activateTab(tabName) {
   if (tabName === "settings") {
     showScreen("screen-settings");
     renderSettings();
+  }
+  if (tabName === "trainer") {
+    renderTrainerTab();
   }
 }
 
@@ -2939,12 +2941,132 @@ function renderGoalSelector() {
   });
 }
 
+function renderBodyMeasurements() {
+  const container = document.getElementById("bodyMeasurementsCard");
+  const bm = (state.user.bodyMeasurements || {});
+  const entries = Object.entries(bm).filter(([k]) => k !== "bodyFat");
+  if (!Object.keys(bm).length) {
+    container.innerHTML = `<div class="stat-card"><div class="stat-label">No measurements recorded</div><div class="stat-hint">Add measurements in your profile.</div></div>`;
+    return;
+  }
+  const labels = { bodyFat: "Body Fat", chest: "Chest", waist: "Waist", arms: "Arms", thighs: "Thighs", neck: "Neck", hips: "Hips" };
+  let html = `<div style="display:grid;grid-template-columns:1fr 1fr;gap:8px">`;
+  Object.entries(bm).forEach(([k, v]) => {
+    const label = labels[k] || k;
+    const unit = k === "bodyFat" ? "%" : " cm";
+    if (v) html += `<div class="stat-card"><div class="stat-label">${label}</div><div class="stat-value">${v}${unit}</div></div>`;
+  });
+  html += `</div>`;
+  container.innerHTML = html;
+}
+
 function renderBodyTab() {
   renderWeighIn();
+  renderBodyMeasurements();
   renderTrendAverages();
   renderWeightChart();
   renderGoalPrediction();
   renderBodyAnalysis();
+}
+
+function exportJSON() {
+  const exportData = {
+    dailyLogs: state.dailyLogs || {},
+    sessions: state.sessions || [],
+    nutrition: state.nutrition || {},
+    user: state.user || null,
+    plan: state.plan || null,
+    customExercises: state.customExercises || [],
+    weightLog: state.weightLog || [],
+    goals: state.goals || [],
+    recoveryLog: state.recoveryLog || [],
+    measurements: state.measurements || [],
+    photos: state.photos || [],
+    bodyGoal: state.bodyGoal || "recomp",
+    calorieTarget: state.calorieTarget || CAL_GOAL,
+    proteinGoal: state.proteinGoal || PROTEIN_GOAL,
+    waterGoal: state.waterGoal || WATER_TARGET,
+    fatTarget: state.fatTarget || FAT_GOAL,
+    planOffset: state.planOffset || 0,
+    restTimer: state.restTimer || 90,
+    weightUnit: state.weightUnit || "kg",
+    heightUnit: state.heightUnit || "cm",
+    weightInc: state.weightInc || 1,
+    repInc: state.repInc || 1,
+    autoRest: !!state.autoRest,
+    autoNext: !!state.autoNext,
+    focusMode: !!state.focusMode,
+    screenAwake: !!state.screenAwake,
+    autoWarmup: state.autoWarmup !== false,
+    warmupStyle: state.warmupStyle || "simple",
+    warmupReminder: state.warmupReminder !== false,
+    stretchReminder: state.stretchReminder !== false,
+    theme: state.theme || "Dark",
+    accent: state.accent || "Green",
+    fontSize: state.fontSize || "Medium",
+    compactMode: !!state.compactMode,
+    show7dAvg: state.show7dAvg !== false,
+    show30dAvg: state.show30dAvg !== false,
+    progressPhotos: !!state.progressPhotos,
+    bodyMeasurements: !!state.bodyMeasurements,
+    weightReminder: !!state.weightReminder,
+    nutritionReminder: !!state.nutritionReminder,
+    weeklyReview: state.weeklyReview !== false,
+    recoveryAnalysis: state.recoveryAnalysis !== false,
+    showRecoveryAdvice: state.showRecoveryAdvice !== false,
+    coolDownDuration: state.coolDownDuration || 5,
+    autoSummary: state.autoSummary !== false,
+    autoCooldown: state.autoCooldown !== false,
+    autoAdvanceStretches: state.autoAdvanceStretches !== false,
+    showTomorrowPreview: state.showTomorrowPreview !== false,
+    showWorkoutProgress: state.showWorkoutProgress !== false,
+    profileBannerDismissed: !!state.profileBannerDismissed,
+    workoutStreak: state.workoutStreak || { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
+    first7Days: state.first7Days || { day1Workout: false, day2Weight: false, day3Protein: false, day4Learning: false, day5Challenge: false, day6CoachScore: false, day7Report: false },
+    coachActivated: !!state.coachActivated,
+    activatedAt: state.activatedAt || null,
+    onboardingComplete: !!state.onboardingComplete,
+    onboardingData: state.onboardingData || { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", equipmentDetails: [], injuries: [], injuryNotes: "", nutritionCal: "", nutritionProtein: "", dietPreference: "none", supplements: [], metrics: {}, targetWeight: "", targetDate: "", primaryLift: "" },
+    waterLog: collectWaterLog(),
+    mealLog: collectMealLog(),
+    learningProgress: loadLearningProgress(),
+  };
+  const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `ironlog-export-${getDateKey()}.json`;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function getProfile() {
+  const u = state.user || {};
+  return {
+    name: u.name || "",
+    age: u.age || 0,
+    gender: u.gender || "",
+    height: u.height || 0,
+    weight: u.weight || 0,
+    goal: u.goal || "recomp",
+    activity: u.activity || "moderate",
+    experience: u.experience || "beginner",
+    trainingDays: u.trainingDays || 3,
+    equipment: u.equipment || "gym",
+    equipmentDetails: Array.isArray(u.equipmentDetails) ? u.equipmentDetails : [],
+    injuries: Array.isArray(u.injuries) ? u.injuries : [],
+    injuryNotes: u.injuryNotes || "",
+    dietPreference: u.dietPreference || "none",
+    supplements: Array.isArray(u.supplements) ? u.supplements : [],
+    bodyMeasurements: u.bodyMeasurements || {},
+    calorieTarget: state.calorieTarget || 0,
+    proteinGoal: state.proteinGoal || 0,
+    waterGoal: state.waterGoal || 0,
+    restTimer: state.restTimer || 90,
+    bodyGoal: state.bodyGoal || u.goal || "recomp",
+  };
 }
 
 function render() {
@@ -3032,31 +3154,93 @@ function renderHome() {
   const daysSinceWeight = getDaysSinceLastWeight();
   const lastWeightText = getLastWeightText();
   const checkInDue = daysSinceWeight !== null && daysSinceWeight > 7;
+  const goalLabel = GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
+  const hasData = (state.sessions || []).filter(s => s.finishedAt).length > 0 || (state.weightLog || []).length > 0;
   document.getElementById("homeGreeting").innerHTML = `
-    <div class="hero-greeting">${g.text} ${g.emoji}</div>
-    <div class="hero-name">${name}</div>
-    <div class="hero-motivation">${getDailyMessage()}</div>
-    ${profileComplete || state.profileBannerDismissed ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span>Complete your profile to unlock all features</span><span class="home-incomplete-cta">Set Up →</span></div>`}
-    <div class="home-greeting-spacer"></div>
-    <div class="hero-cards-row">
-      <div class="hero-streak-card" id="heroStreakCard">
-        <div class="hc-header">STREAK</div>
-        <div class="hc-value">${streak} Day${streak !== 1 ? "s" : ""}</div>
-        <div class="hc-sub">Longest: ${longestStreak} days</div>
-        ${lastSession ? `<div class="hc-last">Last: ${lastSession.workoutName}</div>` : ""}
+    <div class="home-greeting-line">${g.text} ${g.emoji}</div>
+    <div class="home-name-line">${name}</div>
+    <div class="home-greeting-message" style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.75rem">${getDailyMessage()}</div>
+
+    <div class="home-qa-row">
+      <button class="home-qa-btn primary" id="qaStartWorkout">▶ Start Workout</button>
+      <button class="home-qa-btn secondary" id="qaLogWeight">⚖️ Log Weight</button>
+      <button class="home-qa-btn secondary" id="qaGenerate">🤖 Generate</button>
+      <button class="home-qa-btn secondary" id="qaViewProgress">📊 Progress</button>
+    </div>
+
+    <div class="home-dash-card" id="homeDashCard">
+      <div class="home-dash-grid">
+        <div class="home-dash-item" id="heroStreakCard" style="cursor:pointer">
+          <span class="home-dash-value">${streak}</span>
+          <span class="home-dash-label">Streak</span>
+        </div>
+        <div class="home-dash-item" id="heroWeightCard" style="cursor:pointer">
+          <span class="home-dash-value">${hasWeight ? displayWeight(weight) : "—"}</span>
+          <span class="home-dash-label">Weight</span>
+          ${checkInDue ? '<div style="font-size:0.55rem;color:var(--orange);margin-top:0.1rem">Due</div>' : ""}
+        </div>
+        <div class="home-dash-item" id="heroGoalCard" style="cursor:pointer">
+          <span class="home-dash-value">${goalLabel || "—"}</span>
+          <span class="home-dash-label">Goal</span>
+        </div>
+        <div class="home-dash-item">
+          <span class="home-dash-value">${longestStreak}</span>
+          <span class="home-dash-label">Best</span>
+        </div>
       </div>
-      <div class="hero-weight-card" id="heroWeightCard">
-        <div class="hc-header">WEIGHT <span class="hwr-plus">+</span></div>
-        <div class="hc-value">${hasWeight ? displayWeight(weight) : "—"}</div>
-        <div class="hc-sub">${lastWeightText}</div>
-        ${checkInDue ? '<div class="hc-warn">⚠ Weight Check-In Due</div>' : ''}
+    </div>
+
+    ${profileComplete || state.profileBannerDismissed ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span style="font-size:0.75rem;font-weight:600">Complete your profile</span><span style="font-size:0.7rem;color:var(--accent);font-weight:700">Set Up →</span></div>`}
+
+    ${!hasData ? "" : `
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
+      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.6rem">
+        <div style="font-size:0.6rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Last Workout</div>
+        <div style="font-size:0.82rem;font-weight:700;margin-top:0.15rem">${lastSession ? lastSession.workoutName : "—"}</div>
+        <div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.05rem">${lastSession ? formatRelativeDate(lastSession.dateKey) : ""}</div>
       </div>
-      <div class="hero-goal-card" id="heroGoalCard">
-        <div class="hc-header">GOAL</div>
-        <div class="hc-value">${renderHomeGoalText()}</div>
-        <div class="hc-sub">Tap to view</div>
+      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.6rem">
+        <div style="font-size:0.6rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">${hasWeight ? "Current" : "Target"}</div>
+        <div style="font-size:0.82rem;font-weight:700;margin-top:0.15rem">${hasWeight ? displayWeight(weight) : (state.user?.targetWeight ? displayWeight(state.user.targetWeight) : "—")}</div>
+        <div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.05rem">${lastWeightText}</div>
       </div>
-    </div>`;
+    </div>
+    `}
+
+    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem" id="todayHealthWidgets">
+      ${hasData ? renderNutritionWidget() : ""}
+      ${hasData ? renderWaterWidget() : ""}
+    </div>
+
+    ${!hasData ? "" : `
+    <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem" id="homeCoachInsights">
+      <div style="font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);padding:0 0.15rem">Coach</div>
+      <button class="home-coach-btn" id="homeCoachOpen">
+        <span style="font-size:0.78rem;font-weight:600">${getCoachSummary()}</span>
+        <span style="font-size:0.65rem;color:var(--text-secondary)">Open Coach →</span>
+      </button>
+      <button class="home-coach-btn" id="homeCoachRecovery" style="${typeof CoachEngine === "undefined" ? "display:none" : ""}">
+        <span style="font-size:0.78rem;font-weight:600">${typeof CoachEngine !== "undefined" ? getRecoverySummary() : "Recovery"}</span>
+        <span style="font-size:0.65rem;color:var(--text-secondary)">View Recovery →</span>
+      </button>
+    </div>
+    `}
+  `;
+
+  // Quick action bindings
+  document.getElementById("qaStartWorkout")?.addEventListener("click", () => {
+    const todaySession = getTodaySession();
+    if (todaySession) {
+      startOrContinueWorkout(todaySession.workoutId);
+    } else {
+      showNewWorkoutBuilder();
+    }
+  });
+  document.getElementById("qaLogWeight")?.addEventListener("click", () => {
+    document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
+  });
+  document.getElementById("qaGenerate")?.addEventListener("click", openGenerateWorkout);
+  document.getElementById("qaViewProgress")?.addEventListener("click", () => activateTab("progress"));
 
   const activePlan = loadCustomProgram() || plan;
   const todaySession = getTodaySession();
@@ -3083,8 +3267,8 @@ function renderHome() {
   } else {
     // Group by programName, keep ungrouped workouts separate
     let html = "";
-    var groups = {};
-    var ungrouped = [];
+    const groups = {};
+    const ungrouped = [];
     sorted.forEach(function(w) {
       if (w.programName) {
         if (!groups[w.programName]) groups[w.programName] = [];
@@ -3093,9 +3277,9 @@ function renderHome() {
         ungrouped.push(w);
       }
     });
-    var pgIds = Object.keys(groups);
+    const pgIds = Object.keys(groups);
     pgIds.forEach(function(pn) {
-      var pWorkouts = groups[pn];
+      const pWorkouts = groups[pn];
       var expanded = pWorkouts.some(function(w) { return todaySession && todaySession.workoutId === w.id; });
       html += '<div class="wo-program-group' + (expanded ? " is-expanded" : "") + '">' +
         '<div class="wo-program-header">' +
@@ -3166,6 +3350,22 @@ function renderHome() {
   });
   document.getElementById("heroGoalCard")?.addEventListener("click", openGoalCenter);
 
+  // Water widget buttons
+  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderHome(); });
+  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderHome(); });
+  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderHome(); });
+
+  // Coach insight buttons
+  document.getElementById("homeCoachOpen")?.addEventListener("click", () => activateTab("trainer"));
+  document.getElementById("homeCoachRecovery")?.addEventListener("click", () => {
+    if (typeof CoachSystem !== "undefined" && CoachSystem.navigate) {
+      activateTab("trainer");
+      setTimeout(() => CoachSystem.navigate("recovery"), 50);
+    } else {
+      activateTab("trainer");
+    }
+  });
+
   const banner = document.getElementById("homeIncompleteBanner");
   if (banner) {
     setTimeout(() => {
@@ -3213,6 +3413,30 @@ function renderHome() {
 
   renderWeeklyReport();
   renderRecentWorkouts();
+}
+
+function getCoachSummary() {
+  if (typeof CoachEngine !== "undefined") {
+    try {
+      const coach = CoachEngine.runAll();
+      const dc = coach.daily;
+      return dc.coachMessage || dc.status || "Coach ready";
+    } catch (e) { return "Coach ready"; }
+  }
+  return "Coach ready";
+}
+
+function getRecoverySummary() {
+  if (typeof CoachEngine !== "undefined") {
+    try {
+      const coach = CoachEngine.runAll();
+      const rec = coach.recovery;
+      if (rec && rec.score !== undefined) {
+        return "Recovery: " + rec.score + "/100 — " + (rec.label || "");
+      }
+    } catch (e) { /* ignore */ }
+  }
+  return "Recovery insights available";
 }
 
 function renderWorkoutCardItem(workout, todaySession) {
@@ -3608,11 +3832,284 @@ function renderProfileAvatar() {
   const name = state.user?.name || "User";
   const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "IL";
   const circle = document.getElementById("avatarCircle");
-  const menuAvatar = document.getElementById("profileMenuAvatar");
-  const menuName = document.getElementById("profileMenuName");
+  const topbarName = document.getElementById("topbarProfileName");
+  const topbarGoal = document.getElementById("topbarProfileGoal");
+  const goalLabels = {
+    "fat-loss": "Fat Loss", "build-muscle": "Build Muscle", recomp: "Recomp",
+    strength: "Strength", athletic: "Athletic", general: "Fitness", custom: "Custom",
+  };
+  const goal = GoalCenter?.getGoalType?.() || state.bodyGoal || state.user?.goal || "";
   if (circle) circle.textContent = initials;
-  if (menuAvatar) menuAvatar.textContent = initials;
-  if (menuName) menuName.textContent = name;
+  if (topbarName) topbarName.textContent = name;
+  if (topbarGoal) topbarGoal.textContent = goalLabels[goal] || "Set Goal";
+}
+
+// ===== PROFILE SCREEN =====
+function getGoalLabel(g) {
+  const labels = { "fat-loss": "Fat Loss", "lose-fat": "Fat Loss", "build-muscle": "Build Muscle", recomp: "Recomp", strength: "Strength", athletic: "Athletic", general: "Fitness", custom: "Custom" };
+  return labels[g] || "Fitness";
+}
+function getExpLabel(e) {
+  const labels = { beginner: "Beginner", intermediate: "Intermediate", advanced: "Advanced" };
+  return labels[e] || "Beginner";
+}
+function renderProfileCompleteness() {
+  const p = getProfile();
+  const checks = [
+    !!p.name, !!p.age, !!p.gender, !!p.height, !!p.weight,
+    !!p.goal, !!p.activity, !!p.experience, !!p.trainingDays, !!p.equipment,
+    !!p.calorieTarget, !!p.proteinGoal, !!p.waterGoal,
+  ];
+  const done = checks.filter(Boolean).length;
+  const total = checks.length;
+  const pct = Math.round((done / total) * 100);
+  const items = [
+    { label: "Personal", ok: !!p.name && !!p.age && !!p.gender && !!p.height && !!p.weight },
+    { label: "Goals", ok: !!p.goal && !!p.activity },
+    { label: "Training", ok: !!p.experience && !!p.trainingDays && !!p.equipment },
+    { label: "Nutrition", ok: !!p.calorieTarget && !!p.proteinGoal && !!p.waterGoal },
+    { label: "Measurements", ok: Object.keys(p.bodyMeasurements).length > 0 },
+  ];
+  const doneItems = items.filter(i => i.ok).length;
+  return { pct, label: `${doneItems}/${items.length} sections complete`, items };
+}
+function renderProfileHealth() {
+  const p = getProfile();
+  const hints = [];
+  if (!p.goal || p.goal === "recomp") hints.push({ type: "attention", text: "Set a specific fitness goal", section: "goals" });
+  if (!p.age) hints.push({ type: "missing", text: "Add your age for accurate calculations", section: "personal" });
+  if (!p.height || !p.weight) hints.push({ type: "missing", text: "Height & weight unlock BMI & calorie estimates", section: "personal" });
+  if (!p.experience) hints.push({ type: "missing", text: "Training experience tailors your workouts", section: "training" });
+  if (!p.trainingDays) hints.push({ type: "missing", text: "How many days can you train per week?", section: "training" });
+  if (!p.calorieTarget) hints.push({ type: "missing", text: "Set a daily calorie target", section: "nutrition" });
+  if (!p.proteinGoal) hints.push({ type: "missing", text: "Set a daily protein target", section: "nutrition" });
+  if (!p.waterGoal) hints.push({ type: "missing", text: "Set a daily water goal", section: "nutrition" });
+  if (!Object.keys(p.bodyMeasurements).length) hints.push({ type: "missing", text: "Add body measurements to track progress", section: "body" });
+  if (p.injuries && p.injuries.length) hints.push({ type: "ok", text: `${p.injuries.length} injury restriction${p.injuries.length > 1 ? "s" : ""} active`, section: "training" });
+  return hints;
+}
+function renderProfileScreen() {
+  const p = getProfile();
+  const initials = (p.name || "IL").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  const streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
+  const totalWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
+  const trainDays = p.trainingDays || 3;
+  const weeklyPct = Math.min(100, Math.round((totalWorkouts / (trainDays * 4)) * 100));
+  const calGoal = p.calorieTarget;
+  const proGoal = p.proteinGoal;
+  const bmi = p.height && p.weight ? (p.weight / ((p.height / 100) * (p.height / 100))).toFixed(1) : null;
+  const goalLabel = getGoalLabel(p.goal);
+  const expLabel = getExpLabel(p.experience);
+  const completeness = renderProfileCompleteness();
+  const healthItems = renderProfileHealth();
+  const memberSince = state.activatedAt || state.onboardingData?.createdAt || null;
+  const memberDate = memberSince ? new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : null;
+
+  let html = `
+    <div class="profile-hero">
+      <div class="profile-hero-avatar">${initials}</div>
+      <div class="profile-hero-name">${p.name || "Athlete"}</div>
+      <div class="profile-hero-badges">
+        <span class="profile-badge profile-badge-accent">${goalLabel}</span>
+        <span class="profile-badge profile-badge-blue">${expLabel}</span>
+        <span class="profile-badge profile-badge-orange">${p.trainingDays || "?"}x/week</span>
+      </div>
+      <div class="profile-hero-meta">
+        ${memberDate ? `<span>Joined ${memberDate}</span>` : ""}
+        <span>${totalWorkouts} workout${totalWorkouts !== 1 ? "s" : ""}</span>
+        <span class="profile-hero-streak">${streak.currentStreak > 0 ? "🔥 " + streak.currentStreak + " day streak" : "No active streak"}</span>
+      </div>
+    </div>
+  `;
+
+  // Stats row
+  html += `<div class="profile-stats">
+    <div class="profile-stat"><span class="profile-stat-val">${p.weight ? displayWeight(p.weight) : "—"}</span><span class="profile-stat-lbl">Weight</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : "—"}</span><span class="profile-stat-lbl">Target</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${p.bodyMeasurements?.bodyFat ? p.bodyMeasurements.bodyFat + "%" : "—"}</span><span class="profile-stat-lbl">Body Fat</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${totalWorkouts}</span><span class="profile-stat-lbl">Workouts</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${streak.currentStreak}</span><span class="profile-stat-lbl">Streak</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${streak.longestStreak}</span><span class="profile-stat-lbl">Best</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${weeklyPct}%</span><span class="profile-stat-lbl">Consistency</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${calGoal ? calGoal : "—"}</span><span class="profile-stat-lbl">Calories</span></div>
+  </div>`;
+
+  // Completeness bar
+  html += `<div class="profile-completeness">
+    <div class="profile-completeness-top"><span>Profile</span><span>${completeness.pct}% · ${completeness.label}</span></div>
+    <div class="profile-completeness-bar"><div class="profile-completeness-fill" style="width:${completeness.pct}%"></div></div>
+  </div>`;
+
+  // Health suggestions
+  if (healthItems.length) {
+    html += `<div class="profile-health">`;
+    healthItems.slice(0, 4).forEach(h => {
+      const dotClass = h.type;
+      html += `<button class="profile-health-item" data-health-section="${h.section}"><span class="profile-health-dot ${dotClass}"></span>${h.text}</button>`;
+    });
+    html += `</div>`;
+  }
+
+  // --- Expandable sections ---
+  const sections = [
+    {
+      id: "personal", icon: "person", label: "Personal",
+      fields: [
+        { label: "Name", val: p.name || null },
+        { label: "Age", val: p.age ? p.age + " yrs" : null },
+        { label: "Gender", val: p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : null },
+        { label: "Height", val: p.height ? p.height + " cm" : null },
+        { label: "Weight", val: p.weight ? displayWeight(p.weight) : null },
+        { label: "BMI", val: bmi || null },
+      ]
+    },
+    {
+      id: "goals", icon: "flag", label: "Goals",
+      fields: [
+        { label: "Primary Goal", val: goalLabel },
+        { label: "Activity Level", val: { sedentary: "Sedentary", light: "Light", moderate: "Moderate", very: "Very Active", athlete: "Athlete" }[p.activity] || null },
+        { label: "Target Weight", val: state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : null },
+        { label: "Goal Date", val: state.weightGoal?.targetDate || null },
+      ]
+    },
+    {
+      id: "training", icon: "dumbbell", label: "Training",
+      fields: [
+        { label: "Experience", val: expLabel },
+        { label: "Training Days", val: p.trainingDays ? p.trainingDays + "/week" : null },
+        { label: "Training Location", val: { gym: "Gym", home: "Home", minimal: "Minimal" }[p.equipment] || null },
+        { label: "Rest Timer", val: (state.restTimer || 90) + "s" },
+      ]
+    },
+    {
+      id: "equipment", icon: "tools", label: "Equipment",
+      fields: [
+        { label: "Access Level", val: { gym: "Full Gym", home: "Home Gym", minimal: "Minimal" }[p.equipment] || null },
+        ...(Array.isArray(p.equipmentDetails) && p.equipmentDetails.length ? [{ label: "Available", val: p.equipmentDetails.join(", ") }] : []),
+        ...(Array.isArray(p.injuries) && p.injuries.length ? [{ label: "Limitations", val: p.injuries.join(", ") }] : []),
+        ...(p.injuryNotes ? [{ label: "Injury Notes", val: p.injuryNotes }] : []),
+      ]
+    },
+    {
+      id: "nutrition", icon: "nutrition", label: "Nutrition",
+      fields: [
+        { label: "Daily Calories", val: calGoal ? calGoal + " cal" : null },
+        { label: "Daily Protein", val: proGoal ? proGoal + "g" : null },
+        { label: "Daily Water", val: (state.waterGoal || 0) + "ml" },
+        { label: "Diet Preference", val: p.dietPreference && p.dietPreference !== "none" ? p.dietPreference.charAt(0).toUpperCase() + p.dietPreference.slice(1) : null },
+        { label: "Supplements", val: Array.isArray(p.supplements) && p.supplements.length ? p.supplements.join(", ") : null },
+      ]
+    },
+    {
+      id: "body", icon: "body", label: "Body",
+      fields: Object.keys(p.bodyMeasurements).length ? Object.entries(p.bodyMeasurements).map(([k, v]) => ({
+        label: k.charAt(0).toUpperCase() + k.slice(1), val: k === "bodyFat" ? v + "%" : v + " cm"
+      })) : [{ label: "Measurements", val: null }],
+    },
+  ];
+
+  const iconSvgs = {
+    person: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
+    flag: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
+    dumbbell: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M12 9v6"/><path d="M9 12h6"/></svg>',
+    tools: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
+    nutrition: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>',
+    body: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
+  };
+  const sectionColors = {
+    personal: "var(--accent)", goals: "var(--orange)", training: "var(--blue)",
+    equipment: "var(--protein)", nutrition: "var(--protein)", body: "var(--accent)",
+  };
+
+  sections.forEach(s => {
+    const color = sectionColors[s.id] || "var(--accent)";
+    html += `<div class="profile-section" data-section="${s.id}">
+      <button class="profile-section-header" data-toggle-section="${s.id}">
+        <div class="profile-section-icon" style="background:color-mix(in srgb,${color} 20%,transparent)">${iconSvgs[s.id]}</div>
+        <span class="profile-section-title">${s.label}</span>
+        <button class="profile-section-edit" data-edit-section="${s.id}" onclick="event.stopPropagation()">Edit</button>
+        <span class="profile-section-chevron">›</span>
+      </button>
+      <div class="profile-section-body">
+        ${s.fields.filter(f => f.val !== null && f.val !== "").map(f => `
+          <div class="profile-section-row">
+            <span class="profile-section-label">${f.label}</span>
+            <span class="profile-section-value">${f.val}</span>
+          </div>
+        `).join("")}
+        ${s.fields.every(f => f.val === null || f.val === "") ? '<div class="profile-section-row"><span class="profile-section-value empty">No data — tap Edit to add</span></div>' : ""}
+      </div>
+    </div>`;
+  });
+
+  // Data & Backup + Quick actions at bottom
+  html += `
+    <div class="profile-section" data-section="preferences">
+      <button class="profile-section-header" data-toggle-section="preferences">
+        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--text-secondary) 20%,transparent)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </div>
+        <span class="profile-section-title">Preferences & Data</span>
+        <span class="profile-section-chevron">›</span>
+      </button>
+      <div class="profile-section-body">
+        <button class="profile-section-row" onclick="openProfileSectionEditor('personal')" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+          <span class="profile-section-label">Edit All Profile Data</span>
+          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+        </button>
+        <button class="profile-section-row" onclick="if(confirm('Export all data as JSON?')){exportJSON();}" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+          <span class="profile-section-label">Export Data</span>
+          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+        </button>
+        <button class="profile-section-row" onclick="previousScreen='screen-profile';showScreen('screen-settings');renderSettings()" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+          <span class="profile-section-label">App Settings</span>
+          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+        </button>
+        <button class="profile-section-row" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')" style="cursor:pointer;border:none;background:none;color:var(--error);font-family:inherit;text-align:left;width:100%">
+          <span class="profile-section-label">Delete All Data</span>
+          <span class="profile-section-chevron" style="font-size:0.7rem;color:var(--error)">›</span>
+        </button>
+      </div>
+    </div>
+  `;
+
+  document.getElementById("profileContent").innerHTML = html;
+  attachProfileListeners();
+}
+
+function attachProfileListeners() {
+  // Section toggle
+  document.querySelectorAll("[data-toggle-section]").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const id = this.dataset.toggleSection;
+      const el = this.closest(".profile-section");
+      el.classList.toggle("is-open");
+    });
+  });
+  // Health item clicks
+  document.querySelectorAll("[data-health-section]").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const section = this.dataset.healthSection;
+      const target = document.querySelector(`[data-section="${section}"]`);
+      if (target) {
+        target.classList.add("is-open");
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+      }
+    });
+  });
+  // Edit section buttons
+  document.querySelectorAll("[data-edit-section]").forEach(btn => {
+    btn.addEventListener("click", function(e) {
+      e.stopPropagation();
+      const section = this.dataset.editSection;
+      openProfileSectionEditor(section);
+    });
+  });
+  // Edit button in header — opens full onboarding pre-seeded
+  document.getElementById("profileEditBtn")?.addEventListener("click", function() {
+    openProfileSectionEditor("personal");
+  });
+  // Back button — handled globally at init to avoid duplicate listeners
 }
 
 // ===== NUTRITION & WATER WIDGETS =====
@@ -3864,7 +4361,7 @@ function renderTodayTab() {
     document.getElementById("heroWelcomeDismiss")?.addEventListener("click", () => {
       state.heroDismissed = true;
       saveState();
-      renderTodayTab();
+      renderHome();
     });
     document.getElementById("heroWelcomeStart")?.addEventListener("click", () => activateTab("sets"));
     document.getElementById("heroWelcomeBuild")?.addEventListener("click", showNewWorkoutBuilder);
@@ -3873,7 +4370,7 @@ function renderTodayTab() {
   document.getElementById("quickStartDismiss")?.addEventListener("click", () => {
     state.quickStartDismissed = true;
     saveState();
-    renderTodayTab();
+    renderHome();
   });
   document.getElementById("todayStreakCard")?.addEventListener("click", openStreakDrawer);
   document.getElementById("todayWeightCard")?.addEventListener("click", () => {
@@ -3882,9 +4379,9 @@ function renderTodayTab() {
   document.getElementById("todayWorkoutCard")?.addEventListener("click", () => activateTab("sets"));
   document.getElementById("todayGoalCard")?.addEventListener("click", openGoalCenter);
   document.getElementById("mlOpenBtn")?.addEventListener("click", renderMealLogger);
-  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderTodayTab(); });
-  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderTodayTab(); });
-  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderTodayTab(); });
+  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderHome(); });
+  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderHome(); });
+  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderHome(); });
 }
 
 // ===== SETS PANEL =====
@@ -6322,603 +6819,29 @@ function showFullPhotoTimeline() {
 
 // ===== TRAINER PAGE =====
 function renderTrainerTab() {
+  if (typeof CoachSystem !== "undefined" && CoachSystem.init) {
+    if (CoachSystem.getCurrentRoute() !== "home") {
+      CoachSystem.navigate("home", {}, false);
+    }
+    CoachSystem.init();
+    return;
+  }
+  // Fallback: render directly
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
 
   const coach = CoachEngine.runAll();
   const dc = coach.daily;
-  const gs = coach.goalStrategy;
-  const ins = coach.insights;
-  const prog = coach.progress;
-  const rep = coach.reports;
-  const rec = coach.recovery;
-  const edu = coach.education;
-  const ps = coach.problemSolver;
-  const ad = coach.adaptive;
 
-  const sessions = (state.sessions || []).filter((s) => s.finishedAt);
-  const curWeight = dc.curWeight || (state.user || {}).weight || null;
+  container.innerHTML = '<div class="co-page"><div class="co-content">' +
+    '<div class="co-home-hero"><div class="co-hero-greeting">Hello, <strong>' + (dc.name || "Athlete") + '</strong></div>' +
+    '<div class="co-hero-message">' + (dc.coachMessage || "Welcome to Coach") + '</div></div>' +
+    '<div class="co-empty-state"><div class="co-empty-icon">📭</div>' +
+    '<div class="co-empty-title">Coach System Loading</div>' +
+    '<div class="co-empty-desc">The Coach System module is loading. Please refresh or check the console.</div></div></div></div>';
 
-  // Helper to map engine types to CSS classes/icons
-  function insightClass(type) {
-    return type === "positive" ? "tr-insight-positive" : type === "warning" ? "tr-insight-warning" : type === "red" ? "tr-insight-red" : "tr-insight-blue";
-  }
-  function insightIcon(type) {
-    return type === "positive" ? "🟢" : type === "warning" ? "🟡" : type === "red" ? "🔴" : "🔵";
-  }
-
-  const learnColors = ["var(--accent)", "var(--blue)", "var(--orange)", "var(--yellow)", "var(--accent)", "var(--blue)"];
-
-  // Build HTML
-  let html = `<div class="tr-page">`;
-
-  // SECTION 1: Daily Coach Hero
-  const gp = dc.goalProgress;
-  const onTrack = dc.status === "on_track";
-  html += `
-  <div class="tr-hero">
-    <div class="tr-hero-bg"></div>
-    <div class="tr-hero-content">
-      <div class="tr-hero-top">
-        <div class="tr-hero-greeting">${dc.greeting} <span class="tr-hero-name">${dc.name}</span></div>
-        <div class="tr-hero-badges">
-          <span class="tr-badge tr-badge-goal">${dc.goalLabel}</span>
-          <span class="tr-badge tr-badge-status ${onTrack ? "tr-badge-on-track" : "tr-badge-warning"}">${onTrack ? "On Track" : "Needs Attention"}</span>
-        </div>
-      </div>
-      <div class="tr-hero-progress-area">
-        <div class="tr-hero-progress-ring">
-          <svg width="72" height="72" viewBox="0 0 72 72">
-            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--border)" stroke-width="5" opacity="0.3" />
-            <circle cx="36" cy="36" r="30" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round"
-              stroke-dasharray="188.5" stroke-dashoffset="${gp ? 188.5 - (gp / 100) * 188.5 : 188.5}"
-              transform="rotate(-90 36 36)" />
-          </svg>
-          <span class="tr-hero-ring-label">${gp ? Math.round(gp) : "—"}%</span>
-        </div>
-        <div class="tr-hero-progress-text">
-          ${dc.startWeight && dc.targetWeight ? `<div class="tr-hero-weight">${Math.round(dc.curWeight)}kg <span class="tr-hero-arrow">→</span> ${Math.round(dc.targetWeight)}kg</div>` : ""}
-          <div class="tr-hero-progress-bar"><div class="tr-hero-progress-fill" style="width:${gp || 0}%"></div></div>
-        </div>
-      </div>
-      <div class="tr-hero-message">${dc.coachMessage}</div>
-      <div class="tr-hero-priorities">
-        ${dc.dailyFocus.map(p => `<div class="tr-priority ${p.done ? "tr-priority-done" : ""}"><span class="tr-priority-check">${p.done ? "✓" : "○"}</span><span>${p.label}</span></div>`).join("")}
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 1.3: Readiness Card
-  const readinessData = coach.readiness(rec);
-  const rcScore = rec.score;
-  const rcStatus = rec.status;
-  const rcLabel = rec.label;
-  const rcTrend = rec.trend;
-  const rcColor = rcScore >= 75 ? "var(--accent)" : rcScore >= 60 ? "var(--orange)" : "var(--red)";
-  const ringCirc = 2 * Math.PI * 28;
-  const ringOff = ringCirc - (rcScore / 100) * ringCirc;
-  const trendIcon = rcTrend > 0 ? "↑" : rcTrend < 0 ? "↓" : "→";
-  const trendColor = rcTrend > 0 ? "var(--accent)" : rcTrend < 0 ? "var(--red)" : "var(--text-secondary)";
-  html += `
-  <div class="tr-section">
-    <div class="rr-hero">
-      <div class="rr-hero-ring">
-        <svg viewBox="0 0 72 72">
-          <circle class="rr-ring-bg" cx="36" cy="36" r="28"/>
-          <circle class="rr-ring-fill" cx="36" cy="36" r="28" stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" style="stroke:${rcColor}"/>
-        </svg>
-        <span class="rr-ring-text" style="color:${rcColor}">${rcScore}</span>
-      </div>
-      <div class="rr-hero-body">
-        <div class="rr-hero-top">
-          <span class="rr-hero-label">${rcLabel}</span>
-          ${rcTrend !== null ? `<span class="rr-hero-trend" style="color:${trendColor}">${trendIcon} ${Math.abs(rcTrend)}</span>` : ""}
-        </div>
-        <div class="rr-hero-message">${rec.coachMessage}</div>
-        <button class="rr-hero-cta" id="openReadinessBtn">View Recovery Details →</button>
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 1.4: Adaptive Profile badge + Command Center
-  if (coach.adaptive && coach.adaptive.profile) {
-    const riskColor = coach.adaptive.profile.riskLevel === "low" ? "var(--accent)" : coach.adaptive.profile.riskLevel === "medium" ? "var(--orange)" : "var(--red)";
-    const riskLabel = coach.adaptive.profile.riskLevel === "low" ? "Low Risk" : coach.adaptive.profile.riskLevel === "medium" ? "Medium Risk" : "High Risk";
-    html += `
-    <div class="tr-section">
-      <div class="tr-adaptive-strip">
-        <div class="tr-adaptive-risk" style="background:${riskColor}">${riskLabel}</div>
-        <div class="tr-adaptive-focus">Focus: ${ad.focus.label}</div>
-        <button class="tr-adaptive-cc-btn" id="openCommandCenterBtn">Overview →</button>
-      </div>
-    </div>`;
-  }
-
-  // Suggested next action
-  const hasWorkoutToday = dc.hasWorkoutToday;
-  const proteinAdherence = (() => {
-    const todayKey = getDateKey();
-    const dl = state.dailyLogs?.[todayKey];
-    if (!dl) return false;
-    return dl.protein >= (state.proteinGoal || PROTEIN_GOAL) * 0.9;
-  })();
-  const recScore = rec.score || 0;
-  let suggestedAction = "";
-  let actionLabel = "";
-  if (!hasWorkoutToday) {
-    suggestedAction = "Schedule your next workout to stay on track.";
-    actionLabel = "Go to Workouts";
-  } else if (!proteinAdherence) {
-    suggestedAction = "Increase protein intake today to support recovery.";
-    actionLabel = "Log Food";
-  } else if (recScore < 60) {
-    suggestedAction = "Your recovery needs attention. Consider a rest day.";
-    actionLabel = "View Recovery";
-  } else if (recScore >= 75) {
-    suggestedAction = "Recovery looks strong. Push hard today.";
-    actionLabel = "Start Workout";
-  } else {
-    suggestedAction = "Stay consistent and trust the process.";
-    actionLabel = "";
-  }
-  html += `
-  <div class="tr-section">
-    <div class="tr-next-action">
-      <div class="tr-next-action-icon">💡</div>
-      <div class="tr-next-action-body">
-        <div class="tr-next-action-label">Suggested Next Action</div>
-        <div class="tr-next-action-text">${suggestedAction}</div>
-        ${actionLabel ? `<button class="tr-next-action-btn" id="suggestedActionBtn">${actionLabel} →</button>` : ""}
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 1.5: Goal Center (summary card)
-  const gcProfile = GoalCenter.load();
-  const hasGCGoal = GoalCenter.hasGoal(gcProfile);
-  const gcGoal = GoalCenter.getAll();
-  html += `
-  <div class="tr-section">
-    <button class="tr-goal-summary" id="openGoalCenterBtn">
-      <div class="tr-goal-summary-left">
-        <span class="tr-goal-summary-label">Goals</span>
-        <span class="tr-goal-summary-goal">${hasGCGoal ? GoalCenter.getGoalLabel() : "No Goal Set"}</span>
-      </div>
-      <div class="tr-goal-summary-right">
-        ${hasGCGoal && gcGoal.health ? `<span class="tr-goal-health-pill ${gcGoal.health.level}">${gcGoal.health.score}</span>` : `<span class="tr-goal-health-pill inactive">—</span>`}
-        <span class="tr-goal-summary-arrow">→</span>
-      </div>
-    </button>
-  </div>`;
-
-  // SECTION 1.6: Daily Check-In
-  html += renderWeightCheckInCard();
-
-  // SECTION 2: Daily Scoreboard
-  const nut = coach.nutrition;
-  const proteinTarget = parseInt(nut.proteinTarget) || 150;
-  const waterTargetL = nut.waterTarget || 3;
-  html += `
-  <div class="tr-section">
-    <div class="tr-scoreboard">
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-workout">🏋️</div>
-        <div class="tr-sc-value">${dc.hasWorkoutToday ? "Done" : "Rest"}</div>
-        <div class="tr-sc-label">Workout</div>
-      </div>
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-protein">🥩</div>
-        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>${proteinTarget}<span class="tr-sc-unit">g</span></div>
-        <div class="tr-sc-label">Protein</div>
-      </div>
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-steps">🚶</div>
-        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>10k</div>
-        <div class="tr-sc-label">Steps</div>
-      </div>
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-water">💧</div>
-        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>${waterTargetL}<span class="tr-sc-unit">L</span></div>
-        <div class="tr-sc-label">Water</div>
-      </div>
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-sleep">🌙</div>
-        <div class="tr-sc-value"><span class="tr-sc-unit">Target</span><br>8<span class="tr-sc-unit">h</span></div>
-        <div class="tr-sc-label">Sleep</div>
-      </div>
-      <div class="tr-score-card">
-        <div class="tr-sc-icon tr-sc-weight">⚖️</div>
-        <div class="tr-sc-value">${curWeight ? Math.round(curWeight) + '<span class="tr-sc-unit">kg</span>' : "—"}</div>
-        <div class="tr-sc-label">Weight</div>
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 2.5: Challenges, Milestones & Streaks
-  const cas = coach.cas;
-  if (cas) {
-    const dcLabel = cas.challenges.daily ? cas.challenges.daily.label : "";
-    const dcProgress = cas.challenges.daily ? cas.challenges.daily.progress : 0;
-    const dcTarget = cas.challenges.daily ? cas.challenges.daily.target : 0;
-    const dcDone = cas.challenges.daily ? cas.challenges.daily.completed : false;
-    const dcIcon = cas.challenges.daily ? cas.challenges.daily.icon : "🎯";
-    const dcPct = dcTarget > 0 ? Math.min(100, Math.round((dcProgress / dcTarget) * 100)) : 0;
-
-    const topStreak = Object.entries(cas.streak)
-      .map(([k, v]) => ({ key: k, ...v }))
-      .sort((a, b) => b.current - a.current)[0];
-
-    const recentAch = cas.achievements.new.length > 0
-      ? cas.achievements.new[cas.achievements.new.length - 1]
-      : cas.achievements.count > 0
-        ? (() => { const a = ACHIEVEMENT_DB?.find(ad => ad.id === cas.achievements.unlocked.slice(-1)[0]?.id); return a || null; })()
-        : null;
-
-    html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Challenges & Milestones</span></div>
-    <div class="tr-cas-grid">
-      <button class="tr-cas-card" id="openChallengesBtn">
-        <div class="tr-cas-card-icon">
-          <div class="tr-cas-progress-ring">
-            <svg width="44" height="44" viewBox="0 0 44 44">
-              <circle cx="22" cy="22" r="18" fill="none" stroke="var(--border)" stroke-width="3" opacity="0.3" />
-              <circle cx="22" cy="22" r="18" fill="none" stroke="${dcDone ? "var(--accent)" : "var(--blue)"}" stroke-width="3" stroke-linecap="round"
-                stroke-dasharray="113.1" stroke-dashoffset="${dcDone ? 0 : 113.1 - (dcPct / 100) * 113.1}"
-                transform="rotate(-90 22 22)" />
-            </svg>
-            <span class="tr-cas-ring-label">${dcDone ? "✓" : dcPct + "%"}</span>
-          </div>
-        </div>
-        <div class="tr-cas-card-body">
-          <div class="tr-cas-card-title">Today's Challenge</div>
-          <div class="tr-cas-card-desc">${dcDone ? "Completed! " + dcLabel : dcLabel + " — " + dcProgress + "/" + dcTarget}</div>
-        </div>
-        <span class="tr-cas-card-action">→</span>
-      </button>
-      <button class="tr-cas-card" id="openStreaksBtn">
-        <div class="tr-cas-card-icon">
-          <span class="tr-cas-icon-label">${topStreak ? topStreak.current : 0}<span class="tr-cas-icon-unit">d</span></span>
-        </div>
-        <div class="tr-cas-card-body">
-          <div class="tr-cas-card-title">Best Streak</div>
-          <div class="tr-cas-card-desc">${topStreak ? topStreak.key.charAt(0).toUpperCase() + topStreak.key.slice(1) : "No data yet"}</div>
-        </div>
-        <span class="tr-cas-card-action">→</span>
-      </button>
-      <button class="tr-cas-card" id="openMilestonesBtn">
-        <div class="tr-cas-card-icon">
-          <span class="tr-cas-icon-label" style="font-size:18px">${cas.achievements.count}</span>
-        </div>
-        <div class="tr-cas-card-body">
-          <div class="tr-cas-card-title">Milestones</div>
-          <div class="tr-cas-card-desc">${cas.achievements.count}/${cas.achievements.total} earned</div>
-        </div>
-        <span class="tr-cas-card-action">→</span>
-      </button>
-    </div>
-    ${cas.xp ? `<div class="tr-cas-xp-bar"><div class="tr-cas-xp-info"><span>Level ${cas.xp.level} · ${cas.xp.title}</span><span>${cas.xp.xp}/${cas.xp.xpNeeded} XP</span></div><div class="tr-cas-xp-track"><div class="tr-cas-xp-fill" style="width:${cas.xp.xpNeeded > 0 ? (cas.xp.xp / cas.xp.xpNeeded) * 100 : 0}%"></div></div></div>` : ""}
-  </div>`;
-  }
-
-  // SECTION 3: Coach Insights (adaptive)
-  let adaptiveFocusHtml = "";
-  let adaptiveAlertsHtml = "";
-  if (ad && ad.focus && ad.focus.area && ad.focus.area !== "maintain") {
-    adaptiveFocusHtml = `<div class="ad-focus-card">
-      <div class="ad-focus-label">Primary Focus</div>
-      <div class="ad-focus-area">${ad.focus.label}</div>
-      <div class="ad-focus-msg">${ad.focus.message}</div>
-      ${ad.focus.improvement ? `<div class="ad-focus-action">${ad.focus.improvement}</div>` : ""}
-    </div>`;
-  }
-  if (ad && ad.alerts && ad.alerts.length > 0) {
-    const activeAlerts = ad.alerts.filter((a) => a.severity !== "low");
-    if (activeAlerts.length > 0) {
-      adaptiveAlertsHtml = activeAlerts.slice(0, 3).map((a) => {
-        const severityIcon = a.severity === "critical" ? "🔴" : a.severity === "high" ? "🟠" : "🟡";
-        return `<div class="ad-alert ad-alert-${a.severity}"><span class="ad-alert-icon">${severityIcon}</span><span class="ad-alert-text">${a.text}</span></div>`;
-      }).join("");
-    }
-  }
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Coach Insights</span></div>
-    ${adaptiveFocusHtml}
-    ${adaptiveAlertsHtml ? `<div class="ad-alerts">${adaptiveAlertsHtml}</div>` : ""}
-    <div class="tr-insights">${ins.insights.map(i => {
-      return `<div class="tr-insight ${insightClass(i.type)}"><span class="tr-insight-icon">${insightIcon(i.type)}</span><span class="tr-insight-text">${i.text}</span></div>`;
-    }).join("")}</div>
-  </div>`;
-
-  // SECTION 4: Goal Strategy
-  const gst = gs.targets;
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Goal Strategy</span><span class="tr-section-sub">${gs.goalLabel}</span></div>
-    <div class="tr-strategy">
-      <div class="tr-strategy-grid">
-        <div class="tr-strategy-item"><span class="tr-strategy-label">Calories</span><span class="tr-strategy-value">${gst.calories}</span></div>
-        <div class="tr-strategy-item"><span class="tr-strategy-label">Protein</span><span class="tr-strategy-value">${gst.protein}</span></div>
-        <div class="tr-strategy-item"><span class="tr-strategy-label">Steps</span><span class="tr-strategy-value">${gst.steps}</span></div>
-        <div class="tr-strategy-item"><span class="tr-strategy-label">Cardio</span><span class="tr-strategy-value">${gst.cardio}</span></div>
-        <div class="tr-strategy-item"><span class="tr-strategy-label">Expected Rate</span><span class="tr-strategy-value">${gs.expectedRate}</span></div>
-      </div>
-      <div class="tr-strategy-mistakes">
-        <div class="tr-strategy-mistakes-title">Common Mistakes</div>
-        ${gs.warnings.map(m => `<div class="tr-strategy-mistake">• ${m}</div>`).join("")}
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 5: Problem Solver
-  const problems = ps.problems;
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">What's holding you back?</span></div>
-    <input type="text" class="tr-problem-search" id="problemSearchInput" placeholder="Search solutions..." />
-    <div class="tr-problems" id="trainerProblemCards">
-      ${problems.map(p => `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`).join("")}
-    </div>
-    <button class="tr-view-all-btn" id="viewAllProblemsBtn">View All Solutions →</button>
-  </div>`;
-
-  // SECTION 6: Learn
-  const lhProgress = getLearningProgress();
-  const lhTotal = LESSON_DATABASE.length;
-  const lhDone = lhProgress.completed.length;
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Learn</span><button class="tr-section-action" id="openLearningHubBtn">View All</button></div>
-    <div class="lh-home-summary"><span class="lh-home-pct">${lhTotal > 0 ? Math.round((lhDone / lhTotal) * 100) : 0}% Complete</span><span class="lh-home-count">${lhDone}/${lhTotal} lessons</span></div>
-    <div class="tr-learn">
-      ${LESSON_CATEGORIES.slice(0, 6).map(c => {
-        const catDone = c.lessons.filter(id => lhProgress.completed.includes(id)).length;
-        return `<button class="tr-learn-card lh-cat-home-btn" data-category-id="${c.id}" style="--card-accent:${c.color}"><div class="tr-learn-card-top"><span class="tr-learn-icon">${c.icon}</span></div><div class="tr-learn-card-body"><div class="tr-learn-name">${c.name}</div><div class="tr-learn-meta"><span>${catDone}/${c.lessons.length}</span><span>${c.lessons.filter(id => getLessonById(id))[0] ? getLessonById(c.lessons[0]).difficulty : ""}</span></div></div></button>`;
-      }).join("")}
-    </div>
-  </div>`;
-
-  // SECTION 7: Exercises
-  const previewExs = EXERCISE_LIBRARY.filter(e => e.description).slice(0, 6);
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Exercises</span><button class="tr-section-action" id="eeViewAllBtn">View All</button></div>
-    <input type="text" class="tr-problem-search" id="eeHomeSearch" placeholder="Search exercise..." autocomplete="off" />
-    <div class="tr-encyclopedia" id="eeHomeGrid">
-      ${previewExs.map(e => `<button class="tr-ex-card" data-ee-id="${e.id}"><div class="tr-ex-name">${e.name}</div><div class="tr-ex-meta"><span>${e.category || "General"}</span><span>${e.difficulty || "Intermediate"}</span><span>${e.equipment || "Any"}</span></div></button>`).join("")}
-    </div>
-  </div>`;
-
-  // SECTION 8: Weekly Report
-  const wr = rep.weekly;
-  const wColor = wr.assessment.score === "excellent" ? "var(--accent)" : wr.assessment.score === "good" ? "var(--orange)" : "var(--red)";
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Weekly Report</span><button class="tr-section-action" id="viewFullWeeklyReport">Full Report →</button></div>
-    <div class="tr-weekly">
-      <div class="tr-weekly-header">
-        <span class="tr-weekly-assessment" style="color:${wColor}">${wr.assessment.label}</span>
-      </div>
-      <div class="tr-weekly-grid">
-        <div class="tr-weekly-item"><span class="tr-weekly-label">Workouts</span><span class="tr-weekly-value">${wr.workouts}</span></div>
-        <div class="tr-weekly-item"><span class="tr-weekly-label">Weight</span><span class="tr-weekly-value">${wr.weightChange}</span></div>
-        <div class="tr-weekly-item"><span class="tr-weekly-label">Protein</span><span class="tr-weekly-value">${wr.proteinDays}</span></div>
-        <div class="tr-weekly-item"><span class="tr-weekly-label">Steps</span><span class="tr-weekly-value">—</span></div>
-        <div class="tr-weekly-item"><span class="tr-weekly-label">Avg Sleep</span><span class="tr-weekly-value">—</span></div>
-      </div>
-      <div class="tr-weekly-recommend"><span class="tr-weekly-rec-label">Recommendation</span> ${wr.recommendation}</div>
-    </div>
-  </div>`;
-
-  // SECTION 9: Monthly Analysis
-  const mr = rep.monthly;
-  html += `
-  <div class="tr-section tr-section-last">
-    <div class="tr-section-header"><span class="tr-section-title">Monthly Analysis</span><button class="tr-section-action" id="viewFullMonthlyReport">Full Analysis →</button></div>
-    <div class="tr-monthly">
-      <div class="tr-monthly-grid">
-        <div class="tr-monthly-item"><span class="tr-monthly-label">Workouts</span><span class="tr-monthly-value">${mr.workouts}</span></div>
-        <div class="tr-monthly-item"><span class="tr-monthly-label">Streak</span><span class="tr-monthly-value">${mr.streak}d</span></div>
-        <div class="tr-monthly-item"><span class="tr-monthly-label">Consistency</span><span class="tr-monthly-value">${prog.weekly.consistency}%</span></div>
-        <div class="tr-monthly-item"><span class="tr-monthly-label">PRs</span><span class="tr-monthly-value">${mr.prs}</span></div>
-      </div>
-      ${curWeight ? `<div class="tr-monthly-chart-preview">
-        <div class="tr-monthly-coach-summary">${gs.goal === "build-muscle" ? "You're building size. Keep protein high and train progressively." : gs.goal === "lose-fat" ? "Fat loss is a marathon. Trust the deficit, stay patient." : gs.goal === "strength" ? "Strength gains take time. Focus on technique and progressive overload." : "Great work staying consistent. Keep showing up."}</div>
-      </div>` : `<div class="tr-empty-card"><div class="tr-empty-card-content">Log your body weight to unlock monthly analysis.</div></div>`}
-    </div>
-  </div>`;
-
-  // SECTION 10: Program Health
-  html += `
-  <div class="tr-section">
-    <div class="tr-section-header"><span class="tr-section-title">Program Health</span><button class="tr-section-action" id="viewProgramReviewBtn">Full Review →</button></div>
-    <div class="pr-card">
-      <div class="pr-card-header">
-        <span class="pr-card-title">${gs.goalLabel || "Current"} Program</span>
-        <span class="pr-card-badge" id="prCardBadge">Loading...</span>
-      </div>
-      <div class="pr-card-preview" id="prCardPreview">Running 4-week review...</div>
-      <div class="pr-card-footer">
-        <span class="pr-card-meta">Reviews your goal progress, training effectiveness, recovery, and nutrition</span>
-      </div>
-    </div>
-  </div>`;
-
-  // SECTION 11: Report History
-  html += `
-  <div class="tr-section tr-section-last">
-    <button class="tr-view-all-btn" id="viewAllReportsBtn">View All Reports →</button>
-  </div>`;
-
-  html += `</div>`;
-
-  // Override with empty states if no data
-  if (!sessions.length && !curWeight) {
-    html = `<div class="tr-page">
-      <div class="tr-empty-state">
-        <div class="tr-empty-icon">🎯</div>
-        <div class="tr-empty-title">Your IronLog Coach</div>
-        <div class="tr-empty-desc">Helping you build strength, improve recovery, and stay consistent. Complete your first workout to get started.</div>
-        <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:1rem;padding:0 1rem">
-          <button class="empty-state-btn" id="coachStartWorkoutBtn">Start First Workout</button>
-          <button class="empty-state-btn secondary" id="coachSetGoalBtn">Set a Fitness Goal</button>
-        </div>
-      </div>
-      <div class="tr-empty-cards">
-        <div class="tr-empty-card"><div class="tr-empty-card-icon">💪</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
-        <div class="tr-empty-card"><div class="tr-empty-card-icon">⚖️</div><div class="tr-empty-card-text">Add body weight to begin progress tracking.</div></div>
-        <div class="tr-empty-card"><div class="tr-empty-card-icon">🎯</div><div class="tr-empty-card-text">Set a fitness goal to receive personalized recommendations.</div></div>
-      </div>
-    </div>`;
-  } else if (!sessions.length) {
-    html = `<div class="tr-page">
-      <div class="tr-empty-state">
-        <div class="tr-empty-icon">💪</div>
-        <div class="tr-empty-title">No Training Yet</div>
-        <div class="tr-empty-desc">Complete your first workout to unlock the Coach experience. Your personalized insights are waiting.</div>
-        <button class="empty-state-btn" id="coachStartWorkoutBtn2" style="margin-top:1rem">Start First Workout</button>
-      </div>
-      <div class="tr-empty-cards">
-        <div class="tr-empty-card"><div class="tr-empty-card-icon">🏋️</div><div class="tr-empty-card-text">Log your first workout to unlock coaching insights.</div></div>
-        <div class="tr-empty-card"><div class="tr-empty-card-icon">⚖️</div><div class="tr-empty-card-text">Add body weight to begin progress tracking.</div></div>
-      </div>
-    </div>`;
-  }
-
-  container.innerHTML = html;
-
-  // First 7 Days banner (only when Trainer has data)
-  if (sessions.length && curWeight && state.onboardingComplete) {
-    renderFirst7DaysBanner(container);
-  }
-
-  // Problem Solver search listener (fresh input each render)
-  const searchInput = document.getElementById("problemSearchInput");
-  if (searchInput) {
-    searchInput.addEventListener("input", (e) => {
-      const q = e.target.value.trim();
-      if (q.length > 0) {
-        const results = filterProblems(q);
-        showTrainerScreen("problems", q);
-      } else {
-        // Restore default 6 cards
-        const coach = CoachEngine.runAll();
-        const cardsContainer = document.getElementById("trainerProblemCards");
-        if (cardsContainer) {
-          cardsContainer.innerHTML = coach.problemSolver.problems.map(p =>
-            `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${p.icon === "scale" ? "⚖️" : p.icon === "muscle" ? "💪" : p.icon === "barbell" ? "🏋️" : p.icon === "refresh" ? "🔄" : p.icon === "sleep" ? "😴" : p.icon === "grid" ? "📋" : "❓"}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-desc">${p.desc}</span></span></button>`
-          ).join("");
-        }
-      }
-    });
-  }
-
-  // Problem card clicks and View All handled by document-level delegation (in init)
-
-  // Learn: View All
-  document.getElementById("openLearningHubBtn")?.addEventListener("click", () => renderLearningHub());
-
-  // Learn: category card clicks (home page)
-  container.querySelectorAll(".lh-cat-home-btn").forEach(btn => {
-    btn.addEventListener("click", () => renderLessonCategory(btn.dataset.categoryId));
-  });
-
-  // Exercises: View All
-  document.getElementById("eeViewAllBtn")?.addEventListener("click", () => renderExerciseEncyclopedia());
-
-  // Exercises: home search
-  const eeHomeSearch = document.getElementById("eeHomeSearch");
-  if (eeHomeSearch) {
-    eeHomeSearch.addEventListener("input", (e) => {
-      const q = e.target.value.trim().toLowerCase();
-      const grid = document.getElementById("eeHomeGrid");
-      if (!grid) return;
-      if (!q) {
-        const eeData = EXERCISE_LIBRARY.filter(e => e.description);
-        grid.innerHTML = eeData.slice(0, 6).map(ex => `<button class="tr-ex-card" data-ee-id="${ex.id}"><div class="tr-ex-name">${ex.name}</div><div class="tr-ex-meta"><span>${ex.category || "General"}</span><span>${ex.difficulty || "Intermediate"}</span><span>${ex.equipment || "Any"}</span></div></button>`).join("");
-      } else {
-        const filtered = eeData.filter(ex => {
-          const text = (ex.name + " " + ex.category + " " + ex.equipment + " " + ex.movementType + " " + ex.primaryMuscles.join(" ") + " " + ex.secondaryMuscles.join(" ") + " " + ex.keywords.join(" ")).toLowerCase();
-          return text.includes(q);
-        });
-        grid.innerHTML = filtered.length > 0 ? filtered.map(ex => `<button class="tr-ex-card" data-ee-id="${ex.id}"><div class="tr-ex-name">${ex.name}</div><div class="tr-ex-meta"><span>${ex.category || "General"}</span><span>${ex.difficulty || "Intermediate"}</span><span>${ex.equipment || "Any"}</span></div></button>`).join("") : `<div style="grid-column:1/-1;text-align:center;padding:20px;color:var(--text-secondary);font-size:13px">No exercises found</div>`;
-      }
-      grid.querySelectorAll("[data-ee-id]").forEach(btn => {
-        btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
-      });
-    });
-  }
-
-  // Exercises: home card clicks
-  container.querySelectorAll("#eeHomeGrid [data-ee-id]").forEach(btn => {
-    btn.addEventListener("click", () => renderExerciseDetailPage(btn.dataset.eeId));
-  });
-
-  // Weekly / Monthly Report: full pages
-  document.getElementById("viewFullWeeklyReport")?.addEventListener("click", () => showTrainerScreen("weekly-report"));
-  document.getElementById("viewFullMonthlyReport")?.addEventListener("click", () => showTrainerScreen("monthly-report"));
-  document.getElementById("viewAllReportsBtn")?.addEventListener("click", () => showTrainerScreen("report-history"));
-
-  // Goal Center: open
-  document.getElementById("openReadinessBtn")?.addEventListener("click", () => showTrainerScreen("readiness"));
-  document.getElementById("openGoalCenterBtn")?.addEventListener("click", openGoalCenter);
-
-  // Suggested action button
-  document.getElementById("suggestedActionBtn")?.addEventListener("click", () => {
-    const btn = document.getElementById("suggestedActionBtn");
-    if (!btn) return;
-    const text = btn.textContent;
-    if (text.includes("Go to Workouts")) activateTab("sets");
-    else if (text.includes("Log Food")) document.getElementById("mlOpenBtn")?.click();
-    else if (text.includes("View Recovery")) showTrainerScreen("readiness");
-    else if (text.includes("Start Workout")) activateTab("sets");
-  });
-
-  // Weight Check-In
-  document.getElementById("wiCheckInBtn")?.addEventListener("click", () => {
-    const entry = latestWeight();
-    document.getElementById("wlSheetWeight").value = entry ? entry.weight : "";
-    updateWeightDisplay();
-    document.getElementById("weightLogSheet").classList.remove("is-hidden");
-    setTimeout(() => document.getElementById("wlSheetWeight").select(), 150);
-  });
-
-  // CAS buttons
-  document.getElementById("openChallengesBtn")?.addEventListener("click", () => showTrainerScreen("challenges"));
-  document.getElementById("openStreaksBtn")?.addEventListener("click", () => showTrainerScreen("streaks"));
-  document.getElementById("openMilestonesBtn")?.addEventListener("click", () => showTrainerScreen("achievements"));
-
-  // Command Center
-  document.getElementById("openCommandCenterBtn")?.addEventListener("click", () => showTrainerScreen("command-center"));
-
-  // Coach empty state buttons
-  document.getElementById("coachStartWorkoutBtn")?.addEventListener("click", () => activateTab("sets"));
-  document.getElementById("coachStartWorkoutBtn2")?.addEventListener("click", () => activateTab("sets"));
-  document.getElementById("coachSetGoalBtn")?.addEventListener("click", openGoalCenter);
-
-  // Program Health
-  const prBtn = document.getElementById("viewProgramReviewBtn");
-  if (prBtn) prBtn.addEventListener("click", () => showTrainerScreen("program-review"));
-
-  // Populate Program Health card preview
-  if (typeof ProgramReviewEngine !== "undefined") {
-    try {
-      const prReview = ProgramReviewEngine.runReview();
-      const cardBadge = document.getElementById("prCardBadge");
-      const cardPreview = document.getElementById("prCardPreview");
-      if (cardBadge) {
-        cardBadge.textContent = prReview.outcome.label;
-        cardBadge.style.color = prReview.outcome.color;
-      }
-      if (cardPreview) {
-        cardPreview.textContent = prReview.coachSummary;
-      }
-    } catch (e) {
-      // Engine not ready
-    }
-  }
 }
+
 
 function renderCalendarHero() {
   const container = document.getElementById("progressCalendarHero");
@@ -7026,6 +6949,9 @@ function showTrainerScreen(screen, searchQuery) {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
   if (screen === "home") {
+    if (typeof CoachSystem !== "undefined" && CoachSystem.getCurrentRoute() !== "home") {
+      CoachSystem.navigate("home", {}, false);
+    }
     renderTrainerTab();
     return;
   }
@@ -8431,6 +8357,9 @@ function openWeightLogger() {
 }
 
 function openGoalCenter() {
+  if (typeof currentTab !== "undefined" && currentTab !== "trainer") {
+    activateTab("trainer");
+  }
   renderGoalCenter();
 }
 
@@ -9997,6 +9926,11 @@ document.getElementById("gsList")?.addEventListener("click", (e) => {
   state.bodyGoal = goal;
   if (state.user) state.user.goal = goal;
   saveState();
+  // Sync to GoalCenter
+  if (typeof GoalCenter !== "undefined") {
+    const goalTypeMap = { "build-muscle": "muscle-gain", "lose-fat": "fat-loss", "general": "general-fitness", "strength": "strength", "athletic": "endurance", "recomp": "general-fitness" };
+    GoalCenter.createProfile({ goalType: goalTypeMap[goal] || "general-fitness" });
+  }
   document.getElementById("goalSelectorSheet").classList.add("is-hidden");
   renderHome();
   if (typeof renderSettings === "function") renderSettings();
@@ -10180,8 +10114,11 @@ const OB_STEPS_CONFIG = [
 
 let obData = {};
 
-function openOnboarding(animateIn) {
+let isProfileEdit = false;
+
+function openOnboarding(animateIn, startStep) {
   obData = {};
+  isProfileEdit = false;
   const modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
   if (animateIn) {
@@ -10189,7 +10126,33 @@ function openOnboarding(animateIn) {
     const onAnimEnd = () => { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onAnimEnd); };
     modal.addEventListener("animationend", onAnimEnd);
   }
-  obGoToStep(0);
+  obGoToStep(startStep || 0);
+}
+
+function openProfileSectionEditor(section) {
+  const p = getProfile();
+  const stepMap = { personal: 1, goals: 2, training: 3, equipment: 5, nutrition: 7, body: 8 };
+  const step = stepMap[section] || 1;
+  // Seed obData from existing profile
+  obData = {
+    name: p.name, age: p.age, gender: p.gender, height: p.height, weight: p.weight,
+    goalType: p.bodyGoal === "build-muscle" ? "muscle-gain" : p.bodyGoal === "lose-fat" ? "fat-loss" : p.bodyGoal === "general" ? "general-fitness" : p.bodyGoal || "general-fitness",
+    experience: p.experience, trainingDays: p.trainingDays, equipment: p.equipment,
+    equipmentDetails: p.equipmentDetails, injuries: p.injuries, injuryNotes: p.injuryNotes,
+    dietPreference: p.dietPreference || "none", supplements: p.supplements,
+    nutritionCal: p.calorieTarget, nutritionProtein: p.proteinGoal,
+    metrics: p.bodyMeasurements || {},
+    targetWeight: state.weightGoal?.targetWeight || 0,
+    targetDate: state.weightGoal?.targetDate || "",
+    primaryLift: "",
+    activityLevel: p.activity || "moderate",
+  };
+  // Carry over saved onboardingData for fields the profile doesn't track directly
+  if (state.onboardingData) Object.assign(obData, state.onboardingData, obData);
+  isProfileEdit = true;
+  const modal = document.getElementById("onboardingModal");
+  modal.classList.remove("is-hidden");
+  obGoToStep(step);
 }
 
 function closeOnboarding(animateOut, callback) {
@@ -10803,12 +10766,15 @@ function obFinishSetup() {
   state.user.injuryNotes = obData.injuryNotes || "";
   state.user.dietPreference = obData.dietPreference || "none";
   state.user.supplements = obData.supplements || [];
+  state.user.activity = obData.activityLevel || "moderate";
   state.bodyGoal = mappedGoal;
   state.calorieTarget = Number(obData.nutritionCal) || state.calorieTarget || 0;
   state.proteinGoal = Number(obData.nutritionProtein) || state.proteinGoal || 0;
+  state.waterGoal = state.waterGoal || Math.round((Number(obData.weight) || 70) * 35);
+  state.restTimer = state.restTimer || 90;
 
-  // Log initial weight
-  if (Number(obData.weight) > 0) {
+  // Log initial weight (only on first onboarding)
+  if (!isProfileEdit && Number(obData.weight) > 0) {
     if (!state.weightLog) state.weightLog = [];
     state.weightLog.push({ weight: Number(obData.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
   }
@@ -10822,7 +10788,11 @@ function obFinishSetup() {
     }
   }
 
-  // Set up weight goal via GoalCenter
+  // Sync to GoalCenter
+  const goalActivityMap = {
+    "fat-loss": "active", "muscle-gain": "very-active", "strength": "active",
+    "general-fitness": "moderate", "endurance": "very-active",
+  };
   const gcGoalData = {
     goalType: obData.goalType || "general-fitness",
     startWeight: Number(obData.weight) || 0,
@@ -10830,7 +10800,7 @@ function obFinishSetup() {
     targetDate: obData.targetDate || null,
     trainingDays: obData.trainingDays || 3,
     experienceLevel: obData.experience || "beginner",
-    activityLevel: "moderate",
+    activityLevel: goalActivityMap[obData.goalType] || "moderate",
   };
 
   if (typeof GoalCenter !== "undefined") {
@@ -10848,17 +10818,19 @@ function obFinishSetup() {
 
   saveState();
 
-  // Mark onboarding complete
-  state.onboardingComplete = true;
-  state.coachActivated = true;
-  state.activatedAt = state.activatedAt || getDateKey(new Date());
+  if (!isProfileEdit) {
+    state.onboardingComplete = true;
+    state.coachActivated = true;
+    state.activatedAt = state.activatedAt || getDateKey(new Date());
+  }
   Object.assign(state.onboardingData, obData);
   saveState();
 
-  // Close onboarding and show activation
+  // Close onboarding — show activation only on first setup
   closeOnboarding(true, () => {
     render();
-    showCoachActivation();
+    renderProfileScreen();
+    if (!isProfileEdit) showCoachActivation();
   });
 }
 
@@ -11807,6 +11779,11 @@ document.getElementById("ewSearch").addEventListener("input", () => {
 });
 
 document.getElementById("settingsBackBtn").addEventListener("click", () => {
+  if (previousScreen === "screen-profile") {
+    showScreen("screen-profile");
+    renderProfileScreen();
+    return;
+  }
   const ws = document.getElementById("screen-ws");
   if (ws && !ws.classList.contains("is-hidden")) {
     showScreen("screen-ws");
@@ -11815,11 +11792,42 @@ document.getElementById("settingsBackBtn").addEventListener("click", () => {
   }
 });
 
-// Topbar avatar → profile menu
-document.getElementById("topbarAvatarBtn").addEventListener("click", (e) => {
-  e.stopPropagation();
-  const menu = document.getElementById("profileMenu");
-  menu.classList.toggle("is-hidden");
+// Profile screen navigation
+let previousScreen = "screen-home";
+document.getElementById("profileBackBtn")?.addEventListener("click", () => {
+  showScreen(previousScreen);
+  if (previousScreen === "screen-ws") {
+    renderWorkoutSession();
+  } else if (previousScreen === "screen-home") {
+    renderHome();
+  } else if (previousScreen === "screen-settings") {
+    renderSettings();
+  }
+});
+
+// Profile edit button delegation (clicking "Edit" on any section — legacy)
+document.getElementById("profileContent")?.addEventListener("click", (e) => {
+  const editBtn = e.target.closest("[data-profile-edit]");
+  if (editBtn) {
+    openProfileEditor();
+    return;
+  }
+  const actionBtn = e.target.closest("[data-profile-action]");
+  if (actionBtn) {
+    const action = actionBtn.dataset.profileAction;
+    if (action === "settings") {
+      previousScreen = "screen-profile";
+      activateTab("settings");
+    }
+    return;
+  }
+});
+
+// Topbar avatar → profile screen
+document.getElementById("topbarAvatarBtn").addEventListener("click", () => {
+  previousScreen = document.querySelector("#panel-sets .screen:not(.is-hidden)")?.id || "screen-home";
+  showScreen("screen-profile");
+  renderProfileScreen();
 });
 
 // Profile menu handlers
@@ -11855,14 +11863,7 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// Close profile menu on outside click
-document.addEventListener("click", (e) => {
-  const menu = document.getElementById("profileMenu");
-  const btn = document.getElementById("topbarAvatarBtn");
-  if (menu && !menu.classList.contains("is-hidden") && !menu.contains(e.target) && !btn?.contains(e.target)) {
-    menu.classList.add("is-hidden");
-  }
-});
+
 
 function openProfileEditor() {
   const user = state.user || {};
@@ -11873,6 +11874,25 @@ function openProfileEditor() {
   document.getElementById("peWeight").value = user.weight || "";
   document.getElementById("peGoal").value = GoalCenter.getGoalType() || user.goal || state.bodyGoal || "recomp";
   document.getElementById("peActivity").value = user.activity || "";
+  document.getElementById("peExperience").value = user.experience || "";
+  document.getElementById("peTrainingDays").value = user.trainingDays || "";
+  document.getElementById("peEquipment").value = user.equipment || "";
+  document.getElementById("peCalories").value = state.calorieTarget || user.calorieTarget || "";
+  document.getElementById("peProtein").value = state.proteinGoal || user.proteinGoal || "";
+  document.getElementById("peDiet").value = user.dietPreference || "";
+  document.getElementById("peInjuries").value = Array.isArray(user.injuries) ? user.injuries.join(", ") : "";
+  document.getElementById("peInjuryNotes").value = user.injuryNotes || "";
+  document.getElementById("peSupplements").value = Array.isArray(user.supplements) ? user.supplements.join(", ") : "";
+  document.getElementById("peEquipmentDetails").value = Array.isArray(user.equipmentDetails) ? user.equipmentDetails.join(", ") : "";
+  document.getElementById("peWaterGoal").value = state.waterGoal || "";
+  const bm = user.bodyMeasurements || {};
+  document.getElementById("peBodyFat").value = bm.bodyFat || "";
+  document.getElementById("peChest").value = bm.chest || "";
+  document.getElementById("peWaist").value = bm.waist || "";
+  document.getElementById("peArms").value = bm.arms || "";
+  document.getElementById("peThighs").value = bm.thighs || "";
+  document.getElementById("peNeck").value = bm.neck || "";
+  document.getElementById("peHips").value = bm.hips || "";
   document.getElementById("profileEditorModal").classList.remove("is-hidden");
 }
 
@@ -11891,14 +11911,49 @@ document.getElementById("peSaveBtn").addEventListener("click", () => {
   state.user.weight = Number(document.getElementById("peWeight").value) || 0;
   state.user.goal = document.getElementById("peGoal").value || "recomp";
   state.user.activity = document.getElementById("peActivity").value || "";
+  state.user.experience = document.getElementById("peExperience").value || "";
+  state.user.trainingDays = Number(document.getElementById("peTrainingDays").value) || 0;
+  state.user.equipment = document.getElementById("peEquipment").value || "";
+  state.calorieTarget = Number(document.getElementById("peCalories").value) || 0;
+  state.proteinGoal = Number(document.getElementById("peProtein").value) || 0;
+  state.user.dietPreference = document.getElementById("peDiet").value || "";
+  const injuriesVal = document.getElementById("peInjuries").value.trim();
+  state.user.injuries = injuriesVal ? injuriesVal.split(",").map(s => s.trim()).filter(Boolean) : [];
+  state.user.injuryNotes = document.getElementById("peInjuryNotes").value.trim() || "";
+  const suppsVal = document.getElementById("peSupplements").value.trim();
+  state.user.supplements = suppsVal ? suppsVal.split(",").map(s => s.trim()).filter(Boolean) : [];
+  const equipDetailsVal = document.getElementById("peEquipmentDetails").value.trim();
+  state.user.equipmentDetails = equipDetailsVal ? equipDetailsVal.split(",").map(s => s.trim()).filter(Boolean) : [];
+  state.waterGoal = Number(document.getElementById("peWaterGoal").value) || 0;
+  const bf = Number(document.getElementById("peBodyFat").value);
+  const chest = Number(document.getElementById("peChest").value);
+  const waist = Number(document.getElementById("peWaist").value);
+  const arms = Number(document.getElementById("peArms").value);
+  const thighs = Number(document.getElementById("peThighs").value);
+  const neck = Number(document.getElementById("peNeck").value);
+  const hips = Number(document.getElementById("peHips").value);
+  if (bf || chest || waist || arms || thighs || neck || hips) {
+    state.user.bodyMeasurements = state.user.bodyMeasurements || {};
+    if (bf) state.user.bodyMeasurements.bodyFat = bf;
+    if (chest) state.user.bodyMeasurements.chest = chest;
+    if (waist) state.user.bodyMeasurements.waist = waist;
+    if (arms) state.user.bodyMeasurements.arms = arms;
+    if (thighs) state.user.bodyMeasurements.thighs = thighs;
+    if (neck) state.user.bodyMeasurements.neck = neck;
+    if (hips) state.user.bodyMeasurements.hips = hips;
+  }
   if (state.user.goal) state.bodyGoal = state.user.goal;
   if (state.weightGoal) {
     state.weightGoal.goalType = mapGoalType(state.user.goal);
   }
   saveState();
   document.getElementById("profileEditorModal").classList.add("is-hidden");
+  renderProfileAvatar();
   renderHome();
   renderSettings();
+  if (document.getElementById("screen-profile") && !document.getElementById("screen-profile").classList.contains("is-hidden")) {
+    renderProfileScreen();
+  }
 });
 
 // ===== WEIGHT LOG MODAL =====
@@ -12063,7 +12118,9 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
   const setting = row.dataset.setting;
 
   if (setting === "profile") {
-    openProfileEditor();
+    previousScreen = "screen-settings";
+    showScreen("screen-profile");
+    renderProfileScreen();
     return;
   }
 
@@ -12162,75 +12219,7 @@ if (setting === "theme") {
     return;
   }
   if (setting === "export-json") {
-    const exportData = {
-      dailyLogs: state.dailyLogs || {},
-      sessions: state.sessions || [],
-      nutrition: state.nutrition || {},
-      user: state.user || null,
-      plan: state.plan || null,
-      customExercises: state.customExercises || [],
-
-      weightLog: state.weightLog || [],
-      goals: state.goals || [],
-      recoveryLog: state.recoveryLog || [],
-      measurements: state.measurements || [],
-      photos: state.photos || [],
-      bodyGoal: state.bodyGoal || "recomp",
-      calorieTarget: state.calorieTarget || CAL_GOAL,
-      proteinGoal: state.proteinGoal || PROTEIN_GOAL,
-      waterGoal: state.waterGoal || WATER_TARGET,
-      fatTarget: state.fatTarget || FAT_GOAL,
-      planOffset: state.planOffset || 0,
-      restTimer: state.restTimer || 90,
-      weightUnit: state.weightUnit || "kg",
-      heightUnit: state.heightUnit || "cm",
-      weightInc: state.weightInc || 1,
-      repInc: state.repInc || 1,
-      autoRest: !!state.autoRest,
-      autoNext: !!state.autoNext,
-      focusMode: !!state.focusMode,
-      screenAwake: !!state.screenAwake,
-      autoWarmup: state.autoWarmup !== false,
-      warmupStyle: state.warmupStyle || "simple",
-      warmupReminder: state.warmupReminder !== false,
-      stretchReminder: state.stretchReminder !== false,
-      theme: state.theme || "Dark",
-      accent: state.accent || "Green",
-      fontSize: state.fontSize || "Medium",
-      compactMode: !!state.compactMode,
-      show7dAvg: state.show7dAvg !== false,
-      show30dAvg: state.show30dAvg !== false,
-      progressPhotos: !!state.progressPhotos,
-      bodyMeasurements: !!state.bodyMeasurements,
-      weightReminder: !!state.weightReminder,
-      nutritionReminder: !!state.nutritionReminder,
-      weeklyReview: state.weeklyReview !== false,
-      recoveryAnalysis: state.recoveryAnalysis !== false,
-      showRecoveryAdvice: state.showRecoveryAdvice !== false,
-      coolDownDuration: state.coolDownDuration || 5,
-      autoSummary: state.autoSummary !== false,
-      autoCooldown: state.autoCooldown !== false,
-      autoAdvanceStretches: state.autoAdvanceStretches !== false,
-      showTomorrowPreview: state.showTomorrowPreview !== false,
-      showWorkoutProgress: state.showWorkoutProgress !== false,
-      profileBannerDismissed: !!state.profileBannerDismissed,
-      workoutStreak: state.workoutStreak || { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
-      first7Days: state.first7Days || { day1Workout: false, day2Weight: false, day3Protein: false, day4Learning: false, day5Challenge: false, day6CoachScore: false, day7Report: false },
-      coachActivated: !!state.coachActivated,
-      activatedAt: state.activatedAt || null,
-      onboardingComplete: !!state.onboardingComplete,
-      onboardingData: state.onboardingData || { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", equipmentDetails: [], injuries: [], injuryNotes: "", nutritionCal: "", nutritionProtein: "", dietPreference: "none", supplements: [], metrics: {}, targetWeight: "", targetDate: "", primaryLift: "" },
-      waterLog: collectWaterLog(),
-      mealLog: collectMealLog(),
-      learningProgress: loadLearningProgress(),
-    };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: "application/json" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = `ironlog-export-${getDateKey()}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
+    exportJSON();
     return;
   }
   if (setting === "import-json") {
@@ -12352,6 +12341,11 @@ if (setting === "theme") {
     state.bodyGoal = sel.value;
     if (state.user) state.user.goal = sel.value;
     saveState();
+    // Sync to GoalCenter
+    if (typeof GoalCenter !== "undefined") {
+      const gtm = { "build-muscle": "muscle-gain", "lose-fat": "fat-loss", "general": "general-fitness", "strength": "strength", "athletic": "endurance", "recomp": "general-fitness" };
+      GoalCenter.createProfile({ goalType: gtm[sel.value] || "general-fitness" });
+    }
     renderSettings();
     renderHome();
     return;
@@ -13229,9 +13223,14 @@ const EQUIPMENT_ALLOWED = {
 };
 
 const EXERCISES_TO_AVOID = {
-  shoulder: ["upright-row", "behind-neck-press", "dip", "dips", "barbell-overhead-press"],
-  knee: ["barbell-squat", "dumbbell-lunge", "leg-extension", "bulgarian-split-squat"],
-  "lower-back": ["barbell-deadlift", "good-morning", "barbell-squat", "barbell-good-morning"],
+  shoulder: ["upright-row", "behind-neck-press", "dip", "dips", "barbell-overhead-press", "arnold-press", "plate-front-raise"],
+  knee: ["barbell-squat", "dumbbell-lunge", "leg-extension", "bulgarian-split-squat", "barbell-lunge", "jump-squat", "box-jump"],
+  "lower-back": ["barbell-deadlift", "good-morning", "barbell-squat", "barbell-good-morning", "stiff-leg-deadlift", "t-bar-row"],
+  wrist: ["barbell-curl", "ez-bar-curl", "barbell-wrist-curl", "push-ups", "dumbbell-curl", "incline-curl"],
+  hip: ["barbell-squat", "barbell-lunge", "dumbbell-lunge", "bulgarian-split-squat", "hip-thrust", "cable-pull-through"],
+  neck: ["barbell-shrug", "dumbbell-shrug", "behind-neck-press", "barbell-good-morning"],
+  ankle: ["barbell-squat", "dumbbell-lunge", "barbell-lunge", "jump-squat", "box-jump"],
+  elbow: ["barbell-curl", "ez-bar-curl", "dumbbell-curl", "tricep-dip", "tricep-extension", "push-down", "skull-crusher"],
 };
 
 // --- Generator State ---
@@ -13251,10 +13250,16 @@ function filterByEquipment(exercises, equipment) {
   return exercises.filter(function(e) { return allowed.includes(e.equipment); });
 }
 
-function filterByLimitation(exercises, limitation) {
-  const avoid = EXERCISES_TO_AVOID[limitation];
-  if (!avoid) return exercises;
-  return exercises.filter(function(e) { return !avoid.includes(e.id); });
+function filterByLimitation(exercises, limitations) {
+  if (!limitations || (Array.isArray(limitations) && limitations.length === 0) || limitations === "none") return exercises;
+  const limits = Array.isArray(limitations) ? limitations : [limitations];
+  const avoidAll = new Set();
+  limits.forEach(function(lim) {
+    const list = EXERCISES_TO_AVOID[lim];
+    if (list) list.forEach(function(id) { avoidAll.add(id); });
+  });
+  if (avoidAll.size === 0) return exercises;
+  return exercises.filter(function(e) { return !avoidAll.has(e.id); });
 }
 
 
@@ -13763,8 +13768,10 @@ function openGenerateWorkout() {
   genState.days = (u && u.trainingDays) || null;
   genState.time = null;
   genState.priority = "none";
-  genState.equipment = "full-gym";
-  genState.limitation = "none";
+  const equipMap = { "gym": "full-gym", "home": "home-gym", "minimal": "dumbbells-only", "bodyweight": "bodyweight-only" };
+  genState.equipment = equipMap[u.equipment] || "full-gym";
+  const injuryLimits = { "shoulder": "shoulder", "knee": "knee", "back": "lower-back", "lower-back": "lower-back", "wrist": "wrist", "hip": "hip", "neck": "neck", "ankle": "ankle", "elbow": "elbow" };
+  genState.limitation = (Array.isArray(u.injuries) && u.injuries.length > 0) ? u.injuries.filter(i => injuryLimits[i]).map(i => injuryLimits[i]) : [];
   genState.split = null;
   genState.schedule = null;
   document.getElementById("generateModal").classList.remove("is-hidden");
@@ -13925,7 +13932,6 @@ document.addEventListener("keydown", (e) => {
       }
     });
     document.querySelectorAll(".bottom-sheet-overlay").forEach((el) => el.remove());
-    document.getElementById("profileMenu")?.classList.add("is-hidden");
   }
 });
 

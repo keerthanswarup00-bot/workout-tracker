@@ -1,0 +1,830 @@
+/* ============================================================
+   IRONLOG COACH SYSTEM V1.46 — Visual Integration Layer
+   Extends the IronLog Design System. No new design language.
+   ============================================================ */
+
+/* ===== PAGE LAYOUT ===== */
+.co-page {
+  display: flex;
+  flex-direction: column;
+  min-height: 100%;
+}
+
+.co-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+  padding-bottom: 0.5rem;
+}
+
+/* ===== SUB-NAVIGATION ===== */
+.co-nav {
+  display: flex;
+  gap: 0.2rem;
+  padding: 0.5rem 0;
+  margin-bottom: 0.25rem;
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+}
+.co-nav::-webkit-scrollbar { display: none; }
+
+.co-nav-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.15rem;
+  padding: 0.5rem 0.85rem;
+  border-radius: var(--radius-sm);
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: color 0.15s, background 0.15s;
+  flex-shrink: 0;
+  min-height: 44px;
+}
+.co-nav-item:hover { color: var(--text); background: var(--surface-2); }
+.co-nav-item:active { background: var(--surface-3); }
+.co-nav-item.is-active { color: var(--accent); background: rgba(0, 210, 106, 0.08); }
+.co-nav-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.co-nav-icon { font-size: 1.1rem; line-height: 1; }
+.co-nav-label { font-size: 0.58rem; font-weight: 600; line-height: 1; }
+
+/* ===== BREADCRUMB / BACK ===== */
+.co-breadcrumb {
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.25rem 0 0.5rem;
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+.co-back-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.2rem;
+  min-height: 36px;
+  padding: 0 0.4rem 0 0;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  border-radius: var(--radius-sm);
+  transition: color 0.15s;
+}
+.co-back-btn:active { color: var(--accent); }
+.co-back-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.co-breadcrumb-item {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* ===== SECTION HEADERS ===== */
+.co-section-header {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0 0.3rem;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+}
+
+.co-header-icon { font-size: 0.85rem; line-height: 1; }
+
+.co-header-action {
+  margin-left: auto;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  padding: 0.25rem 0.4rem;
+  border-radius: var(--radius-sm);
+  min-height: 30px;
+  display: inline-flex;
+  align-items: center;
+  transition: opacity 0.15s;
+}
+.co-header-action:active { opacity: 0.7; }
+.co-header-action:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ===== CARDS ===== */
+.co-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 0.85rem;
+  transition: background 0.2s, border-color 0.2s;
+}
+.co-card[data-co-click]:active,
+.co-card[data-co-route]:active { background: var(--surface-2); }
+
+.co-card-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  margin-bottom: 0.5rem;
+}
+
+.co-card-body {
+  font-size: 0.82rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+}
+
+/* Card variants */
+.co-card-recovery,
+.co-card-goal,
+.co-card-nutri,
+.co-card-lesson,
+.co-card-muscle,
+.co-card-ex,
+.co-card-challenge,
+.co-card-strat,
+.co-card-streak,
+.co-card-progress,
+.co-card-pace,
+.co-card-report,
+.co-card-settings { cursor: pointer; }
+.co-card-recovery:active,
+.co-card-goal:active,
+.co-card-nutri:active,
+.co-card-lesson:active,
+.co-card-muscle:active,
+.co-card-ex:active,
+.co-card-challenge:active,
+.co-card-strat:active,
+.co-card-streak:active,
+.co-card-progress:active,
+.co-card-pace:active,
+.co-card-report:active,
+.co-card-settings:active { background: var(--surface-2); }
+
+/* ===== INSIGHT CARDS ===== */
+.co-insight-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.5rem;
+  padding: 0.7rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.co-insight-card:active { background: var(--surface-2); }
+
+.co-insight-icon { font-size: 0.8rem; line-height: 1.4; flex-shrink: 0; }
+.co-insight-text { flex: 1; }
+
+.co-insight-positive { border-left: 3px solid var(--accent); }
+.co-insight-warning { border-left: 3px solid var(--orange); }
+.co-insight-red { border-left: 3px solid var(--red); }
+.co-insight-blue { border-left: 3px solid var(--blue); }
+
+/* ===== STAT BOX ===== */
+.co-stats-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.co-stat-box {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.1rem;
+  padding: 0.6rem 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+}
+.co-stat-wide { grid-column: span 1; }
+
+.co-stat-value {
+  font-size: 1rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.1;
+}
+.co-stat-label {
+  font-size: 0.55rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== DUO LAYOUT ===== */
+.co-duo {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+/* ===== RECOVERY MINI ===== */
+.co-recovery-mini {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.co-recovery-info { flex: 1; min-width: 0; }
+.co-recovery-label { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
+.co-recovery-score { font-size: 1.1rem; font-weight: 800; }
+.co-recovery-msg { font-size: 0.65rem; color: var(--text-secondary); margin-top: 0.15rem; line-height: 1.3; }
+
+.co-card-action {
+  display: inline-block;
+  margin-top: 0.35rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  color: var(--accent);
+  min-height: 30px;
+  padding: 0.2rem 0;
+}
+
+/* ===== GOAL MINI ===== */
+.co-goal-mini { display: flex; flex-direction: column; gap: 0.4rem; }
+
+.co-goal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+.co-goal-type { font-size: 0.75rem; font-weight: 700; color: var(--text); text-transform: capitalize; }
+.co-goal-status { font-size: 0.6rem; font-weight: 600; color: var(--accent); }
+
+.co-goal-details {
+  display: flex;
+  justify-content: space-between;
+  font-size: 0.62rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+}
+
+/* ===== PROGRESS BAR ===== */
+.co-progress-bar {
+  height: 5px;
+  background: var(--surface-3);
+  border-radius: 999px;
+  overflow: hidden;
+}
+.co-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.5s ease;
+}
+
+/* ===== HOME HERO ===== */
+.co-home-hero {
+  padding: 0.75rem 0 0.5rem;
+}
+
+.co-hero-greeting {
+  font-size: 1.3rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.2;
+}
+.co-hero-greeting strong { color: var(--accent); }
+
+.co-hero-message {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  margin-top: 0.15rem;
+  line-height: 1.4;
+}
+
+.co-hero-badges {
+  display: flex;
+  gap: 0.35rem;
+  margin-top: 0.5rem;
+  flex-wrap: wrap;
+}
+
+/* ===== BADGES ===== */
+.co-badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.15rem 0.5rem;
+  border-radius: 999px;
+  font-size: 0.6rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  line-height: 1.4;
+}
+.co-badge-default { background: var(--surface-3); color: var(--text-secondary); }
+.co-badge-goal { background: rgba(59, 130, 246, 0.15); color: var(--blue); }
+.co-badge-success { background: rgba(0, 210, 106, 0.15); color: var(--accent); }
+.co-badge-warning { background: rgba(255, 159, 10, 0.15); color: var(--orange); }
+
+/* ===== FOCUS LIST ===== */
+.co-focus-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+}
+
+.co-focus-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.6rem 0.7rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--text);
+  transition: background 0.15s;
+}
+.co-focus-item:active { background: var(--surface-2); }
+
+.co-focus-check { font-size: 0.75rem; flex-shrink: 0; color: var(--text-secondary); }
+.co-focus-done .co-focus-check { color: var(--accent); }
+.co-focus-done .co-focus-label { opacity: 0.5; text-decoration: line-through; }
+
+.co-focus-label { flex: 1; font-weight: 500; }
+.co-focus-target { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
+
+/* ===== NUTRITION ROW ===== */
+.co-nutrition-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+}
+
+.co-nutri-mini {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  text-align: center;
+}
+
+.co-nutri-info {
+  display: flex;
+  flex-direction: column;
+  gap: 0.05rem;
+}
+.co-nutri-value { font-size: 0.85rem; font-weight: 800; color: var(--text); }
+.co-nutri-label { font-size: 0.58rem; color: var(--text-secondary); font-weight: 500; }
+
+/* ===== INSIGHTS LIST ===== */
+.co-insights-list {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+/* ===== LESSON MINI ===== */
+.co-lesson-mini { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-lesson-title { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.co-lesson-summary { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4; }
+.co-lesson-tip { font-size: 0.7rem; color: var(--text); font-weight: 500; line-height: 1.3; }
+
+/* ===== QUICK ACTIONS ===== */
+.co-actions-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.35rem;
+}
+
+.co-action-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  min-height: 44px;
+  padding: 0 0.75rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s, border-color 0.15s;
+}
+.co-action-btn:hover { background: var(--surface-2); }
+.co-action-btn:active { background: var(--surface-3); border-color: rgba(255,255,255,0.12); }
+.co-action-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ===== REPORT MINI ===== */
+.co-report-mini { display: flex; flex-direction: column; gap: 0.3rem; }
+.co-report-score { font-size: 0.8rem; color: var(--text); line-height: 1.4; }
+.co-report-score strong { color: var(--accent); }
+.co-report-assessment { font-size: 0.7rem; color: var(--text-secondary); }
+.co-report-win { font-size: 0.72rem; color: var(--text); font-weight: 500; }
+
+/* ===== EMPTY STATE ===== */
+.co-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 2rem 1.5rem;
+  text-align: center;
+}
+.co-empty-icon { font-size: 2rem; line-height: 1; }
+.co-empty-title { font-size: 0.9rem; font-weight: 800; color: var(--text); }
+.co-empty-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; max-width: 280px; }
+.co-empty-action {
+  margin-top: 0.4rem;
+  min-height: 40px;
+  padding: 0 1.25rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+  color: var(--accent);
+  border: 1px solid var(--accent);
+  border-radius: var(--radius-sm);
+  display: inline-flex;
+  align-items: center;
+  transition: background 0.15s;
+}
+.co-empty-action:active { background: rgba(0, 210, 106, 0.1); }
+
+/* ===== LOADING STATE ===== */
+.co-loading {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 2rem;
+}
+
+.co-spinner {
+  width: 28px;
+  height: 28px;
+  border: 3px solid var(--surface-3);
+  border-top: 3px solid var(--accent);
+  border-radius: 50%;
+  animation: coSpin 0.7s linear infinite;
+}
+
+@keyframes coSpin {
+  to { transform: rotate(360deg); }
+}
+
+.co-loading-text { font-size: 0.75rem; color: var(--text-secondary); font-weight: 500; }
+
+/* ===== ERROR STATE ===== */
+.co-error {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 1rem;
+  background: rgba(239, 68, 68, 0.08);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  border-radius: var(--radius-sm);
+}
+.co-error-icon { font-size: 1rem; flex-shrink: 0; }
+.co-error-text { font-size: 0.78rem; color: var(--text); font-weight: 500; }
+
+/* ===== SEARCH ===== */
+.co-search-bar {
+  margin-bottom: 0.25rem;
+}
+
+.co-search-input {
+  width: 100%;
+  min-height: 44px;
+  padding: 0 0.85rem;
+  font-size: 0.85rem;
+  color: var(--text);
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: border-color 0.2s;
+}
+.co-search-input:focus { border-color: var(--accent); }
+.co-search-input::placeholder { color: var(--text-secondary); }
+
+.co-search-results { display: flex; flex-direction: column; gap: 0.35rem; }
+
+.co-search-count {
+  font-size: 0.65rem;
+  color: var(--text-secondary);
+  font-weight: 500;
+  padding: 0.25rem 0;
+}
+
+.co-search-hints {
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  padding: 0.5rem 0;
+}
+.co-hint-title { font-size: 0.7rem; font-weight: 600; color: var(--text-secondary); }
+.co-hint-list { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+
+.co-hint-chip {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  padding: 0.35rem 0.6rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 999px;
+  transition: background 0.15s, color 0.15s;
+  min-height: 34px;
+}
+.co-hint-chip:hover { color: var(--text); background: var(--surface-2); }
+.co-hint-chip:active { background: var(--surface-3); }
+
+.co-search-group { display: flex; flex-direction: column; gap: 0.2rem; }
+
+/* ===== CLICKABLE ROWS ===== */
+.co-clickable-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 44px;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  transition: background 0.15s;
+  cursor: pointer;
+}
+.co-clickable-row:active { background: var(--surface-2); }
+
+.co-row-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
+.co-row-value { font-size: 0.72rem; color: var(--text-secondary); }
+
+/* ===== MUSCLE GRID ===== */
+.co-muscle-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.5rem;
+}
+
+.co-muscle-item { display: flex; flex-direction: column; gap: 0.25rem; }
+.co-muscle-icon { font-size: 1.3rem; line-height: 1; }
+.co-muscle-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.co-muscle-exercises { font-size: 0.65rem; color: var(--text-secondary); line-height: 1.3; }
+
+/* ===== EXERCISE GRID ===== */
+.co-ex-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 0.5rem;
+}
+
+.co-ex-item { display: flex; flex-direction: column; gap: 0.2rem; }
+.co-ex-name { font-size: 0.78rem; font-weight: 700; color: var(--text); }
+.co-ex-desc { font-size: 0.62rem; color: var(--text-secondary); line-height: 1.3; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.co-ex-meta { display: flex; gap: 0.35rem; font-size: 0.58rem; color: var(--text-secondary); font-weight: 500; flex-wrap: wrap; }
+
+/* ===== LESSON GRID ===== */
+.co-lesson-grid {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.co-lesson-item { display: flex; gap: 0.5rem; align-items: flex-start; }
+.co-lesson-icon { font-size: 1.2rem; line-height: 1.4; flex-shrink: 0; }
+.co-lesson-content { flex: 1; min-width: 0; }
+.co-lesson-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.co-lesson-desc { font-size: 0.7rem; color: var(--text-secondary); line-height: 1.3; margin-top: 0.1rem; }
+
+/* ===== CHALLENGES ===== */
+.co-challenges-grid {
+  display: grid;
+  gap: 0.4rem;
+}
+.co-challenge-item { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-challenge-name { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.co-challenge-reward { font-size: 0.65rem; color: var(--accent); font-weight: 600; }
+
+/* ===== ACHIEVEMENTS ===== */
+.co-achievement-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0.4rem;
+}
+.co-achievement-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  padding: 0.6rem 0.35rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: center;
+  opacity: 0.4;
+  transition: opacity 0.2s;
+}
+.co-achievement-unlocked { opacity: 1; }
+.co-achieve-icon { font-size: 1.2rem; line-height: 1; }
+.co-achieve-name { font-size: 0.58rem; font-weight: 600; color: var(--text); line-height: 1.2; }
+
+/* ===== RECOVERY FULL ===== */
+.co-recovery-full {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+.co-recovery-ring-wrap { position: relative; width: 80px; height: 80px; flex-shrink: 0; }
+.co-ring-center {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.1rem;
+  font-weight: 800;
+  color: var(--text);
+}
+.co-recovery-data { flex: 1; min-width: 0; }
+.co-reco-label { font-size: 0.85rem; font-weight: 700; color: var(--text); }
+.co-reco-status { font-size: 0.7rem; color: var(--text-secondary); margin-top: 0.1rem; }
+.co-reco-msg { font-size: 0.72rem; color: var(--text-secondary); margin-top: 0.25rem; line-height: 1.4; }
+
+/* ===== FATIGUE / RECOMMENDATIONS ===== */
+.co-fatigue-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.co-fatigue-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--text);
+}
+.co-fatigue-icon { flex-shrink: 0; }
+
+.co-recommendations-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.co-recommendation-item {
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.75rem;
+  color: var(--text);
+  line-height: 1.4;
+}
+
+/* ===== GOAL FULL ===== */
+.co-goal-full { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-goal-type-label { font-size: 0.85rem; font-weight: 800; color: var(--text); text-transform: capitalize; }
+.co-goal-pace { font-size: 0.72rem; color: var(--text-secondary); }
+.co-goal-health { font-size: 0.72rem; color: var(--text-secondary); }
+.co-goal-projection { font-size: 0.72rem; color: var(--accent); font-weight: 600; }
+
+/* ===== ACTIONS LIST ===== */
+.co-actions-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.co-action-item {
+  display: flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.5rem 0.65rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 0.78rem;
+  color: var(--text);
+}
+.co-action-icon { flex-shrink: 0; }
+
+/* ===== STRATEGY ===== */
+.co-strategy-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+.co-strategy-item { display: flex; flex-direction: column; gap: 0.15rem; }
+.co-strat-label { font-size: 0.65rem; font-weight: 600; color: var(--text-secondary); text-transform: capitalize; }
+.co-strat-value { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+
+.co-strategy-detail { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-strat-rate { font-size: 0.78rem; color: var(--text); font-weight: 600; }
+.co-strat-warnings { display: flex; flex-direction: column; gap: 0.2rem; }
+.co-strat-warn { font-size: 0.72rem; color: var(--orange); line-height: 1.3; }
+
+/* ===== PROGRESS GRID ===== */
+.co-progress-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.35rem; }
+.co-prog-item { font-size: 0.72rem; color: var(--text-secondary); line-height: 1.4; }
+.co-prog-item strong { color: var(--text); }
+
+/* ===== PACE DATA ===== */
+.co-pace-data { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-pace-status { font-size: 0.78rem; color: var(--text); }
+.co-pace-achieved { font-size: 0.72rem; color: var(--text-secondary); font-weight: 600; }
+.co-pace-projection { font-size: 0.7rem; color: var(--accent); font-weight: 600; }
+
+/* ===== REPORT DETAIL ===== */
+.co-report-detail { display: flex; flex-direction: column; gap: 0.25rem; }
+.co-report-score-big { font-size: 0.82rem; color: var(--text); }
+.co-report-score-big strong { color: var(--accent); }
+.co-report-assessment-label { font-size: 0.72rem; color: var(--text-secondary); }
+.co-report-limiter { font-size: 0.72rem; color: var(--orange); }
+
+/* ===== SETTINGS LIST ===== */
+.co-settings-list { display: flex; flex-direction: column; gap: 0.3rem; }
+.co-setting-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0.4rem 0;
+  font-size: 0.78rem;
+  border-bottom: 1px solid var(--border);
+}
+.co-setting-item:last-child { border-bottom: none; }
+.co-setting-val { font-weight: 600; color: var(--text); }
+
+/* ===== GRID / CHIP / DIVIDER ===== */
+.co-grid { display: grid; gap: 0.5rem; }
+.co-grid-2 { grid-template-columns: 1fr 1fr; }
+.co-grid-3 { grid-template-columns: 1fr 1fr 1fr; }
+
+.co-chip {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.2rem 0.5rem;
+  font-size: 0.6rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--surface-2);
+  border-radius: 999px;
+}
+.co-chip-active { color: var(--accent); background: rgba(0, 210, 106, 0.12); }
+
+.co-divider {
+  height: 1px;
+  background: var(--border);
+  margin: 0.5rem 0;
+}
+
+/* ===== COACH BADGE ===== */
+.co-badge-icon {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.15rem;
+  font-size: 0.58rem;
+  font-weight: 700;
+  color: var(--text-secondary);
+  padding: 0.1rem 0.35rem;
+  background: var(--surface-2);
+  border-radius: 999px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+/* ===== HOME DASHBOARD COACH BUTTONS ===== */
+.home-coach-btn {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  width: 100%;
+  padding: 0.65rem 0.75rem;
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  text-align: left;
+  transition: background 0.15s, border-color 0.15s;
+}
+.home-coach-btn:hover { background: var(--surface-2); }
+.home-coach-btn:active { background: var(--surface-3); border-color: rgba(255,255,255,0.12); }
+.home-coach-btn:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 480px) {
+  .co-stats-row { grid-template-columns: 1fr 1fr; }
+  .co-duo { grid-template-columns: 1fr; }
+  .co-nutrition-row { grid-template-columns: 1fr; }
+  .co-muscle-grid { grid-template-columns: 1fr; }
+  .co-ex-grid { grid-template-columns: 1fr; }
+  .co-achievement-grid { grid-template-columns: 1fr 1fr; }
+  .co-strategy-grid { grid-template-columns: 1fr; }
+  .co-progress-grid { grid-template-columns: 1fr; }
+  .co-nav { gap: 0.1rem; }
+  .co-nav-item { padding: 0.45rem 0.6rem; }
+}
+
+@media (min-width: 768px) {
+  .co-stats-row { grid-template-columns: repeat(4, 1fr); }
+  .co-muscle-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .co-ex-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .co-duo { grid-template-columns: 1fr 1fr; }
+}
+
+/* ===== MINOR UTILITIES (inherit from parent) ===== */
+.co-header-label { font-size: inherit; }
+.co-icon { line-height: 1; }
+.co-nutrition-targets { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-nutri-target { display: flex; justify-content: space-between; align-items: center; padding: 0.25rem 0; }
+.co-target-label { font-size: 0.72rem; color: var(--text-secondary); }
+.co-target-value { font-size: 0.82rem; font-weight: 700; color: var(--text); }
+.co-nutri-advice { font-size: 0.7rem; color: var(--text-secondary); line-height: 1.4; margin-top: 0.25rem; padding-top: 0.35rem; border-top: 1px solid var(--border); }
+.co-streak-data { font-size: 0.82rem; color: var(--text); }
