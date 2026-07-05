@@ -54,7 +54,7 @@
           <!-- Home Dashboard Screen -->
           <div id="screen-home" class="screen is-active page-container">
             <div id="homeGreeting"></div>
-            <div class="home-section" id="homeWeeklyReport" style="display:none"></div>
+            <div class="home-section is-hidden" id="homeWeeklyReport"></div>
             <div class="home-section">
               <div class="home-section-header">
                 <span class="home-section-label">My Workouts</span>
@@ -75,12 +75,12 @@
           <div id="screen-wo-details" class="screen is-hidden">
             <div class="nw-header">
               <button class="btn-back" id="woDetailsBackBtn">←</button>
-              <span style="flex: 1; font-weight: 700; font-size: 0.9rem" id="woDetailsTitle">Workout</span>
+              <span class="nw-header-title" id="woDetailsTitle">Workout</span>
               <button class="btn-back" id="woDetailsMenuBtn" style="position:static">•••</button>
             </div>
             <div style="padding: 0.75rem;overflow-y:auto">
               <div id="woDetailsBody"></div>
-              <button class="btn-primary" id="woDetailsStartBtn" style="width:100%;margin-top:0.75rem">Start Workout</button>
+              <button class="btn-primary" id="woDetailsStartBtn" class="btn-block mt-md">Start Workout</button>
             </div>
           </div>
 
@@ -88,7 +88,7 @@
           <div id="screen-new-workout" class="screen is-hidden">
             <div class="nw-header">
               <button class="btn-back" id="nwBackBtn">←</button>
-              <span style="flex:1;font-weight:700;font-size:0.9rem">New Workout</span>
+              <span class="nw-header-title">New Workout</span>
               <button class="nw-done-btn" id="nwSaveBtn" disabled>Save</button>
             </div>
             <div class="nw-body">
@@ -186,7 +186,7 @@
               <div id="edTargetCard"></div>
               <div id="edProgressTracker"></div>
               <div class="ed-set-list" id="edSetList"></div>
-              <button class="skip-warmups-btn" id="skipWarmupsBtn" style="display: none">⏭ Skip Warm-Ups</button>
+              <button class="skip-warmups-btn" id="skipWarmupsBtn" class="is-hidden">⏭ Skip Warm-Ups</button>
               <div class="qa-bar" id="qaBar">
                 <button class="qa-btn" id="qaRepeatLast">↻ Repeat Last</button>
                 <button class="qa-btn" id="qaAddEmpty">+ Add Set</button>
@@ -274,9 +274,9 @@
                   </div>
                 </div>
 
-                <div style="display:flex;gap:0.5rem;margin-top:0.5rem">
-                  <button class="btn-secondary" id="esEditDeleteBtn" style="flex:1">Delete</button>
-                  <button class="btn-primary" id="esCompleteBtn" style="flex:1">Save</button>
+                <div class="flex-row gap-sm mt-sm">
+                  <button class="btn-secondary" id="esEditDeleteBtn" class="btn-fill">Delete</button>
+                  <button class="btn-primary" id="esCompleteBtn" class="btn-fill">Save</button>
                 </div>
               </div>
             </div>
@@ -310,7 +310,7 @@
 
           <!-- Custom Exercise Modal -->
           <div class="modal-overlay is-hidden" id="customExModal">
-            <div class="modal-card" style="max-width: 360px">
+            <div class="modal-card" class="modal-card-narrow" style="max-width:360px">
               <div class="modal-header">
                 <h2>Custom Exercise</h2>
                 <button class="modal-close" id="customExClose">✕</button>
@@ -347,7 +347,7 @@
                   autocomplete="off"
                 />
               </div>
-              <div class="modal-actions" style="margin-top: 1rem">
+              <div class="modal-actions" class="mt-md">
                 <button class="btn-primary" id="customExSave">Add Exercise</button>
               </div>
             </div>
@@ -381,12 +381,12 @@
               <div class="ml-fields">
                 <input type="text" id="ewName" class="ml-field" placeholder="Workout name" maxlength="40" autocomplete="off" />
                 <div class="ml-flex-between">
-                  <span class="section-label" style="margin:0">Exercises</span>
+                  <span class="section-label" class="m-0">Exercises</span>
                   <button class="btn-secondary" id="ewAddExercise" style="font-size:0.72rem;min-height:30px;padding:0 0.65rem">+ Add</button>
                 </div>
                 <div id="ewExerciseList" class="edit-ex-list"></div>
                 <div id="ewAddPicker" class="is-hidden" style="flex-direction:column;gap:0.4rem;padding:0.5rem;background:var(--surface-2);border-radius:var(--radius-sm)">
-                  <input type="text" id="ewSearch" class="ml-field" style="min-height:36px" placeholder="Search exercise..." autocomplete="off" />
+                  <input type="text" id="ewSearch" class="ml-field" class="mh-36" placeholder="Search exercise..." autocomplete="off" />
                   <div id="ewSearchResults" style="display:flex;flex-direction:column;gap:0.2rem;max-height:200px;overflow-y:auto"></div>
                 </div>
               </div>
@@ -439,7 +439,7 @@
                 <button class="modal-close" id="peClose">✕</button>
               </div>
               <div class="ml-fields" style="max-height:70vh;overflow-y:auto;padding-right:0.25rem">
-                <div class="section-label" style="margin-top:0.25rem">Personal</div>
+                <div class="section-label" class="mt-xs">Personal</div>
                 <input type="text" id="peName" class="ml-field" placeholder="Name" maxlength="30" autocomplete="off" />
                 <input type="number" id="peAge" class="ml-field" placeholder="Age" min="10" max="120" />
                 <select id="peGender" class="ml-select">
@@ -721,7 +721,7 @@
             <span class="new-wo-option-title">Generate Workout</span>
             <span class="new-wo-option-desc">Let the system build a workout automatically</span>
           </button>
-          <button class="btn-secondary" id="newWoCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
+          <button class="btn-secondary" id="newWoCancel" class="btn-block mt-sm">Cancel</button>
         </div>
       </div>
     </div>
@@ -739,8 +739,8 @@
           <div class="onboard-step-label" id="gmStepBadge">Step 1 of 11</div>
           <div class="onboard-time-label" id="gmTimeLabel">About 2 min</div>
         </div>
-        <div class="onboard-stage" style="padding-bottom:0">
-          <div class="ob-title" id="gmStepTitle" style="font-size:1.4rem;margin-top:0">Where do you train?</div>
+        <div class="onboard-stage" class="pb-0">
+          <div class="ob-title" id="gmStepTitle" class="fw-700" style="font-size:1.4rem;margin-top:0">Where do you train?</div>
           <div class="ob-desc gn-desc" id="gmStepDesc">Select your training environment</div>
           <div class="gn-body" id="gmBody"></div>
         </div>
@@ -760,13 +760,13 @@
             </div>
             <div class="gm-ol-title">Program Created Successfully</div>
             <div class="gm-ol-desc">Your workouts are now ready.</div>
-            <button class="ob-btn-primary" id="gmViewProgramBtn" style="min-height:50px;font-size:0.95rem">View Program</button>
+            <button class="ob-btn-primary" id="gmViewProgramBtn" class="mh-50">View Program</button>
           </div>
           <div class="gm-overlay-inner is-hidden" id="gmFailure">
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="15" y1="9" x2="9" y2="15"/><line x1="9" y1="9" x2="15" y2="15"/></svg>
             <div class="gm-ol-title">Save Failed</div>
             <div class="gm-ol-desc" id="gmFailureReason"></div>
-            <button class="ob-btn-secondary" id="gmFailureClose" style="min-height:44px">Close</button>
+            <button class="ob-btn-secondary" id="gmFailureClose" class="mh-44">Close</button>
           </div>
         </div>
       </div>
@@ -950,7 +950,7 @@
     <div class="onboard-overlay is-hidden" id="onboardConfirmModal">
       <div class="onboard-modal" style="max-width: 380px; text-align: center;">
         <div class="onboard-skip-content" style="padding: 2.5rem 2rem;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-md"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
           <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem;">Skip Setup?</h3>
           <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.5;">You can complete your profile later from Settings.</p>
           <div style="display: flex; flex-direction: column; gap: 0.65rem;">
@@ -1047,11 +1047,11 @@
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.75rem">
           For compound lifts — enter your working weight to get warmup sets.
         </p>
-        <input type="number" id="warmupWeight" class="modal-input" style="min-height: 44px" placeholder="Working weight (kg)" min="1" max="500" />
-        <div class="modal-actions" style="margin-top: 0.75rem">
+        <input type="number" id="warmupWeight" class="modal-input" class="mh-44" placeholder="Working weight (kg)" min="1" max="500" />
+        <div class="modal-actions" class="mt-md">
           <button class="btn-primary" id="warmupGenerateBtn">Generate</button>
         </div>
-        <div id="warmupResult" style="margin-top: 0.5rem"></div>
+        <div id="warmupResult" class="mt-sm"></div>
       </div>
     </div>
 
@@ -1062,8 +1062,8 @@
           <h2>Edit Goal</h2>
           <button class="modal-close" id="goalEditorClose">✕</button>
         </div>
-        <input type="text" id="goalEditorName" class="modal-input" style="min-height: 44px" placeholder="Goal name (e.g. Bench Press)" inputmode="text" autocomplete="off" />
-        <input type="number" id="goalEditorTarget" class="modal-input" style="min-height: 44px" placeholder="Target (kg or reps)" min="1" max="9999" inputmode="decimal" />
+        <input type="text" id="goalEditorName" class="modal-input" class="mh-44" placeholder="Goal name (e.g. Bench Press)" inputmode="text" autocomplete="off" />
+        <input type="number" id="goalEditorTarget" class="modal-input" class="mh-44" placeholder="Target (kg or reps)" min="1" max="9999" inputmode="decimal" />
         <div class="modal-actions">
           <button class="btn-primary" id="goalEditorSave">Save Goal</button>
           <button class="btn-secondary" id="goalEditorDelete">Delete</button>
@@ -1076,7 +1076,7 @@
       <div class="bottom-sheet-overlay" id="wlOverlay"></div>
       <div class="bottom-sheet-card" style="max-width:360px">
         <div class="bottom-sheet-handle"></div>
-        <div class="bottom-sheet-body" style="text-align:center">
+        <div class="bottom-sheet-body" class="ta-center">
           <div class="wl-title">Log Today's Weight</div>
           <div class="wl-display-wrap">
             <button class="wl-btn" id="wlMinus">−</button>
@@ -1087,8 +1087,8 @@
             <button class="wl-btn" id="wlPlus">+</button>
           </div>
           <div style="display:flex;gap:0.75rem;margin-top:0.5rem">
-            <button class="btn-secondary" id="wlCancel" style="flex:1">Cancel</button>
-            <button class="btn-primary" id="wlSave" style="flex:1" disabled>Save</button>
+            <button class="btn-secondary" id="wlCancel" class="btn-fill">Cancel</button>
+            <button class="btn-primary" id="wlSave" class="btn-fill" disabled>Save</button>
           </div>
         </div>
       </div>
@@ -1142,7 +1142,7 @@
         <div class="bottom-sheet-body">
           <div class="as-title" id="waTitle">Workout Actions</div>
           <div class="wa-list" id="waList"></div>
-          <button class="btn-secondary" id="waCancel" style="width:100%;margin-top:0.5rem">Cancel</button>
+          <button class="btn-secondary" id="waCancel" class="btn-block mt-sm">Cancel</button>
         </div>
       </div>
     </div>
@@ -1181,6 +1181,11 @@
   <script defer src="js/data/prs.js"></script>
   <script defer src="js/problem-database.js"></script>
   <script defer src="js/lesson-database.js"></script>
+  <script defer src="core/engine-types.js"></script>
+  <script defer src="core/engine-calculators.js"></script>
+  <script defer src="core/engine-rules.js"></script>
+  <script defer src="core/engine-validator.js"></script>
+  <script defer src="core/engine-coach.js"></script>
   <script defer src="js/goal-center.js"></script>
   <script defer src="js/cas-engine.js"></script>
   <script defer src="js/adaptive-engine.js"></script>

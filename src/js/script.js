@@ -6,6 +6,19 @@ const CAL_GOAL = 2100;
 const WATER_TARGET = 3000;
 const DEFAULT_REST = 90;
 
+window.addEventListener("error", (e) => {
+  if (typeof showToast === "function") {
+    showToast("Something went wrong. Try refreshing.");
+  }
+  console.error(e.error || e.message);
+});
+window.addEventListener("unhandledrejection", (e) => {
+  if (typeof showToast === "function") {
+    showToast("Something went wrong. Try refreshing.");
+  }
+  console.error(e.reason);
+});
+
 let _chartJsPromise = null;
 function loadChartJS() {
   if (typeof Chart !== "undefined") return Promise.resolve();
@@ -2706,6 +2719,7 @@ function renderGoalPrediction() {
 
 function renderBodyMeasurements() {
   const container = document.getElementById("bodyMeasurementsCard");
+  if (!state.user) { container.innerHTML = ""; return; }
   const bm = (state.user.bodyMeasurements || {});
   const entries = Object.entries(bm).filter(([k]) => k !== "bodyFat");
   if (!Object.keys(bm).length) {
@@ -6739,13 +6753,13 @@ function getCategoryById(id) {
 }
 
 function getGoalRelevance(lesson) {
-  const goal = GoalCenter.getGoalType();
+  const goal = getGoalType();
   const map = { "build-muscle": "muscle", "lose-fat": "fat", "strength": "strength", "general": "general", "athletic": "athletic" };
   return lesson.goalRelevance[goal] || "medium";
 }
 
 function getRecommendedLessons() {
-  const goal = GoalCenter.getGoalType();
+  const goal = getGoalType();
   const progress = getLearningProgress();
   const weightTrend = (state.weightLog || []).length > 2 ? getWeightTrend() : null;
   const weekCount = (state.sessions || []).filter(s => {
@@ -6882,7 +6896,7 @@ function renderLessonDetail(lessonId) {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
   const progress = getLearningProgress();
-  const goal = GoalCenter.getGoalType();
+  const goal = getGoalType();
   const goalLabel = goal === "build-muscle" ? "Muscle Gain" : goal === "lose-fat" ? "Fat Loss" : goal === "strength" ? "Strength" : goal === "athletic" ? "Athletic" : "General";
   const isCompleted = progress.completed.includes(lesson.id);
   const isSaved = progress.saved.includes(lesson.id);
@@ -7006,18 +7020,34 @@ function renderLessonDetail(lessonId) {
   document.getElementById("lhApplyBtn")?.addEventListener("click", () => {
     const type = document.getElementById("lhApplyBtn").dataset.applyType;
     if (type === "protein") {
-      const w = (state.user && state.user.weight) || 70;
-      const g = GoalCenter.getGoalType();
-      const mult = g === "lose-fat" ? 2.2 : 2.0;
-      const target = Math.round(w * mult);
+      let target;
+      if (typeof CoachEngine !== "undefined") {
+        const profile = CoachEngine.buildProfile(state);
+        const engineResult = CoachEngine.generate(profile);
+        target = engineResult?.nutrition?.protein?.recommended;
+      }
+      if (!target) {
+        const w = (state.user && state.user.weight) || 70;
+        const g = getGoalType();
+        const mult = g === "lose-fat" ? 2.2 : 2.0;
+        target = Math.round(w * mult);
+      }
       showToast(`Protein target set to ${target}g/day`);
     } else if (type === "steps") {
       showToast("Daily step target set to 10,000 steps");
     } else if (type === "calories") {
       showToast("Deficit target adjusted");
     } else if (type === "water") {
-      const w = (state.user && state.user.weight) || 70;
-      const target = (w * 0.04).toFixed(1);
+      let target;
+      if (typeof CoachEngine !== "undefined") {
+        const profile = CoachEngine.buildProfile(state);
+        const engineResult = CoachEngine.generate(profile);
+        target = engineResult?.nutrition?.water?.liters;
+      }
+      if (!target) {
+        const w = (state.user && state.user.weight) || 70;
+        target = (w * 0.04).toFixed(1);
+      }
       showToast(`Water target set to ${target}L/day`);
     }
   });
@@ -7039,7 +7069,7 @@ function getExerciseById(id) {
 const _encExs = () => EXERCISE_LIBRARY.filter(e => e.description);
 
 function getRecommendedExercises() {
-  const goal = GoalCenter.getGoalType();
+  const goal = getGoalType();
   const goalMap = { "build-muscle": "buildMuscle", "lose-fat": "loseFat", "strength": "strength" };
   const goalKey = goalMap[goal] || "buildMuscle";
   const goalPriority = goal === "build-muscle" ? ["Muscle Gain", "Hypertrophy", "General Fitness"] : goal === "lose-fat" ? ["Fat Loss", "Endurance", "General Fitness"] : goal === "strength" ? ["Strength", "Athletic Performance", "General Fitness"] : ["General Fitness"];
@@ -7065,7 +7095,7 @@ function getExerciseCategoryAbbr(cat) {
 function renderExerciseEncyclopedia() {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
-  const goal = GoalCenter.getGoalType();
+  const goal = getGoalType();
   const recommendations = getRecommendedExercises();
   const activeCat = "All";
   const activeEquip = "All";
@@ -9465,7 +9495,10 @@ document.addEventListener("click", (e) => {
 
 function isProfileComplete() {
   const u = state.user;
-  return !!(u && u.name && u.name !== "Athlete" && u.age && u.height && u.weight);
+  if (!u) return false;
+  return !!(u.name && u.name !== "Athlete" && u.age && u.gender && u.height && u.weight
+    && u.goal && u.activity && u.experience && u.trainingDays && u.equipment
+    && state.calorieTarget && state.proteinGoal && state.waterGoal);
 }
 
 const OB_STEPS_CONFIG = [
@@ -9480,6 +9513,10 @@ const OB_STEPS_CONFIG = [
 let obData = {};
 
 let isProfileEdit = false;
+
+function getGoalType() {
+  return typeof GoalCenter !== "undefined" && typeof GoalCenter.getGoalType === "function" ? GoalCenter.getGoalType() : (state.user && state.user.goal) || "general";
+}
 
 function openOnboarding(animateIn, startStep) {
   obData = {};
@@ -9756,6 +9793,14 @@ function escapeHtml(str) {
 
 function obRenderDoneScreen() {
   return `<div class="ob-done">
+    <div class="celebration-overlay">
+      <div class="celebration-particle"></div>
+      <div class="celebration-particle"></div>
+      <div class="celebration-particle"></div>
+      <div class="celebration-particle"></div>
+      <div class="celebration-particle"></div>
+      <div class="celebration-particle"></div>
+    </div>
     <div class="ob-coach-wrap ob-coach-done">
       <svg class="ob-coach-svg ob-coach-svg-done" viewBox="0 0 200 220" fill="none">
         <circle cx="100" cy="110" r="85" fill="var(--accent)" opacity="0.08"/>
@@ -9773,10 +9818,10 @@ function obRenderDoneScreen() {
         <rect x="104" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
       </svg>
     </div>
-    <div class="ob-done-title">Awesome!<br>Everything is ready.</div>
+    <div class="ob-done-title celebration-bounce">Awesome!<br>Everything is ready.</div>
     <div class="ob-done-desc">I've built your profile.<br>Now let's create your first workout.</div>
     <div class="ob-done-actions">
-      <button class="ob-btn-primary ob-btn-glow" id="obGenFirstBtn">Generate My First Program</button>
+      <button class="ob-btn-primary ob-btn-glow celebration-glow" id="obGenFirstBtn">Generate My First Program</button>
       <button class="ob-btn-link" id="obExploreBtn">Explore IronLog</button>
     </div>
   </div>`;
@@ -9943,6 +9988,20 @@ function obFinishSetup() {
   state.user.goal = mappedGoal;
   state.bodyGoal = mappedGoal;
 
+  if (typeof CoachEngine !== "undefined") {
+    state.user.bodyFat = state.user.bodyMeasurements?.bodyFat || null;
+    const profile = CoachEngine.buildProfile(state);
+    const engResult = CoachEngine.generate(profile);
+    if (!state.calorieTarget && engResult?.energy?.target) {
+      state.calorieTarget = engResult.energy.target;
+    }
+    if (!state.proteinGoal && engResult?.nutrition?.protein?.recommended) {
+      state.proteinGoal = engResult.nutrition.protein.recommended;
+    }
+    if (!state.waterGoal && engResult?.nutrition?.water?.ml) {
+      state.waterGoal = engResult.nutrition.water.ml;
+    }
+  }
   if (!state.calorieTarget) {
     state.calorieTarget = obData.goalType === "fat-loss" ? Math.round(w * 28) : obData.goalType === "muscle-gain" ? Math.round(w * 34) : Math.round(w * 30);
   }
@@ -11271,7 +11330,7 @@ function openProfileEditor() {
   document.getElementById("peGender").value = user.gender || "";
   document.getElementById("peHeight").value = user.height || "";
   document.getElementById("peWeight").value = user.weight || "";
-  document.getElementById("peGoal").value = GoalCenter.getGoalType() || user.goal || state.bodyGoal || "recomp";
+  document.getElementById("peGoal").value = getGoalType() || user.goal || state.bodyGoal || "recomp";
   document.getElementById("peActivity").value = user.activity || "";
   document.getElementById("peExperience").value = user.experience || "";
   document.getElementById("peTrainingDays").value = user.trainingDays || "";
@@ -11650,7 +11709,7 @@ if (setting === "theme") {
             if (!allowedKeys.has(key)) continue;
             if (arrayKeys.has(key) && !Array.isArray(data[key])) { data[key] = []; }
             if (objKeys.has(key) && (typeof data[key] !== "object" || data[key] === null || Array.isArray(data[key]))) { data[key] = null; }
-            if (boolKeys.has(key) && typeof data[key] !== "boolean") { data[key] = true; }
+            if (boolKeys.has(key) && typeof data[key] !== "boolean") { data[key] = false; }
           }
           Object.assign(state, data);
           saveState();
@@ -11805,7 +11864,7 @@ document.getElementById("ddConfirmBtn")?.addEventListener("click", async () => {
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
     "wl_fav_exercises", "wl_recent_exercises", "wl_profile", "wl_theme",
     "wl_preferred_unit", "wl_nutrition_mode", "wl_generator_profile", "wt_autosave",
-    "ironlog_learning_progress", "ironlog_goal_center", "ironlog_onboarding",
+    "ironlog_learning_progress", "ironlog_goal_center", "ironlog_onboarding", "ironlog_pre_import_backup",
   ];
   const allKeys = Object.keys(localStorage);
   allKeys.forEach((k) => {
@@ -13313,7 +13372,7 @@ function openGenerateWorkout() {
     duration: null,
     cardio: null,
     weakAreas: [],
-    goal: goalMap[GoalCenter.getGoalType()] || goalMap[u?.goal] || null,
+    goal: goalMap[getGoalType()] || goalMap[u?.goal] || null,
     experience: (u && expMap[u.experience]) || null,
     days: (u && u.trainingDays) || null,
     time: null,

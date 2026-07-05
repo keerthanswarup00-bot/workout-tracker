@@ -85,11 +85,12 @@ const CoachEngine = (() => {
   // ============================================================
   function daily() {
     const user = state.user || {};
-    const goal = GoalCenter.getGoalType();
-    const weight = getLastWeight()?.weight || user.weight || 70;
-    const proteinGoal = user.proteinGoal || Math.round(weight * (goal === "lose-fat" ? 2.2 : goal === "build-muscle" ? 2 : 1.8));
+    const goal = CoachEngine.getGoalType();
+    const profile = CoachEngine.buildProfile(state);
+    const engineResult = CoachEngine.generate(profile);
+    const proteinGoal = engineResult?.nutrition?.protein?.recommended || user.proteinGoal || Math.round(profile.weight * 1.6);
+    const waterGoal = engineResult?.nutrition?.water?.liters || (user.waterGoal ? user.waterGoal / 1000 : Math.round(profile.weight * 0.04 * 10) / 10);
     const stepGoal = goal === "lose-fat" ? 12000 : 10000;
-    const waterGoal = Math.round((user.waterGoal || weight * 0.04) * 10) / 10;
     const sleepGoal = 8;
 
     const weekSessions = getWeekSessions();
@@ -604,13 +605,28 @@ const CoachEngine = (() => {
   // ============================================================
   function nutrition() {
     const user = state.user || {};
-    const goal = GoalCenter.getGoalType();
-    const weight = getLastWeight()?.weight || user.weight || 70;
+    const goal = CoachEngine.getGoalType();
+    const profile = CoachEngine.buildProfile(state);
+    const engineResult = CoachEngine.generate(profile);
+    const targetWeight = getLastWeight()?.weight || user.weight || 70;
 
-    const proteinTarget = user.proteinGoal || Math.round(weight * (goal === "lose-fat" ? 2.2 : goal === "build-muscle" ? 2 : 1.8));
-    const waterTarget = Math.round((user.waterGoal || weight * 0.04) * 10) / 10;
+    const proteinTarget = engineResult?.nutrition?.protein?.recommended || user.proteinGoal || Math.round(targetWeight * 1.6);
+    const waterTarget = engineResult?.nutrition?.water?.liters || (user.waterGoal ? user.waterGoal / 1000 : Math.round(targetWeight * 0.04 * 10) / 10);
 
-    const calories = goal === "lose-fat" ? "Maintenance - 400" : goal === "build-muscle" ? "Maintenance + 250" : goal === "strength" ? "Maintenance + 200" : "Maintenance";
+    const calVal = engineResult?.energy?.target;
+    const tdeeVal = engineResult?.energy?.tdee;
+    let calories;
+    if (calVal && tdeeVal) {
+      const diff = calVal - tdeeVal;
+      if (diff < 0) calories = `Maintenance ${diff} kcal`;
+      else if (diff > 0) calories = `Maintenance +${diff} kcal`;
+      else calories = "Maintenance";
+    } else {
+      calories = goal === "lose-fat" ? "Maintenance - 400"
+        : goal === "build-muscle" ? "Maintenance + 250"
+        : goal === "strength" ? "Maintenance + 200"
+        : "Maintenance";
+    }
 
     const mealAdvice = goal === "lose-fat"
       ? "Prioritize lean protein sources and fibrous vegetables. Spread protein across 4 meals."

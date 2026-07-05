@@ -287,12 +287,33 @@ const GoalCenter = (() => {
     if (!hasGoal(profile)) return null;
     const weight = profile.currentWeight || getLatestWeight()?.weight || (state.user?.weight) || 70;
 
-    const strategies = {
+    let engineProtein = null;
+    let engineCalories = null;
+    let engineWater = null;
+    if (typeof CoachEngine !== "undefined") {
+      const engProfile = CoachEngine.buildProfile(state);
+      const engResult = CoachEngine.generate(engProfile);
+      if (engResult.valid) {
+        const p = engResult.nutrition.protein;
+        engineProtein = p ? `${p.recommended}g (${p.low}-${p.high}g)` : null;
+        engineCalories = engResult.energy.target
+          ? (engResult.energy.tdee
+            ? (() => {
+                const diff = engResult.energy.target - engResult.energy.tdee;
+                return diff < 0 ? `Maintenance ${diff} kcal` : diff > 0 ? `Maintenance +${diff} kcal` : "Maintenance";
+              })()
+            : `${engResult.energy.target} kcal`)
+          : null;
+        engineWater = engResult.nutrition.water ? `${engResult.nutrition.water.liters}L` : null;
+      }
+    }
+
+    const goalMap = {
       "fat-loss": {
         targets: {
-          calories: "Maintenance - 400",
-          protein: Math.round(weight * 2.2) + "g",
-          water: (weight * 0.04).toFixed(1) + "L",
+          calories: engineCalories || "Maintenance - 400",
+          protein: engineProtein || Math.round(weight * 2.2) + "g",
+          water: engineWater || (weight * 0.04).toFixed(1) + "L",
           steps: "10,000 - 12,000",
           cardio: "3-5 Sessions",
           sleep: "8 Hours"
@@ -307,9 +328,9 @@ const GoalCenter = (() => {
       },
       "muscle-gain": {
         targets: {
-          calories: "Maintenance + 250",
-          protein: Math.round(weight * 2.0) + "g",
-          water: (weight * 0.04).toFixed(1) + "L",
+          calories: engineCalories || "Maintenance + 250",
+          protein: engineProtein || Math.round(weight * 2.0) + "g",
+          water: engineWater || (weight * 0.04).toFixed(1) + "L",
           steps: "7,000 - 9,000",
           cardio: "1-2 Sessions",
           sleep: "8 Hours"
@@ -324,9 +345,9 @@ const GoalCenter = (() => {
       },
       "strength": {
         targets: {
-          calories: "Maintenance + 200",
-          protein: Math.round(weight * 2.0) + "g",
-          water: (weight * 0.04).toFixed(1) + "L",
+          calories: engineCalories || "Maintenance + 200",
+          protein: engineProtein || Math.round(weight * 2.0) + "g",
+          water: engineWater || (weight * 0.04).toFixed(1) + "L",
           steps: "7,000 - 9,000",
           cardio: "2 Sessions",
           sleep: "8+ Hours"
@@ -341,9 +362,9 @@ const GoalCenter = (() => {
       },
       "general-fitness": {
         targets: {
-          calories: "Maintenance",
-          protein: Math.round(weight * 1.8) + "g",
-          water: (weight * 0.04).toFixed(1) + "L",
+          calories: engineCalories || "Maintenance",
+          protein: engineProtein || Math.round(weight * 1.8) + "g",
+          water: engineWater || (weight * 0.04).toFixed(1) + "L",
           steps: "8,000 - 10,000",
           cardio: "2-3 Sessions",
           sleep: "7-8 Hours"
@@ -357,9 +378,9 @@ const GoalCenter = (() => {
       },
       "endurance": {
         targets: {
-          calories: "Maintenance + 100",
-          protein: Math.round(weight * 1.8) + "g",
-          water: (weight * 0.045).toFixed(1) + "L",
+          calories: engineCalories || "Maintenance + 100",
+          protein: engineProtein || Math.round(weight * 1.8) + "g",
+          water: engineWater || (weight * 0.045).toFixed(1) + "L",
           steps: "12,000 - 15,000",
           cardio: "4-6 Sessions",
           sleep: "8+ Hours"
@@ -374,7 +395,7 @@ const GoalCenter = (() => {
       }
     };
 
-    return strategies[profile.goalType] || strategies["general-fitness"];
+    return goalMap[profile.goalType] || goalMap["general-fitness"];
   }
 
   // ---- Coach Analysis -------------------------------------------------
