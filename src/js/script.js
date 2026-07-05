@@ -2184,8 +2184,8 @@ function renderSettings() {
   <div class="sg">
     <div class="sg-label">FEEDBACK</div>
     <button class="sg-row" data-setting="feedback-bug"><span>🐛 Report a Bug</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="feedback-feature"><span>💡 Suggest a Feature</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="feedback-general"><span>⭐ Share Feedback</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" data-setting="feedback-feature"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg> Suggest a Feature</span><span class="sg-chevron">›</span></button>
+    <button class="sg-row" data-setting="feedback-general"><span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Share Feedback</span><span class="sg-chevron">›</span></button>
   </div>
 
   <!-- SECTION 8: ABOUT -->
@@ -2193,7 +2193,7 @@ function renderSettings() {
     <div class="sg-label">ABOUT</div>
     <div class="sg-row"><span>Version</span><span class="sg-row-val">2.0</span></div>
     <button class="sg-row" data-setting="about-developer"><span>About The Developer</span><span class="sg-chevron">›</span></button>
-    <div class="sg-row" style="cursor:default"><span style="font-size:0.7rem;color:var(--text-secondary)">Built with ❤️</span></div>
+    <div class="sg-row" style="cursor:default"><span style="font-size:0.7rem;color:var(--text-secondary)">Built with <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg></span></div>
   </div>`;
 
   document.getElementById("settingsContent").innerHTML = html;
@@ -2452,7 +2452,7 @@ function generateMuscleInsights(summary) {
   }).slice(0, 3);
   if (undertrained.length > 0) {
     insights.push({
-      icon: "⚠️", severity: "yellow",
+      icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>", severity: "yellow",
       text: `${undertrained.map((m) => m.label).join(", ")} ${undertrained.length === 1 ? "is" : "are"} undertrained. Currently getting <5 weekly sets. Add targeted work.`,
     });
   }
@@ -2463,7 +2463,7 @@ function generateMuscleInsights(summary) {
   }).slice(0, 3);
   if (overtrained.length > 0) {
     insights.push({
-      icon: "⚠️", severity: "red",
+      icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>", severity: "red",
       text: `${overtrained.map((m) => m.label).join(", ")} ${overtrained.length === 1 ? "has" : "have"} unusually high volume (>18 weekly sets). Monitor recovery.`,
     });
   }
@@ -2475,7 +2475,7 @@ function generateMuscleInsights(summary) {
   if (neglected.length > 0 && coverage < 90) {
     const topNeglected = neglected.slice(0, 3);
     insights.push({
-      icon: "🎯", severity: "yellow",
+      icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", severity: "yellow",
       text: `${topNeglected.map((m) => m.label).join(", ")} ${topNeglected.length === 1 ? "has" : "have"} received no direct training. Coverage: <strong>${coverage}%</strong>.`,
     });
   }
@@ -2486,7 +2486,7 @@ function generateMuscleInsights(summary) {
   }).length;
   if (optimal >= 8) {
     insights.push({
-      icon: "✅", severity: "green",
+      icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>", severity: "green",
       text: `${optimal} muscle groups are in the optimal training range (5-14 weekly sets). Excellent balance.`,
     });
   }
@@ -2903,8 +2903,8 @@ function renderHome() {
     <div class="home-qa-row">
       <button class="home-qa-btn primary" id="qaStartWorkout">▶ Start Workout</button>
       <button class="home-qa-btn secondary" id="qaLogWeight">⚖️ Log Weight</button>
-      <button class="home-qa-btn secondary" id="qaGenerate">🤖 Generate</button>
-      <button class="home-qa-btn secondary" id="qaViewProgress">📊 Progress</button>
+      <button class="home-qa-btn secondary" id="qaGenerate"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg> Generate</button>
+      <button class="home-qa-btn secondary" id="qaViewProgress"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Progress</button>
     </div>
 
     <div class="home-dash-card" id="homeDashCard">
@@ -2995,7 +2995,7 @@ function renderHome() {
   if (!sorted.length) {
     container.innerHTML = `
       <div class="empty-state">
-        <div class="empty-state-icon">💪</div>
+        <div class="empty-state-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg></div>
         <div class="empty-state-title">No Workouts Yet</div>
         <div class="empty-state-text">Create your first workout and start building strength today.</div>
         <button class="empty-state-btn" id="emptyStateBuildBtn">Create Workout</button>
@@ -3271,19 +3271,19 @@ function generateWeeklyReport() {
 function generateWeeklyWins(report) {
   if (!report) return [];
   const wins = [];
-  if (report.sessions >= 5) wins.push({ icon: "🔥", text: `${report.sessions} workouts — crushing it` });
-  else if (report.sessions >= 3) wins.push({ icon: "💪", text: `${report.sessions} workouts this week` });
-  if (report.trainedDays >= 5) wins.push({ icon: "📅", text: `Trained ${report.trainedDays} days this week` });
-  if (report.weekPRs >= 3) wins.push({ icon: "🏆", text: `${report.weekPRs} new personal records` });
-  else if (report.weekPRs >= 1) wins.push({ icon: "⭐", text: `${report.weekPRs} PR${report.weekPRs > 1 ? "s" : ""} this week` });
-  if (report.avgScore !== null && report.avgScore >= 80) wins.push({ icon: "🎯", text: `Avg quality score: ${report.avgScore}` });
+  if (report.sessions >= 5) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>", text: `${report.sessions} workouts — crushing it` });
+  else if (report.sessions >= 3) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>", text: `${report.sessions} workouts this week` });
+  if (report.trainedDays >= 5) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>", text: `Trained ${report.trainedDays} days this week` });
+  if (report.weekPRs >= 3) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>", text: `${report.weekPRs} new personal records` });
+  else if (report.weekPRs >= 1) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>", text: `${report.weekPRs} PR${report.weekPRs > 1 ? "s" : ""} this week` });
+  if (report.avgScore !== null && report.avgScore >= 80) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", text: `Avg quality score: ${report.avgScore}` });
   if (report.weightChange !== null && report.weightChange < 0) wins.push({ icon: "⬇️", text: `Lost ${Math.abs(report.weightChange).toFixed(1)}kg this week` });
   if (report.weightChange !== null && report.weightChange > 0.5) wins.push({ icon: "⬆️", text: `Gained ${report.weightChange.toFixed(1)}kg this week` });
-  if (report.goalProgress && report.goalProgress.status === "on-track" && report.goalProgress.progress > 0) wins.push({ icon: "🎯", text: `Goal progress: ${report.goalProgress.progress}%` });
-  if (report.consistency >= 80) wins.push({ icon: "🎯", text: `${report.consistency}% consistency` });
+  if (report.goalProgress && report.goalProgress.status === "on-track" && report.goalProgress.progress > 0) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", text: `Goal progress: ${report.goalProgress.progress}%` });
+  if (report.consistency >= 80) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", text: `${report.consistency}% consistency` });
   const streak = getStreak();
-  if (streak >= 7) wins.push({ icon: "🔥", text: `${streak}-day streak` });
-  if (wins.length === 0) wins.push({ icon: "💪", text: "Keep showing up — every workout counts" });
+  if (streak >= 7) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>", text: `${streak}-day streak` });
+  if (wins.length === 0) wins.push({ icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>", text: "Keep showing up — every workout counts" });
   return wins.slice(0, 4);
 }
 
@@ -3341,7 +3341,7 @@ function renderWeeklyReport() {
   const wins = generateWeeklyWins(report);
   reportEl.innerHTML = `
     <div class="home-section-header">
-      <span class="home-section-label">📊 Weekly Summary</span>
+      <span class="home-section-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg> Weekly Summary</span>
     </div>
     <div class="wr-card">
       <div class="wr-grid">
@@ -3628,7 +3628,7 @@ function renderProfileAchievements() {
     </div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:0.5rem">`;
     achievements.forEach(a => {
       html += `<div style="text-align:center;padding:0.5rem;border-radius:8px;background:${a.unlocked ? 'color-mix(in srgb,var(--orange) 15%,transparent)' : 'var(--bg)'};opacity:${a.unlocked ? 1 : 0.35}">
-        <div style="font-size:1.3rem">${a.icon || "🏅"}</div>
+        <div style="font-size:1.3rem">${a.icon || "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="6"/><path d="M15.477 12.89 17 22l-5-3-5 3 1.523-9.11"/></svg>"}</div>
         <div style="font-size:0.6rem;color:var(--text-secondary);margin-top:0.2rem">${a.name || ""}</div>
       </div>`;
     });
@@ -3667,7 +3667,7 @@ function renderProfileScreen() {
       <div class="profile-hero-meta">
         ${memberDate ? `<span>Joined ${memberDate}</span>` : ""}
         <span>${totalWorkouts} workout${totalWorkouts !== 1 ? "s" : ""}</span>
-        <span class="profile-hero-streak">${streak.currentStreak > 0 ? "🔥 " + streak.currentStreak + " day streak" : "No active streak"}</span>
+        <span class="profile-hero-streak">${streak.currentStreak > 0 ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> " + streak.currentStreak + " day streak" : "No active streak"}</span>
       </div>
     </div>
   `;
@@ -4053,23 +4053,23 @@ function renderTodayMotivation() {
   let icon = "";
   if (streak >= 3) {
     message = `${streak} Day Streak. Keep showing up.`;
-    icon = "🔥";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>";
   } else if (latestPR) {
     const prName = latestPR.exerciseName.replace(/([A-Z])/g, " $1").trim();
     message = `New Personal Record. Great work on ${prName}.`;
-    icon = "🏆";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>";
   } else if (proteinHit) {
     message = "Protein Target Hit Yesterday. Recovery starts with consistency.";
-    icon = "🥩";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>";
   } else if (hasGoal) {
     message = `Current Goal: ${goalLabel}. Stay consistent and trust the process.`;
-    icon = "🎯";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>";
   } else if (water >= waterTarget * 0.8) {
     message = "Great hydration today. Your body will thank you.";
-    icon = "💧";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5-1.5-1.2-3-2.5-3-5.5-0 3-1.5 4.3-3 5.5-2 1.6-3 3.5-3 5.5a7 7 0 0 0 7 7z"/></svg>";
   } else if (finishedWorkouts >= 1) {
     message = `${finishedWorkouts} workout${finishedWorkouts > 1 ? "s" : ""} completed. Every rep counts.`;
-    icon = "💪";
+    icon = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>";
   } else {
     return "";
   }
@@ -4100,7 +4100,7 @@ function getGreeting() {
   if (h >= 5 && h < 12) return { text: "Good Morning", emoji: "☀️" };
   if (h >= 12 && h < 16) return { text: "Good Afternoon", emoji: "☕" };
   if (h >= 16 && h < 21) return { text: "Good Evening", emoji: "🌇" };
-  return { text: "Good Night", emoji: "🌙" };
+  return { text: "Good Night", emoji: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>" };
 }
 
 // ===== LEVEL 1: WORKOUT SESSION =====
@@ -4869,7 +4869,7 @@ function showEnhancedSummary(newPRs) {
   session.qualityScore = score;
   saveState();
 
-  document.getElementById("ssTitle").textContent = "💪 Workout Complete";
+  document.getElementById("ssTitle").textContent = "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg> Workout Complete";
   document.getElementById("ssSubtitle").textContent = `${session.workoutName || "Workout"} · ${duration}`;
   const scoreColor = score >= 80 ? "var(--accent)" : score >= 60 ? "var(--yellow)" : "var(--red)";
   document.getElementById("ssGrid").innerHTML = `
@@ -4883,7 +4883,7 @@ function showEnhancedSummary(newPRs) {
   const prTypes = ["weight", "reps"];
   const filteredPRs = newPRs.filter((pr) => prTypes.includes(pr.type)).slice(0, 5);
   const prHtml = filteredPRs.length
-    ? `<div class="ss-section-title">🏆 PRs</div>` + filteredPRs.map((pr) => {
+    ? `<div class="ss-section-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg> PRs</div>` + filteredPRs.map((pr) => {
         const typeLabel = pr.type === "weight" ? "Weight PR" : "Rep PR";
         const exName = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
         return `<div class="ss-pr-item"><span class="ss-pr-label">${typeLabel}</span><span class="ss-pr-detail">${exName} · ${pr.weight} kg × ${pr.reps}</span></div>`;
@@ -5195,7 +5195,7 @@ function renderGoals() {
         })
         .join("")
     : `<div class="empty-state" style="padding:1.5rem 0">
-      <div class="empty-state-icon">🎯</div>
+      <div class="empty-state-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
       <div class="empty-state-title">No Goals Set</div>
       <div class="empty-state-text">Set a goal to track your progress toward a specific weight, lift, or habit.</div>
     </div>`;
@@ -5858,11 +5858,11 @@ function renderWarmupStatus(ex) {
   const total = warmups.length;
   if (done === total)
     return `<div class="ed-wu-status is-done">
-    <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
+    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
     <span class="ed-wu-badge">✓</span>
   </div>`;
   return `<div class="ed-wu-status">
-    <span>🔥 Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
+    <span><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> Warm-Up <span class="ed-wu-status-label">${done} / ${total} Completed</span></span>
   </div>`;
 }
 
@@ -5953,7 +5953,7 @@ function renderAdherenceGrid() {
   }
   const today = new Date();
   const weeks = 12;
-  let html = `<div class="adherence-header"><span class="streak-label">🔥 ${state.workoutStreak?.currentStreak || 0} day streak</span></div><div class="adherence-grid">`;
+  let html = `<div class="adherence-header"><span class="streak-label"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> ${state.workoutStreak?.currentStreak || 0} day streak</span></div><div class="adherence-grid">`;
   for (let w = 0; w < weeks; w++) {
     html += `<div class="adherence-week">`;
     for (let d = 0; d < 7; d++) {
@@ -6058,7 +6058,7 @@ function renderTrainingCalendar() {
   let html = ``;
   if (trainedDays.size === 0) {
     html += `<div class="empty-state" style="margin-bottom:0.75rem">
-      <div class="empty-state-icon">📅</div>
+      <div class="empty-state-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg></div>
       <div class="empty-state-title">No Workouts Yet</div>
       <div class="empty-state-text">Complete a workout to see your training calendar fill up with green training days.</div>
     </div>`;
@@ -6472,12 +6472,12 @@ function renderProblemList(query, activeFilter) {
   html += `<input type="text" class="tr-problem-search" id="problemListSearch" placeholder="Search solutions..." value="${query || ""}" />`;
   html += `<div class="tr-cs-filters">${categories.map(c => `<button class="tr-cs-filter${c === (activeFilter || "All") ? " is-active" : ""}" data-filter="${c}">${c}</button>`).join("")}</div>`;
   if (problems.length === 0) {
-    html += `<div class="tr-empty-search"><div class="tr-empty-search-icon">🔍</div><div class="tr-empty-search-text">No solutions found matching "${query || ""}"</div><button class="tr-view-all-btn" id="clearSearchBtn">Clear Search</button></div>`;
+    html += `<div class="tr-empty-search"><div class="tr-empty-search-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg></div><div class="tr-empty-search-text">No solutions found matching "${query || ""}"</div><button class="tr-view-all-btn" id="clearSearchBtn">Clear Search</button></div>`;
   } else {
     html += `<div class="tr-cs-count">${problems.length} solution${problems.length !== 1 ? "s" : ""}</div>`;
     html += `<div class="tr-problems">`;
     html += problems.map(p => {
-      const icon = p.id.includes("weight") ? "⚖️" : p.id.includes("muscle") || p.id.includes("grow") ? "💪" : p.id.includes("bench") || p.id.includes("squat") || p.id.includes("deadlift") || p.id.includes("lockout") || p.id.includes("grip") ? "🏋️" : p.id.includes("sore") || p.id.includes("recover") || p.id.includes("sleep") || p.id.includes("tired") || p.id.includes("energy") || p.id.includes("pain") || p.id.includes("burnout") ? "😴" : p.id.includes("split") || p.id.includes("program") || p.id.includes("progression") || p.id.includes("beginner") ? "📋" : p.id.includes("hungry") || p.id.includes("protein") || p.id.includes("calorie") || p.id.includes("eating") || p.id.includes("diet") || p.id.includes("nutrition") ? "🥗" : p.id.includes("motivation") || p.id.includes("anxiety") || p.id.includes("consistent") || p.id.includes("progress") ? "🎯" : "❓";
+      const icon = p.id.includes("weight") ? "⚖️" : p.id.includes("muscle") || p.id.includes("grow") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>" : p.id.includes("bench") || p.id.includes("squat") || p.id.includes("deadlift") || p.id.includes("lockout") || p.id.includes("grip") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️" : p.id.includes("sore") || p.id.includes("recover") || p.id.includes("sleep") || p.id.includes("tired") || p.id.includes("energy") || p.id.includes("pain") || p.id.includes("burnout") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Z"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 14a4 4 0 0 0 8 0"/></svg>" : p.id.includes("split") || p.id.includes("program") || p.id.includes("progression") || p.id.includes("beginner") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="9" x2="15" y2="9"/><line x1="9" y1="13" x2="15" y2="13"/><line x1="9" y1="17" x2="13" y2="17"/></svg>" : p.id.includes("hungry") || p.id.includes("protein") || p.id.includes("calorie") || p.id.includes("eating") || p.id.includes("diet") || p.id.includes("nutrition") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 6C8 4 4 3 2 5c0 2 1 5 3 8s5 5 8 5c1 0 2 0 3-1"/><path d="M21 13c0-4-2-8-6-9"/><path d="M17 16c.7-.3 1.4-.7 2-1.2"/><path d="M11.5 12.5 21 3"/></svg>" : p.id.includes("motivation") || p.id.includes("anxiety") || p.id.includes("consistent") || p.id.includes("progress") ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>" : "❓";
       return `<button class="tr-problem-card" data-problem-id="${p.id}"><span class="tr-problem-icon">${icon}</span><span class="tr-problem-info"><span class="tr-problem-title">${p.title}</span><span class="tr-problem-category">${p.category}</span></span></button>`;
     }).join("");
     html += `</div>`;
@@ -6593,7 +6593,7 @@ function renderProblemDetail(problemId) {
 
   // 3. Reality Check
   html += `<div class="tr-section"><div class="tr-pd-reality">
-    <div class="tr-pd-reality-icon">💡</div>
+    <div class="tr-pd-reality-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg></div>
     <div class="tr-pd-reality-text">${problem.realityCheck}</div>
   </div></div>`;
 
@@ -6778,7 +6778,7 @@ function renderLearningHub() {
 
   // Progress summary
   const pct = totalLessons > 0 ? Math.round((completedCount / totalLessons) * 100) : 0;
-  html += `<div class="lh-progress"><div class="lh-progress-ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="none" stroke="var(--border)" stroke-width="4"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="${138.23 - (pct / 100) * 138.23}" transform="rotate(-90 28 28)"/></svg><span class="lh-progress-pct">${pct}%</span></div><div class="lh-progress-info"><div class="lh-progress-count">${completedCount} / ${totalLessons} Lessons</div><div class="lh-progress-streak">🔥 ${progress.streak} Day Streak</div></div></div>`;
+  html += `<div class="lh-progress"><div class="lh-progress-ring"><svg width="56" height="56" viewBox="0 0 56 56"><circle cx="28" cy="28" r="22" fill="none" stroke="var(--border)" stroke-width="4"/><circle cx="28" cy="28" r="22" fill="none" stroke="var(--accent)" stroke-width="4" stroke-linecap="round" stroke-dasharray="138.23" stroke-dashoffset="${138.23 - (pct / 100) * 138.23}" transform="rotate(-90 28 28)"/></svg><span class="lh-progress-pct">${pct}%</span></div><div class="lh-progress-info"><div class="lh-progress-count">${completedCount} / ${totalLessons} Lessons</div><div class="lh-progress-streak"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> ${progress.streak} Day Streak</div></div></div>`;
 
   // Recommended For You
   if (recommendations.length > 0) {
@@ -6793,7 +6793,7 @@ function renderLearningHub() {
     const catLessonCount = c.lessons.length || 1;
     const catDone = c.lessons.filter(id => progress.completed.includes(id)).length;
     const catPct = catLessonCount > 0 ? Math.round((catDone / catLessonCount) * 100) : 0;
-    return `<button class="lh-cat-card" data-category-id="${c.id}"${c.color ? ` style="--cat-color:${c.color}"` : ""}><div class="lh-cat-top"><span class="lh-cat-icon">${c.icon || "📖"}</span></div><div class="lh-cat-body"><div class="lh-cat-name">${c.name || "Category"}</div><div class="lh-cat-progress-bar"><div class="lh-cat-progress-fill" style="width:${catPct}%"></div></div><div class="lh-cat-meta">${catDone}/${catLessonCount} · ${catPct}%</div></div></button>`;
+    return `<button class="lh-cat-card" data-category-id="${c.id}"${c.color ? ` style="--cat-color:${c.color}"` : ""}><div class="lh-cat-top"><span class="lh-cat-icon">${c.icon || "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>"}</span></div><div class="lh-cat-body"><div class="lh-cat-name">${c.name || "Category"}</div><div class="lh-cat-progress-bar"><div class="lh-cat-progress-fill" style="width:${catPct}%"></div></div><div class="lh-cat-meta">${catDone}/${catLessonCount} · ${catPct}%</div></div></button>`;
   }).join("");
   html += `</div></div>`;
   html += `</div></div>`;
@@ -6812,7 +6812,7 @@ function renderLearningHub() {
 
 function getLessonIcon(lesson) {
   const cat = LESSON_CATEGORIES.find(c => c.lessons.includes(lesson.id));
-  return cat ? cat.icon : "📖";
+  return cat ? cat.icon : "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>";
 }
 
 function renderLessonCategory(categoryId) {
@@ -7370,7 +7370,7 @@ function renderGoalCenterEmpty() {
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
   container.innerHTML = `<div class="tr-page"><div class="gc-no-goal">
-    <div class="gc-no-goal-icon">🎯</div>
+    <div class="gc-no-goal-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
     <div class="gc-no-goal-title">Set Your First Goal</div>
     <div class="gc-no-goal-desc">Define what you want to achieve and let Goals guide every workout, meal, and milestone.</div>
     <button class="gc-no-goal-btn" id="gcCreateFirstBtn">Create Goal</button>
@@ -7893,7 +7893,7 @@ function renderWeightIntelligence() {
   if (wi.plateau && wi.plateau.isPlateau) {
     html += `<div class="wi-section">
       <div class="wi-alert-card">
-        <div class="wi-alert-icon">📊</div>
+        <div class="wi-alert-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg></div>
         <div class="wi-alert-body">
           <h4>Possible Plateau Detected</h4>
           <p>Your weight has remained unchanged for ${wi.plateau.daysUnchanged} days. Consider reviewing your calorie intake, protein, and activity level.</p>
@@ -8041,12 +8041,12 @@ function renderWeeklyReportPage(weekKey) {
   // COACH SCORE BREAKDOWN
   html += `<div class="wr-section"><div class="wr-section-title">Coach Score Breakdown</div><div class="wr-breakdown">
     ${[ 
-      { key: "workout", label: "Workouts", max: 30, icon: "🏋️" },
-      { key: "protein", label: "Protein", max: 20, icon: "🥩" },
-      { key: "recovery", label: "Recovery", max: 15, icon: "😴" },
+      { key: "workout", label: "Workouts", max: 30, icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️" },
+      { key: "protein", label: "Protein", max: 20, icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>" },
+      { key: "recovery", label: "Recovery", max: 15, icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Z"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 14a4 4 0 0 0 8 0"/></svg>" },
       { key: "activity", label: "Activity", max: 15, icon: "🚶" },
-      { key: "tracking", label: "Tracking", max: 10, icon: "📊" },
-      { key: "consistency", label: "Consistency", max: 10, icon: "🔥" },
+      { key: "tracking", label: "Tracking", max: 10, icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>" },
+      { key: "consistency", label: "Consistency", max: 10, icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>" },
     ].map(item => {
       const data = wf[item.key] || { score: 0, max: item.max, pct: 0 };
       const barColor = data.pct >= 80 ? "var(--accent)" : data.pct >= 50 ? "var(--orange)" : "var(--red)";
@@ -8261,12 +8261,12 @@ function renderReadinessPage() {
 
   // Score Breakdown
   const components = [
-    { key: "sleep", label: "Sleep", icon: "🌙", comp: rdComp.sleep },
-    { key: "trainingLoad", label: "Training Load", icon: "🏋️", comp: rdComp.trainingLoad },
-    { key: "recoveryDays", label: "Recovery Days", icon: "🔄", comp: rdComp.recoveryDays },
-    { key: "protein", label: "Protein", icon: "🥩", comp: rdComp.protein },
-    { key: "consistency", label: "Consistency", icon: "🔥", comp: rdComp.consistency },
-    { key: "goalStress", label: "Goal Stress", icon: "🎯", comp: rdComp.goalStress },
+    { key: "sleep", label: "Sleep", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>", comp: rdComp.sleep },
+    { key: "trainingLoad", label: "Training Load", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️", comp: rdComp.trainingLoad },
+    { key: "recoveryDays", label: "Recovery Days", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>", comp: rdComp.recoveryDays },
+    { key: "protein", label: "Protein", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>", comp: rdComp.protein },
+    { key: "consistency", label: "Consistency", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>", comp: rdComp.consistency },
+    { key: "goalStress", label: "Goal Stress", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", comp: rdComp.goalStress },
   ];
   html += `<div class="rr-section"><div class="rr-section-title">Recovery Score Breakdown</div><div class="rr-breakdown">`;
   components.forEach((c) => {
@@ -8333,7 +8333,7 @@ function renderReadinessPage() {
   if (rec.recommendations && rec.recommendations.length > 0) {
     html += `<div class="rr-section"><div class="rr-section-title">Recommendations</div><div class="rr-card">`;
     rec.recommendations.forEach((r) => {
-      const actionIcon = r.action === "push" ? "🔥" : r.action === "rest" ? "😴" : r.action === "reduce" ? "⚡" : r.action === "sleep" ? "🌙" : r.action === "nutrition" ? "🥩" : "💧";
+      const actionIcon = r.action === "push" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>" : r.action === "rest" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a9 9 0 1 0 9 9 9 9 0 0 0-9-9Z"/><path d="M9 9h.01"/><path d="M15 9h.01"/><path d="M8 14a4 4 0 0 0 8 0"/></svg>" : r.action === "reduce" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>" : r.action === "sleep" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"/></svg>" : r.action === "nutrition" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>" : "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22a7 7 0 0 0 7-7c0-2-1-3.9-3-5.5-1.5-1.2-3-2.5-3-5.5-0 3-1.5 4.3-3 5.5-2 1.6-3 3.5-3 5.5a7 7 0 0 0 7 7z"/></svg>";
       html += `<div class="rr-rec-item"><span class="rr-rec-icon">${actionIcon}</span><span class="rr-rec-text">${r.text}</span></div>`;
     });
     html += `</div></div>`;
@@ -8370,7 +8370,7 @@ function renderChallengesPage() {
   const hasAnyChallenge = ch.daily || (ch.weekly || []).length > 0 || (ch.monthly || []).length > 0;
   if (!hasAnyChallenge) {
     html += `<div class="cas-section"><div class="tr-empty-state" style="padding:1.5rem 0">
-      <div class="tr-empty-icon">🏆</div>
+      <div class="tr-empty-icon"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg></div>
       <div class="tr-empty-title">No Active Challenges</div>
       <div class="tr-empty-desc">Create a goal to receive personalized challenges.</div>
     </div></div>`;
@@ -8479,7 +8479,7 @@ function renderMilestonesPage() {
   const allAch = ACHIEVEMENT_DB || cas.achievements.all || [];
   const categories = ["consistency", "nutrition", "tracking", "goals", "strength", "learning"];
   const catLabels = { consistency: "Consistency", nutrition: "Nutrition", tracking: "Weight Tracking", goals: "Goals", strength: "Strength", learning: "Learning" };
-  const catIcons = { consistency: "🔥", nutrition: "🥩", tracking: "⚖️", goals: "🎯", strength: "🏆", learning: "📖" };
+  const catIcons = { consistency: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>", nutrition: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>", tracking: "⚖️", goals: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", strength: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>", learning: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>" };
 
   let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
 
@@ -8493,7 +8493,7 @@ function renderMilestonesPage() {
     catAchs.forEach((a) => {
       const isUnlocked = unlocked.has(a.id);
       html += `<div class="cas-ach-card ${isUnlocked ? "cas-ach-unlocked" : "cas-ach-locked"}">
-        <div class="cas-ach-icon">${isUnlocked ? a.icon : "🔒"}</div>
+        <div class="cas-ach-icon">${isUnlocked ? a.icon : "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>"}</div>
         <div class="cas-ach-info">
           <div class="cas-ach-name">${a.label}</div>
           <div class="cas-ach-desc">${a.desc}</div>
@@ -8519,10 +8519,10 @@ function renderStreaksPage() {
   if (!cas) { container.innerHTML = "<div class='tr-page'><div class='tr-section'>CAS data unavailable.</div></div>"; return; }
 
   const streakKeys = [
-    { key: "workout", label: "Workout Streak", icon: "🏋️", color: "var(--accent)" },
-    { key: "protein", label: "Protein Streak", icon: "🥩", color: "var(--blue)" },
+    { key: "workout", label: "Workout Streak", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️", color: "var(--accent)" },
+    { key: "protein", label: "Protein Streak", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>", color: "var(--blue)" },
     { key: "weightLogging", label: "Weight Log Streak", icon: "⚖️", color: "var(--orange)" },
-    { key: "learning", label: "Learning Streak", icon: "📖", color: "var(--yellow)" },
+    { key: "learning", label: "Learning Streak", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>", color: "var(--yellow)" },
   ];
 
   let html = `<div class="rr-page"><div class="wr-back" id="casBackBtn"><span class="wr-back-arrow">←</span> <span>Back</span></div>`;
@@ -8631,7 +8631,7 @@ function renderCoachCommandCenter() {
   if (ad && ad.recommendations && ad.recommendations.length > 0) {
     html += `<div class="cc-section"><div class="cc-section-label">Recommended Actions</div>`;
     ad.recommendations.slice(0, 4).forEach((r) => {
-      const recIcon = r.type === "lesson" ? "📖" : r.type === "challenge" ? "🎯" : r.type === "recovery" ? "🔄" : r.type === "action" ? "⚡" : r.type === "insight" ? "💡" : "•";
+      const recIcon = r.type === "lesson" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>" : r.type === "challenge" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>" : r.type === "recovery" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>" : r.type === "action" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>" : r.type === "insight" ? "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18h6"/><path d="M10 22h4"/><path d="M15.09 14c.18-.98.65-1.74 1.41-2.5A4.65 4.65 0 0 0 18 8 6 6 0 0 0 6 8c0 1 .23 2.23 1.5 3.5A4.61 4.61 0 0 1 8.91 14"/></svg>" : "•";
       html += `<div class="cc-rec-item"><span class="cc-rec-icon">${recIcon}</span><span class="cc-rec-text">${r.label}</span></div>`;
     });
     html += `</div>`;
@@ -8902,7 +8902,7 @@ function openCalendarDateSheet(session) {
   const sessionPRs = getTodayPRs(session.dateKey);
   const prCount = sessionPRs.length;
 
-  document.getElementById("cdsWorkout").textContent = `🔥 ${workoutName}`;
+  document.getElementById("cdsWorkout").textContent = `<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg> ${workoutName}`;
   document.getElementById("cdsDate").textContent = dateStr + (muscles.length ? ` · ${muscles.join(" · ")}` : "");
   document.getElementById("cdsDuration").textContent = durStr;
   document.getElementById("cdsSets").textContent = totalSets;
@@ -8914,7 +8914,7 @@ function openCalendarDateSheet(session) {
     prList.style.display = "block";
     prList.innerHTML = sessionPRs.slice(0, 5).map((pr) => {
       const name = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
-      return `<div class="cal-date-pr-item">🏆 ${name} · ${displayWeight(pr.weight)} × ${pr.reps}</div>`;
+      return `<div class="cal-date-pr-item"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg> ${name} · ${displayWeight(pr.weight)} × ${pr.reps}</div>`;
     }).join("");
   } else {
     prList.style.display = "none";
@@ -9014,7 +9014,7 @@ function openWorkoutReport(session) {
       return true;
     });
     prHtml = `<div class="wr-pr-block">
-      <div class="wr-pr-title">🏆 Personal Records</div>
+      <div class="wr-pr-title"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg> Personal Records</div>
       ${unique.map((pr) => {
         const name = (pr.exerciseName || "").replace(/([A-Z])/g, " $1").trim();
         const typeLabel = pr.type === "weight" ? "New Weight PR" : pr.type === "reps" ? "New Rep PR" : "New Volume PR";
@@ -9511,7 +9511,7 @@ function obGoToStep(index) {
 function obRenderStepContent(stepId) {
   if (stepId === "welcome") {
     return `<div style="text-align:center;padding:1.5rem 0">
-      <div style="font-size:3.5rem;margin-bottom:0.75rem">🏋️</div>
+      <div style="font-size:3.5rem;margin-bottom:0.75rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️</div>
       <h2 style="font-size:1.35rem;font-weight:700;margin:0 0 0.5rem;color:var(--text)">Welcome to IronLog</h2>
       <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.25rem;line-height:1.5">Let's build your training profile.</p>
       <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1.5rem;line-height:1.4">This takes less than 90 seconds.</p>
@@ -9573,10 +9573,10 @@ function obRenderStepContent(stepId) {
 
   if (stepId === "your-goal") {
     const goals = [
-      { id: "fat-loss", label: "Fat Loss", icon: "🔥" },
-      { id: "muscle-gain", label: "Muscle Gain", icon: "💪" },
-      { id: "strength", label: "Strength", icon: "🏋️" },
-      { id: "general-fitness", label: "General Fitness", icon: "✅" },
+      { id: "fat-loss", label: "Fat Loss", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>" },
+      { id: "muscle-gain", label: "Muscle Gain", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>" },
+      { id: "strength", label: "Strength", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️" },
+      { id: "general-fitness", label: "General Fitness", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>" },
     ];
     const locations = [
       { id: "gym", label: "Gym" },
@@ -9616,7 +9616,7 @@ function obRenderStepContent(stepId) {
     const splitLabels = { "fat-loss": "Full Body", "muscle-gain": "Push Pull Legs", "strength": "Upper/Lower", "general-fitness": "Full Body" };
     const gt = obData.goalType || "general-fitness";
     return `<div style="text-align:center;padding:0.5rem 0">
-      <div style="font-size:2rem;margin-bottom:0.5rem">🎯</div>
+      <div style="font-size:2rem;margin-bottom:0.5rem"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg></div>
       <h2 style="font-size:1.2rem;font-weight:700;margin:0 0 0.25rem;color:var(--text)">Your Training Plan</h2>
       <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1rem">Here's what IronLog recommends</p>
       <div style="background:var(--surface);border-radius:14px;padding:1rem;margin-bottom:1rem;text-align:left">
@@ -9937,12 +9937,12 @@ function showCoachActivation() {
   modal.classList.remove("is-hidden");
 
   const items = [
-    { icon: "🎯", text: "Goal Created" },
-    { icon: "🤖", text: "Coach Activated" },
-    { icon: "💪", text: "Recovery Tracking" },
+    { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/></svg>", text: "Goal Created" },
+    { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="11" width="18" height="10" rx="2"/><circle cx="12" cy="5" r="2"/><path d="M12 7v4"/><line x1="8" y1="16" x2="8" y2="16"/><line x1="16" y1="16" x2="16" y2="16"/></svg>", text: "Coach Activated" },
+    { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>", text: "Recovery Tracking" },
     { icon: "⚖️", text: "Weight Insights" },
-    { icon: "🏆", text: "Challenges Enabled" },
-    { icon: "📊", text: "Reports Enabled" },
+    { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>", text: "Challenges Enabled" },
+    { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>", text: "Reports Enabled" },
   ];
 
   document.getElementById("obActivationGrid").innerHTML = items.map(i =>
@@ -9962,13 +9962,13 @@ function getFirst7DayFocus() {
   const status = state.first7Days;
   const daysSinceStart = obDaysSinceActivation();
   const dayMap = [
-    { day: 1, key: "day1Workout", focus: "First Workout", desc: "Complete your first workout", icon: "💪" },
+    { day: 1, key: "day1Workout", focus: "First Workout", desc: "Complete your first workout", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>" },
     { day: 2, key: "day2Weight", focus: "Log Weight", desc: "Log your body weight", icon: "⚖️" },
-    { day: 3, key: "day3Protein", focus: "Protein Education", desc: "Learn about protein", icon: "🥩" },
-    { day: 4, key: "day4Learning", focus: "Learn", desc: "Explore the Learn", icon: "📚" },
-    { day: 5, key: "day5Challenge", focus: "Challenge Introduction", desc: "Try your first challenge", icon: "🏆" },
-    { day: 6, key: "day6CoachScore", focus: "Coach Score", desc: "Understand your Coach Score", icon: "📈" },
-    { day: 7, key: "day7Report", focus: "First Weekly Report", desc: "Review your first report", icon: "📊" },
+    { day: 3, key: "day3Protein", focus: "Protein Education", desc: "Learn about protein", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 5c2 2 3 6 1 9-1 2-3 4-6 5-3 1-7-1-8-3-2-3 0-6 2-8C9 3 14 2 17 5Z"/><path d="M4 18c-2 2-1 5 1 6 2 1 4-1 5-3"/></svg>" },
+    { day: 4, key: "day4Learning", focus: "Learn", desc: "Explore the Learn", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/><path d="M13 2v20"/></svg>" },
+    { day: 5, key: "day5Challenge", focus: "Challenge Introduction", desc: "Try your first challenge", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H18"/><path d="M6 5h12v10a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2Z"/><path d="M12 15v4"/><path d="M8 21h8"/></svg>" },
+    { day: 6, key: "day6CoachScore", focus: "Coach Score", desc: "Understand your Coach Score", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 6 13.5 15.5 8.5 10.5 1 18"/><polyline points="17 6 23 6 23 12"/></svg>" },
+    { day: 7, key: "day7Report", focus: "First Weekly Report", desc: "Review your first report", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>" },
   ];
 
   // Figure out which day the user is on
@@ -12117,11 +12117,11 @@ document.getElementById("cdsCloseBtn")?.addEventListener("click", () => {
 
 // --- Goal/Experience metadata ---
 const GOAL_META = {
-  "Muscle Gain": { icon: "💪", desc: "Build size and definition with moderate-heavy weights and moderate reps.", short: "Build muscle size" },
-  "Fat Loss": { icon: "🔥", desc: "Burn fat with higher reps, shorter rest, and metabolic conditioning.", short: "Burn fat & tone" },
-  Strength: { icon: "🏋️", desc: "Build raw strength with heavy compound lifts and low reps.", short: "Get stronger" },
-  "General Fitness": { icon: "⭐", desc: "Balanced approach for overall health, endurance, and body composition.", short: "Overall fitness" },
-  Endurance: { icon: "🏃", desc: "Build muscular endurance with high reps and minimal rest.", short: "Build endurance" },
+  "Muscle Gain": { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>", desc: "Build size and definition with moderate-heavy weights and moderate reps.", short: "Build muscle size" },
+  "Fat Loss": { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>", desc: "Burn fat with higher reps, shorter rest, and metabolic conditioning.", short: "Burn fat & tone" },
+  Strength: { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="m18 5-3-3H6.5A2.5 2.5 0 0 0 4 4.5V16l6 4 1-1-1-1 2-3 3 3 1-1-2-3 2-3 1 1 2-2-2-2 1-1Z"/></svg>️", desc: "Build raw strength with heavy compound lifts and low reps.", short: "Get stronger" },
+  "General Fitness": { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>", desc: "Balanced approach for overall health, endurance, and body composition.", short: "Overall fitness" },
+  Endurance: { icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M9 21v-4l-2-5 3-3 2 3 3-1 2 5"/></svg>", desc: "Build muscular endurance with high reps and minimal rest.", short: "Build endurance" },
 };
 
 const EXP_META = {
@@ -12194,10 +12194,10 @@ const GOAL_RATIOS = {
 
 const RECOVERY_TIPS = [
   { title: "Brisk Walk", icon: "🚶", desc: "20-30 min walk to promote blood flow and reduce soreness." },
-  { title: "Full Body Stretch", icon: "🧘", desc: "15-20 min stretching focusing on worked muscle groups." },
+  { title: "Full Body Stretch", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>", desc: "15-20 min stretching focusing on worked muscle groups." },
   { title: "Mobility Work", icon: "🤸", desc: "10-15 min joint mobility and range of motion drills." },
-  { title: "Foam Rolling", icon: "🔄", desc: "10-15 min self-myofascial release for tight areas." },
-  { title: "Light Cardio", icon: "🏃", desc: "15-20 min light jog, cycle, or elliptical work." },
+  { title: "Foam Rolling", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="23 4 23 10 17 10"/><polyline points="1 20 1 14 7 14"/><path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"/></svg>", desc: "10-15 min self-myofascial release for tight areas." },
+  { title: "Light Cardio", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="13" cy="4" r="2"/><path d="M9 21v-4l-2-5 3-3 2 3 3-1 2 5"/></svg>", desc: "15-20 min light jog, cycle, or elliptical work." },
 ];
 
 const FULL_BODY_CATEGORIES = [
@@ -12238,7 +12238,7 @@ function getCategoriesForDay(splitDay) {
 }
 
 const TIME_META = {
-  "30-45": { label: "30-45 Minutes", short: "Quick sessions", icon: "⚡" },
+  "30-45": { label: "30-45 Minutes", short: "Quick sessions", icon: "<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>" },
   "45-60": { label: "45-60 Minutes", short: "Standard sessions", icon: "🕐" },
   "60-75": { label: "60-75 Minutes", short: "Extended sessions", icon: "🕑" },
   "75-90": { label: "75-90 Minutes", short: "Full sessions", icon: "🕒" },

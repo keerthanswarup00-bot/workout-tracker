@@ -74,9 +74,9 @@
           <!-- Workout Details Screen -->
           <div id="screen-wo-details" class="screen is-hidden">
             <div class="nw-header">
-              <button class="btn-back" id="woDetailsBackBtn">←</button>
+              <button class="btn-back" id="woDetailsBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem" id="woDetailsTitle">Workout</span>
-              <button class="btn-back" id="woDetailsMenuBtn" style="position:static">•••</button>
+              <button class="btn-back" id="woDetailsMenuBtn" style="position:static"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
             </div>
             <div style="padding: 0.75rem;overflow-y:auto">
               <div id="woDetailsBody"></div>
@@ -87,7 +87,7 @@
           <!-- New Workout Builder Screen -->
           <div id="screen-new-workout" class="screen is-hidden">
             <div class="nw-header">
-              <button class="btn-back" id="nwBackBtn">←</button>
+              <button class="btn-back" id="nwBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
             </div>
             <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
@@ -109,13 +109,13 @@
           <div id="screen-ws" class="screen is-hidden">
             <div class="ws-header">
               <div class="ws-header-left">
-                <button class="btn-back" id="wsBackBtn">←</button>
+                <button class="btn-back" id="wsBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
                 <div class="ws-header-info">
                   <div class="ws-header-name" id="wsName"></div>
                   <div id="wsProgressIndicator"></div>
                 </div>
               </div>
-              <button class="ws-menu-btn" id="wsMenuBtn">•••</button>
+              <button class="ws-menu-btn" id="wsMenuBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><circle cx="12" cy="12" r="1"/><circle cx="12" cy="5" r="1"/><circle cx="12" cy="19" r="1"/></svg></button>
             </div>
 
             <div class="ws-desc" id="wsDesc">
@@ -127,7 +127,10 @@
 
             <div id="wsExerciseList" class="ws-exercises"></div>
 
-            <div id="wsCompleteBanner" class="is-hidden">✅ Workout Complete — <button class="ws-complete-link" id="wsCompleteCta">View Summary</button></div>
+            <div id="wsCompleteBanner" class="is-hidden">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              Workout Complete — <button class="ws-complete-link" id="wsCompleteCta">View Summary</button>
+            </div>
 
             <div class="ws-actions">
               <button class="ws-add-ex-btn" id="wsAddExBtn">
@@ -144,7 +147,7 @@
           <!-- Level 2: Exercise Detail Screen -->
           <div id="screen-ed" class="screen is-hidden">
             <div class="ed-header">
-              <button class="btn-back" id="edBackBtn">←</button>
+              <button class="btn-back" id="edBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <div class="ed-header-info">
                 <div class="ed-header-name" id="edName"></div>
               </div>
@@ -164,7 +167,10 @@
               <div class="qa-bar" id="qaBar">
                 <button class="qa-btn" id="qaRepeatLast">↻ Repeat Last</button>
                 <button class="qa-btn" id="qaAddEmpty">+ Add Set</button>
-                <button class="qa-btn" id="qaWarmup">🔥 Warm-Up</button>
+                <button class="qa-btn" id="qaWarmup">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>
+                  Warm-Up
+                </button>
               </div>
               <div id="edNotesSection"></div>
             </div>
@@ -259,7 +265,7 @@
           <!-- Exercise Library Screen -->
           <div id="screen-ex-library" class="screen is-hidden">
             <div class="el-header">
-              <button class="btn-back" id="elBackBtn">←</button>
+              <button class="btn-back" id="elBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <div class="el-header-title">Exercise Library</div>
               <button class="el-custom-btn" id="elCustomBtn">+ Custom</button>
             </div>
@@ -287,7 +293,7 @@
             <div class="modal-card" style="max-width: 360px">
               <div class="modal-header">
                 <h2>Custom Exercise</h2>
-                <button class="modal-close" id="customExClose">✕</button>
+                <button class="modal-close" id="customExClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <div style="display: flex; flex-direction: column; gap: 0.6rem">
                 <input type="text" id="customExName" class="modal-input" placeholder="Exercise name" maxlength="40" autocomplete="off" />
@@ -331,7 +337,7 @@
             <div class="modal-card">
               <div class="modal-header">
                 <h2>New Workout</h2>
-                <button class="modal-close" id="cwClose">✕</button>
+                <button class="modal-close" id="cwClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <div style="display: flex; flex-direction: column; gap: 0.6rem">
                 <input
@@ -382,7 +388,7 @@
             <div class="modal-card">
               <div class="modal-header">
                 <h2>Edit Workout</h2>
-                <button class="modal-close" id="ewClose">✕</button>
+                <button class="modal-close" id="ewClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <div style="display: flex; flex-direction: column; gap: 0.6rem">
                 <input
@@ -414,7 +420,7 @@
           <!-- Exercise Analytics Screen -->
           <div id="screen-exercise-analytics" class="screen is-hidden">
             <div class="es-header" style="border-bottom: 1px solid var(--border); margin-bottom: 1rem">
-              <button class="btn-back" id="eaBackBtn">←</button>
+              <button class="btn-back" id="eaBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <div class="es-header-title" id="eaTitle">Exercise Analytics</div>
             </div>
             <div class="ea-tabs" id="eaTabs">
@@ -429,7 +435,7 @@
           <!-- Profile Screen -->
           <div id="screen-profile" class="screen is-hidden">
             <div class="profile-header">
-              <button class="btn-back" id="profileBackBtn">←</button>
+              <button class="btn-back" id="profileBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <span class="profile-header-title">My Fitness Identity</span>
               <button class="profile-header-btn" id="profileEditBtn" style="font-size:0.75rem;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:none;border-radius:8px;padding:0.35rem 0.75rem;cursor:pointer">Edit</button>
             </div>
@@ -439,7 +445,7 @@
           <!-- Settings Screen -->
           <div id="screen-settings" class="screen is-hidden">
             <div class="settings-header">
-              <button class="btn-back" id="settingsBackBtn">←</button>
+              <button class="btn-back" id="settingsBackBtn"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
               <span class="settings-header-title">Settings</span>
             </div>
             <div class="settings-scroll" id="settingsContent"></div>
@@ -450,7 +456,7 @@
             <div class="modal-card">
               <div class="modal-header">
                 <h2>Edit Profile</h2>
-                <button class="modal-close" id="peClose">✕</button>
+                <button class="modal-close" id="peClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <div class="modal-body" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 70vh; overflow-y: auto; padding-right: 0.25rem">
                 <div class="section-label" style="margin-top:0.25rem">Personal</div>
@@ -542,7 +548,7 @@
             <div class="modal-card" style="max-width: 400px">
               <div class="modal-header">
                 <h2>Log Weight</h2>
-                <button class="modal-close" id="wlClose">✕</button>
+                <button class="modal-close" id="wlClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <div style="display: flex; flex-direction: column; gap: 0.6rem">
                 <input type="number" id="wlWeight" class="modal-input" style="min-height: 44px" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
@@ -574,7 +580,7 @@
             <div class="modal-card">
               <div class="modal-header">
                 <h2>Delete All Data</h2>
-                <button class="modal-close" id="ddClose">✕</button>
+                <button class="modal-close" id="ddClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
               </div>
               <p style="color: var(--text-secondary); margin-bottom: 1rem">
                 This will permanently delete all your workout data, profile, and settings. This cannot be undone.
@@ -590,7 +596,7 @@
           <div class="modal-overlay is-hidden" id="developerModal">
             <div class="modal-card">
               <div class="modal-header">
-                <button class="modal-back" id="dmBack">←</button>
+                <button class="modal-back" id="dmBack"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></svg></button>
                 <h2>About The Developer</h2>
                 <div style="width:32px"></div>
               </div>
@@ -600,7 +606,10 @@
                 <p class="dev-desc">
                   A passionate developer and fitness enthusiast, I built IronLog to combine my love for coding with my dedication to health and fitness. I believe in clean code, effective workouts, and continuous improvement.
                 </p>
-                <a href="mailto:Aryanswaroop00@gmail.com" class="dev-mail-btn">✉ Aryanswaroop00@gmail.com</a>
+                <a href="mailto:Aryanswaroop00@gmail.com" class="dev-mail-btn">
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><path d="m22 7-8.97 5.7a1.94 1.94 0 0 1-2.06 0L2 7"/></svg>
+                  Aryanswaroop00@gmail.com
+                </a>
               </div>
             </div>
           </div>
@@ -755,13 +764,17 @@
             <div class="gm-ol-desc">Your personal workout program is being prepared.<br>Analyzing your goal, experience, recovery needs, and training schedule.</div>
           </div>
           <div class="gm-overlay-inner is-hidden" id="gmSuccess">
-            <div class="gm-ol-icon">✅</div>
+            <div class="gm-ol-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </div>
             <div class="gm-ol-title">Program Created Successfully</div>
             <div class="gm-ol-desc">Your workouts are now ready.</div>
             <button class="btn-primary" id="gmViewProgramBtn">View Program</button>
           </div>
           <div class="gm-overlay-inner is-hidden" id="gmFailure">
-            <div class="gm-ol-icon">❌</div>
+            <div class="gm-ol-icon">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="var(--red)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+            </div>
             <div class="gm-ol-title">Save Failed</div>
             <div class="gm-ol-desc" id="gmFailureReason"></div>
             <button class="btn-secondary" id="gmFailureClose">Close</button>
@@ -784,7 +797,7 @@
         <div class="celebration-particle"></div>
       </div>
       <div class="ss-card">
-        <div class="ss-title" id="ssTitle">💪 Workout Complete</div>
+        <div class="ss-title" id="ssTitle">Workout Complete</div>
         <div class="ss-subtitle" id="ssSubtitle"></div>
 
         <div class="ss-grid" id="ssGrid"></div>
@@ -807,7 +820,10 @@
 
         <div class="ss-actions" id="ssActions">
           <button class="btn-secondary" id="ssSkipCoolDown">Back to Home</button>
-          <button class="btn-primary" id="ssStartCoolDown">🧘 Cool Down</button>
+          <button class="btn-primary" id="ssStartCoolDown">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Cool Down
+          </button>
         </div>
       </div>
     </div>
@@ -816,7 +832,10 @@
     <div class="modal-overlay is-hidden" id="warmupReminderModal">
       <div class="modal-card" style="max-width: 380px">
         <div class="modal-header">
-          <h2>⚡ Prepare for Workout</h2>
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+            Prepare for Workout
+          </h2>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem" id="wrmWorkoutInfo"></p>
         <div
@@ -839,7 +858,10 @@
           <div id="wrmRoutineList" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.25rem"></div>
         </div>
         <div class="modal-actions" style="flex-direction: column; gap: 0.4rem">
-          <button class="btn-primary" id="wrmStartBtn" style="width: 100%">🔥 Start Warm-Up</button>
+          <button class="btn-primary" id="wrmStartBtn" style="width: 100%">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>
+            Start Warm-Up
+          </button>
           <button class="btn-secondary" id="wrmSkipBtn" style="width: 100%">Skip — Start Workout</button>
         </div>
       </div>
@@ -849,7 +871,10 @@
     <div class="modal-overlay is-hidden" id="warmupTimerModal">
       <div class="modal-card" style="max-width: 320px; text-align: center">
         <div class="modal-header" style="justify-content: center">
-          <h2>🔥 Warm-Up</h2>
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><polyline points="15 3 21 9 15 15"/><polyline points="9 21 3 15 9 9"/><line x1="21" y1="3" x2="3" y2="21"/></svg>
+            Warm-Up
+          </h2>
         </div>
         <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="wtTimer">04:00</div>
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="wtExerciseList"></p>
@@ -865,7 +890,10 @@
     <div class="modal-overlay is-hidden" id="cooldownReminderModal">
       <div class="modal-card" style="max-width: 380px">
         <div class="modal-header">
-          <h2>🧘 Cool Down</h2>
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Cool Down
+          </h2>
         </div>
         <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem" id="cdWorkoutInfo"></p>
         <div
@@ -882,7 +910,10 @@
           <div id="cdRoutineList" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.25rem"></div>
         </div>
         <div class="modal-actions" style="flex-direction: column; gap: 0.4rem">
-          <button class="btn-primary" id="cdStartBtn" style="width: 100%">🧘 Start Cool Down</button>
+          <button class="btn-primary" id="cdStartBtn" style="width: 100%">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Start Cool Down
+          </button>
           <button class="btn-secondary" id="cdSkipBtn" style="width: 100%">Skip — Back Home</button>
         </div>
       </div>
@@ -892,7 +923,10 @@
     <div class="modal-overlay is-hidden" id="cooldownTimerModal">
       <div class="modal-card" style="max-width: 320px; text-align: center">
         <div class="modal-header" style="justify-content: center">
-          <h2>🧘 Cool Down</h2>
+          <h2>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="vertical-align:middle;margin-right:6px"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
+            Cool Down
+          </h2>
         </div>
         <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="ctTimer">05:00</div>
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="ctExerciseList"></p>
@@ -909,7 +943,7 @@
       <div class="modal-card modal-wide">
         <div class="modal-header">
           <h2 id="exerciseDetailTitle">Exercise History</h2>
-          <button class="modal-close" id="exerciseDetailClose">✕</button>
+          <button class="modal-close" id="exerciseDetailClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div class="chart-wrap"><canvas id="exerciseDetailChart"></canvas></div>
       </div>
@@ -921,7 +955,9 @@
     <!-- ONBOARDING MODAL V2 -->
     <div class="modal-overlay is-hidden" id="onboardingModal">
       <div class="modal-card ob-modal-card" style="position: relative">
-        <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">✕</button>
+        <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
 
         <!-- Progress Bar -->
         <div class="ob-steps" id="obSteps">
@@ -938,7 +974,9 @@
     <div class="modal-overlay is-hidden" id="coachActivationModal">
       <div class="modal-card ob-activation-card">
         <div class="ob-activation-header">
-          <div class="ob-activation-icon">🎉</div>
+          <div class="ob-activation-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+          </div>
           <h2 class="ob-activation-title">You're All Set!</h2>
           <p class="ob-activation-sub">Your IronLog Coach is activated and ready.</p>
         </div>
@@ -964,7 +1002,7 @@
       <div class="modal-card modal-wide">
         <div class="modal-header">
           <h2>Load Custom Program</h2>
-          <button class="modal-close" id="loadProgramClose">✕</button>
+          <button class="modal-close" id="loadProgramClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <p class="modal-hint">Format: DayName | Exercise Name | sets | reps</p>
         <textarea id="programInput" class="modal-input" placeholder="Push Heavy | Flat Barbell Bench Press | 4 | 4-6"></textarea>
@@ -981,7 +1019,7 @@
       <div class="modal-card">
         <div class="modal-header">
           <h2>Confirm Program</h2>
-          <button class="modal-close" id="confirmProgramClose">✕</button>
+          <button class="modal-close" id="confirmProgramClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <p id="confirmProgramText">This will replace existing exercises. Continue?</p>
         <div class="modal-actions">
@@ -996,7 +1034,7 @@
       <div class="modal-card" style="max-width: 380px">
         <div class="modal-header">
           <h2>Workout Builder</h2>
-          <button class="modal-close" id="builderClose">✕</button>
+          <button class="modal-close" id="builderClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <div style="display: flex; flex-direction: column; gap: 0.6rem">
           <select id="builderGoal" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
@@ -1040,7 +1078,7 @@
       <div class="modal-card" style="max-width: 320px">
         <div class="modal-header">
           <h2>Warmup Generator</h2>
-          <button class="modal-close" id="warmupClose">✕</button>
+          <button class="modal-close" id="warmupClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.75rem">
           For compound lifts — enter your working weight to get warmup sets.
@@ -1058,7 +1096,7 @@
       <div class="modal-card" style="max-width: 340px">
         <div class="modal-header">
           <h2>Edit Goal</h2>
-          <button class="modal-close" id="goalEditorClose">✕</button>
+          <button class="modal-close" id="goalEditorClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
         </div>
         <input type="text" id="goalEditorName" class="modal-input" style="min-height: 44px" placeholder="Goal name (e.g. Bench Press)" inputmode="text" autocomplete="off" />
         <input type="number" id="goalEditorTarget" class="modal-input" style="min-height: 44px" placeholder="Target (kg or reps)" min="1" max="9999" inputmode="decimal" />
@@ -1100,7 +1138,7 @@
         <div class="bottom-sheet-body">
           <div class="sd-header">
             <span class="sd-title">Streak History</span>
-            <button class="sd-close" id="sdClose">✕</button>
+            <button class="sd-close" id="sdClose"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg></button>
           </div>
           <div class="sd-current" id="sdCurrent"></div>
           <div class="sd-days" id="sdDays"></div>
