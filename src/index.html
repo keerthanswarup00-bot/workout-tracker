@@ -92,7 +92,8 @@
               <button class="nw-done-btn" id="nwSaveBtn" disabled>Save</button>
             </div>
             <div class="nw-body">
-              <div class="nw-sidebar">
+              <div class="nw-muscle-nav" id="nwMuscleNav"></div>
+              <div class="nw-exercise-area">
                 <div class="nw-meta">
                   <div class="nw-meta-row">
                     <input type="text" id="nwName" class="nw-name-input" placeholder="Workout name..." maxlength="30" autocomplete="off" />
@@ -314,7 +315,7 @@
                 <h2>Custom Exercise</h2>
                 <button class="modal-close" id="customExClose">✕</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
+              <div class="ml-fields">
                 <input type="text" id="customExName" class="modal-input" placeholder="Exercise name" maxlength="40" autocomplete="off" />
                 <select id="customExCategory" class="modal-input">
                   <option value="Chest">Chest</option>
@@ -358,43 +359,11 @@
                 <h2>New Workout</h2>
                 <button class="modal-close" id="cwClose">✕</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
-                <input
-                  type="text"
-                  id="cwName"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Workout name"
-                  maxlength="40"
-                  autocomplete="off"
-                />
-                <input
-                  type="text"
-                  id="cwDesc"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Description (optional)"
-                  maxlength="100"
-                  autocomplete="off"
-                />
-                <input
-                  type="text"
-                  id="cwDuration"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Target duration (e.g. 60 min)"
-                  maxlength="20"
-                  autocomplete="off"
-                />
-                <input
-                  type="text"
-                  id="cwNotes"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Notes (optional)"
-                  maxlength="200"
-                  autocomplete="off"
-                />
+              <div class="ml-fields">
+                <input type="text" id="cwName" class="ml-field" placeholder="Workout name" maxlength="40" autocomplete="off" />
+                <input type="text" id="cwDesc" class="ml-field" placeholder="Description (optional)" maxlength="100" autocomplete="off" />
+                <input type="text" id="cwDuration" class="ml-field" placeholder="Target duration (e.g. 60 min)" maxlength="20" autocomplete="off" />
+                <input type="text" id="cwNotes" class="ml-field" placeholder="Notes (optional)" maxlength="200" autocomplete="off" />
               </div>
               <div class="modal-actions">
                 <button class="btn-primary" id="cwSaveBtn">Create Workout</button>
@@ -409,23 +378,15 @@
                 <h2>Edit Workout</h2>
                 <button class="modal-close" id="ewClose">✕</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
-                <input
-                  type="text"
-                  id="ewName"
-                  class="modal-input"
-                  style="min-height: 44px; resize: none"
-                  placeholder="Workout name"
-                  maxlength="40"
-                  autocomplete="off"
-                />
-                <div style="display:flex;align-items:center;justify-content:space-between">
+              <div class="ml-fields">
+                <input type="text" id="ewName" class="ml-field" placeholder="Workout name" maxlength="40" autocomplete="off" />
+                <div class="ml-flex-between">
                   <span class="section-label" style="margin:0">Exercises</span>
                   <button class="btn-secondary" id="ewAddExercise" style="font-size:0.72rem;min-height:30px;padding:0 0.65rem">+ Add</button>
                 </div>
                 <div id="ewExerciseList" class="edit-ex-list"></div>
-                <div id="ewAddPicker" class="is-hidden" style="display:none;flex-direction:column;gap:0.4rem;padding:0.5rem;background:var(--surface-2);border-radius:var(--radius-sm)">
-                  <input type="text" id="ewSearch" class="modal-input" style="min-height:36px;font-size:0.82rem;resize:none" placeholder="Search exercise..." autocomplete="off" />
+                <div id="ewAddPicker" class="is-hidden" style="flex-direction:column;gap:0.4rem;padding:0.5rem;background:var(--surface-2);border-radius:var(--radius-sm)">
+                  <input type="text" id="ewSearch" class="ml-field" style="min-height:36px" placeholder="Search exercise..." autocomplete="off" />
                   <div id="ewSearchResults" style="display:flex;flex-direction:column;gap:0.2rem;max-height:200px;overflow-y:auto"></div>
                 </div>
               </div>
@@ -477,21 +438,21 @@
                 <h2>Edit Profile</h2>
                 <button class="modal-close" id="peClose">✕</button>
               </div>
-              <div class="modal-body" style="display: flex; flex-direction: column; gap: 0.6rem; max-height: 70vh; overflow-y: auto; padding-right: 0.25rem">
+              <div class="ml-fields" style="max-height:70vh;overflow-y:auto;padding-right:0.25rem">
                 <div class="section-label" style="margin-top:0.25rem">Personal</div>
-                <input type="text" id="peName" class="modal-input" style="min-height:44px" placeholder="Name" maxlength="30" autocomplete="off" />
-                <input type="number" id="peAge" class="modal-input" style="min-height:44px" placeholder="Age" min="10" max="120" />
-                <select id="peGender" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <input type="text" id="peName" class="ml-field" placeholder="Name" maxlength="30" autocomplete="off" />
+                <input type="number" id="peAge" class="ml-field" placeholder="Age" min="10" max="120" />
+                <select id="peGender" class="ml-select">
                   <option value="">Gender</option>
                   <option value="male">Male</option>
                   <option value="female">Female</option>
                   <option value="other">Other</option>
                 </select>
-                <input type="number" id="peHeight" class="modal-input" style="min-height:44px" placeholder="Height (cm)" min="100" max="250" />
-                <input type="number" id="peWeight" class="modal-input" style="min-height:44px" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+                <input type="number" id="peHeight" class="ml-field" placeholder="Height (cm)" min="100" max="250" />
+                <input type="number" id="peWeight" class="ml-field" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
 
-                <div class="section-label" style="margin-top:0.5rem">Goal &amp; Training</div>
-                <select id="peGoal" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <div class="section-label ml-section-gap">Goal &amp; Training</div>
+                <select id="peGoal" class="ml-select">
                   <option value="">Fitness Goal</option>
                   <option value="fat-loss">Fat Loss</option>
                   <option value="build-muscle">Build Muscle</option>
@@ -501,7 +462,7 @@
                   <option value="general">General Fitness</option>
                   <option value="custom">Custom</option>
                 </select>
-                <select id="peActivity" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <select id="peActivity" class="ml-select">
                   <option value="">Activity Level</option>
                   <option value="sedentary">Sedentary</option>
                   <option value="light">Lightly Active</option>
@@ -509,24 +470,24 @@
                   <option value="very">Very Active</option>
                   <option value="athlete">Athlete</option>
                 </select>
-                <select id="peExperience" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <select id="peExperience" class="ml-select">
                   <option value="">Experience</option>
                   <option value="beginner">Beginner</option>
                   <option value="intermediate">Intermediate</option>
                   <option value="advanced">Advanced</option>
                 </select>
-                <input type="number" id="peTrainingDays" class="modal-input" style="min-height:44px" placeholder="Training days/week" min="1" max="7" />
-                <select id="peEquipment" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <input type="number" id="peTrainingDays" class="ml-field" placeholder="Training days/week" min="1" max="7" />
+                <select id="peEquipment" class="ml-select">
                   <option value="">Equipment Access</option>
                   <option value="gym">Full Gym</option>
                   <option value="home">Home Gym</option>
                   <option value="minimal">Minimal</option>
                 </select>
 
-                <div class="section-label" style="margin-top:0.5rem">Nutrition</div>
-                <input type="number" id="peCalories" class="modal-input" style="min-height:44px" placeholder="Daily calorie target" min="1200" max="6000" step="50" />
-                <input type="number" id="peProtein" class="modal-input" style="min-height:44px" placeholder="Daily protein goal (g)" min="30" max="500" />
-                <select id="peDiet" class="modal-input" style="min-height:44px;padding:0 0.75rem">
+                <div class="section-label ml-section-gap">Nutrition</div>
+                <input type="number" id="peCalories" class="ml-field" placeholder="Daily calorie target" min="1200" max="6000" step="50" />
+                <input type="number" id="peProtein" class="ml-field" placeholder="Daily protein goal (g)" min="30" max="500" />
+                <select id="peDiet" class="ml-select">
                   <option value="">Diet Preference</option>
                   <option value="none">No Preference</option>
                   <option value="vegetarian">Vegetarian</option>
@@ -538,25 +499,25 @@
                   <option value="high-protein">High Protein</option>
                 </select>
 
-                <div class="section-label" style="margin-top:0.5rem">Health</div>
-                <input type="text" id="peInjuries" class="modal-input" style="min-height:44px" placeholder="Injuries (comma separated)" maxlength="200" autocomplete="off" />
-                <textarea id="peInjuryNotes" class="modal-input" style="min-height:60px;resize:none;padding:0.6rem 0.75rem" placeholder="Injury notes" maxlength="300"></textarea>
-                <input type="text" id="peSupplements" class="modal-input" style="min-height:44px" placeholder="Supplements (comma separated)" maxlength="200" autocomplete="off" />
-                <input type="text" id="peEquipmentDetails" class="modal-input" style="min-height:44px" placeholder="Equipment details (comma separated)" maxlength="200" autocomplete="off" />
+                <div class="section-label ml-section-gap">Health</div>
+                <input type="text" id="peInjuries" class="ml-field" placeholder="Injuries (comma separated)" maxlength="200" autocomplete="off" />
+                <textarea id="peInjuryNotes" class="ml-textarea" placeholder="Injury notes" maxlength="300"></textarea>
+                <input type="text" id="peSupplements" class="ml-field" placeholder="Supplements (comma separated)" maxlength="200" autocomplete="off" />
+                <input type="text" id="peEquipmentDetails" class="ml-field" placeholder="Equipment details (comma separated)" maxlength="200" autocomplete="off" />
 
-                <div class="section-label" style="margin-top:0.5rem">Hydration</div>
-                <input type="number" id="peWaterGoal" class="modal-input" style="min-height:44px" placeholder="Daily water goal (ml)" min="500" max="8000" step="100" />
+                <div class="section-label ml-section-gap">Hydration</div>
+                <input type="number" id="peWaterGoal" class="ml-field" placeholder="Daily water goal (ml)" min="500" max="8000" step="100" />
 
-                <div class="section-label" style="margin-top:0.5rem">Body Measurements</div>
-                <input type="number" id="peBodyFat" class="modal-input" style="min-height:44px" placeholder="Body fat %" min="3" max="60" step="0.1" />
-                <input type="number" id="peChest" class="modal-input" style="min-height:44px" placeholder="Chest (cm)" min="50" max="200" />
-                <input type="number" id="peWaist" class="modal-input" style="min-height:44px" placeholder="Waist (cm)" min="40" max="200" />
-                <input type="number" id="peArms" class="modal-input" style="min-height:44px" placeholder="Arms (cm)" min="10" max="80" />
-                <input type="number" id="peThighs" class="modal-input" style="min-height:44px" placeholder="Thighs (cm)" min="20" max="120" />
-                <input type="number" id="peNeck" class="modal-input" style="min-height:44px" placeholder="Neck (cm)" min="20" max="80" />
-                <input type="number" id="peHips" class="modal-input" style="min-height:44px" placeholder="Hips (cm)" min="40" max="200" />
+                <div class="section-label ml-section-gap">Body Measurements</div>
+                <input type="number" id="peBodyFat" class="ml-field" placeholder="Body fat %" min="3" max="60" step="0.1" />
+                <input type="number" id="peChest" class="ml-field" placeholder="Chest (cm)" min="50" max="200" />
+                <input type="number" id="peWaist" class="ml-field" placeholder="Waist (cm)" min="40" max="200" />
+                <input type="number" id="peArms" class="ml-field" placeholder="Arms (cm)" min="10" max="80" />
+                <input type="number" id="peThighs" class="ml-field" placeholder="Thighs (cm)" min="20" max="120" />
+                <input type="number" id="peNeck" class="ml-field" placeholder="Neck (cm)" min="20" max="80" />
+                <input type="number" id="peHips" class="ml-field" placeholder="Hips (cm)" min="40" max="200" />
               </div>
-              <div class="modal-actions" style="border-top:1px solid var(--border);padding-top:0.75rem;margin-top:0.25rem">
+              <div class="modal-actions ml-actions-top">
                 <button class="btn-primary" id="peSaveBtn">Save Profile</button>
               </div>
             </div>
@@ -569,10 +530,10 @@
                 <h2>Log Weight</h2>
                 <button class="modal-close" id="wlClose">✕</button>
               </div>
-              <div style="display: flex; flex-direction: column; gap: 0.6rem">
-                <input type="number" id="wlWeight" class="modal-input" style="min-height: 44px" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
-                <input type="date" id="wlDate" class="modal-input" style="min-height: 44px" />
-                <input type="text" id="wlNotes" class="modal-input" style="min-height: 44px" placeholder="Notes (optional)" maxlength="100" />
+              <div class="ml-fields">
+                <input type="number" id="wlWeight" class="ml-field" placeholder="Weight (kg)" min="20" max="300" step="0.1" />
+                <input type="date" id="wlDate" class="ml-field" />
+                <input type="text" id="wlNotes" class="ml-field" placeholder="Notes (optional)" maxlength="100" />
               </div>
               <div class="modal-actions">
                 <button class="btn-primary" id="wlSaveBtn">Save</button>
@@ -644,13 +605,13 @@
           <div id="sessionsPageContent" class="page-container">
             <div class="section-label">Session Log</div>
             <div class="session-log" id="sessionLog"></div>
-            <div class="section-label" style="margin-top:1.25rem">Personal Records</div>
+            <div class="section-label ml-gap-lg">Personal Records</div>
             <div class="pr-grid" id="prGrid"></div>
-            <div class="section-label" style="margin-top:1.25rem">Weekly Review</div>
+            <div class="section-label ml-gap-lg">Weekly Review</div>
             <div id="weeklyReviewCard" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Monthly Report</div>
+            <div class="section-label ml-gap-lg">Monthly Report</div>
             <div id="monthlyReportContent" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Adherence</div>
+            <div class="section-label ml-gap-lg">Adherence</div>
             <div id="adherenceCard" class="card-content"></div>
           </div>
         </section>
@@ -660,12 +621,12 @@
           <div id="progressPageContent" class="page-container">
             <div class="section-label">Workout Calendar</div>
             <div id="trainingCalendar" class="calendar-wrap"></div>
-            <div class="section-label" style="margin-top:1.25rem">Training Summary</div>
+            <div class="section-label ml-gap-lg">Training Summary</div>
             <div id="coachInsights" class="insights-list"></div>
-            <div class="section-label" style="margin-top:1.25rem">Recovery Status</div>
+            <div class="section-label ml-gap-lg">Recovery Status</div>
             <div class="recovery-header"><span class="recovery-dot" id="recoveryDot"></span></div>
             <div id="recoveryContent" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Goals</div>
+            <div class="section-label ml-gap-lg">Goals</div>
             <div id="goalsContent"></div>
           </div>
         </section>
@@ -859,42 +820,33 @@
         <div class="modal-header">
           <h2>⚡ Prepare for Workout</h2>
         </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem" id="wrmWorkoutInfo"></p>
-        <div
-          style="
-            background: var(--surface-2);
-            border-radius: var(--radius-sm);
-            padding: 0.6rem 0.75rem;
-            margin-bottom: 0.75rem;
-            font-size: 0.78rem;
-            line-height: 1.5;
-          "
-        >
+        <p class="wr-desc" id="wrmWorkoutInfo"></p>
+        <div class="wr-benefits">
           <strong>Benefits</strong><br />
           • Better performance<br />
           • Reduced injury risk<br />
           • Improved mobility
         </div>
-        <div id="wrmRoutine" style="margin-bottom: 0.75rem">
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem" id="wrmRoutineTitle">Recommended Warm-Up</div>
-          <div id="wrmRoutineList" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.25rem"></div>
+        <div id="wrmRoutine" class="wr-sect">
+          <div class="wr-sect-title" id="wrmRoutineTitle">Recommended Warm-Up</div>
+          <div id="wrmRoutineList" class="wr-ex-list"></div>
         </div>
-        <div class="modal-actions" style="flex-direction: column; gap: 0.4rem">
-          <button class="btn-primary" id="wrmStartBtn" style="width: 100%">🔥 Start Warm-Up</button>
-          <button class="btn-secondary" id="wrmSkipBtn" style="width: 100%">Skip — Start Workout</button>
+        <div class="modal-actions wr-actions-col">
+          <button class="btn-primary wr-btn-full" id="wrmStartBtn">🔥 Start Warm-Up</button>
+          <button class="btn-secondary wr-btn-full" id="wrmSkipBtn">Skip — Start Workout</button>
         </div>
       </div>
     </div>
 
     <!-- WARM-UP TIMER SCREEN (shown within modal) -->
     <div class="modal-overlay is-hidden" id="warmupTimerModal">
-      <div class="modal-card" style="max-width: 320px; text-align: center">
-        <div class="modal-header" style="justify-content: center">
+      <div class="modal-card tc-card-center">
+        <div class="modal-header tc-header-center">
           <h2>🔥 Warm-Up</h2>
         </div>
-        <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="wtTimer">04:00</div>
-        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="wtExerciseList"></p>
-        <div class="modal-actions" style="justify-content: center; gap: 0.5rem">
+        <div class="tc-timer" id="wtTimer">04:00</div>
+        <p class="tc-info" id="wtExerciseList"></p>
+        <div class="modal-actions tc-actions-center">
           <button class="btn-secondary" id="wtPauseBtn">Pause</button>
           <button class="btn-secondary" id="wtSkipBtn">Skip</button>
           <button class="btn-primary" id="wtFinishBtn">Done</button>
@@ -908,36 +860,34 @@
         <div class="modal-header">
           <h2>🧘 Cool Down</h2>
         </div>
-        <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem" id="cdWorkoutInfo"></p>
-        <div
-          style="background: var(--surface-2); border-radius: var(--radius-sm); padding: 0.6rem 0.75rem; margin-bottom: 0.75rem; font-size: 0.78rem; line-height: 1.5"
-        >
+        <p class="wr-desc" id="cdWorkoutInfo"></p>
+        <div class="wr-benefits">
           <strong>Benefits</strong><br />
           • Faster recovery<br />
           • Reduced soreness<br />
           • Better mobility<br />
           • Improved flexibility
         </div>
-        <div id="cdRoutine" style="margin-bottom: 0.75rem">
-          <div style="font-size: 0.72rem; font-weight: 700; color: var(--accent); margin-bottom: 0.4rem" id="cdRoutineTitle">Cool Down</div>
-          <div id="cdRoutineList" style="font-size: 0.78rem; display: flex; flex-direction: column; gap: 0.25rem"></div>
+        <div id="cdRoutine" class="wr-sect">
+          <div class="wr-sect-title" id="cdRoutineTitle">Cool Down</div>
+          <div id="cdRoutineList" class="wr-ex-list"></div>
         </div>
-        <div class="modal-actions" style="flex-direction: column; gap: 0.4rem">
-          <button class="btn-primary" id="cdStartBtn" style="width: 100%">🧘 Start Cool Down</button>
-          <button class="btn-secondary" id="cdSkipBtn" style="width: 100%">Skip — Back Home</button>
+        <div class="modal-actions wr-actions-col">
+          <button class="btn-primary wr-btn-full" id="cdStartBtn">🧘 Start Cool Down</button>
+          <button class="btn-secondary wr-btn-full" id="cdSkipBtn">Skip — Back Home</button>
         </div>
       </div>
     </div>
 
     <!-- COOL DOWN TIMER (warm-up style) -->
     <div class="modal-overlay is-hidden" id="cooldownTimerModal">
-      <div class="modal-card" style="max-width: 320px; text-align: center">
-        <div class="modal-header" style="justify-content: center">
+      <div class="modal-card tc-card-center">
+        <div class="modal-header tc-header-center">
           <h2>🧘 Cool Down</h2>
         </div>
-        <div style="font-size: 3rem; font-weight: 800; margin: 1rem 0" id="ctTimer">05:00</div>
-        <p style="font-size: 0.78rem; color: var(--text-secondary); margin-bottom: 0.5rem" id="ctExerciseList"></p>
-        <div class="modal-actions" style="justify-content: center; gap: 0.5rem">
+        <div class="tc-timer" id="ctTimer">05:00</div>
+        <p class="tc-info" id="ctExerciseList"></p>
+        <div class="modal-actions tc-actions-center">
           <button class="btn-secondary" id="ctPauseBtn">Pause</button>
           <button class="btn-secondary" id="ctSkipBtn">Skip</button>
           <button class="btn-primary" id="ctFinishBtn">Done</button>
@@ -1050,8 +1000,8 @@
           <h2>Workout Builder</h2>
           <button class="modal-close" id="builderClose">✕</button>
         </div>
-        <div style="display: flex; flex-direction: column; gap: 0.6rem">
-          <select id="builderGoal" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+        <div class="ml-fields">
+          <select id="builderGoal" class="ml-select">
             <option value="">Goal</option>
             <option value="build-muscle">Build Muscle</option>
             <option value="strength">Strength</option>
@@ -1059,20 +1009,20 @@
             <option value="general">General Fitness</option>
             <option value="athletic">Athletic Performance</option>
           </select>
-          <select id="builderDays" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+          <select id="builderDays" class="ml-select">
             <option value="">Days Per Week</option>
             <option value="3">3 Days</option>
             <option value="4">4 Days</option>
             <option value="5">5 Days</option>
             <option value="6">6 Days</option>
           </select>
-          <select id="builderEquipment" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+          <select id="builderEquipment" class="ml-select">
             <option value="">Equipment</option>
             <option value="full">Full Gym</option>
             <option value="basic">Dumbbells + Bench</option>
             <option value="home">Bodyweight Only</option>
           </select>
-          <select id="builderDuration" class="modal-input" style="min-height: 44px; padding: 0 0.75rem">
+          <select id="builderDuration" class="ml-select">
             <option value="">Session Duration</option>
             <option value="30">30 min</option>
             <option value="45">45 min</option>
@@ -1083,7 +1033,7 @@
         <div class="modal-actions">
           <button class="btn-primary" id="builderGenerateBtn" disabled>Generate Program</button>
         </div>
-        <div id="builderResult" style="margin-top: 0.5rem"></div>
+        <div id="builderResult" class="ml-section-gap"></div>
       </div>
     </div>
 

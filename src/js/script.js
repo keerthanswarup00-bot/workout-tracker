@@ -2036,7 +2036,8 @@ function renderSettings() {
     general: "Fitness",
     custom: "Custom",
   };
-  const sgGoal = GoalCenter.getGoalType();
+  const sgGoal = typeof GoalCenter !== "undefined" && GoalCenter.getGoalType ? GoalCenter.getGoalType() : null;
+  const gcLabel = typeof GoalCenter !== "undefined" && GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
   const mCals = u.weight
     ? Math.round(
         u.weight *
@@ -2061,7 +2062,7 @@ function renderSettings() {
       <div class="sg-avatar" style="background:var(--accent);color:#000;font-weight:800">${initials}</div>
       <div class="sg-card-body">
         <div class="sg-card-name">${u.name || "Tap to set up"}</div>
-        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", GoalCenter.getGoalLabel()].filter(Boolean).join(" · ") || "No profile yet"}</div>
+        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", gcLabel].filter(Boolean).join(" · ") || "No profile yet"}</div>
       </div>
       <span class="sg-chevron">›</span>
     </button>
@@ -2069,7 +2070,7 @@ function renderSettings() {
       <div class="sg-stat"><span class="sg-stat-val">${u.age || "—"}</span><span class="sg-stat-lbl">Age</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.height ? displayHeight(u.height) : "—"}</span><span class="sg-stat-lbl">Height</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${u.weight ? displayWeight(u.weight) : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${GoalCenter.getGoalLabel()}</span><span class="sg-stat-lbl">Goal</span></div>
+      <div class="sg-stat"><span class="sg-stat-val">${gcLabel}</span><span class="sg-stat-lbl">Goal</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${bmi || "—"}</span><span class="sg-stat-lbl">BMI</span></div>
       <div class="sg-stat"><span class="sg-stat-val">${mCals}</span><span class="sg-stat-lbl">Calories</span></div>
     </div>
@@ -2845,8 +2846,13 @@ let setWeight = 20;
 let currentWorkoutId = null;
 
 function showScreen(screenId) {
-  document.querySelectorAll("#panel-sets .screen").forEach((el) => el.classList.add("is-hidden"));
-  document.getElementById(screenId).classList.remove("is-hidden");
+  document.querySelectorAll("#panel-sets .screen").forEach((el) => {
+    el.classList.add("is-hidden");
+    el.classList.remove("fade-in");
+  });
+  const target = document.getElementById(screenId);
+  target.classList.remove("is-hidden");
+  requestAnimationFrame(() => target.classList.add("fade-in"));
   const nav = document.getElementById("bottomNav");
   if (screenId === "screen-new-workout") {
     nav.classList.remove("is-locked");
@@ -2909,7 +2915,7 @@ function renderHome() {
   document.getElementById("homeGreeting").innerHTML = `
     <div class="home-greeting-line">${g.text} ${g.emoji}</div>
     <div class="home-name-line">${name}</div>
-    <div class="home-greeting-message" style="font-size:0.78rem;color:var(--text-secondary);margin-bottom:0.75rem">${getDailyMessage()}</div>
+    <div class="home-greeting-message">${getDailyMessage()}</div>
 
     <div class="home-qa-row">
       <button class="home-qa-btn primary" id="qaStartWorkout">▶ Start Workout</button>
@@ -2920,16 +2926,16 @@ function renderHome() {
 
     <div class="home-dash-card" id="homeDashCard">
       <div class="home-dash-grid">
-        <div class="home-dash-item" id="heroStreakCard" style="cursor:pointer">
+        <div class="home-dash-item" id="heroStreakCard">
           <span class="home-dash-value">${streak}</span>
           <span class="home-dash-label">Streak</span>
         </div>
-        <div class="home-dash-item" id="heroWeightCard" style="cursor:pointer">
+        <div class="home-dash-item" id="heroWeightCard">
           <span class="home-dash-value">${hasWeight ? displayWeight(weight) : "—"}</span>
           <span class="home-dash-label">Weight</span>
-          ${checkInDue ? '<div style="font-size:0.55rem;color:var(--orange);margin-top:0.1rem">Due</div>' : ""}
+          ${checkInDue ? '<span class="home-dash-due">Due</span>' : ""}
         </div>
-        <div class="home-dash-item" id="heroGoalCard" style="cursor:pointer">
+        <div class="home-dash-item" id="heroGoalCard">
           <span class="home-dash-value">${goalLabel || "—"}</span>
           <span class="home-dash-label">Goal</span>
         </div>
@@ -2943,28 +2949,28 @@ function renderHome() {
     ${profileComplete || state.profileBannerDismissed ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span style="font-size:0.75rem;font-weight:600">Complete your profile</span><span style="font-size:0.7rem;color:var(--accent);font-weight:700">Set Up →</span></div>`}
 
     ${!hasData ? "" : `
-    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem">
-      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.6rem">
-        <div style="font-size:0.6rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">Last Workout</div>
-        <div style="font-size:0.82rem;font-weight:700;margin-top:0.15rem">${lastSession ? lastSession.workoutName : "—"}</div>
-        <div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.05rem">${lastSession ? formatRelativeDate(lastSession.dateKey) : ""}</div>
+    <div class="home-stats-row">
+      <div class="home-stat-card">
+        <div class="home-stat-label">Last Workout</div>
+        <div class="home-stat-value">${lastSession ? lastSession.workoutName : "—"}</div>
+        <div class="home-stat-sub">${lastSession ? formatRelativeDate(lastSession.dateKey) : ""}</div>
       </div>
-      <div style="flex:1;background:var(--surface);border:1px solid var(--border);border-radius:8px;padding:0.5rem 0.6rem">
-        <div style="font-size:0.6rem;color:var(--text-secondary);font-weight:600;text-transform:uppercase;letter-spacing:0.06em">${hasWeight ? "Current" : "Target"}</div>
-        <div style="font-size:0.82rem;font-weight:700;margin-top:0.15rem">${hasWeight ? displayWeight(weight) : (state.user?.targetWeight ? displayWeight(state.user.targetWeight) : "—")}</div>
-        <div style="font-size:0.65rem;color:var(--text-secondary);margin-top:0.05rem">${lastWeightText}</div>
+      <div class="home-stat-card">
+        <div class="home-stat-label">${hasWeight ? "Current" : "Target"}</div>
+        <div class="home-stat-value">${hasWeight ? displayWeight(weight) : (state.user?.targetWeight ? displayWeight(state.user.targetWeight) : "—")}</div>
+        <div class="home-stat-sub">${lastWeightText}</div>
       </div>
     </div>
     `}
 
-    <div style="display:flex;gap:0.5rem;margin-bottom:0.75rem" id="todayHealthWidgets">
+    <div class="home-health-row" id="todayHealthWidgets">
       ${hasData ? renderNutritionWidget() : ""}
       ${hasData ? renderWaterWidget() : ""}
     </div>
 
     ${!hasData ? "" : `
-    <div style="display:flex;flex-direction:column;gap:0.4rem;margin-bottom:0.75rem" id="homeCoachInsights">
-      <div style="font-size:0.6rem;font-weight:600;text-transform:uppercase;letter-spacing:0.06em;color:var(--text-secondary);padding:0 0.15rem">Coach</div>
+    <div class="home-coach-sect" id="homeCoachInsights">
+      <div class="home-coach-label">Coach</div>
       <button class="home-coach-btn" id="homeCoachOpen">
         <span style="font-size:0.78rem;font-weight:600">${getCoachSummary()}</span>
         <span style="font-size:0.65rem;color:var(--text-secondary)">Open Coach →</span>
@@ -3214,7 +3220,7 @@ function renderWorkoutCardItem(workout, todaySession) {
         <span class="wo-card-item-badge">Active</span>
         <button class="wo-card-item-menu" data-w-id="${workout.id}">•••</button>
       </div>
-      <div class="wo-card-item-name" style="font-size:1rem">${workout.name}</div>
+      <div class="wo-card-item-name">${workout.name}</div>
       <div class="wo-card-item-row2">
         <span class="wo-card-item-meta">Exercise ${Math.min(doneEx + 1, totalEx)} of ${totalEx}${elapsed ? " · " + elapsed : ""}</span>
         <button class="wo-card-item-btn" data-w-id="${workout.id}" data-action="continue">Continue Workout</button>
@@ -3228,7 +3234,7 @@ function renderWorkoutCardItem(workout, todaySession) {
       <button class="wo-card-item-menu" data-w-id="${workout.id}">•••</button>
     </div>
     <div class="wo-card-item-row2">
-      <span class="wo-card-item-meta"></span>
+      <span class="wo-card-item-meta">${totalEx} exercise${totalEx !== 1 ? "s" : ""}</span>
       <button class="wo-card-item-btn" data-w-id="${workout.id}" data-action="start">Start Workout</button>
     </div>
   </div>`;
@@ -3704,7 +3710,7 @@ function renderProfileScreen() {
   html += `<div class="profile-stats">
     <div class="profile-stat"><span class="profile-stat-val">${p.weight ? displayWeight(p.weight) : "—"}</span><span class="profile-stat-lbl">Weight</span></div>
     <div class="profile-stat"><span class="profile-stat-val">${state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : "—"}</span><span class="profile-stat-lbl">Target</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${p.bodyMeasurements?.bodyFat ? p.bodyMeasurements.bodyFat + "%" : "—"}</span><span class="profile-stat-lbl">Body Fat</span></div>
+    <div class="profile-stat"><span class="profile-stat-val">${p.bodyMeasurements?.bodyFat != null ? p.bodyMeasurements.bodyFat + "%" : "—"}</span><span class="profile-stat-lbl">Body Fat</span></div>
     <div class="profile-stat"><span class="profile-stat-val">${totalWorkouts}</span><span class="profile-stat-lbl">Workouts</span></div>
     <div class="profile-stat"><span class="profile-stat-val">${streak.currentStreak}</span><span class="profile-stat-lbl">Streak</span></div>
     <div class="profile-stat"><span class="profile-stat-val">${streak.longestStreak}</span><span class="profile-stat-lbl">Best</span></div>
@@ -3773,7 +3779,7 @@ function renderProfileScreen() {
       fields: [
         { label: "Daily Calories", val: calGoal ? calGoal + " cal" : null },
         { label: "Daily Protein", val: proGoal ? proGoal + "g" : null },
-        { label: "Daily Water", val: (state.waterGoal || 0) + "ml" },
+        { label: "Daily Water", val: state.waterGoal ? state.waterGoal + "ml" : null },
         { label: "Diet Preference", val: p.dietPreference && p.dietPreference !== "none" ? p.dietPreference.charAt(0).toUpperCase() + p.dietPreference.slice(1) : null },
         { label: "Supplements", val: Array.isArray(p.supplements) && p.supplements.length ? p.supplements.join(", ") : null },
       ]
@@ -3871,21 +3877,21 @@ function renderProfileScreen() {
         <span class="profile-section-chevron">›</span>
       </button>
       <div class="profile-section-body">
-        <button class="profile-section-row" onclick="openProfileSectionEditor('personal')" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+        <button class="profile-section-row profile-section-row-btn" onclick="openProfileSectionEditor('personal')">
           <span class="profile-section-label">Edit All Profile Data</span>
-          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+          <span class="profile-section-chevron">›</span>
         </button>
-        <button class="profile-section-row" onclick="if(confirm('Export all data as JSON?')){exportJSON();}" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+        <button class="profile-section-row profile-section-row-btn" onclick="if(confirm('Export all data as JSON?')){exportJSON();}">
           <span class="profile-section-label">Export Data</span>
-          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+          <span class="profile-section-chevron">›</span>
         </button>
-        <button class="profile-section-row" onclick="previousScreen='screen-profile';showScreen('screen-settings');renderSettings()" style="cursor:pointer;border:none;background:none;color:var(--text);font-family:inherit;text-align:left;width:100%">
+        <button class="profile-section-row profile-section-row-btn" onclick="previousScreen='screen-profile';showScreen('screen-settings');renderSettings()">
           <span class="profile-section-label">App Settings</span>
-          <span class="profile-section-chevron" style="font-size:0.7rem">›</span>
+          <span class="profile-section-chevron">›</span>
         </button>
-        <button class="profile-section-row" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')" style="cursor:pointer;border:none;background:none;color:var(--error);font-family:inherit;text-align:left;width:100%">
+        <button class="profile-section-row profile-section-row-btn danger" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')">
           <span class="profile-section-label">Delete All Data</span>
-          <span class="profile-section-chevron" style="font-size:0.7rem;color:var(--error)">›</span>
+          <span class="profile-section-chevron">›</span>
         </button>
       </div>
     </div>
@@ -3952,20 +3958,20 @@ function renderNutritionWidget() {
   const fPct = Math.min(100, Math.round((macros.fat / fGoal) * 100));
   const calPct = Math.min(100, Math.round((macros.cal / calGoal) * 100));
   return `
-    <div class="today-card" style="flex-direction:column;padding:1rem;gap:0.75rem" id="todayNutritionCard">
-      <div style="display:flex;justify-content:space-between;align-items:center">
-        <div style="display:flex;align-items:center;gap:0.5rem">
-          <span style="font-size:0.85rem;font-weight:600">Nutrition</span>
-          <span style="font-size:0.7rem;color:var(--text-secondary)">${Math.round(macros.cal)} / ${calGoal} cal</span>
+    <div class="today-card col" id="todayNutritionCard">
+      <div class="tc-header">
+        <div class="tc-header-left">
+          <span class="tc-title">Nutrition</span>
+          <span class="tc-sub">${Math.round(macros.cal)} / ${calGoal} cal</span>
         </div>
-        <button id="mlOpenBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.3rem 0.6rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add Food</button>
+        <button id="mlOpenBtn" class="tc-add-btn">+ Add Food</button>
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr 1fr;gap:0.75rem">
-        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#ff6b6b">Protein</span><span>${Math.round(macros.protein)}/${pGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${pPct}%;background:#ff6b6b;border-radius:2px;transition:width 0.3s"></div></div></div>
-        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#ffd43b">Carbs</span><span>${Math.round(macros.carbs)}/${cGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${cPct}%;background:#ffd43b;border-radius:2px;transition:width 0.3s"></div></div></div>
-        <div><div style="display:flex;justify-content:space-between;font-size:0.7rem;margin-bottom:0.2rem"><span style="color:#69db7c">Fat</span><span>${Math.round(macros.fat)}/${fGoal}g</span></div><div style="height:4px;background:var(--surface-3);border-radius:2px;overflow:hidden"><div style="height:100%;width:${fPct}%;background:#69db7c;border-radius:2px;transition:width 0.3s"></div></div></div>
+      <div class="tc-macro-grid">
+        <div><div class="tc-macro-row"><span style="color:#ff6b6b">Protein</span><span>${Math.round(macros.protein)}/${pGoal}g</span></div><div class="tc-bar"><div class="tc-bar-fill" style="width:${pPct}%;background:#ff6b6b"></div></div></div>
+        <div><div class="tc-macro-row"><span style="color:#ffd43b">Carbs</span><span>${Math.round(macros.carbs)}/${cGoal}g</span></div><div class="tc-bar"><div class="tc-bar-fill" style="width:${cPct}%;background:#ffd43b"></div></div></div>
+        <div><div class="tc-macro-row"><span style="color:#69db7c">Fat</span><span>${Math.round(macros.fat)}/${fGoal}g</span></div><div class="tc-bar"><div class="tc-bar-fill" style="width:${fPct}%;background:#69db7c"></div></div></div>
       </div>
-      ${macros.meals > 0 ? `<div style="font-size:0.65rem;color:var(--text-secondary)">${macros.meals} meal${macros.meals > 1 ? "s" : ""} logged</div>` : ""}
+      ${macros.meals > 0 ? `<div class="tc-meals">${macros.meals} meal${macros.meals > 1 ? "s" : ""} logged</div>` : ""}
     </div>`;
 }
 
@@ -3977,21 +3983,21 @@ function renderWaterWidget() {
   const circ = 2 * Math.PI * radius;
   const offset = circ - (pct / 100) * circ;
   return `
-    <div class="today-card" style="flex-direction:row;align-items:center;padding:1rem;gap:0.75rem" id="todayWaterCard">
-      <div style="position:relative;width:64px;height:64px;flex-shrink:0">
+    <div class="today-card row" id="todayWaterCard">
+      <div class="tc-ring-wrap">
         <svg width="64" height="64" viewBox="0 0 64 64">
           <circle cx="32" cy="32" r="${radius}" fill="none" stroke="var(--surface-3)" stroke-width="5"/>
           <circle cx="32" cy="32" r="${radius}" fill="none" stroke="var(--accent)" stroke-width="5" stroke-linecap="round" stroke-dasharray="${circ}" stroke-dashoffset="${offset}" transform="rotate(-90 32 32)"/>
         </svg>
-        <div style="position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:0.75rem;font-weight:600">${pct}%</div>
+        <div class="tc-ring-pct">${pct}%</div>
       </div>
-      <div style="flex:1">
-        <div style="font-size:0.8rem;font-weight:600">Water</div>
-        <div style="font-size:0.7rem;color:var(--text-secondary)">${current}ml / ${goal}ml</div>
-        <div style="display:flex;gap:0.4rem;margin-top:0.4rem">
-          <button id="waterAdd250" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+250ml</button>
-          <button id="waterAdd500" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+500ml</button>
-          <button id="waterAdd750" style="background:var(--surface-3);border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.65rem;color:var(--text-secondary);cursor:pointer">+750ml</button>
+      <div class="tc-water-info">
+        <div class="tc-water-title">Water</div>
+        <div class="tc-water-goal">${current}ml / ${goal}ml</div>
+        <div class="tc-water-actions">
+          <button id="waterAdd250" class="tc-water-btn">+250ml</button>
+          <button id="waterAdd500" class="tc-water-btn">+500ml</button>
+          <button id="waterAdd750" class="tc-water-btn">+750ml</button>
         </div>
       </div>
     </div>`;
@@ -9463,11 +9469,12 @@ function isProfileComplete() {
 }
 
 const OB_STEPS_CONFIG = [
-  { id: "welcome", title: "Welcome to IronLog", desc: "" },
-  { id: "about-you", title: "About You", desc: "Let's get to know you." },
-  { id: "your-training", title: "Your Training", desc: "Tell us about your training background." },
-  { id: "your-goal", title: "Your Goal", desc: "What are you working toward?" },
-  { id: "your-plan", title: "Your Plan", desc: "Here's what IronLog recommends." },
+  { id: "welcome", title: "", desc: "" },
+  { id: "name", title: "What should I call you?", desc: "I need a name to personalize your experience." },
+  { id: "age", title: "How old are you?", desc: "This helps me calculate your training zones." },
+  { id: "height", title: "What's your height?", desc: "I'll use this to track your body metrics." },
+  { id: "weight", title: "What's your current weight?", desc: "Your starting point for progress tracking." },
+  { id: "goal", title: "What's your primary goal?", desc: "This shapes your entire training program." },
 ];
 
 let obData = {};
@@ -9489,23 +9496,13 @@ function openOnboarding(animateIn, startStep) {
 
 function openProfileSectionEditor(section) {
   const p = getProfile();
-  const stepMap = { personal: 1, goals: 3, training: 2, equipment: 2, nutrition: 3, body: 3, "body-log": 3 };
-  const step = stepMap[section] || 0;
-  // Seed obData from existing profile
+  const stepMap = { personal: 1, goals: 5, body: 4, "body-log": 4 };
+  const step = stepMap[section] || 1;
   obData = {
-    name: p.name, age: p.age, gender: p.gender, height: p.height, weight: p.weight,
+    name: p.name || "", age: p.age || 25, height: p.height || 175, weight: p.weight || 70,
     goalType: p.bodyGoal === "build-muscle" ? "muscle-gain" : p.bodyGoal === "lose-fat" ? "fat-loss" : p.bodyGoal === "general" ? "general-fitness" : p.bodyGoal || "general-fitness",
-    experience: p.experience, trainingDays: p.trainingDays, equipment: p.equipment,
-    equipmentDetails: p.equipmentDetails, injuries: p.injuries, injuryNotes: p.injuryNotes,
-    dietPreference: p.dietPreference || "none", supplements: p.supplements,
-    nutritionCal: p.calorieTarget, nutritionProtein: p.proteinGoal,
     metrics: p.bodyMeasurements || {},
-    targetWeight: state.weightGoal?.targetWeight || 0,
-    targetDate: state.weightGoal?.targetDate || "",
-    primaryLift: "",
-    activityLevel: p.activity || "moderate",
   };
-  // Carry over saved onboardingData for fields the profile doesn't track directly
   if (state.onboardingData) Object.assign(obData, state.onboardingData, obData);
   isProfileEdit = true;
   const modal = document.getElementById("onboardingModal");
@@ -9602,33 +9599,37 @@ function obGoToStep(index) {
   saveState();
 
   const total = OB_STEPS_CONFIG.length;
-  const pct = ((index + 1) / total * 100);
+  const pct = ((index) / total * 100);
   document.getElementById("obStepsFill").style.width = pct + "%";
-  document.getElementById("obStepsLabel").textContent = "Step " + (index + 1) + " of " + total;
+  document.getElementById("obStepsLabel").textContent = index === 0 ? "Get Started" : "Step " + index + " of " + total;
 
-  const timeLabels = ["About 1 minute left", "About 45 seconds left", "About 30 seconds left", "About 15 seconds left", "Almost done!"];
+  const timeLabels = ["About 60 seconds", "About 50 seconds", "About 40 seconds", "About 30 seconds", "About 20 seconds", "Almost done!"];
   document.getElementById("obTimeLabel").textContent = timeLabels[index] || "";
 
   const body = document.getElementById("obBody");
 
-  let html = `<div class="ob-title">${cfg.title}</div>`;
-  if (cfg.desc) html += `<div class="ob-desc">${cfg.desc}</div>`;
+  let html = `<div class="ob-step ob-step-${cfg.id}">`;
+  if (cfg.title) html += `<div class="ob-title">${cfg.title}</div>`;
+  if (cfg.desc && index > 0 && index < total - 1) html += `<div class="ob-desc">${cfg.desc}</div>`;
   html += obRenderStepContent(cfg.id);
+  html += `</div>`;
   body.innerHTML = html;
 
-  // Re-trigger slide-in animation
   body.style.animation = "none";
   body.offsetHeight;
   body.style.animation = "";
 
   obBindStepEvents(cfg.id, index);
 
-  document.getElementById("onboardSkipBtn").onclick = () => {
-    document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
-  };
+  const skipBtn = document.getElementById("onboardSkipBtn");
+  if (skipBtn) {
+    skipBtn.onclick = () => {
+      document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
+    };
+  }
 
   setTimeout(() => {
-    const firstInput = body.querySelector("input, button, [tabindex]");
+    const firstInput = body.querySelector("input, button, [tabindex]:not([disabled])");
     if (firstInput) firstInput.focus();
   }, 100);
 }
@@ -9636,225 +9637,156 @@ function obGoToStep(index) {
 function obRenderStepContent(stepId) {
   if (stepId === "welcome") {
     return `<div class="ob-welcome">
-      <div class="ob-welcome-illust">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M6 8h.01M6 16h.01M10 12h.01M14 8h.01M14 16h.01M18 12h.01"/>
-          <rect x="2" y="4" width="20" height="16" rx="2"/>
+      <div class="ob-coach-wrap">
+        <svg class="ob-coach-svg" viewBox="0 0 200 220" fill="none">
+          <circle cx="100" cy="110" r="85" fill="var(--accent)" opacity="0.08"/>
+          <rect x="76" y="150" width="48" height="50" rx="14" fill="var(--surface-3)"/>
+          <rect x="95" y="140" width="10" height="14" rx="3" fill="var(--surface-3)"/>
+          <circle cx="100" cy="100" r="38" fill="var(--surface-3)"/>
+          <path d="M62 90 Q62 58 100 54 Q138 58 138 90" fill="var(--text-secondary)" opacity="0.9"/>
+          <circle cx="87" cy="96" r="4" fill="var(--text)" class="ob-coach-eye"/>
+          <circle cx="113" cy="96" r="4" fill="var(--text)" class="ob-coach-eye"/>
+          <circle cx="88" cy="97" r="1.5" fill="var(--bg)"/>
+          <circle cx="114" cy="97" r="1.5" fill="var(--bg)"/>
+          <path d="M91 110 Q100 118 109 110" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
+          <path d="M72 158 Q52 140 48 118" stroke="var(--surface-3)" stroke-width="12" stroke-linecap="round" class="ob-coach-arm ob-coach-wave-arm"/>
+          <circle cx="47" cy="115" r="7" fill="var(--surface-3)"/>
+          <path d="M128 160 Q148 170 155 188" stroke="var(--surface-3)" stroke-width="10" stroke-linecap="round"/>
+          <rect x="80" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
+          <rect x="104" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
         </svg>
       </div>
-      <h1>Welcome to IronLog</h1>
-      <p>Let's build your training profile.</p>
-      <div class="ob-time-badge">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-        Takes less than 90 seconds
+      <div class="ob-welcome-text">
+        <div class="ob-coach-greeting">Hey <span class="ob-coach-wave-emoji">&#x1F44B;</span></div>
+        <div class="ob-coach-msg">I'm your IronLog Coach.<br>I'll help you build your training plan.</div>
+        <div class="ob-time-badge">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          Takes about 60 seconds
+        </div>
       </div>
       <div class="ob-welcome-actions">
-        <button id="obNextBtn">Get Started</button>
-        <button class="btn-ghost" onclick="document.getElementById('onboardSkipBtn').click()">Skip for now</button>
+        <button class="ob-btn-primary ob-btn-glow" id="obNextBtn">Get Started</button>
+        <button class="ob-btn-link" onclick="document.getElementById('onboardSkipBtn').click()">Skip Setup</button>
       </div>
     </div>`;
   }
 
-  if (stepId === "about-you") {
+  if (stepId === "name") {
     const nameVal = obData.name || "";
-    const ageVal = obData.age || 25;
-    const heightVal = obData.height || 175;
-    const ages = Array.from({length: 73}, (_, i) => i + 13);
-    const heights = Array.from({length: 91}, (_, i) => i + 130);
-    return `<div class="ob-fields">
-      <div class="ob-field">
-        <label class="ob-field-label">What's your name?</label>
-        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${nameVal}" autocomplete="name" />
-      </div>
-      <div class="ob-wheels-dual">
-        <div class="ob-field">
-          <label class="ob-field-label">Age</label>
-          ${_obWheelHTML("obAgeWheel", ages, Number(ageVal), "years")}
-        </div>
-        <div class="ob-field">
-          <label class="ob-field-label">Height (cm)</label>
-          ${_obWheelHTML("obHeightWheel", heights, Number(heightVal), "cm")}
-        </div>
-      </div>
-      <div class="ob-actions">
+    return `<div class="ob-name-wrap">
+      <input type="text" class="ob-name-input" id="obName" placeholder="Your name" maxlength="30" value="${nameVal}" autocomplete="name" />
+      <div class="ob-name-preview" id="obNamePreview">${nameVal ? "Nice to meet you, " + escapeHtml(nameVal) + "." : ""}</div>
+      <div class="ob-actions ob-actions-center">
         <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
       </div>
     </div>`;
   }
 
-  if (stepId === "your-training") {
-    const exps = [
-      { id: "beginner", label: "Beginner", desc: "Less than 6 months", icon: "🌱" },
-      { id: "intermediate", label: "Intermediate", desc: "6 months to 2 years", icon: "🌿" },
-      { id: "advanced", label: "Advanced", desc: "2+ years", icon: "🌳" },
-    ];
-    const daysList = [2,3,4,5,6];
-    const daysLabels = { 2: "Minimal", 3: "Standard", 4: "Frequent", 5: "Dedicated", 6: "Intensive" };
-    const weightVal = obData.weight || 70;
-    const weights = Array.from({length: 171}, (_, i) => i + 30);
-
-    let html = `<div class="ob-fields">`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Current weight (kg)</label>
-      ${_obWheelHTML("obWeightWheel", weights, Number(weightVal), "kg")}
-    </div>`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Experience level</label>
-      <div class="ob-cards">${exps.map(e => `<button class="ob-card${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}">
-        <div class="ob-card-icon">${e.icon}</div>
-        <div class="ob-card-body">
-          <div class="ob-card-title">${e.label}</div>
-          <div class="ob-card-desc">${e.desc}</div>
-        </div>
-        ${e.id === "beginner" ? '<span class="ob-card-badge">Recommended</span>' : ""}
-      </button>`).join("")}</div>
-    </div>`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Workout days per week</label>
-      <div class="ob-grid-cards">${daysList.map(d => `<button class="ob-grid-card${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}">
-        <div class="ob-grid-card-value">${d}</div>
-        <div class="ob-grid-card-label">${daysLabels[d]}</div>
-      </button>`).join("")}</div>
-    </div>`;
-    html += `<div class="ob-actions">
-      <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-      <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
-    </div></div>`;
-    return html;
-  }
-
-  if (stepId === "your-goal") {
-    const goals = [
-      { id: "fat-loss", label: "Fat Loss", desc: "Drop body fat while keeping muscle", icon: "🔥" },
-      { id: "muscle-gain", label: "Build Muscle", desc: "Add lean mass and shape your body", icon: "💪" },
-      { id: "strength", label: "Get Stronger", desc: "Increase raw strength and power", icon: "🏋️" },
-      { id: "general-fitness", label: "General Fitness", desc: "Stay active and feel great", icon: "✅" },
-    ];
-    const locations = [
-      { id: "gym", label: "Gym", desc: "Full equipment access", icon: "🏋️" },
-      { id: "home", label: "Home", desc: "Bodyweight & limited gear", icon: "🏠" },
-      { id: "minimal", label: "Both", desc: "Mix of gym and home", icon: "🔄" },
-    ];
-    const injuries = [
-      { id: "shoulder", label: "Shoulder" }, { id: "back", label: "Lower Back" },
-      { id: "knee", label: "Knee" }, { id: "wrist", label: "Wrist" },
-      { id: "hip", label: "Hip" }, { id: "ankle", label: "Ankle" },
-    ];
-    const selected = obData.injuries || [];
-
-    let html = `<div class="ob-fields">`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Primary goal</label>
-      <div class="ob-cards">${goals.map(g => `<button class="ob-card${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}">
-        <div class="ob-card-icon">${g.icon}</div>
-        <div class="ob-card-body">
-          <div class="ob-card-title">${g.label}</div>
-          <div class="ob-card-desc">${g.desc}</div>
-        </div>
-        ${g.id === "fat-loss" ? '<span class="ob-card-badge">Popular</span>' : ""}
-      </button>`).join("")}</div>
-    </div>`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Training location</label>
-      <div class="ob-cards" style="flex-direction:row">${locations.map(l => `<button class="ob-card${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}" style="flex-direction:column;text-align:center;padding:0.85rem;gap:0.4rem">
-        <div style="font-size:1.4rem">${l.icon}</div>
-        <div class="ob-card-title" style="font-size:0.85rem">${l.label}</div>
-      </button>`).join("")}</div>
-    </div>`;
-    html += `<div class="ob-field">
-      <label class="ob-field-label">Injuries <span style="font-weight:400;color:var(--text-tertiary);font-size:0.78rem">(optional)</span></label>
-      <div style="display:flex;flex-wrap:wrap;gap:0.4rem">${injuries.map(inj => `<button class="ob-card" style="flex:0 0 auto;padding:0.5rem 0.85rem;border-radius:999px;gap:0.35rem;border-width:1.5px${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}">
-        <div class="ob-card-title" style="font-size:0.8rem">${inj.label}</div>
-      </button>`).join("")}</div>
-    </div>`;
-    html += `<div class="ob-actions">
-      <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-      <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
-    </div></div>`;
-    return html;
-  }
-
-  if (stepId === "your-plan") {
-    const strategy = obGenerateStrategy();
-    const preview = obGenerateProgramPreview();
-    const goalLabels = { "fat-loss": "Fat Loss", "muscle-gain": "Build Muscle", "strength": "Strength", "general-fitness": "General Fitness" };
-    const splitLabels = { "fat-loss": "Full Body", "muscle-gain": "Push Pull Legs", "strength": "Upper/Lower", "general-fitness": "Full Body" };
-    const gt = obData.goalType || "general-fitness";
-    const days = obData.trainingDays || 3;
-    const expLabel = obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner";
-    const equipLabels = { gym: "Gym", home: "Home", minimal: "Both" };
-    return `<div class="ob-summary">
-      <div class="ob-summary-grid">
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--accent) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Goal</div>
-          <div class="ob-summary-card-value">${goalLabels[gt] || "General Fitness"}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--orange) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Calories</div>
-          <div class="ob-summary-card-value">${strategy["Calories"]}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--blue) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c-1.5 0-2.5-1-2.5-2 0-1 .5-2 2.5-2s2.5 1 2.5 2c0 1.5-1 2-2.5 2z"/><path d="M5 14c-1.5 0-2.5-1-2.5-2 0-1 .5-2 2.5-2s2.5 1 2.5 2c0 1.5-1 2-2.5 2z"/><path d="M14.5 6h-5l-2 4h9z"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Protein</div>
-          <div class="ob-summary-card-value">${strategy["Protein"]}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--protein) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Water</div>
-          <div class="ob-summary-card-value">${strategy["Water"]}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--accent) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Split</div>
-          <div class="ob-summary-card-value">${splitLabels[gt] || "Full Body"}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--orange) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Training Days</div>
-          <div class="ob-summary-card-value">${days}x / week</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--blue) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Experience</div>
-          <div class="ob-summary-card-value">${expLabel}</div>
-        </div>
-        <div class="ob-summary-card">
-          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--protein) 15%,transparent)">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
-          </div>
-          <div class="ob-summary-card-label">Location</div>
-          <div class="ob-summary-card-value">${equipLabels[obData.equipment] || "Gym"}</div>
-        </div>
+  if (stepId === "age") {
+    const ageVal = obData.age || 25;
+    const ages = Array.from({length: 73}, (_, i) => i + 13);
+    return `<div class="ob-picker-wrap">
+      ${_obWheelHTML("obAgeWheel", ages, Number(ageVal), "years")}
+      <div class="ob-actions ob-actions-center">
+        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+        <button class="ob-btn-primary" id="obNextBtn">Continue</button>
       </div>
-      <p class="ob-summary-note">You can adjust all of this later in your Profile.</p>
-      <button class="ob-finish-btn" id="obFinishBtn">Create My Plan</button>
+    </div>`;
+  }
+
+  if (stepId === "height") {
+    const heightVal = obData.height || 175;
+    const heights = Array.from({length: 91}, (_, i) => i + 130);
+    return `<div class="ob-picker-wrap">
+      ${_obWheelHTML("obHeightWheel", heights, Number(heightVal), "cm")}
+      <div class="ob-actions ob-actions-center">
+        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+        <button class="ob-btn-primary" id="obNextBtn">Continue</button>
+      </div>
+    </div>`;
+  }
+
+  if (stepId === "weight") {
+    const weightVal = obData.weight || "";
+    return `<div class="ob-weight-wrap">
+      <div class="ob-weight-input-wrap">
+        <input type="number" class="ob-weight-input" id="obWeight" placeholder="70" min="20" max="400" step="0.1" value="${weightVal}" inputmode="decimal" autocomplete="off" />
+        <span class="ob-weight-unit">kg</span>
+      </div>
+      <div class="ob-actions ob-actions-center">
+        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+        <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
+      </div>
+    </div>`;
+  }
+
+  if (stepId === "goal") {
+    const goals = [
+      { id: "fat-loss", label: "Lose Fat", desc: "Drop body fat while preserving muscle", icon: "🔥", time: "8-16 weeks" },
+      { id: "muscle-gain", label: "Build Muscle", desc: "Add lean mass and shape your body", icon: "🏋️", time: "12-20 weeks" },
+      { id: "recomp", label: "Recomposition", desc: "Shed fat and gain muscle simultaneously", icon: "⚖️", time: "16-24 weeks" },
+      { id: "strength", label: "Strength", desc: "Increase raw power and performance", icon: "⚡", time: "8-12 weeks" },
+      { id: "general-fitness", label: "General Fitness", desc: "Stay active, healthy, and feel great", icon: "❤️", time: "Ongoing" },
+      { id: "endurance", label: "Endurance", desc: "Build stamina and cardiovascular fitness", icon: "🏃", time: "8-16 weeks" },
+    ];
+    return `<div class="ob-goal-grid">
+      ${goals.map(g => `<button class="ob-goal-card${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}">
+        <div class="ob-goal-icon">${g.icon}</div>
+        <div class="ob-goal-body">
+          <div class="ob-goal-label">${g.label}</div>
+          <div class="ob-goal-desc">${g.desc}</div>
+          <div class="ob-goal-time">${g.time}</div>
+        </div>
+      </button>`).join("")}
+      <div class="ob-actions ob-actions-center" style="margin-top:0.75rem">
+        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+        <button class="ob-btn-primary" id="obNextBtn" disabled>Create My Profile</button>
+      </div>
     </div>`;
   }
 
   return "";
 }
 
+function escapeHtml(str) {
+  const d = document.createElement("div");
+  d.textContent = str;
+  return d.innerHTML;
+}
+
+function obRenderDoneScreen() {
+  return `<div class="ob-done">
+    <div class="ob-coach-wrap ob-coach-done">
+      <svg class="ob-coach-svg ob-coach-svg-done" viewBox="0 0 200 220" fill="none">
+        <circle cx="100" cy="110" r="85" fill="var(--accent)" opacity="0.08"/>
+        <rect x="76" y="150" width="48" height="50" rx="14" fill="var(--surface-3)"/>
+        <rect x="95" y="140" width="10" height="14" rx="3" fill="var(--surface-3)"/>
+        <circle cx="100" cy="100" r="38" fill="var(--surface-3)"/>
+        <path d="M62 90 Q62 58 100 54 Q138 58 138 90" fill="var(--text-secondary)" opacity="0.9"/>
+        <path d="M80 96 Q87 90 94 96 Q100 88 106 96 Q113 90 120 96" stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none" class="ob-coach-squint"/>
+        <path d="M91 112 Q100 120 109 112" stroke="var(--text-secondary)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
+        <path d="M128 158 Q148 170 155 188" stroke="var(--surface-3)" stroke-width="10" stroke-linecap="round" class="ob-coach-arm ob-coach-wave-arm"/>
+        <circle cx="155" cy="190" r="6" fill="var(--surface-3)"/>
+        <path d="M72 158 Q52 142 48 122" stroke="var(--surface-3)" stroke-width="12" stroke-linecap="round"/>
+        <circle cx="47" cy="119" r="7" fill="var(--surface-3)"/>
+        <rect x="80" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
+        <rect x="104" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
+      </svg>
+    </div>
+    <div class="ob-done-title">Awesome!<br>Everything is ready.</div>
+    <div class="ob-done-desc">I've built your profile.<br>Now let's create your first workout.</div>
+    <div class="ob-done-actions">
+      <button class="ob-btn-primary ob-btn-glow" id="obGenFirstBtn">Generate My First Program</button>
+      <button class="ob-btn-link" id="obExploreBtn">Explore IronLog</button>
+    </div>
+  </div>`;
+}
+
 function obBindStepEvents(stepId, index) {
   const back = document.getElementById("obBackBtn");
   if (back) {
     back.addEventListener("click", () => {
-      if (index > 0) obGoToStep(index - 1);
+      if (index > 0) obGoToStep(stepId === "goal" ? index : index - 1);
     });
   }
 
@@ -9863,37 +9795,34 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "about-you") {
+  if (stepId === "name") {
     const nameIn = document.getElementById("obName");
     const nextBtn = document.getElementById("obNextBtn");
+    const preview = document.getElementById("obNamePreview");
 
-    function checkAbout() {
-      if (!nextBtn) return;
-      const ageWheel = document.querySelector("[data-wheel='obAgeWheel']");
-      const htWheel = document.querySelector("[data-wheel='obHeightWheel']");
-      const age = Number(_obWheelValue(ageWheel));
-      const ht = Number(_obWheelValue(htWheel));
-      nextBtn.disabled = !(nameIn && nameIn.value.trim() && age >= 13 && age <= 120 && ht >= 100);
+    function checkName() {
+      const val = nameIn ? nameIn.value.trim() : "";
+      if (nextBtn) nextBtn.disabled = !val;
+      if (preview) {
+        preview.textContent = val ? "Nice to meet you, " + val + "." : "";
+        preview.style.opacity = val ? "1" : "0";
+      }
     }
 
-    if (nameIn) nameIn.addEventListener("input", checkAbout);
+    if (nameIn) {
+      nameIn.addEventListener("input", checkName);
+      nameIn.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
+      });
+    }
 
-    const ageWheel = document.querySelector("[data-wheel='obAgeWheel']");
-    const htWheel = document.querySelector("[data-wheel='obHeightWheel']");
-    if (ageWheel) _obInitWheel(ageWheel, () => checkAbout());
-    if (htWheel) _obInitWheel(htWheel, () => checkAbout());
+    checkName();
 
     if (nextBtn) {
       nextBtn.addEventListener("click", () => {
-        const name = nameIn ? nameIn.value.trim() : "";
-        const age = Number(_obWheelValue(ageWheel));
-        const height = Number(_obWheelValue(htWheel));
-        if (!name) { showToast("Please enter your name."); return; }
-        if (!(age >= 13 && age <= 120)) { showToast("Please enter a valid age."); return; }
-        if (!(height >= 100)) { showToast("Please enter a valid height."); return; }
-        obData.name = name;
-        obData.age = age;
-        obData.height = height;
+        const val = nameIn ? nameIn.value.trim() : "";
+        if (!val) { showToast("Please enter your name."); return; }
+        obData.name = val;
         Object.assign(state.onboardingData, obData); saveState();
         obGoToStep(2);
       });
@@ -9901,35 +9830,17 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "your-training") {
+  if (stepId === "age") {
     const nextBtn = document.getElementById("obNextBtn");
-
-    const weightWheel = document.querySelector("[data-wheel='obWeightWheel']");
-    if (weightWheel) _obInitWheel(weightWheel, () => {
-      obData.weight = Number(_obWheelValue(weightWheel));
-      obCheckTrainNext("your-training");
-    });
-
-    document.querySelectorAll("[data-ob-exp]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-exp]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.experience = btn.dataset.obExp;
-        obCheckTrainNext("your-training");
+    const wheel = document.querySelector("[data-wheel='obAgeWheel']");
+    if (wheel) {
+      _obInitWheel(wheel, (val) => {
+        obData.age = Number(val);
       });
-    });
-
-    document.querySelectorAll("[data-ob-days]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-days]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.trainingDays = parseInt(btn.dataset.obDays);
-        obCheckTrainNext("your-training");
-      });
-    });
-
+    }
     if (nextBtn) {
       nextBtn.addEventListener("click", () => {
+        obData.age = Number(_obWheelValue(wheel));
         Object.assign(state.onboardingData, obData); saveState();
         obGoToStep(3);
       });
@@ -9937,186 +9848,117 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "your-goal") {
+  if (stepId === "height") {
+    const nextBtn = document.getElementById("obNextBtn");
+    const wheel = document.querySelector("[data-wheel='obHeightWheel']");
+    if (wheel) {
+      _obInitWheel(wheel, (val) => {
+        obData.height = Number(val);
+      });
+    }
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        obData.height = Number(_obWheelValue(wheel));
+        Object.assign(state.onboardingData, obData); saveState();
+        obGoToStep(4);
+      });
+    }
+    return;
+  }
+
+  if (stepId === "weight") {
+    const input = document.getElementById("obWeight");
+    const nextBtn = document.getElementById("obNextBtn");
+
+    function checkWeight() {
+      const val = input ? parseFloat(input.value) : 0;
+      if (nextBtn) nextBtn.disabled = !(val > 0 && val < 500);
+    }
+
+    if (input) {
+      input.addEventListener("input", checkWeight);
+      input.addEventListener("keydown", (e) => {
+        if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
+      });
+    }
+
+    checkWeight();
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const val = parseFloat(input.value);
+        if (!(val > 0 && val < 500)) { showToast("Please enter a valid weight."); return; }
+        obData.weight = val;
+        Object.assign(state.onboardingData, obData); saveState();
+        obGoToStep(5);
+      });
+    }
+    return;
+  }
+
+  if (stepId === "goal") {
     document.querySelectorAll("[data-ob-goal]").forEach(btn => {
       btn.addEventListener("click", () => {
+        const wasActive = btn.classList.contains("is-active");
         document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.goalType = btn.dataset.obGoal;
-        obCheckTrainNext("your-goal");
+        if (!wasActive) {
+          btn.classList.add("is-active");
+          btn.style.animation = "none";
+          btn.offsetHeight;
+          btn.style.animation = "obCardPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)";
+          obData.goalType = btn.dataset.obGoal;
+        } else {
+          obData.goalType = "";
+        }
+        const nextBtn = document.getElementById("obNextBtn");
+        if (nextBtn) nextBtn.disabled = !obData.goalType;
       });
     });
-    document.querySelectorAll("[data-ob-equip]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-equip]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.equipment = btn.dataset.obEquip;
-        obCheckTrainNext("your-goal");
-      });
-    });
-    document.querySelectorAll("[data-ob-injury]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("is-active");
-        if (!obData.injuries) obData.injuries = [];
-        const id = btn.dataset.obInjury;
-        const idx = obData.injuries.indexOf(id);
-        if (idx >= 0) obData.injuries.splice(idx, 1);
-        else obData.injuries.push(id);
-      });
-    });
+
     document.getElementById("obNextBtn")?.addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(4);
+      if (!obData.goalType) { showToast("Please select a goal."); return; }
+      obFinishSetup();
     });
     return;
   }
-
-  if (stepId === "your-plan") {
-    document.getElementById("obFinishBtn")?.addEventListener("click", () => obFinishSetup());
-    return;
-  }
-}
-
-function obCheckTrainNext(stepId) {
-  if (stepId === "your-training") {
-    document.getElementById("obNextBtn").disabled = !(Number(obData.weight) > 0 && obData.experience && obData.trainingDays);
-  } else if (stepId === "your-goal") {
-    document.getElementById("obNextBtn").disabled = !(obData.goalType && obData.equipment);
-  }
-}
-
-function obGenerateStrategy() {
-  const gt = obData.goalType || "general-fitness";
-  const w = Number(obData.weight) || 70;
-  const isFatLoss = gt === "fat-loss";
-  const isMuscle = gt === "muscle-gain";
-
-  const protein = isFatLoss ? Math.round(w * 2.2) : isMuscle ? Math.round(w * 2.0) : Math.round(w * 1.8);
-  const calories = isFatLoss ? Math.round(w * 28) : isMuscle ? Math.round(w * 34) : Math.round(w * 30);
-  const steps = isFatLoss ? "10,000" : "8,000";
-  const water = Math.round(w * 0.033) + "L";
-  const sleep = "7-9 hours";
-  const cardio = isFatLoss ? "3x/week" : "2x/week";
-
-  return {
-    "Calories": calories + " kcal",
-    "Protein": protein + "g",
-    "Steps": steps + "/day",
-    "Water": water + "/day",
-    "Sleep": sleep + "/night",
-    "Cardio": cardio,
-  };
-}
-
-function obGenerateProgramPreview() {
-  const goalLabels = {
-    "fat-loss": "Fat Loss",
-    "muscle-gain": "Muscle Gain",
-    "strength": "Strength",
-    "general-fitness": "General Fitness",
-    "endurance": "Endurance",
-  };
-  const dietLabels = { none: "No Preference", vegetarian: "Vegetarian", vegan: "Vegan", keto: "Keto", paleo: "Paleo", mediterranean: "Mediterranean" };
-  const equipLabels = { gym: "Gym", home: "Home", minimal: "Both" };
-  return {
-    "Goal": goalLabels[obData.goalType] || "General Fitness",
-    "Experience": obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner",
-    "Days/Week": obData.trainingDays || "3",
-    "Equipment": equipLabels[obData.equipment] || "Gym",
-    "Diet": dietLabels[obData.dietPreference] || "No Preference",
-    "Style": "Full Body",
-    "Duration": "45-60 min",
-  };
 }
 
 function obFinishSetup() {
-  // Save user profile to state
   const goalTypeMap = {
     "fat-loss": "lose-fat",
     "muscle-gain": "build-muscle",
+    "recomp": "recomp",
     "strength": "strength",
     "general-fitness": "general",
     "endurance": "athletic",
   };
   const mappedGoal = goalTypeMap[obData.goalType] || "general";
+  const w = Number(obData.weight) || 70;
 
   state.user = state.user || {};
   state.user.name = (obData.name || "Athlete").trim();
-  state.user.age = Number(obData.age) || 0;
-  state.user.height = Number(obData.height) || 0;
-  state.user.weight = Number(obData.weight) || 0;
-  state.user.gender = obData.gender || "";
+  state.user.age = Number(obData.age) || 25;
+  state.user.height = Number(obData.height) || 175;
+  state.user.weight = w;
   state.user.goal = mappedGoal;
-  state.user.experience = obData.experience || "beginner";
-  state.user.trainingDays = obData.trainingDays || 3;
-  state.user.equipment = obData.equipment || "gym";
-  state.user.equipmentDetails = obData.equipmentDetails || [];
-  state.user.injuries = obData.injuries || [];
-  state.user.injuryNotes = obData.injuryNotes || "";
-  state.user.dietPreference = obData.dietPreference || "none";
-  state.user.supplements = obData.supplements || [];
-  state.user.activity = obData.activityLevel || "moderate";
   state.bodyGoal = mappedGoal;
-  if (Number(obData.nutritionCal)) { state.calorieTarget = Number(obData.nutritionCal); }
-  else if (!state.calorieTarget) {
-    const w = Number(obData.weight) || 70;
-    const gt = obData.goalType || "general-fitness";
-    state.calorieTarget = gt === "fat-loss" ? Math.round(w * 28) : gt === "muscle-gain" ? Math.round(w * 34) : Math.round(w * 30);
-  }
-  if (Number(obData.nutritionProtein)) { state.proteinGoal = Number(obData.nutritionProtein); }
-  else if (!state.proteinGoal) {
-    const w = Number(obData.weight) || 70;
-    const gt = obData.goalType || "general-fitness";
-    state.proteinGoal = gt === "fat-loss" ? Math.round(w * 2.2) : gt === "muscle-gain" ? Math.round(w * 2.0) : Math.round(w * 1.8);
-  }
-  state.waterGoal = state.waterGoal || Math.round((Number(obData.weight) || 70) * 35);
-  state.restTimer = state.restTimer || 90;
 
-  // Log initial weight (only on first onboarding)
-  if (!isProfileEdit && Number(obData.weight) > 0) {
+  if (!state.calorieTarget) {
+    state.calorieTarget = obData.goalType === "fat-loss" ? Math.round(w * 28) : obData.goalType === "muscle-gain" ? Math.round(w * 34) : Math.round(w * 30);
+  }
+  if (!state.proteinGoal) {
+    state.proteinGoal = obData.goalType === "fat-loss" ? Math.round(w * 2.2) : obData.goalType === "muscle-gain" ? Math.round(w * 2.0) : Math.round(w * 1.8);
+  }
+  state.waterGoal = state.waterGoal || Math.round(w * 35);
+
+  if (!isProfileEdit && w > 0) {
     if (!state.weightLog) state.weightLog = [];
-    state.weightLog.push({ weight: Number(obData.weight), date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
-  }
-
-  // Save body metrics
-  if (obData.metrics) {
-    const hasMetric = Object.values(obData.metrics).some(v => v);
-    if (hasMetric) {
-      state.user.bodyMeasurements = state.user.bodyMeasurements || {};
-      Object.assign(state.user.bodyMeasurements, obData.metrics);
-    }
-  }
-
-  // Sync to GoalCenter
-  const goalActivityMap = {
-    "fat-loss": "active", "muscle-gain": "very-active", "strength": "active",
-    "general-fitness": "moderate", "endurance": "very-active",
-  };
-  const gcGoalData = {
-    goalType: obData.goalType || "general-fitness",
-    startWeight: Number(obData.weight) || 0,
-    targetWeight: Number(obData.targetWeight) || 0,
-    targetDate: obData.targetDate || null,
-    trainingDays: obData.trainingDays || 3,
-    experienceLevel: obData.experience || "beginner",
-    activityLevel: goalActivityMap[obData.goalType] || "moderate",
-  };
-
-  if (typeof GoalCenter !== "undefined") {
-    GoalCenter.createProfile(gcGoalData);
-  }
-
-  if (Number(obData.targetWeight) > 0 && Number(obData.weight) > 0) {
-    state.weightGoal = {
-      startWeight: Number(obData.weight),
-      targetWeight: Number(obData.targetWeight),
-      goalType: obData.goalType,
-      createdAt: new Date().toISOString(),
-    };
+    state.weightLog.push({ weight: w, date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
   }
 
   saveState();
 
+  const wasComplete = state.onboardingComplete;
   if (!isProfileEdit) {
     state.onboardingComplete = true;
     state.coachActivated = true;
@@ -10125,38 +9967,40 @@ function obFinishSetup() {
   Object.assign(state.onboardingData, obData);
   saveState();
 
-  // Close onboarding — show activation only on first setup
-  closeOnboarding(true, () => {
-    render();
-    renderProfileScreen();
-    if (!isProfileEdit) showCoachActivation();
-  });
-}
+  if (!isProfileEdit && !wasComplete) {
+    // Show done screen inside the onboarding modal
+    const skipBtn = document.getElementById("onboardSkipBtn");
+    if (skipBtn) skipBtn.style.display = "none";
+    document.getElementById("obStepsFill").style.width = "100%";
+    document.getElementById("obStepsLabel").textContent = "Ready!";
+    document.getElementById("obTimeLabel").textContent = "All set!";
 
-// ===== COACH ACTIVATION SCREEN =====
-function showCoachActivation() {
-  const modal = document.getElementById("coachActivationModal");
-  modal.classList.remove("is-hidden");
+    const body = document.getElementById("obBody");
+    body.innerHTML = obRenderDoneScreen();
+    body.style.animation = "none";
+    body.offsetHeight;
+    body.style.animation = "";
 
-  const items = [
-    { icon: "🎯", text: "Goal Created" },
-    { icon: "🤖", text: "Coach Activated" },
-    { icon: "💪", text: "Recovery Tracking" },
-    { icon: "⚖️", text: "Weight Insights" },
-    { icon: "🏆", text: "Challenges Enabled" },
-    { icon: "📊", text: "Reports Enabled" },
-  ];
-
-  document.getElementById("obActivationGrid").innerHTML = items.map(i =>
-    `<div class="ob-activation-item"><div class="ob-activation-item-icon">${i.icon}</div><div class="ob-activation-item-text">${i.text}</div></div>`
-  ).join("");
-
-  document.getElementById("obActivationStartBtn").onclick = () => {
-    modal.classList.add("is-hidden");
-    activateTab("sets");
-    // Also trigger the workout generator
-    openNewWorkoutGenerator();
-  };
+    document.getElementById("obGenFirstBtn")?.addEventListener("click", () => {
+      closeOnboarding(true, () => {
+        render();
+        renderProfileScreen();
+        activateTab("sets");
+        openNewWorkoutGenerator();
+      });
+    });
+    document.getElementById("obExploreBtn")?.addEventListener("click", () => {
+      closeOnboarding(true, () => {
+        render();
+        renderProfileScreen();
+      });
+    });
+  } else {
+    closeOnboarding(true, () => {
+      render();
+      renderProfileScreen();
+    });
+  }
 }
 
 // ===== FIRST 7 DAYS EXPERIENCE =====
@@ -10598,6 +10442,7 @@ document.getElementById("newWoGenerate")?.addEventListener("click", () => {
 // ===== NEW WORKOUT BUILDER SCREEN =====
 // ===== NEW CREATE WORKOUT =====
 let nwSearchTerm = "";
+let nwActiveMuscle = "All";
 let nwActiveFilters = [];
 let nwSelectedExercises = [];
 let nwFavorites = [];
@@ -10611,6 +10456,7 @@ function saveFavorites() {
 
 function showNewWorkoutBuilder() {
   nwSearchTerm = "";
+  nwActiveMuscle = "All";
   nwActiveFilters = [];
   nwSelectedExercises = [];
   loadFavorites();
@@ -10620,10 +10466,37 @@ function showNewWorkoutBuilder() {
 }
 
 function renderNewWorkout() {
+  renderMuscleNav();
   renderFilterChips();
   renderExerciseList();
   renderSelectedPanel();
   updateSaveBtn();
+}
+
+function renderMuscleNav() {
+  const container = document.getElementById("nwMuscleNav");
+  if (!container) return;
+  const counts = {};
+  EXERCISE_LIBRARY.forEach(ex => {
+    const m = ex.primaryMuscle || "Other";
+    counts[m] = (counts[m] || 0) + 1;
+  });
+  const muscles = Object.keys(counts).sort();
+  const icons = { Chest:"🏋️", Back:"🔙", Shoulders:"💪", Triceps:"💪", Biceps:"💪", Legs:"🦵", Glutes:"🍑", Abs:"🧊", Calves:"🦶", Forearms:"🤌", Cardio:"🏃", Core:"🧘", Full:"🔄", Other:"📌" };
+  let html = '<button class="nw-mn-item' + (nwActiveMuscle === "All" ? " is-active" : "") + '" data-muscle="All"><span class="nw-mn-item-icon">📋</span>All<span class="nw-mn-item-count">' + EXERCISE_LIBRARY.length + '</span></button>';
+  muscles.forEach(m => {
+    html += '<button class="nw-mn-item' + (nwActiveMuscle === m ? " is-active" : "") + '" data-muscle="' + m + '"><span class="nw-mn-item-icon">' + (icons[m] || "📌") + '</span>' + m + '<span class="nw-mn-item-count">' + counts[m] + '</span></button>';
+  });
+  container.innerHTML = html;
+  container.querySelectorAll(".nw-mn-item").forEach(btn => {
+    btn.addEventListener("click", function() {
+      const muscle = this.dataset.muscle;
+      if (muscle === nwActiveMuscle) return;
+      nwActiveMuscle = muscle;
+      renderMuscleNav();
+      renderExerciseList();
+    });
+  });
 }
 
 const NW_MUSCLE_FILTERS = ["Chest", "Back", "Shoulders", "Triceps", "Biceps", "Legs", "Glutes", "Abs", "Calves", "Forearms"];
@@ -10661,7 +10534,6 @@ function renderFilterChips() {
   if (!bar) return;
   let html = "";
   const groups = [
-    { label: "Muscle", filters: NW_MUSCLE_FILTERS },
     { label: "Equipment", filters: NW_EQUIP_FILTERS },
     { label: "Difficulty", filters: NW_DIFFICULTY_FILTERS },
     { label: "Movement", filters: NW_MOVEMENT_FILTERS },
@@ -10734,6 +10606,10 @@ function renderExerciseList() {
       const equip = e.equipment.toLowerCase();
       return name.includes(q) || tags.some(t => t.includes(q)) || muscle.includes(q) || equip.includes(q);
     });
+  }
+
+  if (nwActiveMuscle && nwActiveMuscle !== "All") {
+    allExercises = allExercises.filter(e => e.primaryMuscle === nwActiveMuscle);
   }
 
   if (nwActiveFilters.length) {
@@ -12756,7 +12632,7 @@ const EXERCISES_TO_AVOID = {
 };
 
 // --- Generator State ---
-const genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null };
+let genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null };
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function filterByEquipment(exercises, equipment) {
@@ -13483,7 +13359,7 @@ function saveGeneratedProgram() {
   }
 
   const programId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
-  const programName = `${genState.split} (${genState.goal})`;
+  const programName = `${genState.split || "Split"} (${genState.goal || "General Fitness"})`;
 
   let activePlan = [];
   try {
