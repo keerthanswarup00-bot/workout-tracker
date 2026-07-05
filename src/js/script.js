@@ -9482,106 +9482,201 @@ function closeOnboarding(animateOut, callback) {
   }
 }
 
+function _obWheelHTML(id, values, selected, unit) {
+  const rows = values.map((v, i) => {
+    const sel = v === selected ? " is-selected" : "";
+    return `<div class="ob-wheel-item${sel}" data-wi="${i}">${v}</div>`;
+  }).join("");
+  return `<div class="ob-wheel-wrap" data-wheel="${id}">
+    <div class="ob-wheel-highlight"></div>
+    <div class="ob-wheel" data-wv="${values.join(",")}">${rows}</div>
+    ${unit ? `<div class="ob-wheel-caption">${unit}</div>` : ""}
+  </div>`;
+}
+
+function _obWheelValue(wrapEl) {
+  const sel = wrapEl.querySelector(".ob-wheel-item.is-selected");
+  return sel ? sel.textContent.trim() : "";
+}
+
+function _obInitWheel(wrapEl, onChange) {
+  const list = wrapEl.querySelector(".ob-wheel");
+  if (!list) return;
+  const items = list.querySelectorAll(".ob-wheel-item");
+  let ticking = false;
+
+  function update() {
+    const listRect = list.getBoundingClientRect();
+    const mid = listRect.top + listRect.height / 2;
+    let best = null, bestDist = Infinity;
+    items.forEach(item => {
+      const r = item.getBoundingClientRect();
+      const d = Math.abs(r.top + r.height / 2 - mid);
+      if (d < bestDist) { bestDist = d; best = item; }
+    });
+    items.forEach(i => i.classList.remove("is-selected"));
+    if (best) {
+      best.classList.add("is-selected");
+      if (onChange) onChange(best.textContent.trim());
+    }
+  }
+
+  list.addEventListener("scroll", () => {
+    if (!ticking) { requestAnimationFrame(() => { update(); ticking = false; }); ticking = true; }
+  });
+
+  update();
+
+  // Scroll to selected on init
+  const selIdx = [...items].findIndex(i => i.classList.contains("is-selected"));
+  if (selIdx >= 0) {
+    const target = items[selIdx];
+    const listRect = list.getBoundingClientRect();
+    const targetRect = target.getBoundingClientRect();
+    const offset = targetRect.top - listRect.top - (listRect.height / 2 - targetRect.height / 2);
+    list.scrollTop += offset;
+    setTimeout(update, 100);
+  }
+}
+
 function obGoToStep(index) {
   const cfg = OB_STEPS_CONFIG[index];
   if (!cfg) return;
   saveState();
 
   const total = OB_STEPS_CONFIG.length;
-  document.getElementById("obStepsFill").style.width = ((index + 1) / total * 100) + "%";
+  const pct = ((index + 1) / total * 100);
+  document.getElementById("obStepsFill").style.width = pct + "%";
   document.getElementById("obStepsLabel").textContent = "Step " + (index + 1) + " of " + total;
 
+  const timeLabels = ["About 1 minute left", "About 45 seconds left", "About 30 seconds left", "About 15 seconds left", "Almost done!"];
+  document.getElementById("obTimeLabel").textContent = timeLabels[index] || "";
+
   const body = document.getElementById("obBody");
-  let html = `<div class="ob-title">${cfg.title}</div><div class="ob-desc">${cfg.desc}</div>`;
+
+  let html = `<div class="ob-title">${cfg.title}</div>`;
+  if (cfg.desc) html += `<div class="ob-desc">${cfg.desc}</div>`;
   html += obRenderStepContent(cfg.id);
   body.innerHTML = html;
+
+  // Re-trigger slide-in animation
+  body.style.animation = "none";
+  body.offsetHeight;
+  body.style.animation = "";
+
   obBindStepEvents(cfg.id, index);
 
-  // Re-bind skip & confirm
   document.getElementById("onboardSkipBtn").onclick = () => {
     document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
   };
 
   setTimeout(() => {
-    const firstInput = body.querySelector("input, button");
+    const firstInput = body.querySelector("input, button, [tabindex]");
     if (firstInput) firstInput.focus();
   }, 100);
 }
 
 function obRenderStepContent(stepId) {
   if (stepId === "welcome") {
-    return `<div style="text-align:center;padding:1.5rem 0">
-      <div style="font-size:3.5rem;margin-bottom:0.75rem">🏋️</div>
-      <h2 style="font-size:1.35rem;font-weight:700;margin:0 0 0.5rem;color:var(--text)">Welcome to IronLog</h2>
-      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.25rem;line-height:1.5">Let's build your training profile.</p>
-      <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1.5rem;line-height:1.4">This takes less than 90 seconds.</p>
-      <button class="btn-primary" id="obNextBtn" style="min-width:200px;padding:0.9rem 2rem;font-size:1rem">Get Started</button>
+    return `<div class="ob-welcome">
+      <div class="ob-welcome-illust">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M6 8h.01M6 16h.01M10 12h.01M14 8h.01M14 16h.01M18 12h.01"/>
+          <rect x="2" y="4" width="20" height="16" rx="2"/>
+        </svg>
+      </div>
+      <h1>Welcome to IronLog</h1>
+      <p>Let's build your training profile.</p>
+      <div class="ob-time-badge">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+        Takes less than 90 seconds
+      </div>
+      <div class="ob-welcome-actions">
+        <button id="obNextBtn">Get Started</button>
+        <button class="btn-ghost" onclick="document.getElementById('onboardSkipBtn').click()">Skip for now</button>
+      </div>
     </div>`;
   }
 
   if (stepId === "about-you") {
-    return `<div class="ob-fields" style="gap:1.25rem">
+    const nameVal = obData.name || "";
+    const ageVal = obData.age || 25;
+    const heightVal = obData.height || 175;
+    const ages = Array.from({length: 73}, (_, i) => i + 13);
+    const heights = Array.from({length: 91}, (_, i) => i + 130);
+    return `<div class="ob-fields">
       <div class="ob-field">
         <label class="ob-field-label">What's your name?</label>
-        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${obData.name || ""}" autocomplete="name" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
+        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${nameVal}" autocomplete="name" />
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+      <div class="ob-wheels-dual">
         <div class="ob-field">
           <label class="ob-field-label">Age</label>
-          <input type="number" class="ob-input" id="obAge" placeholder="23" min="10" max="120" value="${obData.age || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
+          ${_obWheelHTML("obAgeWheel", ages, Number(ageVal), "years")}
         </div>
         <div class="ob-field">
           <label class="ob-field-label">Height (cm)</label>
-          <input type="number" class="ob-input" id="obHeight" placeholder="175" min="100" max="250" value="${obData.height || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
+          ${_obWheelHTML("obHeightWheel", heights, Number(heightVal), "cm")}
         </div>
       </div>
-      <div class="ob-actions" style="margin-top:0.5rem">
-        <button class="btn-primary" id="obNextBtn" style="width:100%;padding:0.9rem" disabled>Next</button>
+      <div class="ob-actions">
+        <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
       </div>
     </div>`;
   }
 
   if (stepId === "your-training") {
     const exps = [
-      { id: "beginner", label: "Beginner", desc: "Less than 6 months" },
-      { id: "intermediate", label: "Intermediate", desc: "6 months to 2 years" },
-      { id: "advanced", label: "Advanced", desc: "2+ years" },
+      { id: "beginner", label: "Beginner", desc: "Less than 6 months", icon: "🌱" },
+      { id: "intermediate", label: "Intermediate", desc: "6 months to 2 years", icon: "🌿" },
+      { id: "advanced", label: "Advanced", desc: "2+ years", icon: "🌳" },
     ];
+    const daysList = [2,3,4,5,6];
     const daysLabels = { 2: "Minimal", 3: "Standard", 4: "Frequent", 5: "Dedicated", 6: "Intensive" };
-    let html = `<div class="ob-fields" style="gap:1.25rem">`;
+    const weightVal = obData.weight || 70;
+    const weights = Array.from({length: 171}, (_, i) => i + 30);
+
+    let html = `<div class="ob-fields">`;
     html += `<div class="ob-field">
       <label class="ob-field-label">Current weight (kg)</label>
-      <input type="text" class="ob-input" id="obWeight" placeholder="71" inputmode="decimal" value="${obData.weight || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px;max-width:180px" />
+      ${_obWheelHTML("obWeightWheel", weights, Number(weightVal), "kg")}
     </div>`;
     html += `<div class="ob-field">
       <label class="ob-field-label">Experience level</label>
-      <div class="ob-options" style="gap:0.5rem">${exps.map(e => `<button class="ob-option${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}" style="flex:1;padding:0.9rem 0.75rem;min-height:60px"><span class="ob-option-name" style="font-size:0.9rem">${e.label}</span><span style="display:block;font-size:0.72rem;font-weight:400;color:var(--text-secondary);margin-top:0.2rem">${e.desc}</span></button>`).join("")}</div>
+      <div class="ob-cards">${exps.map(e => `<button class="ob-card${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}">
+        <div class="ob-card-icon">${e.icon}</div>
+        <div class="ob-card-body">
+          <div class="ob-card-title">${e.label}</div>
+          <div class="ob-card-desc">${e.desc}</div>
+        </div>
+        ${e.id === "beginner" ? '<span class="ob-card-badge">Recommended</span>' : ""}
+      </button>`).join("")}</div>
     </div>`;
     html += `<div class="ob-field">
       <label class="ob-field-label">Workout days per week</label>
-      <div class="ob-option-row" style="gap:0.4rem">`;
-    [2,3,4,5,6].forEach(d => {
-      html += `<button class="ob-option ob-option-compact${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}" style="flex:1;min-height:56px">${d} <span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem">${daysLabels[d]}</span></button>`;
-    });
-    html += `</div></div>`;
-    html += `<div class="ob-actions" style="margin-top:0.5rem">
-      <button class="btn-secondary" id="obBackBtn" style="padding:0.9rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn" style="flex:1;padding:0.9rem" disabled>Next</button>
+      <div class="ob-grid-cards">${daysList.map(d => `<button class="ob-grid-card${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}">
+        <div class="ob-grid-card-value">${d}</div>
+        <div class="ob-grid-card-label">${daysLabels[d]}</div>
+      </button>`).join("")}</div>
+    </div>`;
+    html += `<div class="ob-actions">
+      <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+      <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
     </div></div>`;
     return html;
   }
 
   if (stepId === "your-goal") {
     const goals = [
-      { id: "fat-loss", label: "Fat Loss", icon: "🔥" },
-      { id: "muscle-gain", label: "Muscle Gain", icon: "💪" },
-      { id: "strength", label: "Strength", icon: "🏋️" },
-      { id: "general-fitness", label: "General Fitness", icon: "✅" },
+      { id: "fat-loss", label: "Fat Loss", desc: "Drop body fat while keeping muscle", icon: "🔥" },
+      { id: "muscle-gain", label: "Build Muscle", desc: "Add lean mass and shape your body", icon: "💪" },
+      { id: "strength", label: "Get Stronger", desc: "Increase raw strength and power", icon: "🏋️" },
+      { id: "general-fitness", label: "General Fitness", desc: "Stay active and feel great", icon: "✅" },
     ];
     const locations = [
-      { id: "gym", label: "Gym" },
-      { id: "home", label: "Home" },
-      { id: "minimal", label: "Both" },
+      { id: "gym", label: "Gym", desc: "Full equipment access", icon: "🏋️" },
+      { id: "home", label: "Home", desc: "Bodyweight & limited gear", icon: "🏠" },
+      { id: "minimal", label: "Both", desc: "Mix of gym and home", icon: "🔄" },
     ];
     const injuries = [
       { id: "shoulder", label: "Shoulder" }, { id: "back", label: "Lower Back" },
@@ -9589,22 +9684,35 @@ function obRenderStepContent(stepId) {
       { id: "hip", label: "Hip" }, { id: "ankle", label: "Ankle" },
     ];
     const selected = obData.injuries || [];
-    let html = `<div class="ob-fields" style="gap:1.25rem">`;
+
+    let html = `<div class="ob-fields">`;
     html += `<div class="ob-field">
       <label class="ob-field-label">Primary goal</label>
-      <div class="ob-options" style="gap:0.5rem">${goals.map(g => `<button class="ob-option${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}" style="flex:1;padding:0.9rem 0.5rem;min-height:56px"><span style="display:block;font-size:1.2rem;margin-bottom:0.2rem">${g.icon}</span><span style="font-size:0.82rem">${g.label}</span></button>`).join("")}</div>
+      <div class="ob-cards">${goals.map(g => `<button class="ob-card${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}">
+        <div class="ob-card-icon">${g.icon}</div>
+        <div class="ob-card-body">
+          <div class="ob-card-title">${g.label}</div>
+          <div class="ob-card-desc">${g.desc}</div>
+        </div>
+        ${g.id === "fat-loss" ? '<span class="ob-card-badge">Popular</span>' : ""}
+      </button>`).join("")}</div>
     </div>`;
     html += `<div class="ob-field">
       <label class="ob-field-label">Training location</label>
-      <div class="ob-options" style="gap:0.4rem">${locations.map(l => `<button class="ob-option${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}" style="flex:1;padding:0.8rem 0.5rem">${l.label}</button>`).join("")}</div>
+      <div class="ob-cards" style="flex-direction:row">${locations.map(l => `<button class="ob-card${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}" style="flex-direction:column;text-align:center;padding:0.85rem;gap:0.4rem">
+        <div style="font-size:1.4rem">${l.icon}</div>
+        <div class="ob-card-title" style="font-size:0.85rem">${l.label}</div>
+      </button>`).join("")}</div>
     </div>`;
     html += `<div class="ob-field">
-      <label class="ob-field-label">Injuries <span style="font-weight:400;color:var(--text-secondary)">(optional)</span></label>
-      <div class="ob-options" style="gap:0.3rem;flex-wrap:wrap">${injuries.map(inj => `<button class="ob-option${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}" style="flex:0 0 auto;padding:0.6rem 0.75rem">${inj.label}</button>`).join("")}</div>
+      <label class="ob-field-label">Injuries <span style="font-weight:400;color:var(--text-tertiary);font-size:0.78rem">(optional)</span></label>
+      <div style="display:flex;flex-wrap:wrap;gap:0.4rem">${injuries.map(inj => `<button class="ob-card" style="flex:0 0 auto;padding:0.5rem 0.85rem;border-radius:999px;gap:0.35rem;border-width:1.5px${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}">
+        <div class="ob-card-title" style="font-size:0.8rem">${inj.label}</div>
+      </button>`).join("")}</div>
     </div>`;
-    html += `<div class="ob-actions" style="margin-top:0.5rem">
-      <button class="btn-secondary" id="obBackBtn" style="padding:0.9rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn" style="flex:1;padding:0.9rem" disabled>Next</button>
+    html += `<div class="ob-actions">
+      <button class="ob-btn-secondary" id="obBackBtn">Back</button>
+      <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
     </div></div>`;
     return html;
   }
@@ -9615,40 +9723,70 @@ function obRenderStepContent(stepId) {
     const goalLabels = { "fat-loss": "Fat Loss", "muscle-gain": "Build Muscle", "strength": "Strength", "general-fitness": "General Fitness" };
     const splitLabels = { "fat-loss": "Full Body", "muscle-gain": "Push Pull Legs", "strength": "Upper/Lower", "general-fitness": "Full Body" };
     const gt = obData.goalType || "general-fitness";
-    return `<div style="text-align:center;padding:0.5rem 0">
-      <div style="font-size:2rem;margin-bottom:0.5rem">🎯</div>
-      <h2 style="font-size:1.2rem;font-weight:700;margin:0 0 0.25rem;color:var(--text)">Your Training Plan</h2>
-      <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1rem">Here's what IronLog recommends</p>
-      <div style="background:var(--surface);border-radius:14px;padding:1rem;margin-bottom:1rem;text-align:left">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-          <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Goal</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${goalLabels[gt] || "General Fitness"}</div>
+    const days = obData.trainingDays || 3;
+    const expLabel = obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner";
+    const equipLabels = { gym: "Gym", home: "Home", minimal: "Both" };
+    return `<div class="ob-summary">
+      <div class="ob-summary-grid">
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--accent) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
-          <div style="background:color-mix(in srgb,var(--orange) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Calories</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Calories"]}</div>
+          <div class="ob-summary-card-label">Goal</div>
+          <div class="ob-summary-card-value">${goalLabels[gt] || "General Fitness"}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--orange) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg>
           </div>
-          <div style="background:color-mix(in srgb,var(--blue) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Protein</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Protein"]}</div>
+          <div class="ob-summary-card-label">Calories</div>
+          <div class="ob-summary-card-value">${strategy["Calories"]}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--blue) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 14c-1.5 0-2.5-1-2.5-2 0-1 .5-2 2.5-2s2.5 1 2.5 2c0 1.5-1 2-2.5 2z"/><path d="M5 14c-1.5 0-2.5-1-2.5-2 0-1 .5-2 2.5-2s2.5 1 2.5 2c0 1.5-1 2-2.5 2z"/><path d="M14.5 6h-5l-2 4h9z"/></svg>
           </div>
-          <div style="background:color-mix(in srgb,var(--protein) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Water</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Water"]}</div>
+          <div class="ob-summary-card-label">Protein</div>
+          <div class="ob-summary-card-value">${strategy["Protein"]}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--protein) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2L2 7l10 5 10-5-10-5z"/><path d="M2 17l10 5 10-5"/><path d="M2 12l10 5 10-5"/></svg>
           </div>
-          <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Split</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${splitLabels[gt] || "Full Body"}</div>
+          <div class="ob-summary-card-label">Water</div>
+          <div class="ob-summary-card-value">${strategy["Water"]}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--accent) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
           </div>
-          <div style="background:color-mix(in srgb,var(--orange) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
-            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Training Days</div>
-            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${preview["Days/Week"]}</div>
+          <div class="ob-summary-card-label">Split</div>
+          <div class="ob-summary-card-value">${splitLabels[gt] || "Full Body"}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--orange) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
           </div>
+          <div class="ob-summary-card-label">Training Days</div>
+          <div class="ob-summary-card-value">${days}x / week</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--blue) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          </div>
+          <div class="ob-summary-card-label">Experience</div>
+          <div class="ob-summary-card-value">${expLabel}</div>
+        </div>
+        <div class="ob-summary-card">
+          <div class="ob-summary-card-icon" style="background:color-mix(in srgb,var(--protein) 15%,transparent)">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2" ry="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+          </div>
+          <div class="ob-summary-card-label">Location</div>
+          <div class="ob-summary-card-value">${equipLabels[obData.equipment] || "Gym"}</div>
         </div>
       </div>
-      <p style="font-size:0.75rem;color:var(--text-secondary);margin:0 0 1rem;line-height:1.4">You can adjust all of this later in your Profile.</p>
-      <button class="btn-primary" id="obFinishBtn" style="width:100%;padding:0.9rem;font-size:1rem">Start Using IronLog →</button>
+      <p class="ob-summary-note">You can adjust all of this later in your Profile.</p>
+      <button class="ob-finish-btn" id="obFinishBtn">Create My Plan</button>
     </div>`;
   }
 
@@ -9670,23 +9808,32 @@ function obBindStepEvents(stepId, index) {
 
   if (stepId === "about-you") {
     const nameIn = document.getElementById("obName");
-    const ageIn = document.getElementById("obAge");
-    const heightIn = document.getElementById("obHeight");
     const nextBtn = document.getElementById("obNextBtn");
 
     function checkAbout() {
-      nextBtn.disabled = !(nameIn.value.trim() && Number(ageIn.value) > 0 && Number(ageIn.value) <= 120 && Number(heightIn.value) > 0);
+      if (!nextBtn) return;
+      const ageWheel = document.querySelector("[data-wheel='obAgeWheel']");
+      const htWheel = document.querySelector("[data-wheel='obHeightWheel']");
+      const age = Number(_obWheelValue(ageWheel));
+      const ht = Number(_obWheelValue(htWheel));
+      nextBtn.disabled = !(nameIn && nameIn.value.trim() && age >= 13 && age <= 120 && ht >= 100);
     }
-    [nameIn, ageIn, heightIn].forEach(el => { if (el) el.addEventListener("input", checkAbout); });
+
+    if (nameIn) nameIn.addEventListener("input", checkAbout);
+
+    const ageWheel = document.querySelector("[data-wheel='obAgeWheel']");
+    const htWheel = document.querySelector("[data-wheel='obHeightWheel']");
+    if (ageWheel) _obInitWheel(ageWheel, () => checkAbout());
+    if (htWheel) _obInitWheel(htWheel, () => checkAbout());
 
     if (nextBtn) {
       nextBtn.addEventListener("click", () => {
-        const name = nameIn.value.trim();
-        const age = Number(ageIn.value);
-        const height = Number(heightIn.value);
+        const name = nameIn ? nameIn.value.trim() : "";
+        const age = Number(_obWheelValue(ageWheel));
+        const height = Number(_obWheelValue(htWheel));
         if (!name) { showToast("Please enter your name."); return; }
-        if (!(age > 0 && age <= 120)) { showToast("Please enter a valid age."); return; }
-        if (!(height > 0)) { showToast("Please enter a valid height."); return; }
+        if (!(age >= 13 && age <= 120)) { showToast("Please enter a valid age."); return; }
+        if (!(height >= 100)) { showToast("Please enter a valid height."); return; }
         obData.name = name;
         obData.age = age;
         obData.height = height;
@@ -9698,15 +9845,13 @@ function obBindStepEvents(stepId, index) {
   }
 
   if (stepId === "your-training") {
-    const weightIn = document.getElementById("obWeight");
     const nextBtn = document.getElementById("obNextBtn");
 
-    if (weightIn) {
-      weightIn.addEventListener("input", () => {
-        obData.weight = weightIn.value;
-        obCheckTrainNext("your-training");
-      });
-    }
+    const weightWheel = document.querySelector("[data-wheel='obWeightWheel']");
+    if (weightWheel) _obInitWheel(weightWheel, () => {
+      obData.weight = Number(_obWheelValue(weightWheel));
+      obCheckTrainNext("your-training");
+    });
 
     document.querySelectorAll("[data-ob-exp]").forEach(btn => {
       btn.addEventListener("click", () => {

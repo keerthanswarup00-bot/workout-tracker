@@ -919,18 +919,24 @@
 
 
     <!-- ONBOARDING MODAL V2 -->
-    <div class="modal-overlay is-hidden" id="onboardingModal">
-      <div class="modal-card ob-modal-card" style="position: relative">
-        <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">✕</button>
-
-        <!-- Progress Bar -->
-        <div class="ob-steps" id="obSteps">
-          <div class="ob-steps-bar"><div class="ob-steps-fill" id="obStepsFill"></div></div>
-          <div class="ob-steps-label" id="obStepsLabel">Step 1 of 5</div>
+    <div class="onboard-overlay is-hidden" id="onboardingModal">
+      <div class="onboard-modal">
+        <!-- Top bar: skip + progress -->
+        <div class="onboard-top">
+          <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+          </button>
+          <div class="onboard-progress-wrap">
+            <div class="onboard-progress" id="obStepsFill"></div>
+          </div>
+          <div class="onboard-step-label" id="obStepsLabel">Step 1 of 6</div>
+          <div class="onboard-time-label" id="obTimeLabel">About 1 minute left</div>
         </div>
 
-        <!-- Dynamic Content -->
-        <div class="ob-body" id="obBody"></div>
+        <!-- Step content slides in here -->
+        <div class="onboard-stage" id="obStage">
+          <div class="onboard-body" id="obBody"></div>
+        </div>
       </div>
     </div>
 
@@ -938,7 +944,9 @@
     <div class="modal-overlay is-hidden" id="coachActivationModal">
       <div class="modal-card ob-activation-card">
         <div class="ob-activation-header">
-          <div class="ob-activation-icon">🎉</div>
+          <div class="ob-activation-icon">
+            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
+          </div>
           <h2 class="ob-activation-title">You're All Set!</h2>
           <p class="ob-activation-sub">Your IronLog Coach is activated and ready.</p>
         </div>
@@ -948,13 +956,16 @@
     </div>
 
     <!-- ONBOARDING SKIP CONFIRM -->
-    <div class="modal-overlay is-hidden" id="onboardConfirmModal">
-      <div class="modal-card" style="max-width: 300px; text-align: center">
-        <h3 style="margin: 0 0 0.5rem; font-size: 1rem">Skip Setup?</h3>
-        <p style="font-size: 0.78rem; color: var(--text-secondary); margin: 0 0 1rem; line-height: 1.4">You can complete your profile later from Settings.</p>
-        <div style="display: flex; gap: 0.5rem; justify-content: center">
-          <button class="btn-secondary" id="onboardConfirmCancel">Cancel</button>
-          <button class="btn-primary" id="onboardConfirmSkip">Skip For Now</button>
+    <div class="onboard-overlay is-hidden" id="onboardConfirmModal">
+      <div class="onboard-modal" style="max-width: 380px; text-align: center;">
+        <div class="onboard-skip-content" style="padding: 2.5rem 2rem;">
+          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom: 1rem;"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+          <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem;">Skip Setup?</h3>
+          <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.5;">You can complete your profile later from Settings.</p>
+          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
+            <button class="btn-secondary" id="onboardConfirmCancel" style="width: 100%;">Cancel</button>
+            <button class="btn-ghost" id="onboardConfirmSkip">Skip For Now</button>
+          </div>
         </div>
       </div>
     </div>

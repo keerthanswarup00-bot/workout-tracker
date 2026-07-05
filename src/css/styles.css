@@ -3770,6 +3770,90 @@ h4, .h4 { font-size: 16px; font-weight: 600; line-height: 1.3 }
 #edSetList { margin-top: 0.35rem }
 .ed-section-header { margin-top: 0.35rem; margin-bottom: 0.2rem }
 
+/* ===== GHOST BUTTON ===== */
+.btn-ghost {
+  background: transparent;
+  border: 0;
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.65rem 1.25rem;
+  border-radius: 12px;
+  transition: color 0.15s, background 0.15s;
+  font-family: inherit;
+}
+
+.btn-ghost:hover {
+  color: var(--text);
+  background: var(--surface-2);
+}
+
+/* ===== COACH ACTIVATION ===== */
+.ob-activation-card {
+  text-align: center;
+  padding: 2rem 1.5rem 1.5rem;
+}
+
+.ob-activation-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 1rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ob-activation-title {
+  font-size: 1.35rem;
+  font-weight: 700;
+  color: var(--text);
+  margin: 0 0 0.35rem;
+}
+
+.ob-activation-sub {
+  font-size: 0.85rem;
+  color: var(--text-secondary);
+  margin: 0 0 1.25rem;
+  line-height: 1.4;
+}
+
+.ob-activation-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.4rem;
+  margin-bottom: 1.25rem;
+  text-align: left;
+}
+
+.ob-activation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  background: var(--surface-2);
+  border-radius: 10px;
+  padding: 0.6rem 0.75rem;
+}
+
+.ob-activation-item-icon {
+  font-size: 1.15rem;
+  flex-shrink: 0;
+}
+
+.ob-activation-item-text {
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+.ob-activation-btn {
+  width: 100%;
+  min-height: 50px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+}
+
 /* ===== HIDE OLD HI CLASSES ===== */
 .hi-item, .hi-label, .hi-value { display: none }
 
@@ -3779,3 +3863,631 @@ h4, .h4 { font-size: 16px; font-weight: 600; line-height: 1.3 }
 .ws-actions { padding-bottom: env(safe-area-inset-bottom, 0px) }
 .modal-card { margin-bottom: env(safe-area-inset-bottom, 0px) }
 .nw-footer { padding-bottom: calc(0.75rem + env(safe-area-inset-bottom, 0px)) }
+
+/* ===== ONBOARDING V2 PREMIUM ===== */
+.onboard-overlay {
+  position: fixed; inset: 0; z-index: 1000;
+  background: rgba(0,0,0,0.72);
+  display: flex; align-items: center; justify-content: center;
+  backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+  padding: 1rem;
+  transition: opacity 0.3s ease;
+}
+
+.onboard-overlay.is-hidden {
+  display: none;
+  opacity: 0;
+}
+
+.onboard-modal {
+  position: relative;
+  background: var(--bg);
+  border-radius: 24px;
+  width: 100%;
+  max-width: 680px;
+  max-height: 90vh;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 25px 60px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05);
+  animation: onboardFadeUp 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes onboardFadeUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes onboardSlideIn {
+  from { opacity: 0; transform: translateX(40px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes onboardSlideOut {
+  from { opacity: 1; transform: translateX(0); }
+  to { opacity: 0; transform: translateX(-40px); }
+}
+
+.onboard-top {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 1rem 1.5rem 0.75rem;
+  flex-shrink: 0;
+}
+
+.onboard-skip {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  background: var(--surface-2);
+  border: 0;
+  border-radius: 50%;
+  color: var(--text-secondary);
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: all 0.2s;
+}
+
+.onboard-skip:hover { background: var(--surface-3); color: var(--text); }
+
+.onboard-progress-wrap {
+  flex: 1;
+  height: 4px;
+  background: var(--surface-2);
+  border-radius: 999px;
+  overflow: hidden;
+}
+
+.onboard-progress {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 999px;
+  transition: width 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+  width: 0%;
+}
+
+.onboard-step-label {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.onboard-time-label {
+  font-size: 0.65rem;
+  color: var(--text-tertiary);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.onboard-stage {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding: 0.5rem 1.5rem 1.5rem;
+  scroll-behavior: smooth;
+}
+
+.onboard-body {
+  animation: onboardSlideIn 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.onboard-body.is-exiting {
+  animation: onboardSlideOut 0.25s ease-in both;
+}
+
+/* ---- Step Typography ---- */
+.ob-title {
+  font-size: 1.75rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: var(--text);
+  margin: 0.5rem 0 0.35rem;
+}
+
+.ob-desc {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 1.5rem;
+}
+
+/* ---- Welcome Screen ---- */
+.ob-welcome {
+  text-align: center;
+  padding: 1.5rem 0 0.5rem;
+}
+
+.ob-welcome-illust {
+  width: 140px;
+  height: 140px;
+  margin: 0 auto 1.25rem;
+  background: linear-gradient(135deg, var(--accent) 0%, var(--accent-secondary, #6366f1) 100%);
+  border-radius: 36px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 12px 40px rgba(255, 183, 3, 0.3);
+}
+
+.ob-welcome-illust svg {
+  width: 64px;
+  height: 64px;
+  color: #0a0a0a;
+}
+
+.ob-welcome h1 {
+  font-size: 1.75rem;
+  font-weight: 800;
+  margin: 0 0 0.5rem;
+  color: var(--text);
+  letter-spacing: -0.02em;
+}
+
+.ob-welcome p {
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+  line-height: 1.5;
+  margin: 0 0 0.15rem;
+}
+
+.ob-welcome .ob-time-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: var(--surface-2);
+  border-radius: 999px;
+  padding: 0.4rem 0.85rem;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin: 0.75rem 0 1.5rem;
+}
+
+.ob-welcome .ob-time-badge svg {
+  width: 14px;
+  height: 14px;
+  opacity: 0.6;
+}
+
+.ob-welcome .ob-welcome-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+  max-width: 280px;
+  margin: 0 auto;
+}
+
+.ob-welcome .ob-welcome-actions button:first-child {
+  min-height: 52px;
+  border-radius: 14px;
+  font-size: 1rem;
+  font-weight: 700;
+  background: var(--accent);
+  color: #0a0a0a;
+  border: 0;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+
+.ob-welcome .ob-welcome-actions button:first-child:active {
+  transform: scale(0.97);
+}
+
+/* ---- Fields Container ---- */
+.ob-fields {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.ob-field-label {
+  display: block;
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.4rem;
+}
+
+/* ---- Text Input ---- */
+.ob-input {
+  width: 100%;
+  background: var(--surface-2);
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 0.9rem 1rem;
+  font-size: 1rem;
+  font-family: inherit;
+  color: var(--text);
+  outline: none;
+  transition: border-color 0.2s, background 0.2s;
+  box-sizing: border-box;
+}
+
+.ob-input:focus {
+  border-color: var(--accent);
+  background: var(--surface);
+}
+
+.ob-input::placeholder {
+  color: var(--text-tertiary);
+}
+
+/* ---- Wheel Picker ---- */
+.ob-wheel-wrap {
+  position: relative;
+  height: 200px;
+  overflow: hidden;
+  border-radius: 16px;
+  background: var(--surface-2);
+}
+
+.ob-wheel-wrap::before,
+.ob-wheel-wrap::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0;
+  height: 72px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.ob-wheel-wrap::before {
+  top: 0;
+  background: linear-gradient(to bottom, var(--surface-2) 0%, transparent 100%);
+}
+
+.ob-wheel-wrap::after {
+  bottom: 0;
+  background: linear-gradient(to top, var(--surface-2) 0%, transparent 100%);
+}
+
+.ob-wheel-highlight {
+  position: absolute;
+  left: 0; right: 0;
+  top: 50%;
+  height: 48px;
+  transform: translateY(-24px);
+  background: var(--surface-3);
+  border-radius: 10px;
+  z-index: 1;
+  pointer-events: none;
+  border: 1px solid var(--border);
+}
+
+.ob-wheel {
+  height: 100%;
+  overflow-y: scroll;
+  scroll-snap-type: y mandatory;
+  -webkit-overflow-scrolling: touch;
+  padding: 72px 0;
+  position: relative;
+  z-index: 3;
+  scrollbar-width: none;
+}
+
+.ob-wheel::-webkit-scrollbar { display: none; }
+
+.ob-wheel-item {
+  scroll-snap-align: center;
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  font-weight: 500;
+  color: var(--text-tertiary);
+  transition: all 0.15s;
+  user-select: none;
+  padding: 0 1rem;
+  position: relative;
+  z-index: 4;
+}
+
+.ob-wheel-item.is-selected {
+  font-size: 1.75rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ob-wheel-caption {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  margin-top: 0.5rem;
+  text-align: center;
+}
+
+/* ---- Dual Wheels (side by side) ---- */
+.ob-wheels-dual {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem;
+}
+
+/* ---- Selectable Cards ---- */
+.ob-cards {
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
+}
+
+.ob-card {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 16px;
+  padding: 1rem 1.15rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-align: left;
+  font-family: inherit;
+  color: var(--text);
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.ob-card:hover {
+  background: var(--surface-2);
+  border-color: var(--text-tertiary);
+}
+
+.ob-card:active {
+  transform: scale(0.985);
+}
+
+.ob-card.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.ob-card-icon {
+  width: 44px;
+  height: 44px;
+  border-radius: 12px;
+  background: var(--surface-2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.35rem;
+  flex-shrink: 0;
+}
+
+.ob-card-body {
+  flex: 1;
+  min-width: 0;
+}
+
+.ob-card-title {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+  margin-bottom: 0.15rem;
+}
+
+.ob-card-desc {
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+
+.ob-card-badge {
+  font-size: 0.62rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  background: var(--accent);
+  color: #0a0a0a;
+  padding: 0.2rem 0.55rem;
+  border-radius: 999px;
+  flex-shrink: 0;
+}
+
+/* ---- Grid Cards (smaller, for days/splits) ---- */
+.ob-grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(90px, 1fr));
+  gap: 0.6rem;
+}
+
+.ob-grid-card {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.3rem;
+  background: var(--surface);
+  border: 2px solid var(--border);
+  border-radius: 14px;
+  padding: 0.85rem 0.5rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  font-family: inherit;
+  color: var(--text);
+  text-align: center;
+}
+
+.ob-grid-card:hover {
+  background: var(--surface-2);
+  border-color: var(--text-tertiary);
+}
+
+.ob-grid-card:active {
+  transform: scale(0.96);
+}
+
+.ob-grid-card.is-active {
+  border-color: var(--accent);
+  background: color-mix(in srgb, var(--accent) 8%, var(--surface));
+}
+
+.ob-grid-card-value {
+  font-size: 1.5rem;
+  font-weight: 700;
+}
+
+.ob-grid-card-label {
+  font-size: 0.72rem;
+  color: var(--text-secondary);
+}
+
+/* ---- Actions (back/next) ---- */
+.ob-actions {
+  display: flex;
+  gap: 0.65rem;
+  margin-top: 0.5rem;
+}
+
+.ob-actions button {
+  min-height: 50px;
+  border-radius: 14px;
+  font-size: 0.95rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.15s;
+}
+
+.ob-actions button:active {
+  transform: scale(0.97);
+}
+
+.ob-actions .ob-btn-primary {
+  flex: 1;
+  background: var(--accent);
+  color: #0a0a0a;
+  border: 0;
+}
+
+.ob-actions .ob-btn-primary:disabled {
+  opacity: 0.35;
+  cursor: not-allowed;
+  transform: none;
+}
+
+.ob-actions .ob-btn-secondary {
+  background: var(--surface-2);
+  color: var(--text);
+  border: 0;
+  padding: 0 1.25rem;
+}
+
+/* ---- Summary/Plan Screen ---- */
+.ob-summary {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.ob-summary-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.65rem;
+}
+
+.ob-summary-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 0.85rem;
+  border: 1px solid var(--border);
+}
+
+.ob-summary-card-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  margin-bottom: 0.4rem;
+  font-size: 0.9rem;
+}
+
+.ob-summary-card-label {
+  font-size: 0.68rem;
+  color: var(--text-secondary);
+  margin-bottom: 0.15rem;
+}
+
+.ob-summary-card-value {
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--text);
+}
+
+.ob-summary-card-value small {
+  font-weight: 400;
+  font-size: 0.78rem;
+  color: var(--text-secondary);
+}
+
+.ob-summary-note {
+  font-size: 0.78rem;
+  color: var(--text-tertiary);
+  line-height: 1.45;
+  text-align: center;
+  margin-top: 0.25rem;
+}
+
+.ob-finish-btn {
+  min-height: 56px;
+  border-radius: 16px;
+  background: linear-gradient(135deg, var(--accent) 0%, color-mix(in srgb, var(--accent) 70%, #fff) 100%);
+  color: #0a0a0a;
+  border: 0;
+  font-size: 1.05rem;
+  font-weight: 700;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+  width: 100%;
+  margin-top: 0.25rem;
+}
+
+.ob-finish-btn:active {
+  transform: scale(0.98);
+}
+
+/* ---- Responsive ---- */
+@media (max-width: 520px) {
+  .onboard-modal {
+    border-radius: 0;
+    max-width: 100%;
+    max-height: 100dvh;
+    height: 100dvh;
+  }
+
+  .onboard-overlay {
+    padding: 0;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+  }
+
+  .onboard-top {
+    padding: 0.75rem 1rem 0.6rem;
+  }
+
+  .onboard-stage {
+    padding: 0.5rem 1rem 2rem;
+  }
+
+  .ob-title {
+    font-size: 1.5rem;
+  }
+
+  .ob-welcome-illust {
+    width: 110px;
+    height: 110px;
+    border-radius: 28px;
+  }
+
+  .ob-welcome-illust svg {
+    width: 50px;
+    height: 50px;
+  }
+
+  .ob-summary-grid {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+  }
+
+  .ob-grid-cards {
+    grid-template-columns: repeat(auto-fill, minmax(72px, 1fr));
+    gap: 0.45rem;
+  }
+}
