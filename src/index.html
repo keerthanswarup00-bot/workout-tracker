@@ -22,10 +22,9 @@
       <aside class="sidebar" id="sidebar">
         <div class="sidebar-brand">IronLog</div>
         <nav class="sidebar-nav" id="sidebarNav">
-          <button class="nav-btn is-active" data-tab="sets">Sets</button>
-          <button class="nav-btn" data-tab="sessions">Sessions</button>
+          <button class="nav-btn is-active" data-tab="sets">Today</button>
+          <button class="nav-btn" data-tab="sessions">Workout</button>
           <button class="nav-btn" data-tab="progress">Progress</button>
-          <button class="nav-btn" data-tab="body">Body</button>
         </nav>
         <div class="sidebar-footer">
           <span class="streak-pill" id="streakBadge"></span>
@@ -124,13 +123,7 @@
               <button class="ws-desc-more" id="wsDescMore">more</button>
             </div>
 
-            <button class="ws-notes-btn" id="wsNotesBtn">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7" />
-                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z" />
-              </svg>
-              Notes
-            </button>
+
 
             <div id="wsExerciseList" class="ws-exercises"></div>
 
@@ -644,26 +637,7 @@
           </div>
         </section>
 
-        <!-- ===== BODY PANEL ===== -->
-        <section class="panel" id="panel-body">
-          <div id="bodyPageContent" class="page-container">
-            <div class="section-label">Weigh-In</div>
-            <div id="weighInCard" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Body Measurements</div>
-            <div id="bodyMeasurementsCard" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
-            <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
-            <div class="trend-averages" id="trendAverages"></div>
-            <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
-            <div class="section-label" style="margin-top:1.25rem">Goal Prediction</div>
-            <div id="goalPredictionContent" class="card-content"></div>
-            <div class="section-label" style="margin-top:1.25rem">Body Analysis</div>
-            <div class="bm-search-wrap">
-              <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
-            </div>
-            <div id="bodyAnalysis" class="card-content"></div>
-          </div>
-        </section>
+
 
         <!-- ===== TRAINER/COACH PANEL ===== -->
         <section class="panel" id="panel-trainer">
@@ -676,33 +650,26 @@
     <!-- PILL-SHAPED FLOATING BOTTOM NAV -->
     <nav class="bottom-nav" id="bottomNav">
       <div class="nav-indicator" id="navIndicator"></div>
-      <button class="nav-tab is-active" data-tab="sets" aria-label="Sets">
+      <button class="nav-tab is-active" data-tab="sets" aria-label="Today">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <rect x="3" y="3" width="7" height="7" />
-          <rect x="14" y="3" width="7" height="7" />
-          <rect x="3" y="14" width="7" height="7" />
-          <rect x="14" y="14" width="7" height="7" />
+          <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+          <polyline points="9 22 9 12 15 12 15 22" />
         </svg>
-        <span>Sets</span>
+        <span>Today</span>
       </button>
-      <button class="nav-tab" data-tab="sessions" aria-label="Sessions">
+      <button class="nav-tab" data-tab="sessions" aria-label="Workout">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <circle cx="12" cy="12" r="10" />
-          <polyline points="12 6 12 12 16 14" />
+          <path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z" />
+          <line x1="8" y1="2" x2="8" y2="6" /><line x1="16" y1="2" x2="16" y2="6" />
+          <line x1="2" y1="10" x2="22" y2="10" />
         </svg>
-        <span>Sessions</span>
+        <span>Workout</span>
       </button>
       <button class="nav-tab" data-tab="progress" aria-label="Progress">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
           <path d="M12 20V10M18 20V4M6 20v-4" />
         </svg>
         <span>Progress</span>
-      </button>
-      <button class="nav-tab" data-tab="body" aria-label="Body">
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
-          <path d="M12 20V10M18 20V4M6 20v-4" />
-        </svg>
-        <span>Body</span>
       </button>
       <button class="nav-tab" data-tab="trainer" aria-label="Coach">
         <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">
@@ -808,6 +775,14 @@
 
     <!-- SESSION SUMMARY OVERLAY -->
     <div id="sessionSummaryOverlay" class="ss-overlay is-hidden">
+      <div class="celebration-overlay" id="celebrationParticles">
+        <div class="celebration-particle"></div>
+        <div class="celebration-particle"></div>
+        <div class="celebration-particle"></div>
+        <div class="celebration-particle"></div>
+        <div class="celebration-particle"></div>
+        <div class="celebration-particle"></div>
+      </div>
       <div class="ss-card">
         <div class="ss-title" id="ssTitle">💪 Workout Complete</div>
         <div class="ss-subtitle" id="ssSubtitle"></div>
@@ -951,7 +926,7 @@
         <!-- Progress Bar -->
         <div class="ob-steps" id="obSteps">
           <div class="ob-steps-bar"><div class="ob-steps-fill" id="obStepsFill"></div></div>
-          <div class="ob-steps-label" id="obStepsLabel">Step 1 of 12</div>
+          <div class="ob-steps-label" id="obStepsLabel">Step 1 of 5</div>
         </div>
 
         <!-- Dynamic Content -->
@@ -1210,7 +1185,7 @@
   <script defer src="js/adaptive-engine.js"></script>
   <script defer src="js/coach-engine.js"></script>
   <script defer src="js/coach-system.js"></script>
-  <script src="js/script.js"></script>
+  <script defer src="js/script.js"></script>
   <script defer src="js/program-review-engine.js"></script>
   <script>
     if ("serviceWorker" in navigator) {

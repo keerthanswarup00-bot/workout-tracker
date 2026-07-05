@@ -123,12 +123,15 @@
 }
 .co-card[data-co-click]:active,
 .co-card[data-co-route]:active { background: var(--surface-2); }
+.co-card[data-co-click]:focus-visible,
+.co-card[data-co-route]:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .co-card-title {
-  font-size: 0.75rem;
+  font-size: 0.85rem;
   font-weight: 700;
   color: var(--text);
   margin-bottom: 0.5rem;
+  line-height: 1.3;
 }
 
 .co-card-body {
@@ -180,6 +183,7 @@
   transition: background 0.15s;
 }
 .co-insight-card:active { background: var(--surface-2); }
+.co-insight-card:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .co-insight-icon { font-size: 0.8rem; line-height: 1.4; flex-shrink: 0; }
 .co-insight-text { flex: 1; }
@@ -215,7 +219,7 @@
   line-height: 1.1;
 }
 .co-stat-label {
-  font-size: 0.55rem;
+  font-size: 0.6rem;
   font-weight: 600;
   color: var(--text-secondary);
   text-transform: uppercase;
@@ -349,6 +353,7 @@
   transition: background 0.15s;
 }
 .co-focus-item:active { background: var(--surface-2); }
+.co-focus-item:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .co-focus-check { font-size: 0.75rem; flex-shrink: 0; color: var(--text-secondary); }
 .co-focus-done .co-focus-check { color: var(--accent); }
@@ -405,9 +410,9 @@
   align-items: center;
   justify-content: center;
   gap: 0.35rem;
-  min-height: 44px;
-  padding: 0 0.75rem;
-  font-size: 0.75rem;
+  min-height: 48px;
+  padding: 0 0.85rem;
+  font-size: 0.78rem;
   font-weight: 700;
   color: var(--text);
   background: var(--surface);
@@ -440,7 +445,7 @@
 .co-empty-desc { font-size: 0.75rem; color: var(--text-secondary); line-height: 1.4; max-width: 280px; }
 .co-empty-action {
   margin-top: 0.4rem;
-  min-height: 40px;
+  min-height: 48px;
   padding: 0 1.25rem;
   font-size: 0.82rem;
   font-weight: 700;
@@ -497,7 +502,7 @@
 
 .co-search-input {
   width: 100%;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0 0.85rem;
   font-size: 0.85rem;
   color: var(--text);
@@ -548,7 +553,7 @@
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
+  min-height: 48px;
   padding: 0.5rem 0.65rem;
   background: var(--surface);
   border: 1px solid var(--border);
@@ -557,6 +562,7 @@
   cursor: pointer;
 }
 .co-clickable-row:active { background: var(--surface-2); }
+.co-clickable-row:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
 
 .co-row-label { font-size: 0.82rem; font-weight: 600; color: var(--text); }
 .co-row-value { font-size: 0.72rem; color: var(--text-secondary); }
@@ -787,6 +793,7 @@
   align-items: flex-start;
   gap: 0.1rem;
   width: 100%;
+  min-height: 48px;
   padding: 0.65rem 0.75rem;
   background: var(--surface);
   border: 1px solid var(--border);

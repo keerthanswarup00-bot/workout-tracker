@@ -20,13 +20,6 @@ function loadChartJS() {
   return _chartJsPromise;
 }
 
-function isWorkingSet(s) {
-  return s.done && !s.isWarmup && Number(s.weight) > 0;
-}
-function getWorkingSets(sets) {
-  return sets.filter((s) => s.done && !s.isWarmup);
-}
-
 function autoGenerateWarmups(exercise, workingWeight) {
   if (!state.autoWarmup) return;
   if (exercise.autoWarmup === false) return;
@@ -1309,7 +1302,6 @@ const MUSCLE_MAP = {
 function loadState() {
   const fallback = {
     sessions: [],
-    nutrition: {},
     dailyLogs: {},
     planOffset: 0,
     recoveryLog: [],
@@ -1325,11 +1317,9 @@ function loadState() {
     weightGoal: null,
     goalCenter: null,
     onboardingComplete: false,
-    onboardingStep: 0,
     onboardingData: { name: "", age: "", gender: "", height: "", weight: "", goalType: "", experience: "", trainingDays: 3, equipment: "", equipmentDetails: [], injuries: [], injuryNotes: "", nutritionCal: "", nutritionProtein: "", dietPreference: "none", supplements: [], metrics: {}, targetWeight: "", targetDate: "", primaryLift: "" },
     coachActivated: false,
     activatedAt: null,
-    firstWorkoutDone: false,
     first7Days: { day1Workout: false, day2Weight: false, day3Protein: false, day4Learning: false, day5Challenge: false, day6CoachScore: false, day7Report: false },
     restTimer: 90,
     weightUnit: "kg",
@@ -1345,11 +1335,7 @@ function loadState() {
     accent: "Green",
     fontSize: "Medium",
     compactMode: false,
-    show7dAvg: true,
-    show30dAvg: true,
-    progressPhotos: false,
     photos: [],
-    bodyMeasurements: false,
     measurements: [],
     weightReminder: false,
     nutritionReminder: false,
@@ -1361,16 +1347,13 @@ function loadState() {
     autoSummary: true,
     autoCooldown: true,
     coolDownDuration: 5,
-    autoAdvanceStretches: true,
     showTomorrowPreview: true,
-    showRecoveryAdvice: true,
     showWorkoutProgress: true,
     recoveryAnalysis: true,
     workoutStreak: { currentStreak: 0, longestStreak: 0, lastWorkoutDate: null },
     heroDismissed: false,
     quickStartDismissed: false,
     quickStartProgress: {},
-    feedbackGiven: false,
     customExercises: [],
   };
   try {
@@ -1431,11 +1414,9 @@ function loadState() {
           const obData = JSON.parse(obRaw);
           if (obData) {
             if (obData.completed) loaded.onboardingComplete = obData.completed;
-            if (obData.currentStep !== undefined) loaded.onboardingStep = obData.currentStep;
             if (obData.data) loaded.onboardingData = { ...loaded.onboardingData, ...obData.data };
             if (obData.coachActivated) loaded.coachActivated = obData.coachActivated;
             if (obData.activatedAt) loaded.activatedAt = obData.activatedAt;
-            if (obData.firstWorkoutDone) loaded.firstWorkoutDone = obData.firstWorkoutDone;
             if (obData.first7Days) loaded.first7Days = { ...loaded.first7Days, ...obData.first7Days };
           }
         }
@@ -1508,64 +1489,15 @@ function startSessionForWorkout(workoutId) {
   return session;
 }
 
-function getCurrentWorkout() {
-  const todaySession = state.sessions.find((item) => item.dateKey === getDateKey() && !item.finishedAt);
-  const activePlan = loadCustomProgram() || plan;
-  if (todaySession) return activePlan.find((w) => w.id === todaySession.workoutId) || getPlannedWorkout();
-  return getPlannedWorkout();
-}
-
 function getPlannedWorkout() {
   const activePlan = loadCustomProgram() || plan;
   return activePlan[state.planOffset % activePlan.length];
-}
-
-function getExerciseSession(session, exercise) {
-  let ex = session.exercises.find((item) => item.name === exercise.name);
-  if (!ex) {
-    const setCount = typeof exercise.sets === "number" ? exercise.sets : 3;
-    ex = {
-      name: exercise.name,
-      sets: Array.from({ length: setCount }, () => ({
-        id: crypto.randomUUID(),
-        reps: exercise.reps || 8,
-        weight: "",
-        done: false,
-        isWarmup: false,
-        notes: "",
-        label: "",
-        loggedAt: null,
-      })),
-    };
-    session.exercises.push(ex);
-    saveState();
-  }
-  return ex;
 }
 
 function getCompletion(session) {
   const sets = session.exercises.flatMap((ex) => ex.sets);
   const done = sets.filter((set) => set.done).length;
   return { done, total: sets.length, percent: sets.length ? Math.round((done / sets.length) * 100) : 0 };
-}
-
-function getLastSessionData(exerciseName) {
-  const sessions = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey));
-  for (const session of sessions) {
-    const ex = session.exercises.find((e) => e.name === exerciseName);
-    if (ex) {
-      const doneSets = ex.sets.filter((s) => s.done && s.weight && Number(s.weight) > 0);
-      if (doneSets.length) {
-        const lastSet = doneSets[doneSets.length - 1];
-        return { weight: Number(lastSet.weight), reps: lastSet.reps };
-      }
-    }
-  }
-  return null;
-}
-
-function getNextUndoneSet(exSession) {
-  return exSession.sets.findIndex((s) => !s.done);
 }
 
 // ===== PR SYSTEM (moved to js/data/prs.js) =====
@@ -1645,145 +1577,6 @@ function formatReadableDate(date) {
   return new Intl.DateTimeFormat("en-IN", { weekday: "short", day: "numeric", month: "short" }).format(date);
 }
 
-function formatWeight(weight) {
-  if (weight === "" || weight === null || weight === undefined) return "add weight";
-  if (Number(weight) === 0) return "bodyweight";
-  return `${Number(weight)} kg`;
-}
-
-function formatStopwatch(seconds) {
-  const h = Math.floor(seconds / 3600);
-  const m = Math.floor((seconds % 3600) / 60);
-  const s = Math.floor(seconds % 60);
-  if (h > 0) return `${h}:${String(m).padStart(2, "0")}:${String(s).padStart(2, "0")}`;
-  return `${m}:${String(s).padStart(2, "0")}`;
-}
-
-function getTargetReps(exercise) {
-  return exercise.reps || 10;
-}
-
-// ===== ANALYSIS =====
-function getWeeklyStrengthChange() {
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  const prevSessions = state.sessions.filter(
-    (s) => s.finishedAt && s.dateKey < getDateKey(new Date(Date.now() - 7 * 86400000)) && s.dateKey >= getDateKey(new Date(Date.now() - 14 * 86400000)),
-  );
-  const volWeek = weekSessions.reduce(
-    (s, ses) =>
-      s +
-      ses.exercises.reduce(
-        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
-        0,
-      ),
-    0,
-  );
-  const volPrev = prevSessions.reduce(
-    (s, ses) =>
-      s +
-      ses.exercises.reduce(
-        (s2, ex) => s2 + ex.sets.filter((st) => st.done && st.weight).reduce((s3, st) => s3 + (Number(st.weight) || 0) * (st.reps || 0), 0),
-        0,
-      ),
-    0,
-  );
-  if (volPrev > 0) return ((volWeek - volPrev) / volPrev) * 100;
-  return null;
-}
-
-function getWeeklyProteinAdherence() {
-  let totalPct = 0;
-  let days = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const key = getDateKey(d);
-    const meals = loadMeals(key);
-    const protein = meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-    if (protein > 0) {
-      totalPct += (protein / PROTEIN_GOAL) * 100;
-      days++;
-    }
-  }
-  return days > 0 ? totalPct / days : null;
-}
-
-function getWeeklyMacroAvg() {
-  let p = 0,
-    c = 0,
-    f = 0,
-    cal = 0,
-    days = 0;
-  for (let i = 0; i < 7; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const meals = loadMeals(getDateKey(d));
-    if (meals.length > 0) {
-      p += meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-      c += meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-      f += meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-      cal += meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-      days++;
-    }
-  }
-  return days > 0 ? { p: p / days, c: c / days, f: f / days, cal: cal / days } : null;
-}
-
-function getMonthlyMacroAvg() {
-  let p = 0,
-    c = 0,
-    f = 0,
-    cal = 0,
-    days = 0;
-  for (let i = 0; i < 30; i++) {
-    const d = new Date();
-    d.setDate(d.getDate() - i);
-    const meals = loadMeals(getDateKey(d));
-    if (meals.length > 0) {
-      p += meals.reduce((s, m) => s + (Number(m.protein) || 0), 0);
-      c += meals.reduce((s, m) => s + (Number(m.carbs) || 0), 0);
-      f += meals.reduce((s, m) => s + (Number(m.fat) || 0), 0);
-      cal += meals.reduce((s, m) => s + (Number(m.cal) || 0), 0);
-      days++;
-    }
-  }
-  return days > 0 ? { p: p / days, c: c / days, f: f / days, cal: cal / days } : null;
-}
-
-function getGoalAlignmentScore() {
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  const goal = GOALS.find((g) => g.id === state.bodyGoal);
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= getDateKey(new Date(Date.now() - 7 * 86400000)));
-  if (log.length < 2) return null;
-  let score = 5;
-  if (log.length >= 4 && goal) {
-    const wa = getDateKey(new Date(Date.now() - 7 * 86400000));
-    const twa = getDateKey(new Date(Date.now() - 14 * 86400000));
-    const r = log.filter((e) => e.date >= wa);
-    const p = log.filter((e) => e.date >= twa && e.date < wa);
-    if (r.length >= 2 && p.length >= 2) {
-      const change = r.reduce((s, e) => s + e.weight, 0) / r.length - p.reduce((s, e) => s + e.weight, 0) / p.length;
-      if (goal.id === "fat-loss" && change < 0) score += 2;
-      else if ((goal.id === "lean-bulk" || goal.id === "aggressive-bulk") && change > 0) score += 2;
-      else if (goal.id === "recomp" && Math.abs(change) < 0.3) score += 2;
-      else score -= 2;
-    }
-  }
-  const strengthPct = getWeeklyStrengthChange();
-  if (strengthPct !== null) {
-    if (strengthPct > 3) score += 1.5;
-    else if (strengthPct < -3) score -= 1.5;
-  }
-  const protPct = getWeeklyProteinAdherence();
-  if (protPct !== null) {
-    if (protPct >= 80) score += 1.5;
-    else score -= 1;
-  }
-  if (weekSessions.length >= 5) score += 1.5;
-  else if (weekSessions.length < 3) score -= 1;
-  return Math.round(Math.max(0, Math.min(10, score)) * 10) / 10;
-}
-
 // ===== DATA LOADERS =====
 function loadMeals(dateKey) {
   try {
@@ -1826,22 +1619,6 @@ function saveWater(dateKey, ml) {
   } catch {}
 }
 
-function loadMeasurements() {
-  return state.measurements || [];
-}
-function saveMeasurement(entry) {
-  if (!state.measurements) state.measurements = [];
-  const idx = state.measurements.findIndex((m) => m.date === entry.date);
-  if (idx >= 0) state.measurements[idx] = entry;
-  else state.measurements.push(entry);
-  saveState();
-}
-function deleteMeasurement(date) {
-  if (!state.measurements) return;
-  state.measurements = state.measurements.filter((m) => m.date !== date);
-  saveState();
-}
-
 function loadBodyLog() {
   return state.weightLog || [];
 }
@@ -1869,11 +1646,6 @@ function loadFavoriteMeals() {
     return [];
   }
 }
-function saveFavoriteMeals(meals) {
-  try {
-    localStorage.setItem("wl_fav_meals", JSON.stringify(meals));
-  } catch {}
-}
 
 function loadRecentFoods() {
   try {
@@ -1889,11 +1661,6 @@ function saveRecentFoods(name) {
   try {
     localStorage.setItem("wl_recent_foods", JSON.stringify(filtered.slice(0, 8)));
   } catch {}
-}
-
-function getTodayMealsSnapshot() {
-  const today = getDateKey();
-  return loadMeals(today).map((m) => ({ food: m.food, qty: m.qty, protein: m.protein, carbs: m.carbs, fat: m.fat, cal: m.cal }));
 }
 
 function collectWaterLog() {
@@ -2476,7 +2243,6 @@ function activateTab(tabName) {
   positionNavIndicator();
   if (tabName === "progress") renderProgressPage();
   if (tabName === "sessions") renderSessionsTab();
-  if (tabName === "body") renderBodyTab();
   if (tabName === "sets") renderSetsPanel();
   if (tabName === "settings") {
     showScreen("screen-settings");
@@ -2831,6 +2597,7 @@ function attachWeighInListener() {
     if (!w) return;
     saveBodyLogEntry({ date: getDateKey(), weight: w, bf });
     renderBodyTab();
+    renderProfileScreen();
   });
 }
 
@@ -2925,22 +2692,6 @@ function renderGoalPrediction() {
   `;
 }
 
-function renderGoalSelector() {
-  const container = document.getElementById("goalSelector");
-  if (!container) return;
-  const current = state.bodyGoal || "recomp";
-  container.innerHTML = GOALS.map((g) =>
-    `<button class="goal-btn ${g.id === current ? "is-active" : ""}" data-goal="${g.id}">${g.label}</button>`
-  ).join("");
-  container.querySelectorAll("[data-goal]").forEach((btn) => {
-    btn.addEventListener("click", () => {
-      state.bodyGoal = btn.dataset.goal;
-      saveState();
-      renderBodyTab();
-    });
-  });
-}
-
 function renderBodyMeasurements() {
   const container = document.getElementById("bodyMeasurementsCard");
   const bm = (state.user.bodyMeasurements || {});
@@ -2973,7 +2724,6 @@ function exportJSON() {
   const exportData = {
     dailyLogs: state.dailyLogs || {},
     sessions: state.sessions || [],
-    nutrition: state.nutrition || {},
     user: state.user || null,
     plan: state.plan || null,
     customExercises: state.customExercises || [],
@@ -3005,19 +2755,13 @@ function exportJSON() {
     accent: state.accent || "Green",
     fontSize: state.fontSize || "Medium",
     compactMode: !!state.compactMode,
-    show7dAvg: state.show7dAvg !== false,
-    show30dAvg: state.show30dAvg !== false,
-    progressPhotos: !!state.progressPhotos,
-    bodyMeasurements: !!state.bodyMeasurements,
     weightReminder: !!state.weightReminder,
     nutritionReminder: !!state.nutritionReminder,
     weeklyReview: state.weeklyReview !== false,
     recoveryAnalysis: state.recoveryAnalysis !== false,
-    showRecoveryAdvice: state.showRecoveryAdvice !== false,
     coolDownDuration: state.coolDownDuration || 5,
     autoSummary: state.autoSummary !== false,
     autoCooldown: state.autoCooldown !== false,
-    autoAdvanceStretches: state.autoAdvanceStretches !== false,
     showTomorrowPreview: state.showTomorrowPreview !== false,
     showWorkoutProgress: state.showWorkoutProgress !== false,
     profileBannerDismissed: !!state.profileBannerDismissed,
@@ -3076,7 +2820,6 @@ function render() {
   renderProfileAvatar();
   if (currentTab === "progress") renderProgressPage();
   if (currentTab === "sessions") renderSessionsTab();
-  if (currentTab === "body") renderBodyTab();
   updateTopbarTimer();
 }
 
@@ -3134,10 +2877,6 @@ function getLastWorkoutForPlan(workoutId) {
   const sessions = state.sessions.filter((s) => s.finishedAt && s.workoutId === workoutId);
   if (!sessions.length) return null;
   return sessions.sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
-}
-
-function renderHomeGoalText() {
-  return GoalCenter.getGoalLabel();
 }
 
 function renderHome() {
@@ -3354,6 +3093,7 @@ function renderHome() {
   document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderHome(); });
   document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderHome(); });
   document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderHome(); });
+  document.getElementById("mlOpenBtn")?.addEventListener("click", () => { renderMealLogger(); });
 
   // Coach insight buttons
   document.getElementById("homeCoachOpen")?.addEventListener("click", () => activateTab("trainer"));
@@ -3808,19 +3548,6 @@ document.getElementById("waList")?.addEventListener("click", (e) => {
   }
 });
 
-function openWorkout(workoutId) {
-  currentWorkoutId = workoutId;
-  const session = startSessionForWorkout(workoutId);
-  if (!session) return;
-  const hasDoneSets = session.exercises.some((e) => e.sets.some((s) => s.done));
-  if (!hasDoneSets) {
-    openWarmupReminder();
-  } else {
-    showScreen("screen-ws");
-    renderWorkoutSession();
-  }
-}
-
 function closeWorkout() {
   currentWorkoutId = null;
   showScreen("screen-home");
@@ -3884,9 +3611,32 @@ function renderProfileHealth() {
   if (!p.calorieTarget) hints.push({ type: "missing", text: "Set a daily calorie target", section: "nutrition" });
   if (!p.proteinGoal) hints.push({ type: "missing", text: "Set a daily protein target", section: "nutrition" });
   if (!p.waterGoal) hints.push({ type: "missing", text: "Set a daily water goal", section: "nutrition" });
-  if (!Object.keys(p.bodyMeasurements).length) hints.push({ type: "missing", text: "Add body measurements to track progress", section: "body" });
+  if (!Object.keys(p.bodyMeasurements).length) hints.push({ type: "missing", text: "Add body measurements to track progress", section: "body-log" });
   if (p.injuries && p.injuries.length) hints.push({ type: "ok", text: `${p.injuries.length} injury restriction${p.injuries.length > 1 ? "s" : ""} active`, section: "training" });
   return hints;
+}
+function renderProfileAchievements() {
+  const container = document.getElementById("profileAchievements");
+  if (!container) return;
+  const cas = CoachSystem && CoachSystem.getState && CoachSystem.getState().cas;
+  const achievements = cas && cas.achievements && cas.achievements.length ? cas.achievements : null;
+  if (achievements) {
+    const unlocked = achievements.filter(a => a.unlocked);
+    const total = achievements.length;
+    let html = `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0">
+      <span style="font-size:0.85rem;font-weight:600;color:var(--text)">${unlocked.length}/${total} Unlocked</span>
+    </div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:0.5rem">`;
+    achievements.forEach(a => {
+      html += `<div style="text-align:center;padding:0.5rem;border-radius:8px;background:${a.unlocked ? 'color-mix(in srgb,var(--orange) 15%,transparent)' : 'var(--bg)'};opacity:${a.unlocked ? 1 : 0.35}">
+        <div style="font-size:1.3rem">${a.icon || "🏅"}</div>
+        <div style="font-size:0.6rem;color:var(--text-secondary);margin-top:0.2rem">${a.name || ""}</div>
+      </div>`;
+    });
+    html += `</div>`;
+    container.innerHTML = html;
+  } else {
+    container.innerHTML = `<div style="padding:0.75rem 0;font-size:0.78rem;color:var(--text-secondary);line-height:1.4">Complete workouts and challenges to unlock achievements.</div>`;
+  }
 }
 function renderProfileScreen() {
   const p = getProfile();
@@ -3977,14 +3727,14 @@ function renderProfileScreen() {
       fields: [
         { label: "Experience", val: expLabel },
         { label: "Training Days", val: p.trainingDays ? p.trainingDays + "/week" : null },
-        { label: "Training Location", val: { gym: "Gym", home: "Home", minimal: "Minimal" }[p.equipment] || null },
+        { label: "Training Location", val: { gym: "Gym", home: "Home", minimal: "Both" }[p.equipment] || null },
         { label: "Rest Timer", val: (state.restTimer || 90) + "s" },
       ]
     },
     {
       id: "equipment", icon: "tools", label: "Equipment",
       fields: [
-        { label: "Access Level", val: { gym: "Full Gym", home: "Home Gym", minimal: "Minimal" }[p.equipment] || null },
+        { label: "Access Level", val: { gym: "Full Gym", home: "Home Gym", minimal: "Both" }[p.equipment] || null },
         ...(Array.isArray(p.equipmentDetails) && p.equipmentDetails.length ? [{ label: "Available", val: p.equipmentDetails.join(", ") }] : []),
         ...(Array.isArray(p.injuries) && p.injuries.length ? [{ label: "Limitations", val: p.injuries.join(", ") }] : []),
         ...(p.injuryNotes ? [{ label: "Injury Notes", val: p.injuryNotes }] : []),
@@ -4042,6 +3792,46 @@ function renderProfileScreen() {
     </div>`;
   });
 
+  // Body Log section
+  html += `
+    <div class="profile-section" data-section="body-log">
+      <button class="profile-section-header" data-toggle-section="body-log">
+        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--accent) 20%,transparent)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+        </div>
+        <span class="profile-section-title">Body Log</span>
+        <button class="profile-section-edit" data-edit-section="body-log" onclick="event.stopPropagation()">Edit</button>
+        <span class="profile-section-chevron">›</span>
+      </button>
+      <div class="profile-section-body">
+        <div class="section-label">Weigh-In</div>
+        <div id="weighInCard" class="card-content"></div>
+        <div class="section-label" style="margin-top:1.25rem">Body Measurements</div>
+        <div id="bodyMeasurementsCard" class="card-content"></div>
+        <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
+        <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
+        <div class="trend-averages" id="trendAverages"></div>
+        <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
+        <div class="section-label" style="margin-top:1.25rem">Goal Prediction</div>
+        <div id="goalPredictionContent" class="card-content"></div>
+        <div class="section-label" style="margin-top:1.25rem">Body Analysis</div>
+        <div class="bm-search-wrap">
+          <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
+        </div>
+        <div id="bodyAnalysis" class="card-content"></div>
+      </div>
+    </div>
+    <div class="profile-section" data-section="achievements">
+      <button class="profile-section-header" data-toggle-section="achievements">
+        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--orange) 20%,transparent)">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5h.5"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H19"/><path d="M4 22h16"/><path d="M10 14.66V17a3 3 0 0 0 4 0v-2.34"/><path d="M14.5 9a4.5 4.5 0 0 1-9 0V5h9v4z"/></svg>
+        </div>
+        <span class="profile-section-title">Achievements</span>
+        <span class="profile-section-chevron">›</span>
+      </button>
+      <div class="profile-section-body" id="profileAchievements"></div>
+    </div>`;
+
   // Data & Backup + Quick actions at bottom
   html += `
     <div class="profile-section" data-section="preferences">
@@ -4074,6 +3864,8 @@ function renderProfileScreen() {
   `;
 
   document.getElementById("profileContent").innerHTML = html;
+  renderBodyTab();
+  renderProfileAchievements();
   attachProfileListeners();
 }
 
@@ -4110,6 +3902,14 @@ function attachProfileListeners() {
     openProfileSectionEditor("personal");
   });
   // Back button — handled globally at init to avoid duplicate listeners
+  // Muscle search
+  document.getElementById("muscleSearch")?.addEventListener("input", (e) => {
+    const q = e.target.value.toLowerCase();
+    document.querySelectorAll(".bm-muscle-row").forEach((row) => {
+      const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
+      row.style.display = name.includes(q) ? "" : "none";
+    });
+  });
 }
 
 // ===== NUTRITION & WATER WIDGETS =====
@@ -4278,110 +4078,6 @@ function renderTodayMotivation() {
       <span class="today-motivation-icon">${icon}</span>
       <span class="today-motivation-text">${message}</span>
     </div>`;
-}
-
-function renderTodayTab() {
-  const container = document.getElementById("todayPageContent");
-  if (!container) return;
-
-  const user = state.user || {};
-  const greeting = getGreeting();
-  const todaySession = getTodaySession();
-  const streak = state.workoutStreak?.current || 0;
-  const latestWeight = state.weightLog?.length ? state.weightLog[state.weightLog.length - 1] : null;
-  const hasWorkoutToday = todaySession || (state.sessions || []).some(s => {
-    const sd = new Date(s.dateKey + "T00:00:00");
-    const today = new Date();
-    return !s.finishedAt && sd.toDateString() === today.toDateString();
-  });
-
-  const hasData = state.weightLog?.length > 0 || (state.sessions || []).filter(s => s.finishedAt).length > 0 || state.user?.name;
-
-  container.innerHTML = `
-    <div class="today-home">
-      ${renderHeroWelcome()}
-
-      <div class="today-greeting">
-        <div class="today-greeting-line">${greeting.text} ${greeting.emoji}</div>
-        <div class="today-name">${user.name || "Athlete"}</div>
-        <div class="today-message">${getDailyMessage()}</div>
-      </div>
-
-      <div class="today-cards">
-        <div class="today-card" id="todayStreakCard">
-          <div class="today-card-icon">🔥</div>
-          <div class="today-card-body">
-            <div class="today-card-value">${streak}</div>
-            <div class="today-card-label">Day Streak</div>
-            <div class="today-card-meta">Longest: ${state.workoutStreak?.longestStreak || 0}</div>
-          </div>
-        </div>
-
-        <div class="today-card" id="todayWeightCard">
-          <div class="today-card-icon">⚖️</div>
-          <div class="today-card-body">
-            <div class="today-card-value">${latestWeight ? displayWeight(latestWeight.weight) : "—"}</div>
-            <div class="today-card-label">Weight</div>
-            <div class="today-card-meta">${latestWeight ? "Logged " + formatRelativeDate(latestWeight.date) : "Log today"}</div>
-          </div>
-        </div>
-
-        <div class="today-card" id="todayWorkoutCard">
-          <div class="today-card-icon">💪</div>
-          <div class="today-card-body">
-            <div class="today-card-value">${hasWorkoutToday ? "Active" : "Ready"}</div>
-            <div class="today-card-label">Workout</div>
-            <div class="today-card-meta">${hasWorkoutToday ? "Session in progress" : "Tap to start"}</div>
-          </div>
-        </div>
-
-        <div class="today-card" id="todayGoalCard">
-          <div class="today-card-icon">🎯</div>
-          <div class="today-card-body">
-            <div class="today-card-value">${user.targetWeight ? displayWeight(user.targetWeight) : "—"}</div>
-            <div class="today-card-label">Target</div>
-            <div class="today-card-meta">${user.goal ? user.goal.replace("-", " ") : "Set a goal"}</div>
-          </div>
-        </div>
-      </div>
-
-      ${renderQuickStartGuide()}
-      ${renderTodayMotivation()}
-
-      <div style="margin-top:1rem;display:flex;flex-direction:column;gap:0.75rem" id="todayHealthWidgets">
-        ${hasData ? renderNutritionWidget() : ""}
-        ${hasData ? renderWaterWidget() : ""}
-      </div>
-    </div>
-  `;
-
-  // Hero welcome card events
-  const heroWelcome = document.getElementById("heroWelcome");
-  if (heroWelcome) {
-    document.getElementById("heroWelcomeDismiss")?.addEventListener("click", () => {
-      state.heroDismissed = true;
-      saveState();
-      renderHome();
-    });
-    document.getElementById("heroWelcomeStart")?.addEventListener("click", () => activateTab("sets"));
-    document.getElementById("heroWelcomeBuild")?.addEventListener("click", showNewWorkoutBuilder);
-  }
-
-  document.getElementById("quickStartDismiss")?.addEventListener("click", () => {
-    state.quickStartDismissed = true;
-    saveState();
-    renderHome();
-  });
-  document.getElementById("todayStreakCard")?.addEventListener("click", openStreakDrawer);
-  document.getElementById("todayWeightCard")?.addEventListener("click", () => {
-    document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
-  });
-  document.getElementById("todayWorkoutCard")?.addEventListener("click", () => activateTab("sets"));
-  document.getElementById("todayGoalCard")?.addEventListener("click", openGoalCenter);
-  document.getElementById("mlOpenBtn")?.addEventListener("click", renderMealLogger);
-  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderHome(); });
-  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderHome(); });
-  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderHome(); });
 }
 
 // ===== SETS PANEL =====
@@ -5246,7 +4942,9 @@ function showEnhancedSummary(newPRs) {
       session.notes = document.getElementById("ssNotesInput").value || "";
       saveState();
     }
-    document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
+    const overlay = document.getElementById("sessionSummaryOverlay");
+    overlay.classList.remove("is-celebrating");
+    overlay.classList.add("is-hidden");
     finishWorkoutComplete();
   };
   document.getElementById("ssStartCoolDown").onclick = () => {
@@ -5254,11 +4952,15 @@ function showEnhancedSummary(newPRs) {
       session.notes = document.getElementById("ssNotesInput").value || "";
       saveState();
     }
-    document.getElementById("sessionSummaryOverlay").classList.add("is-hidden");
+    const overlay = document.getElementById("sessionSummaryOverlay");
+    overlay.classList.remove("is-celebrating");
+    overlay.classList.add("is-hidden");
     openCoolDown();
   };
 
-  document.getElementById("sessionSummaryOverlay").classList.remove("is-hidden");
+  const overlay = document.getElementById("sessionSummaryOverlay");
+  overlay.classList.toggle("is-celebrating", filteredPRs.length > 0);
+  overlay.classList.remove("is-hidden");
 }
 
 
@@ -5476,23 +5178,29 @@ function renderGoals() {
   const goals = state.goals || [];
   const goalLabels = { weight: "Body Weight", bench: "Bench Press", squat: "Squat", deadlift: "Deadlift", frequency: "Weekly Sessions", custom: "Custom" };
 
-  let html = goals
-    .map((goal, i) => {
-      const pct = getGoalProgress(goal);
-      const current = getGoalValue(goal);
-      const target = goal.target;
-      return `<div class="goal-card" data-goal-index="${i}">
-      <div class="goal-card-header">
-        <span class="goal-card-name">${goalLabels[goal.type] || goal.name}</span>
-        <span class="goal-card-target">${current} / ${target} ${goal.type === "frequency" ? "sessions" : "kg"}</span>
-      </div>
-      <div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
-      <div class="goal-bar-pct">${pct}%</div>
+  let html = goals.length
+    ? goals
+        .map((goal, i) => {
+          const pct = getGoalProgress(goal);
+          const current = getGoalValue(goal);
+          const target = goal.target;
+          return `<div class="goal-card" data-goal-index="${i}">
+          <div class="goal-card-header">
+            <span class="goal-card-name">${goalLabels[goal.type] || goal.name}</span>
+            <span class="goal-card-target">${current} / ${target} ${goal.type === "frequency" ? "sessions" : "kg"}</span>
+          </div>
+          <div class="goal-bar-wrap"><div class="goal-bar-fill" style="width:${pct}%"></div></div>
+          <div class="goal-bar-pct">${pct}%</div>
+        </div>`;
+        })
+        .join("")
+    : `<div class="empty-state" style="padding:1.5rem 0">
+      <div class="empty-state-icon">🎯</div>
+      <div class="empty-state-title">No Goals Set</div>
+      <div class="empty-state-text">Set a goal to track your progress toward a specific weight, lift, or habit.</div>
     </div>`;
-    })
-    .join("");
 
-  html += `<button class="goal-add-btn" id="goalAddBtn">+ Add Goal</button>`;
+  html += `<button class="goal-add-btn" id="goalAddBtn">${goals.length ? "+ Add Goal" : "Set Your First Goal"}</button>`;
   container.innerHTML = html;
 
   container.querySelectorAll(".goal-card").forEach((card) => {
@@ -6347,7 +6055,15 @@ function renderTrainingCalendar() {
   const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
   const todayKey = getDateKey(today);
 
-  let html = `<div class="cal-header">
+  let html = ``;
+  if (trainedDays.size === 0) {
+    html += `<div class="empty-state" style="margin-bottom:0.75rem">
+      <div class="empty-state-icon">📅</div>
+      <div class="empty-state-title">No Workouts Yet</div>
+      <div class="empty-state-text">Complete a workout to see your training calendar fill up with green training days.</div>
+    </div>`;
+  }
+  html += `<div class="cal-header">
     <button class="cal-nav-btn" data-cal-dir="-1">←</button>
     <span class="cal-title">${monthNames[calendarMonth]} ${calendarYear}</span>
     <button class="cal-nav-btn" data-cal-dir="1">→</button>
@@ -6515,306 +6231,6 @@ function renderGoalsSection() {
   document.getElementById("goalsOpenCoachBtn")?.addEventListener("click", () => {
     if (typeof openGoalCenter === "function") openGoalCenter();
   });
-}
-
-function renderWeeklyReview() {
-  const container = document.getElementById("progressWeekly");
-  if (!container) return;
-  const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
-  const weekSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey >= weekAgo);
-  if (!weekSessions.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">No workouts this week. Complete a session to see your weekly stats here.</div></div>`;
-    return;
-  }
-  let totalSets = 0;
-  let totalVol = 0;
-  let totalDuration = 0;
-  let weeklyPRCount = 0;
-  const trainedDays = new Set();
-  for (const ses of weekSessions) {
-    trainedDays.add(ses.dateKey);
-    if (ses.duration) totalDuration += ses.duration;
-    for (const ex of ses.exercises) {
-      for (const set of ex.sets) {
-        if (set.done) totalSets++;
-        if (set.done && Number(set.weight) > 0) totalVol += Number(set.weight) * (Number(set.reps) || 0);
-      }
-    }
-  }
-  // Count PRs this week
-  if (state.prs) {
-    for (const [, data] of Object.entries(state.prs)) {
-      (data.history || []).forEach((h) => {
-        if (h.date && h.date >= weekAgo) weeklyPRCount++;
-      });
-    }
-  }
-  const consistency = Math.min(100, Math.round((trainedDays.size / 7) * 100));
-  const volStr = totalVol >= 1000 ? (totalVol / 1000).toFixed(1) + "k" : totalVol;
-  const avgDuration = totalDuration ? Math.round(totalDuration / weekSessions.length) : 0;
-  container.innerHTML = `<div class="progress-card">
-    <div class="progress-card-title">This Week</div>
-    <div class="monthly-grid">
-      <div class="monthly-item"><strong>${weekSessions.length}</strong><small>Sessions</small></div>
-      <div class="monthly-item"><strong>${totalSets}</strong><small>Sets</small></div>
-      <div class="monthly-item"><strong>${volStr}</strong><small>Volume</small></div>
-      <div class="monthly-item"><strong>${weeklyPRCount}</strong><small>PRs</small></div>
-      <div class="monthly-item"><strong>${avgDuration > 0 ? avgDuration + "m" : "—"}</strong><small>Avg Duration</small></div>
-      <div class="monthly-item"><strong>${consistency}%</strong><small>Consistency</small></div>
-    </div>
-  </div>`;
-}
-
-function renderMonthlyReview() {
-  const container = document.getElementById("progressMonthly");
-  if (!container) return;
-  const now = new Date();
-  const prefix = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
-  const monthSessions = state.sessions.filter((s) => s.finishedAt && s.dateKey.startsWith(prefix));
-  if (!monthSessions.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">No workouts this month. Complete sessions to see your monthly stats here.</div></div>`;
-    return;
-  }
-  let bestLift = { name: "", weight: 0 };
-  const muscleCount = {};
-  let totalSets = 0;
-  let totalVol = 0;
-  let totalDuration = 0;
-  for (const ses of monthSessions) {
-    if (ses.duration) totalDuration += ses.duration;
-    for (const ex of ses.exercises) {
-      const muscle = getKnownMuscle(ex.name);
-      if (muscle) muscleCount[muscle] = (muscleCount[muscle] || 0) + 1;
-      for (const set of ex.sets) {
-        if (set.done) totalSets++;
-        if (set.done && Number(set.weight) > 0) {
-          totalVol += Number(set.weight) * (Number(set.reps) || 0);
-          if (Number(set.weight) > bestLift.weight) bestLift = { name: ex.name, weight: Number(set.weight) };
-        }
-      }
-    }
-  }
-  const mostTrained = Object.entries(muscleCount).sort((a, b) => b[1] - a[1])[0];
-  const avgDuration = totalDuration ? Math.round(totalDuration / monthSessions.length) : 0;
-  const volStr = totalVol >= 1000 ? (totalVol / 1000).toFixed(1) + "k" : totalVol;
-  const prCount = getPRCount();
-  container.innerHTML = `<div class="progress-card">
-    <div class="progress-card-title">Monthly</div>
-    <div class="monthly-grid">
-      <div class="monthly-item"><strong>${monthSessions.length}</strong><small>Workouts</small></div>
-      <div class="monthly-item"><strong>${totalSets}</strong><small>Sets</small></div>
-      <div class="monthly-item"><strong>${volStr}</strong><small>Volume</small></div>
-      <div class="monthly-item"><strong>${prCount}</strong><small>PRs</small></div>
-      <div class="monthly-item"><strong>${bestLift.name ? bestLift.name.replace(/([A-Z])/g, " $1").trim() : "—"}</strong><small>Best Lift</small></div>
-      <div class="monthly-item"><strong>${mostTrained ? mostTrained[0] : "—"}</strong><small>Most Trained</small></div>
-      <div class="monthly-item"><strong>${avgDuration > 0 ? avgDuration + "m" : "—"}</strong><small>Avg Duration</small></div>
-    </div>
-  </div>`;
-}
-
-function renderRecentMilestones() {
-  const container = document.getElementById("progressMilestones");
-  if (!container) return;
-  const allPRs = getAllPRs();
-  const items = [];
-  for (const [exName, data] of Object.entries(allPRs)) {
-    (data.history || []).forEach((h) => items.push({ ...h, exerciseName: exName }));
-  }
-  items.sort((a, b) => b.date.localeCompare(a.date));
-  const recent = items.slice(0, 5);
-  if (!recent.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Push yourself in your workouts. Personal records will appear here.</div></div>`;
-    return;
-  }
-  container.innerHTML = `<div class="progress-card">
-    <div class="progress-card-title">Recent Milestones</div>
-    <div class="ach-list">${recent.map((pr) => {
-      const name = pr.exerciseName.replace(/([A-Z])/g, " $1").trim();
-      const date = formatReadableDate(parseDateKey(pr.date));
-      const icon = pr.type === "weight" ? "🏋️" : pr.type === "reps" ? "🔁" : "📊";
-      return `<div class="ach-item"><span class="ach-icon">${icon}</span>${name} · ${displayWeight(pr.weight)} × ${pr.reps}<span class="ach-date">${date}</span></div>`;
-    }).join("")}</div>
-  </div>`;
-}
-
-function renderMeasurements() {
-  const container = document.getElementById("progressMeasurements");
-  if (!container) return;
-  const measurements = loadMeasurements();
-  if (!measurements.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Body Measurements</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">Track your body measurements to see physical changes over time. <button id="addMeasurementBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Add First</button></div></div>`;
-    document.getElementById("addMeasurementBtn")?.addEventListener("click", openMeasurementLogger);
-    return;
-  }
-  const sorted = [...measurements].sort((a, b) => b.date.localeCompare(a.date));
-  const latest = sorted[0];
-  const fields = [
-    { key: "weight", label: "Weight", unit: state.weightUnit || "kg", color: "var(--accent)" },
-    { key: "waist", label: "Waist", unit: "cm", color: "#ff6b6b" },
-    { key: "chest", label: "Chest", unit: "cm", color: "#ffd43b" },
-    { key: "arms", label: "Arms", unit: "cm", color: "#69db7c" },
-    { key: "thighs", label: "Thighs", unit: "cm", color: "#74c0fc" },
-  ];
-  let html = `<div class="progress-card"><div class="progress-card-title" style="display:flex;justify-content:space-between;align-items:center">Body Measurements <button id="addMeasurementBtn2" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Log</button></div>`;
-  html += `<div style="display:grid;grid-template-columns:repeat(${fields.length},1fr);gap:0.5rem;margin-bottom:0.75rem">`;
-  fields.forEach((f) => {
-    const val = latest[f.key];
-    const prev = sorted.length > 1 ? sorted[1][f.key] : null;
-    const trend = val && prev ? (val > prev ? "▲" : val < prev ? "▼" : "—") : "—";
-    const trendColor = val && prev ? (val > prev && f.key === "weight" ? "var(--red)" : val < prev && f.key === "weight" ? "var(--accent)" : "var(--text-secondary)") : "var(--text-secondary)";
-    html += `<div style="text-align:center"><div style="font-size:0.65rem;color:var(--text-secondary)">${f.label}</div><div style="font-weight:600;font-size:0.9rem">${val ? val + f.unit : "—"}</div><div style="font-size:0.6rem;color:${trendColor}">${trend}</div></div>`;
-  });
-  html += `</div>`;
-  if (sorted.length > 1) {
-    html += `<div style="font-size:0.65rem;color:var(--text-secondary);margin-bottom:0.4rem">History (last 5)</div>`;
-    html += `<div style="display:flex;flex-direction:column;gap:0.2rem">`;
-    sorted.slice(0, 5).forEach((m) => {
-      html += `<div style="display:flex;justify-content:space-between;font-size:0.7rem;padding:0.3rem 0;border-bottom:1px solid var(--border)">
-        <span style="color:var(--text-secondary)">${formatReadableDate(parseDateKey(m.date))}</span>
-        <span>${m.weight ? m.weight + (state.weightUnit || "kg") : "—"} · ${m.waist ? m.waist + "cm" : "—"} · ${m.chest ? m.chest + "cm" : "—"} · ${m.arms ? m.arms + "cm" : "—"} · ${m.thighs ? m.thighs + "cm" : "—"}</span>
-      </div>`;
-    });
-    html += `</div>`;
-  }
-  html += `</div>`;
-  container.innerHTML = html;
-  document.getElementById("addMeasurementBtn2")?.addEventListener("click", openMeasurementLogger);
-  document.getElementById("addMeasurementBtn")?.addEventListener("click", openMeasurementLogger);
-}
-
-function openMeasurementLogger() {
-  const existing = document.getElementById("measurementLoggerWrap");
-  if (existing) existing.remove();
-  const today = getDateKey();
-  const existingEntry = loadMeasurements().find((m) => m.date === today);
-  const el = document.createElement("div");
-  el.id = "measurementLoggerWrap";
-  el.innerHTML = `
-    <div class="bottom-sheet-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center">
-      <div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div style="font-weight:600;font-size:1rem">Log Measurements</div>
-          <button id="mlClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem;margin-bottom:1rem">
-          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Weight (${state.weightUnit || "kg"})</label><input id="mWeight" type="number" step="0.1" value="${existingEntry?.weight || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
-          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Waist (cm)</label><input id="mWaist" type="number" step="0.1" value="${existingEntry?.waist || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
-          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Chest (cm)</label><input id="mChest" type="number" step="0.1" value="${existingEntry?.chest || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
-          <div><label style="font-size:0.65rem;color:var(--text-secondary)">Arms (cm)</label><input id="mArms" type="number" step="0.1" value="${existingEntry?.arms || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
-          <div style="grid-column:1/-1"><label style="font-size:0.65rem;color:var(--text-secondary)">Thighs (cm)</label><input id="mThighs" type="number" step="0.1" value="${existingEntry?.thighs || ""}" style="width:100%;background:var(--surface-3);border:none;border-radius:8px;padding:0.5rem;color:var(--text);font-size:0.875rem"></div>
-        </div>
-        <div style="display:flex;gap:0.5rem">
-          ${existingEntry ? `<button id="mDeleteBtn" style="flex:1;background:var(--red);color:#fff;border:none;border-radius:8px;padding:0.6rem;font-weight:600;cursor:pointer">Delete Today</button>` : ""}
-          <button id="mSaveBtn" style="flex:1;background:var(--accent);color:#000;border:none;border-radius:8px;padding:0.6rem;font-weight:600;cursor:pointer">${existingEntry ? "Update" : "Save"}</button>
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(el);
-  document.getElementById("mlClose").onclick = () => { el.remove(); };
-  document.getElementById("mSaveBtn").onclick = () => {
-    const entry = {
-      date: today,
-      weight: parseFloat(document.getElementById("mWeight").value) || null,
-      waist: parseFloat(document.getElementById("mWaist").value) || null,
-      chest: parseFloat(document.getElementById("mChest").value) || null,
-      arms: parseFloat(document.getElementById("mArms").value) || null,
-      thighs: parseFloat(document.getElementById("mThighs").value) || null,
-    };
-    if (!entry.weight && !entry.waist && !entry.chest && !entry.arms && !entry.thighs) return;
-    saveMeasurement(entry);
-    el.remove();
-    renderProgressPage();
-  };
-  if (document.getElementById("mDeleteBtn")) {
-    document.getElementById("mDeleteBtn").onclick = () => {
-      deleteMeasurement(today);
-      el.remove();
-      renderProgressPage();
-    };
-  }
-}
-
-function renderProgressPhotos() {
-  const container = document.getElementById("progressPhotos");
-  if (!container) return;
-  const photos = state.photos || [];
-  if (!photos.length) {
-    container.innerHTML = `<div class="progress-card"><div class="progress-card-title">Progress Photos</div><div class="empty-card-content" style="font-size:0.75rem;color:var(--text-secondary);padding:0.5rem 0">Visual progress is powerful. Upload a photo to track your transformation. <button id="addPhotoBtn" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload First</button></div></div>`;
-    document.getElementById("addPhotoBtn")?.addEventListener("click", openPhotoUploader);
-    return;
-  }
-  const sorted = [...photos].sort((a, b) => b.date.localeCompare(a.date));
-  const latest = sorted[0];
-  const prev = sorted.length > 1 ? sorted[1] : null;
-  let html = `<div class="progress-card"><div class="progress-card-title" style="display:flex;justify-content:space-between;align-items:center">Progress Photos <button id="addPhotoBtn2" style="background:var(--accent);color:#000;border:none;border-radius:6px;padding:0.25rem 0.5rem;font-size:0.7rem;font-weight:600;cursor:pointer">+ Upload</button></div>`;
-  html += `<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
-  sorted.slice(0, 2).forEach((p) => {
-    html += `<div style="display:flex;flex-direction:column;gap:0.3rem">
-      <img src="${p.data}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--surface-3)" alt="Progress photo ${formatReadableDate(parseDateKey(p.date))}">
-      <div style="font-size:0.6rem;color:var(--text-secondary);text-align:center">${formatReadableDate(parseDateKey(p.date))}</div>
-    </div>`;
-  });
-  html += `</div>`;
-  if (sorted.length > 2) {
-    html += `<div style="margin-top:0.5rem;text-align:center"><button id="showAllPhotosBtn" style="background:none;border:none;color:var(--accent);font-size:0.7rem;cursor:pointer">View all ${sorted.length} photos →</button></div>`;
-  }
-  html += `</div>`;
-  container.innerHTML = html;
-  document.getElementById("addPhotoBtn2")?.addEventListener("click", openPhotoUploader);
-  document.getElementById("showAllPhotosBtn")?.addEventListener("click", showFullPhotoTimeline);
-}
-
-function openPhotoUploader() {
-  const input = document.createElement("input");
-  input.type = "file";
-  input.accept = "image/*";
-  input.onchange = (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert("Photo too large. Max 5MB.");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      if (!state.photos) state.photos = [];
-      state.photos.push({ date: getDateKey(), data: ev.target.result, uploadedAt: new Date().toISOString() });
-      state.progressPhotos = true;
-      saveState();
-      renderProgressPage();
-    };
-    reader.readAsDataURL(file);
-  };
-  input.click();
-}
-
-function showFullPhotoTimeline() {
-  const photos = state.photos || [];
-  if (!photos.length) return;
-  const sorted = [...photos].sort((a, b) => b.date.localeCompare(a.date));
-  const existing = document.getElementById("photoTimelineWrap");
-  if (existing) existing.remove();
-  const el = document.createElement("div");
-  el.id = "photoTimelineWrap";
-  el.innerHTML = `
-    <div class="bottom-sheet-overlay" style="position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center">
-      <div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;max-height:85vh;overflow-y:auto;padding:1.25rem">
-        <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">
-          <div style="font-weight:600;font-size:1rem">Photo Timeline</div>
-          <button id="ptClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>
-        </div>
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
-          ${sorted.map((p) => `
-            <div style="display:flex;flex-direction:column;gap:0.3rem">
-              <img src="${p.data}" style="width:100%;aspect-ratio:3/4;object-fit:cover;border-radius:8px;background:var(--surface-3)" alt="Progress photo">
-              <div style="font-size:0.6rem;color:var(--text-secondary);text-align:center">${formatReadableDate(parseDateKey(p.date))}</div>
-            </div>
-          `).join("")}
-        </div>
-      </div>
-    </div>`;
-  document.body.appendChild(el);
-  document.getElementById("ptClose").onclick = () => el.remove();
 }
 
 // ===== TRAINER PAGE =====
@@ -7931,10 +7347,6 @@ function renderExerciseDetailPage(exerciseId) {
 function getSavedExercises() {
   try { return JSON.parse(localStorage.getItem("ironlog_saved_exercises") || "[]"); }
   catch { return []; }
-}
-
-function openExerciseEncyclopedia() {
-  renderExerciseEncyclopedia();
 }
 
 function openExerciseDetail(exerciseId) {
@@ -9466,42 +8878,7 @@ function renderProgramReview() {
 const ACHIEVEMENT_DB = typeof CASEngine !== "undefined" ? CASEngine.getAllAchievements() : [];
 
 // ===== RECOVERY HISTORY STORAGE (legacy compat) =====
-// Recovery history is now stored via CoachEngine internally
-// This function loads it for external use
-function getRecoveryHistory() {
-  try { return JSON.parse(localStorage.getItem("ironlog_recovery_history")) || {}; }
-  catch { return {}; }
-}
 
-function renderWeightCheckInCard() {
-  const log = (state.weightLog || []).slice().sort((a, b) => b.date.localeCompare(a.date));
-  const today = new Date();
-  const todayKey = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, "0")}-${String(today.getDate()).padStart(2, "0")}`;
-  const loggedToday = log.length > 0 && log[0].date === todayKey;
-  const daysSince = log.length > 0 ? Math.round((today - new Date(log[0].date)) / 86400000) : null;
-
-  if (loggedToday) {
-    return `<div class="wi-checkin-card" style="margin-bottom:var(--space-sm)">
-      <div class="wi-checkin-left">
-        <span class="wi-checkin-label">Daily Check-In</span>
-        <span class="wi-checkin-status" style="color:var(--accent)">Logged ${displayWeight(log[0].weight)} ✓</span>
-      </div>
-      <button class="wi-checkin-btn done">Done</button>
-    </div>`;
-  }
-
-  let statusText = "Log your weight today";
-  if (daysSince !== null && daysSince >= 7) statusText = "Not logged in ${daysSince} days — data degrading";
-  else if (daysSince !== null && daysSince >= 3) statusText = `${daysSince} days since last weigh-in`;
-
-  return `<div class="wi-checkin-card" style="margin-bottom:var(--space-sm)">
-    <div class="wi-checkin-left">
-      <span class="wi-checkin-label">Daily Check-In</span>
-      <span class="wi-checkin-status">${statusText}</span>
-    </div>
-    <button class="wi-checkin-btn" id="wiCheckInBtn">Log Weight</button>
-  </div>`;
-}
 function openCalendarDateSheet(session) {
   const sheet = document.getElementById("calendarDateSheet");
   if (!sheet) return;
@@ -9863,22 +9240,7 @@ function weeklyWeightChange() {
   return avgRecent - avgBefore;
 }
 
-function monthlyWeightChange() {
-  const log = loadBodyLog().sort((a, b) => a.date.localeCompare(b.date));
-  if (log.length < 2) return null;
-  const now = new Date();
-  const monthAgo = getDateKey(new Date(now.getTime() - 30 * 86400000));
-  const recent = log.filter((e) => e.date >= monthAgo);
-  const before = log.filter((e) => e.date < monthAgo);
-  if (recent.length === 0 || before.length === 0) return null;
-  const avgRecent = recent.reduce((s, e) => s + e.weight, 0) / recent.length;
-  const avgBefore = before.slice(-30).reduce((s, e) => s + e.weight, 0) / Math.min(before.length, 30);
-  return avgRecent - avgBefore;
-}
 
-function goalDescription(goal) {
-  return GOAL_DESCRIPTIONS[goal] || "";
-}
 
 
 
@@ -10043,73 +9405,12 @@ function isProfileComplete() {
   return !!(u && u.name && u.name !== "Athlete" && u.age && u.height && u.weight);
 }
 
-// ===== ONBOARDING V2 (Multi-Step) =====
-let onboardStep = 1;
-let onboardData = {};
-
-// ===== ONBOARDING V2 =====
-
 const OB_STEPS_CONFIG = [
-  {
-    id: "welcome",
-    title: "Welcome to IronLog",
-    desc: "Build muscle. Lose fat. Stay consistent. Your personal training system.",
-  },
-  {
-    id: "about-you",
-    title: "About You",
-    desc: "Help us personalize your experience.",
-  },
-  {
-    id: "main-goal",
-    title: "What is your primary goal?",
-    desc: "This will shape your entire training plan.",
-  },
-  {
-    id: "experience",
-    title: "Experience Level",
-    desc: "How long have you been training?",
-  },
-  {
-    id: "availability",
-    title: "Training Availability",
-    desc: "How many days can you train per week?",
-  },
-  {
-    id: "equipment",
-    title: "Your Equipment",
-    desc: "What equipment do you have access to?",
-  },
-  {
-    id: "injury",
-    title: "Injuries & Limitations",
-    desc: "Any past or present injuries we should be aware of?",
-  },
-  {
-    id: "nutrition-setup",
-    title: "Nutrition Setup",
-    desc: "Set some basic nutrition targets for your plan.",
-  },
-  {
-    id: "body-metrics",
-    title: "Body Metrics",
-    desc: "Track your starting measurements for progress.",
-  },
-  {
-    id: "goal-details",
-    title: "Goal Details",
-    desc: "Let's get specific about your target.",
-  },
-  {
-    id: "coach-setup",
-    title: "Your Starting Strategy",
-    desc: "Here's what your IronLog Coach recommends.",
-  },
-  {
-    id: "create-program",
-    title: "Create Your First Program",
-    desc: "Almost there! Generate your workout plan.",
-  },
+  { id: "welcome", title: "Welcome to IronLog", desc: "" },
+  { id: "about-you", title: "About You", desc: "Let's get to know you." },
+  { id: "your-training", title: "Your Training", desc: "Tell us about your training background." },
+  { id: "your-goal", title: "Your Goal", desc: "What are you working toward?" },
+  { id: "your-plan", title: "Your Plan", desc: "Here's what IronLog recommends." },
 ];
 
 let obData = {};
@@ -10131,8 +9432,8 @@ function openOnboarding(animateIn, startStep) {
 
 function openProfileSectionEditor(section) {
   const p = getProfile();
-  const stepMap = { personal: 1, goals: 2, training: 3, equipment: 5, nutrition: 7, body: 8 };
-  const step = stepMap[section] || 1;
+  const stepMap = { personal: 1, goals: 3, training: 2, equipment: 2, nutrition: 3, body: 3, "body-log": 3 };
+  const step = stepMap[section] || 0;
   // Seed obData from existing profile
   obData = {
     name: p.name, age: p.age, gender: p.gender, height: p.height, weight: p.weight,
@@ -10184,7 +9485,7 @@ function closeOnboarding(animateOut, callback) {
 function obGoToStep(index) {
   const cfg = OB_STEPS_CONFIG[index];
   if (!cfg) return;
-  state.onboardingStep = index; saveState();
+  saveState();
 
   const total = OB_STEPS_CONFIG.length;
   document.getElementById("obStepsFill").style.width = ((index + 1) / total * 100) + "%";
@@ -10209,258 +9510,146 @@ function obGoToStep(index) {
 
 function obRenderStepContent(stepId) {
   if (stepId === "welcome") {
-    return `<div style="text-align:center;padding:0.75rem 0">
-      <div style="font-size:3rem;margin-bottom:0.5rem">🏋️</div>
-      <div style="display:flex;flex-direction:column;gap:0.5rem;margin-top:0.75rem">
-        <button class="btn-primary" id="obWelcomeStart">Get Started</button>
-        <button class="btn-secondary" id="obWelcomeImport" disabled style="opacity:0.5;cursor:not-allowed">Import Existing Data (Future)</button>
-      </div>
+    return `<div style="text-align:center;padding:1.5rem 0">
+      <div style="font-size:3.5rem;margin-bottom:0.75rem">🏋️</div>
+      <h2 style="font-size:1.35rem;font-weight:700;margin:0 0 0.5rem;color:var(--text)">Welcome to IronLog</h2>
+      <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.25rem;line-height:1.5">Let's build your training profile.</p>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1.5rem;line-height:1.4">This takes less than 90 seconds.</p>
+      <button class="btn-primary" id="obNextBtn" style="min-width:200px;padding:0.9rem 2rem;font-size:1rem">Get Started</button>
     </div>`;
   }
 
   if (stepId === "about-you") {
-    return `<div class="ob-fields">
+    return `<div class="ob-fields" style="gap:1.25rem">
       <div class="ob-field">
-        <label class="ob-field-label">Name</label>
-        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${obData.name || ""}" autocomplete="name" />
+        <label class="ob-field-label">What's your name?</label>
+        <input type="text" class="ob-input" id="obName" placeholder="Your name" maxlength="30" value="${obData.name || ""}" autocomplete="name" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
       </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
         <div class="ob-field">
           <label class="ob-field-label">Age</label>
-          <input type="number" class="ob-input" id="obAge" placeholder="23" min="10" max="120" value="${obData.age || ""}" />
+          <input type="number" class="ob-input" id="obAge" placeholder="23" min="10" max="120" value="${obData.age || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
         </div>
-        <div class="ob-field">
-          <label class="ob-field-label">Gender</label>
-          <select class="ob-input" id="obGender"><option value="">Select</option><option value="male"${obData.gender==="male"?" selected":""}>Male</option><option value="female"${obData.gender==="female"?" selected":""}>Female</option><option value="other"${obData.gender==="other"?" selected":""}>Other</option></select>
-        </div>
-      </div>
-      <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">
         <div class="ob-field">
           <label class="ob-field-label">Height (cm)</label>
-          <input type="number" class="ob-input" id="obHeight" placeholder="175" min="100" max="250" value="${obData.height || ""}" />
-        </div>
-        <div class="ob-field">
-          <label class="ob-field-label">Weight (kg)</label>
-          <input type="text" class="ob-input" id="obWeight" placeholder="71" inputmode="decimal" value="${obData.weight || ""}" />
+          <input type="number" class="ob-input" id="obHeight" placeholder="175" min="100" max="250" value="${obData.height || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px" />
         </div>
       </div>
-      <div class="ob-actions">
-        <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-        <button class="btn-primary" id="obNextBtn" ${(!obData.name || !obData.age || !obData.height || !obData.weight) ? "disabled" : ""}>Next</button>
+      <div class="ob-actions" style="margin-top:0.5rem">
+        <button class="btn-primary" id="obNextBtn" style="width:100%;padding:0.9rem" disabled>Next</button>
       </div>
     </div>`;
   }
 
-  if (stepId === "main-goal") {
-    const goals = [
-      { id: "fat-loss", label: "Fat Loss", icon: "🔥" },
-      { id: "muscle-gain", label: "Muscle Gain", icon: "💪" },
-      { id: "strength", label: "Strength", icon: "🏋️" },
-      { id: "general-fitness", label: "General Fitness", icon: "✅" },
-      { id: "endurance", label: "Endurance", icon: "🏃" },
-    ];
-    return `<div class="ob-options">${goals.map(g => `<button class="ob-option${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}"><span style="margin-right:0.4rem">${g.icon}</span>${g.label}</button>`).join("")}</div>
-    <div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn" ${!obData.goalType ? "disabled" : ""}>Next</button>
-    </div>`;
-  }
-
-  if (stepId === "experience") {
+  if (stepId === "your-training") {
     const exps = [
       { id: "beginner", label: "Beginner", desc: "Less than 6 months" },
       { id: "intermediate", label: "Intermediate", desc: "6 months to 2 years" },
       { id: "advanced", label: "Advanced", desc: "2+ years" },
     ];
-    return `<div class="ob-options">${exps.map(e => `<button class="ob-option${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}"><span class="ob-option-name">${e.label}</span><span style="display:block;font-size:0.72rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem">${e.desc}</span></button>`).join("")}</div>
-    <div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn" ${!obData.experience ? "disabled" : ""}>Next</button>
-    </div>`;
-  }
-
-  if (stepId === "availability") {
     const daysLabels = { 2: "Minimal", 3: "Standard", 4: "Frequent", 5: "Dedicated", 6: "Intensive" };
-    let html = `<div class="ob-field"><label class="ob-field-label">Days Per Week</label><div class="ob-option-row">`;
+    let html = `<div class="ob-fields" style="gap:1.25rem">`;
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Current weight (kg)</label>
+      <input type="text" class="ob-input" id="obWeight" placeholder="71" inputmode="decimal" value="${obData.weight || ""}" style="font-size:1.05rem;padding:0.9rem 1rem;min-height:50px;max-width:180px" />
+    </div>`;
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Experience level</label>
+      <div class="ob-options" style="gap:0.5rem">${exps.map(e => `<button class="ob-option${obData.experience === e.id ? " is-active" : ""}" data-ob-exp="${e.id}" style="flex:1;padding:0.9rem 0.75rem;min-height:60px"><span class="ob-option-name" style="font-size:0.9rem">${e.label}</span><span style="display:block;font-size:0.72rem;font-weight:400;color:var(--text-secondary);margin-top:0.2rem">${e.desc}</span></button>`).join("")}</div>
+    </div>`;
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Workout days per week</label>
+      <div class="ob-option-row" style="gap:0.4rem">`;
     [2,3,4,5,6].forEach(d => {
-      html += `<button class="ob-option ob-option-compact${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}">${d} <span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-secondary)">${daysLabels[d]}</span></button>`;
+      html += `<button class="ob-option ob-option-compact${obData.trainingDays === d ? " is-active" : ""}" data-ob-days="${d}" style="flex:1;min-height:56px">${d} <span style="display:block;font-size:0.65rem;font-weight:400;color:var(--text-secondary);margin-top:0.15rem">${daysLabels[d]}</span></button>`;
     });
     html += `</div></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Equipment</label><div class="ob-options">`;
-    const equipOpts = [
+    html += `<div class="ob-actions" style="margin-top:0.5rem">
+      <button class="btn-secondary" id="obBackBtn" style="padding:0.9rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn" style="flex:1;padding:0.9rem" disabled>Next</button>
+    </div></div>`;
+    return html;
+  }
+
+  if (stepId === "your-goal") {
+    const goals = [
+      { id: "fat-loss", label: "Fat Loss", icon: "🔥" },
+      { id: "muscle-gain", label: "Muscle Gain", icon: "💪" },
+      { id: "strength", label: "Strength", icon: "🏋️" },
+      { id: "general-fitness", label: "General Fitness", icon: "✅" },
+    ];
+    const locations = [
       { id: "gym", label: "Gym" },
       { id: "home", label: "Home" },
-      { id: "minimal", label: "Minimal Equipment" },
-      { id: "bodyweight", label: "Bodyweight" },
+      { id: "minimal", label: "Both" },
     ];
-    equipOpts.forEach(e => {
-      html += `<button class="ob-option${obData.equipment === e.id ? " is-active" : ""}" data-ob-equip="${e.id}">${e.label}</button>`;
-    });
-    html += `</div></div>`;
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn" ${!obData.trainingDays || !obData.equipment ? "disabled" : ""}>Next</button>
-    </div>`;
-    return html;
-  }
-
-  if (stepId === "equipment") {
-    const equipItems = [
-      { id: "barbell", label: "Barbell" },
-      { id: "dumbbells", label: "Dumbbells" },
-      { id: "kettlebell", label: "Kettlebell" },
-      { id: "cables", label: "Cable Machine" },
-      { id: "machines", label: "Weight Machines" },
-      { id: "bands", label: "Resistance Bands" },
-      { id: "pullup", label: "Pull-Up Bar" },
-      { id: "bench", label: "Weight Bench" },
-      { id: "squat-rack", label: "Squat Rack" },
-      { id: "cardio", label: "Cardio Machine" },
-      { id: "swiss-ball", label: "Swiss Ball" },
-      { id: "mat", label: "Exercise Mat" },
-    ];
-    const selected = obData.equipmentDetails || [];
-    let html = `<div class="ob-field"><label class="ob-field-label">Select the equipment you have access to:</label><div class="ob-options">`;
-    equipItems.forEach(eq => {
-      html += `<button class="ob-option${selected.includes(eq.id) ? " is-active" : ""}" data-ob-equip-det="${eq.id}">${eq.label}</button>`;
-    });
-    html += `</div></div>`;
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next</button>
-    </div>`;
-    return html;
-  }
-
-  if (stepId === "injury") {
     const injuries = [
-      { id: "shoulder", label: "Shoulder" },
-      { id: "back", label: "Lower Back" },
-      { id: "knee", label: "Knee" },
-      { id: "wrist", label: "Wrist" },
-      { id: "hip", label: "Hip" },
-      { id: "neck", label: "Neck" },
-      { id: "ankle", label: "Ankle" },
-      { id: "elbow", label: "Elbow" },
+      { id: "shoulder", label: "Shoulder" }, { id: "back", label: "Lower Back" },
+      { id: "knee", label: "Knee" }, { id: "wrist", label: "Wrist" },
+      { id: "hip", label: "Hip" }, { id: "ankle", label: "Ankle" },
     ];
     const selected = obData.injuries || [];
-    let html = `<div class="ob-field"><label class="ob-field-label">Select any injuries or limitations (optional):</label><div class="ob-options">`;
-    injuries.forEach(inj => {
-      html += `<button class="ob-option${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}">${inj.label}</button>`;
-    });
-    html += `</div></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Other (describe)</label><input type="text" class="ob-input" id="obInjuryOther" placeholder="Describe any other injuries..." maxlength="200" value="${obData.injuryNotes || ""}" /></div>`;
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next</button>
+    let html = `<div class="ob-fields" style="gap:1.25rem">`;
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Primary goal</label>
+      <div class="ob-options" style="gap:0.5rem">${goals.map(g => `<button class="ob-option${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}" style="flex:1;padding:0.9rem 0.5rem;min-height:56px"><span style="display:block;font-size:1.2rem;margin-bottom:0.2rem">${g.icon}</span><span style="font-size:0.82rem">${g.label}</span></button>`).join("")}</div>
     </div>`;
-    return html;
-  }
-
-  if (stepId === "nutrition-setup") {
-    const diets = [
-      { id: "none", label: "No Preference" },
-      { id: "vegetarian", label: "Vegetarian" },
-      { id: "vegan", label: "Vegan" },
-      { id: "keto", label: "Keto" },
-      { id: "paleo", label: "Paleo" },
-      { id: "mediterranean", label: "Mediterranean" },
-    ];
-    const supplements = [
-      { id: "protein", label: "Protein Powder" },
-      { id: "creatine", label: "Creatine" },
-      { id: "preworkout", label: "Pre-Workout" },
-      { id: "bcaa", label: "BCAAs" },
-      { id: "vitamins", label: "Vitamins" },
-    ];
-    const selectedSupps = obData.supplements || [];
-    const w = Number(obData.weight) || 70;
-    const isFatLoss = obData.goalType === "fat-loss";
-    const isMuscle = obData.goalType === "muscle-gain";
-    const defaultCal = isFatLoss ? Math.round(w * 28) : isMuscle ? Math.round(w * 34) : Math.round(w * 30);
-    const defaultProtein = isFatLoss ? Math.round(w * 2.2) : isMuscle ? Math.round(w * 2.0) : Math.round(w * 1.8);
-    let html = `<div class="ob-fields">`;
-    html += `<div class="ob-field"><label class="ob-field-label">Daily Calorie Goal</label><input type="number" class="ob-input" id="obNutritionCal" placeholder="${defaultCal}" min="1200" max="8000" value="${obData.nutritionCal || ""}" /></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Daily Protein Goal (g)</label><input type="number" class="ob-input" id="obNutritionProtein" placeholder="${defaultProtein}" min="30" max="500" value="${obData.nutritionProtein || ""}" /></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Diet Preference</label><div class="ob-options" style="flex-wrap:wrap">${diets.map(d => `<button class="ob-option${obData.dietPreference === d.id ? " is-active" : ""}" data-ob-diet="${d.id}" style="flex:0 0 auto">${d.label}</button>`).join("")}</div></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Supplements (optional)</label><div class="ob-options">${supplements.map(s => `<button class="ob-option${selectedSupps.includes(s.id) ? " is-active" : ""}" data-ob-supp="${s.id}">${s.label}</button>`).join("")}</div></div>`;
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next</button>
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Training location</label>
+      <div class="ob-options" style="gap:0.4rem">${locations.map(l => `<button class="ob-option${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}" style="flex:1;padding:0.8rem 0.5rem">${l.label}</button>`).join("")}</div>
+    </div>`;
+    html += `<div class="ob-field">
+      <label class="ob-field-label">Injuries <span style="font-weight:400;color:var(--text-secondary)">(optional)</span></label>
+      <div class="ob-options" style="gap:0.3rem;flex-wrap:wrap">${injuries.map(inj => `<button class="ob-option${selected.includes(inj.id) ? " is-active" : ""}" data-ob-injury="${inj.id}" style="flex:0 0 auto;padding:0.6rem 0.75rem">${inj.label}</button>`).join("")}</div>
+    </div>`;
+    html += `<div class="ob-actions" style="margin-top:0.5rem">
+      <button class="btn-secondary" id="obBackBtn" style="padding:0.9rem">← Back</button>
+      <button class="btn-primary" id="obNextBtn" style="flex:1;padding:0.9rem" disabled>Next</button>
     </div></div>`;
     return html;
   }
 
-  if (stepId === "body-metrics") {
-    let html = `<div class="ob-fields"><div class="ob-field"><div style="display:grid;grid-template-columns:1fr 1fr;gap:0.5rem">`;
-    const metrics = [
-      { id: "chest", label: "Chest (cm)" },
-      { id: "waist", label: "Waist (cm)" },
-      { id: "arms", label: "Arms (cm)" },
-      { id: "thighs", label: "Thighs (cm)" },
-      { id: "hips", label: "Hips (cm)" },
-      { id: "neck", label: "Neck (cm)" },
-    ];
-    metrics.forEach(m => {
-      html += `<div><label style="font-size:0.72rem;color:var(--text-secondary)">${m.label}</label><input type="text" class="ob-input" id="obMetric${m.id}" placeholder="--" inputmode="decimal" value="${obData.metrics?.[m.id] || ""}" /></div>`;
-    });
-    html += `</div></div>`;
-    html += `<div class="ob-field"><label class="ob-field-label">Body Fat % (estimated)</label><input type="text" class="ob-input" id="obMetricBodyfat" placeholder="Optional" inputmode="decimal" value="${obData.metrics?.bodyfat || ""}" style="max-width:200px" /></div>`;
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next</button>
-    </div></div>`;
-    return html;
-  }
-
-  if (stepId === "goal-details") {
-    let html = `<div class="ob-fields">`;
-    const gt = obData.goalType;
-    if (gt === "fat-loss" || gt === "muscle-gain") {
-      html += `<div class="ob-field"><label class="ob-field-label">Target Weight (kg)</label><input type="text" class="ob-input" id="obTargetWeight" placeholder="e.g. 75" inputmode="decimal" value="${obData.targetWeight || ""}" /></div>`;
-      html += `<div class="ob-field"><label class="ob-field-label">Target Date (Optional)</label><input type="date" class="ob-input" id="obTargetDate" value="${obData.targetDate || ""}" /></div>`;
-    } else if (gt === "strength") {
-      const lifts = ["Bench", "Squat", "Deadlift", "General Strength"];
-      html += `<div class="ob-field"><label class="ob-field-label">Primary Lift</label><div class="ob-options">${lifts.map(l => `<button class="ob-option${obData.primaryLift === l ? " is-active" : ""}" data-ob-lift="${l}">${l}</button>`).join("")}</div></div>`;
-    } else {
-      html += `<div class="ob-field"><label class="ob-field-label">Target Weight (Optional)</label><input type="text" class="ob-input" id="obTargetWeight" placeholder="e.g. 75" inputmode="decimal" value="${obData.targetWeight || ""}" /></div>`;
-      html += `<div class="ob-field"><label class="ob-field-label">Target Date (Optional)</label><input type="date" class="ob-input" id="obTargetDate" value="${obData.targetDate || ""}" /></div>`;
-    }
-    html += `<div class="ob-actions">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next</button>
-    </div></div>`;
-    return html;
-  }
-
-  if (stepId === "coach-setup") {
+  if (stepId === "your-plan") {
     const strategy = obGenerateStrategy();
-    let html = `<div class="ob-coach-strategy">`;
-    Object.entries(strategy).forEach(([k, v]) => {
-      html += `<div class="ob-coach-strategy-row"><span class="ob-coach-strategy-label">${k}</span><span class="ob-coach-strategy-value">${v}</span></div>`;
-    });
-    html += `</div>`;
-    html += `<div class="ob-actions" style="margin-top:0.5rem">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obNextBtn">Next →</button>
-    </div>`;
-    return html;
-  }
-
-  if (stepId === "create-program") {
-    const weekDays = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
     const preview = obGenerateProgramPreview();
-    let html = `<div class="ob-preview-grid">`;
-    Object.entries(preview).forEach(([k, v]) => {
-      html += `<div class="ob-preview-item"><div class="ob-preview-label">${k}</div><div class="ob-preview-value">${v}</div></div>`;
-    });
-    html += `</div>`;
-    html += `<div style="margin-top:0.5rem;font-size:0.72rem;color:var(--text-secondary);line-height:1.3">Your program will be ready in <strong>Coach</strong> tab. Let's go!</div>`;
-    html += `<div class="ob-actions" style="margin-top:0.5rem">
-      <button class="btn-secondary" id="obBackBtn" style="flex:0 0 auto;padding:0.5rem 1rem">← Back</button>
-      <button class="btn-primary" id="obFinishBtn">Finish Setup</button>
+    const goalLabels = { "fat-loss": "Fat Loss", "muscle-gain": "Build Muscle", "strength": "Strength", "general-fitness": "General Fitness" };
+    const splitLabels = { "fat-loss": "Full Body", "muscle-gain": "Push Pull Legs", "strength": "Upper/Lower", "general-fitness": "Full Body" };
+    const gt = obData.goalType || "general-fitness";
+    return `<div style="text-align:center;padding:0.5rem 0">
+      <div style="font-size:2rem;margin-bottom:0.5rem">🎯</div>
+      <h2 style="font-size:1.2rem;font-weight:700;margin:0 0 0.25rem;color:var(--text)">Your Training Plan</h2>
+      <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1rem">Here's what IronLog recommends</p>
+      <div style="background:var(--surface);border-radius:14px;padding:1rem;margin-bottom:1rem;text-align:left">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:0.75rem">
+          <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Goal</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${goalLabels[gt] || "General Fitness"}</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--orange) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Calories</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Calories"]}</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--blue) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Protein</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Protein"]}</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--protein) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Water</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${strategy["Water"]}</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--accent) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Split</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${splitLabels[gt] || "Full Body"}</div>
+          </div>
+          <div style="background:color-mix(in srgb,var(--orange) 10%,transparent);border-radius:10px;padding:0.75rem;text-align:center">
+            <div style="font-size:0.7rem;color:var(--text-secondary);margin-bottom:0.25rem">Training Days</div>
+            <div style="font-size:0.95rem;font-weight:600;color:var(--text)">${preview["Days/Week"]}</div>
+          </div>
+        </div>
+      </div>
+      <p style="font-size:0.75rem;color:var(--text-secondary);margin:0 0 1rem;line-height:1.4">You can adjust all of this later in your Profile.</p>
+      <button class="btn-primary" id="obFinishBtn" style="width:100%;padding:0.9rem;font-size:1rem">Start Using IronLog →</button>
     </div>`;
-    return html;
   }
 
   return "";
@@ -10475,85 +9664,84 @@ function obBindStepEvents(stepId, index) {
   }
 
   if (stepId === "welcome") {
-    document.getElementById("obWelcomeStart").addEventListener("click", () => obGoToStep(1));
+    document.getElementById("obNextBtn")?.addEventListener("click", () => obGoToStep(1));
     return;
   }
 
   if (stepId === "about-you") {
     const nameIn = document.getElementById("obName");
     const ageIn = document.getElementById("obAge");
-    const genderIn = document.getElementById("obGender");
     const heightIn = document.getElementById("obHeight");
-    const weightIn = document.getElementById("obWeight");
     const nextBtn = document.getElementById("obNextBtn");
 
     function checkAbout() {
-      const valid = nameIn.value.trim() && Number(ageIn.value) > 0 && Number(ageIn.value) <= 120 && Number(heightIn.value) > 0 && Number(weightIn.value) > 0;
-      nextBtn.disabled = !valid;
+      nextBtn.disabled = !(nameIn.value.trim() && Number(ageIn.value) > 0 && Number(ageIn.value) <= 120 && Number(heightIn.value) > 0);
     }
-    [nameIn, ageIn, heightIn, weightIn].forEach(el => {
-      el.addEventListener("input", checkAbout);
-    });
+    [nameIn, ageIn, heightIn].forEach(el => { if (el) el.addEventListener("input", checkAbout); });
 
-    nextBtn.addEventListener("click", () => {
-      const name = nameIn.value.trim();
-      const age = Number(ageIn.value);
-      const height = Number(heightIn.value);
-      const weight = Number(weightIn.value);
-      if (!name) { showToast("Please enter your name."); return; }
-      if (!(age > 0 && age <= 120)) { showToast("Please enter a valid age."); return; }
-      if (!(height > 0)) { showToast("Please enter a valid height."); return; }
-      if (!(weight > 0)) { showToast("Please enter a valid weight."); return; }
-      obData.name = name;
-      obData.age = age;
-      obData.gender = genderIn.value;
-      obData.height = height;
-      obData.weight = weight;
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(2);
-    });
-    return;
-  }
-
-  if (stepId === "main-goal") {
-    document.querySelectorAll("[data-ob-goal]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.goalType = btn.dataset.obGoal;
-        document.getElementById("obNextBtn").disabled = false;
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        const name = nameIn.value.trim();
+        const age = Number(ageIn.value);
+        const height = Number(heightIn.value);
+        if (!name) { showToast("Please enter your name."); return; }
+        if (!(age > 0 && age <= 120)) { showToast("Please enter a valid age."); return; }
+        if (!(height > 0)) { showToast("Please enter a valid height."); return; }
+        obData.name = name;
+        obData.age = age;
+        obData.height = height;
+        Object.assign(state.onboardingData, obData); saveState();
+        obGoToStep(2);
       });
-    });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(3);
-    });
+    }
     return;
   }
 
-  if (stepId === "experience") {
+  if (stepId === "your-training") {
+    const weightIn = document.getElementById("obWeight");
+    const nextBtn = document.getElementById("obNextBtn");
+
+    if (weightIn) {
+      weightIn.addEventListener("input", () => {
+        obData.weight = weightIn.value;
+        obCheckTrainNext("your-training");
+      });
+    }
+
     document.querySelectorAll("[data-ob-exp]").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll("[data-ob-exp]").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
         obData.experience = btn.dataset.obExp;
-        document.getElementById("obNextBtn").disabled = false;
+        obCheckTrainNext("your-training");
       });
     });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(4);
-    });
-    return;
-  }
 
-  if (stepId === "availability") {
     document.querySelectorAll("[data-ob-days]").forEach(btn => {
       btn.addEventListener("click", () => {
         document.querySelectorAll("[data-ob-days]").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
         obData.trainingDays = parseInt(btn.dataset.obDays);
-        obCheckAvailNext();
+        obCheckTrainNext("your-training");
+      });
+    });
+
+    if (nextBtn) {
+      nextBtn.addEventListener("click", () => {
+        Object.assign(state.onboardingData, obData); saveState();
+        obGoToStep(3);
+      });
+    }
+    return;
+  }
+
+  if (stepId === "your-goal") {
+    document.querySelectorAll("[data-ob-goal]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.goalType = btn.dataset.obGoal;
+        obCheckTrainNext("your-goal");
       });
     });
     document.querySelectorAll("[data-ob-equip]").forEach(btn => {
@@ -10561,35 +9749,9 @@ function obBindStepEvents(stepId, index) {
         document.querySelectorAll("[data-ob-equip]").forEach(b => b.classList.remove("is-active"));
         btn.classList.add("is-active");
         obData.equipment = btn.dataset.obEquip;
-        obCheckAvailNext();
+        obCheckTrainNext("your-goal");
       });
     });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(5);
-    });
-    return;
-  }
-
-  if (stepId === "equipment") {
-    document.querySelectorAll("[data-ob-equip-det]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("is-active");
-        if (!obData.equipmentDetails) obData.equipmentDetails = [];
-        const id = btn.dataset.obEquipDet;
-        const idx = obData.equipmentDetails.indexOf(id);
-        if (idx >= 0) obData.equipmentDetails.splice(idx, 1);
-        else obData.equipmentDetails.push(id);
-      });
-    });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(6);
-    });
-    return;
-  }
-
-  if (stepId === "injury") {
     document.querySelectorAll("[data-ob-injury]").forEach(btn => {
       btn.addEventListener("click", () => {
         btn.classList.toggle("is-active");
@@ -10600,101 +9762,25 @@ function obBindStepEvents(stepId, index) {
         else obData.injuries.push(id);
       });
     });
-    const injOther = document.getElementById("obInjuryOther");
-    if (injOther) {
-      injOther.addEventListener("input", () => { obData.injuryNotes = injOther.value; });
-    }
-    document.getElementById("obNextBtn").addEventListener("click", () => {
+    document.getElementById("obNextBtn")?.addEventListener("click", () => {
       Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(7);
+      obGoToStep(4);
     });
     return;
   }
 
-  if (stepId === "nutrition-setup") {
-    const calIn = document.getElementById("obNutritionCal");
-    const protIn = document.getElementById("obNutritionProtein");
-    if (calIn) calIn.addEventListener("input", () => { obData.nutritionCal = calIn.value; });
-    if (protIn) protIn.addEventListener("input", () => { obData.nutritionProtein = protIn.value; });
-    document.querySelectorAll("[data-ob-diet]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-diet]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.dietPreference = btn.dataset.obDiet;
-      });
-    });
-    document.querySelectorAll("[data-ob-supp]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        btn.classList.toggle("is-active");
-        if (!obData.supplements) obData.supplements = [];
-        const id = btn.dataset.obSupp;
-        const idx = obData.supplements.indexOf(id);
-        if (idx >= 0) obData.supplements.splice(idx, 1);
-        else obData.supplements.push(id);
-      });
-    });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(8);
-    });
-    return;
-  }
-
-  if (stepId === "body-metrics") {
-    const metricFields = ["chest", "waist", "arms", "thighs", "hips", "neck", "bodyfat"];
-    metricFields.forEach(m => {
-      const el = document.getElementById(`obMetric${m}`);
-      if (el) {
-        el.addEventListener("input", () => {
-          if (!obData.metrics) obData.metrics = {};
-          obData.metrics[m] = el.value;
-        });
-      }
-    });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(9);
-    });
-    return;
-  }
-
-  if (stepId === "goal-details") {
-    const tw = document.getElementById("obTargetWeight");
-    const td = document.getElementById("obTargetDate");
-    if (tw) {
-      tw.addEventListener("input", () => { obData.targetWeight = tw.value; Object.assign(state.onboardingData, obData); saveState(); });
-    }
-    if (td) {
-      td.addEventListener("input", () => { obData.targetDate = td.value; Object.assign(state.onboardingData, obData); saveState(); });
-    }
-    document.querySelectorAll("[data-ob-lift]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-lift]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.primaryLift = btn.dataset.obLift;
-        Object.assign(state.onboardingData, obData); saveState();
-      });
-    });
-    document.getElementById("obNextBtn").addEventListener("click", () => {
-      Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(10);
-    });
-    return;
-  }
-
-  if (stepId === "coach-setup") {
-    document.getElementById("obNextBtn").addEventListener("click", () => obGoToStep(11));
-    return;
-  }
-
-  if (stepId === "create-program") {
-    document.getElementById("obFinishBtn").addEventListener("click", () => obFinishSetup());
+  if (stepId === "your-plan") {
+    document.getElementById("obFinishBtn")?.addEventListener("click", () => obFinishSetup());
     return;
   }
 }
 
-function obCheckAvailNext() {
-  document.getElementById("obNextBtn").disabled = !(obData.trainingDays && obData.equipment);
+function obCheckTrainNext(stepId) {
+  if (stepId === "your-training") {
+    document.getElementById("obNextBtn").disabled = !(Number(obData.weight) > 0 && obData.experience && obData.trainingDays);
+  } else if (stepId === "your-goal") {
+    document.getElementById("obNextBtn").disabled = !(obData.goalType && obData.equipment);
+  }
 }
 
 function obGenerateStrategy() {
@@ -10729,11 +9815,12 @@ function obGenerateProgramPreview() {
     "endurance": "Endurance",
   };
   const dietLabels = { none: "No Preference", vegetarian: "Vegetarian", vegan: "Vegan", keto: "Keto", paleo: "Paleo", mediterranean: "Mediterranean" };
+  const equipLabels = { gym: "Gym", home: "Home", minimal: "Both" };
   return {
     "Goal": goalLabels[obData.goalType] || "General Fitness",
     "Experience": obData.experience ? obData.experience.charAt(0).toUpperCase() + obData.experience.slice(1) : "Beginner",
     "Days/Week": obData.trainingDays || "3",
-    "Equipment": obData.equipment || "Gym",
+    "Equipment": equipLabels[obData.equipment] || "Gym",
     "Diet": dietLabels[obData.dietPreference] || "No Preference",
     "Style": "Full Body",
     "Duration": "45-60 min",
@@ -10768,8 +9855,18 @@ function obFinishSetup() {
   state.user.supplements = obData.supplements || [];
   state.user.activity = obData.activityLevel || "moderate";
   state.bodyGoal = mappedGoal;
-  state.calorieTarget = Number(obData.nutritionCal) || state.calorieTarget || 0;
-  state.proteinGoal = Number(obData.nutritionProtein) || state.proteinGoal || 0;
+  if (Number(obData.nutritionCal)) { state.calorieTarget = Number(obData.nutritionCal); }
+  else if (!state.calorieTarget) {
+    const w = Number(obData.weight) || 70;
+    const gt = obData.goalType || "general-fitness";
+    state.calorieTarget = gt === "fat-loss" ? Math.round(w * 28) : gt === "muscle-gain" ? Math.round(w * 34) : Math.round(w * 30);
+  }
+  if (Number(obData.nutritionProtein)) { state.proteinGoal = Number(obData.nutritionProtein); }
+  else if (!state.proteinGoal) {
+    const w = Number(obData.weight) || 70;
+    const gt = obData.goalType || "general-fitness";
+    state.proteinGoal = gt === "fat-loss" ? Math.round(w * 2.2) : gt === "muscle-gain" ? Math.round(w * 2.0) : Math.round(w * 1.8);
+  }
   state.waterGoal = state.waterGoal || Math.round((Number(obData.weight) || 70) * 35);
   state.restTimer = state.restTimer || 90;
 
@@ -10903,30 +10000,6 @@ function obDaysSinceActivation() {
   const activated = new Date(state.activatedAt);
   const now = new Date();
   return Math.floor((now - activated) / 86400000);
-}
-
-function renderFirst7DaysBanner(container) {
-  const focus = getFirst7DayFocus();
-  if (!focus) return;
-
-  // Check if the specific action is done
-  const status = state.first7Days;
-
-  const banner = document.createElement("div");
-  banner.className = "f7d-banner";
-  banner.id = "f7dBanner";
-  banner.innerHTML = `
-    <div class="f7d-banner-icon">${focus.icon}</div>
-    <div class="f7d-banner-text">
-      <div class="f7d-banner-title">Day ${focus.day}: ${focus.focus}</div>
-      <div class="f7d-banner-desc">${focus.desc}</div>
-      <div class="f7d-banner-bar"><div class="f7d-banner-fill" style="width:${(focus.progress / focus.total) * 100}%"></div></div>
-    </div>
-    <div class="f7d-banner-arrow">→</div>
-  `;
-
-  banner.addEventListener("click", () => obNavigateToDay(focus.day, focus.key));
-  container.prepend(banner);
 }
 
 function obNavigateToDay(day, key) {
@@ -11431,12 +10504,6 @@ function renderNewWorkoutList() {
   }
 }
 
-function canCreateWorkout() {
-  const name = document.getElementById("nwName").value.trim();
-  const checked = document.querySelectorAll(".nw-check:checked").length;
-  return name.length > 0 && checked > 0;
-}
-
 function updateCreateBar() {
   const checked = document.querySelectorAll(".nw-check:checked");
   const count = checked.length;
@@ -11569,6 +10636,7 @@ document.getElementById("cwSaveBtn").addEventListener("click", () => {
     focus: document.getElementById("cwDesc").value.trim() || "",
     day: "",
     duration: document.getElementById("cwDuration").value.trim() || "",
+    notes: document.getElementById("cwNotes").value.trim() || "",
     rest: "",
     exercises: [],
   };
@@ -12243,10 +11311,10 @@ if (setting === "theme") {
             localStorage.setItem("ironlog_pre_import_backup", JSON.stringify(backup));
           } catch {}
           // Whitelist allowed keys and validate types
-          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "nutrition", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "coolDownDuration", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed", "first7Days", "coachActivated", "activatedAt", "onboardingComplete", "onboardingData", "measurements", "photos", "waterLog", "mealLog", "learningProgress"]);
+          const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "coolDownDuration", "autoSummary", "autoCooldown", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed", "first7Days", "coachActivated", "activatedAt", "onboardingComplete", "onboardingData", "measurements", "photos", "waterLog", "mealLog", "learningProgress"]);
           const arrayKeys = new Set(["sessions", "plan", "customExercises", "weightLog", "goals", "recoveryLog", "measurements", "photos"]);
-          const objKeys = new Set(["user", "nutrition", "recoveryAnalysis", "workoutStreak", "onboardingData", "first7Days", "waterLog", "mealLog", "learningProgress"]);
-          const boolKeys = new Set(["autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupReminder", "stretchReminder", "compactMode", "show7dAvg", "show30dAvg", "progressPhotos", "bodyMeasurements", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "showRecoveryAdvice", "autoSummary", "autoCooldown", "autoAdvanceStretches", "showTomorrowPreview", "showWorkoutProgress", "profileBannerDismissed", "coachActivated", "onboardingComplete"]);
+          const objKeys = new Set(["user", "recoveryAnalysis", "workoutStreak", "onboardingData", "first7Days", "waterLog", "mealLog", "learningProgress"]);
+          const boolKeys = new Set(["autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupReminder", "stretchReminder", "compactMode", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "autoSummary", "autoCooldown", "showTomorrowPreview", "showWorkoutProgress", "profileBannerDismissed", "coachActivated", "onboardingComplete"]);
           for (const key of Object.keys(data)) {
             if (!allowedKeys.has(key)) continue;
             if (arrayKeys.has(key) && !Array.isArray(data[key])) { data[key] = []; }
@@ -13236,13 +12304,6 @@ const EXERCISES_TO_AVOID = {
 // --- Generator State ---
 const genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null };
 
-// --- Helpers ---
-function shuffleArr(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) { const j = Math.floor(Math.random() * (i + 1)); [a[i], a[j]] = [a[j], a[i]]; }
-  return a;
-}
-
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function filterByEquipment(exercises, equipment) {
   const allowed = EQUIPMENT_ALLOWED[equipment];
@@ -13440,20 +12501,6 @@ function generateWeeklySchedule(goal, experience, split, days, time, priority, e
 
 function getSplitScore(splitName, goal) {
   return SPLIT_RECOMMENDATIONS[splitName]?.score?.[goal] || 0;
-}
-
-function getBestSplit(goal) {
-  let best = SPLIT_ORDER[0], bestScore = -1;
-  SPLIT_ORDER.forEach(s => {
-    const sc = getSplitScore(s, goal);
-    if (sc > bestScore) { bestScore = sc; best = s; }
-  });
-  return best;
-}
-
-function getRecommendedSplit(experience, days) {
-  var table = SPLIT_BY_EXP[experience];
-  return table ? table[days] : "Full Body";
 }
 
 function getSortedSplits(goal) {
@@ -13923,6 +12970,13 @@ document.getElementById("gmFailureClose")?.addEventListener("click", () => {
   showGmOverlay(null);
 });
 
+document.getElementById("gmNextBtn")?.addEventListener("click", nextStep);
+document.getElementById("gmBackBtn")?.addEventListener("click", prevStep);
+document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
+  document.getElementById("generateModal").classList.add("is-hidden");
+  showGmOverlay(null);
+});
+
 // Close modals on Escape key
 document.addEventListener("keydown", (e) => {
   if (e.key === "Escape") {
@@ -13943,13 +12997,6 @@ document.getElementById("muscleSheet")?.addEventListener("click", (e) => {
   if (e.target === e.currentTarget) e.currentTarget.classList.add("is-hidden");
 });
 
-// ===== MUSCLE SEARCH =====
-document.getElementById("muscleSearch")?.addEventListener("input", (e) => {
-  const q = e.target.value.toLowerCase();
-  document.querySelectorAll(".bm-muscle-row").forEach((row) => {
-    const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
-    row.style.display = name.includes(q) ? "" : "none";
-  });
-});
+
 
 function DayLabel(dayIndex) { return DAY_NAMES[dayIndex] || "Day " + (dayIndex + 1); }
