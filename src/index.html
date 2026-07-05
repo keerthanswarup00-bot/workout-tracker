@@ -88,20 +88,45 @@
           <div id="screen-new-workout" class="screen is-hidden">
             <div class="nw-header">
               <button class="btn-back" id="nwBackBtn">←</button>
-              <span style="flex: 1; font-weight: 700; font-size: 0.9rem">New Workout</span>
+              <span style="flex:1;font-weight:700;font-size:0.9rem">New Workout</span>
+              <button class="nw-done-btn" id="nwSaveBtn" disabled>Save</button>
             </div>
-            <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
-            <div class="nw-counter" id="nwCounter"></div>
-            <div class="nw-scroll">
-              <div class="nw-filter-bar" id="nwFilterBar"></div>
-              <div class="nw-list" id="nwList"></div>
-              <div class="nw-create-spacer" id="nwCreateSpacer"></div>
-            </div>
-            <div class="nw-create-bar" id="nwCreateBar">
-              <div class="nw-create-count" id="nwCreateCount"></div>
-              <input type="text" id="nwName" class="nw-name-input" placeholder="Name your workout..." maxlength="30" autocomplete="off" />
-              <div class="nw-helper-text" id="nwHelperText">Select at least one exercise</div>
-              <button class="btn-primary" id="nwCreateBtn" disabled>Create Workout</button>
+            <div class="nw-body">
+              <div class="nw-sidebar">
+                <div class="nw-meta">
+                  <div class="nw-meta-row">
+                    <input type="text" id="nwName" class="nw-name-input" placeholder="Workout name..." maxlength="30" autocomplete="off" />
+                    <div class="nw-meta-stats" id="nwMetaStats">0 exercises</div>
+                  </div>
+                  <div class="nw-type-row">
+                    <button class="nw-type-chip is-active" data-type="normal">Standard</button>
+                    <button class="nw-type-chip" data-type="circuit">Circuit</button>
+                    <button class="nw-type-chip" data-type="superset">Superset</button>
+                  </div>
+                </div>
+                <div class="nw-search-wrap">
+                  <svg class="nw-search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <input type="text" class="nw-search" id="nwSearch" placeholder="Search exercises..." autocomplete="off" />
+                </div>
+                <div class="nw-filter-bar" id="nwFilterBar"></div>
+                <div class="nw-scroll">
+                  <div class="nw-list" id="nwList"></div>
+                </div>
+              </div>
+              <div class="nw-selected" id="nwSelectedPanel">
+                <div class="nw-selected-header">
+                  <span id="nwSelectedTitle">Selected Exercises</span>
+                  <span class="nw-selected-count" id="nwSelectedCount">0</span>
+                  <button class="nw-selected-clear" id="nwSelectedClear">Clear</button>
+                </div>
+                <div class="nw-selected-list" id="nwSelectedList">
+                  <div class="nw-selected-empty">Add exercises from the library</div>
+                </div>
+                <div class="nw-selected-actions">
+                  <button class="btn-primary" id="nwCreateBtn" disabled>Create Workout</button>
+                  <button class="btn-secondary hidden" id="nwStartBtn">Start Workout</button>
+                </div>
+              </div>
             </div>
           </div>
 
@@ -569,40 +594,27 @@
             </div>
           </div>
 
-          <!-- FACTORY RESET MODAL -->
+          <!-- FACTORY RESET MODAL → single confirmation -->
           <div class="modal-overlay is-hidden" id="deleteDataModal">
-            <div class="modal-card" style="max-width:380px;padding:1.5rem">
-              <div class="modal-header" style="padding:0;margin-bottom:1rem">
-                <h2 style="font-size:1.1rem;color:var(--error)">Factory Reset</h2>
-                <button class="modal-close" id="ddClose" style="background:var(--surface-2);border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;border:0;color:var(--text-secondary);cursor:pointer">✕</button>
+            <div class="modal-card fr-modal">
+              <div class="fr-header">
+                <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+                <h2>Reset IronLog?</h2>
               </div>
-              <div id="frStep1">
-                <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 1rem;line-height:1.5">
-                  This will permanently delete all your workout data, profile, and settings.
-                  <strong style="color:var(--text)">This cannot be undone.</strong>
-                </p>
-                <p style="font-size:0.8rem;color:var(--text-secondary);margin:0 0 1.25rem;line-height:1.4">
-                  Your account (stored workouts, history, measurements, goals, nutrition logs, and all personal data) will be removed.
-                </p>
-                <button class="btn-primary" id="frNextBtn" style="width:100%;background:var(--error);color:#fff;min-height:48px;border-radius:12px;font-weight:700;border:0;cursor:pointer">Continue →</button>
-                <button class="btn-ghost" id="frCancelBtn" style="width:100%;margin-top:0.5rem">Cancel</button>
+              <p class="fr-warning">This will permanently delete all your data:</p>
+              <div class="fr-list">
+                <span>Workouts & Programs</span><span>Progress & History</span>
+                <span>Measurements</span><span>Nutrition & Meals</span>
+                <span>Goals</span><span>Achievements & Preferences</span>
               </div>
-              <div id="frStep2" style="display:none">
-                <p style="font-size:0.85rem;color:var(--text-secondary);margin:0 0 0.25rem;line-height:1.5">
-                  Step 2 of 3 — To confirm, type <strong style="color:var(--error)">RESET</strong> below:
-                </p>
-                <input type="text" id="frInput" class="ob-input" placeholder="Type RESET" autocomplete="off" style="text-transform:uppercase;letter-spacing:0.1em;text-align:center;font-weight:700" />
-                <button class="btn-primary" id="frConfirmBtn" style="width:100%;background:var(--error);color:#fff;min-height:48px;border-radius:12px;font-weight:700;border:0;cursor:pointer;margin-top:0.75rem" disabled>Confirm Reset</button>
-                <button class="btn-ghost" id="frBackBtn" style="width:100%;margin-top:0.5rem">Back</button>
+              <p class="fr-note">This action <strong>cannot be undone</strong>.</p>
+              <div class="fr-actions">
+                <button class="fr-cancel" id="frCancelBtn">Cancel</button>
+                <button class="fr-confirm" id="ddConfirmBtn">Reset App</button>
               </div>
-              <div id="frStep3" style="display:none">
-                <div style="text-align:center;padding:0.5rem 0">
-                  <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" style="margin-bottom:0.75rem"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                  <p style="font-size:0.9rem;color:var(--text);font-weight:600;margin:0 0 0.5rem">Final Confirmation</p>
-                  <p style="font-size:0.82rem;color:var(--text-secondary);margin:0 0 1.25rem;line-height:1.4">Are you absolutely sure? There is no undo.</p>
-                  <button class="btn-primary" id="ddConfirmBtn" style="width:100%;background:var(--error);color:#fff;min-height:48px;border-radius:12px;font-weight:700;border:0;cursor:pointer">Yes, Delete Everything</button>
-                  <button class="btn-ghost" id="frFinalBackBtn" style="width:100%;margin-top:0.5rem">No, Go Back</button>
-                </div>
+              <div class="fr-loading is-hidden" id="frLoading">
+                <div class="fr-spinner"></div>
+                <span>Clearing data…</span>
               </div>
             </div>
           </div>

@@ -3005,12 +3005,24 @@ function renderHome() {
 
   if (!sorted.length) {
     container.innerHTML = `
-      <div class="empty-state">
-        <div class="empty-state-icon">💪</div>
-        <div class="empty-state-title">No Workouts Yet</div>
-        <div class="empty-state-text">Create your first workout and start building strength today.</div>
-        <button class="empty-state-btn" id="emptyStateBuildBtn">Create Workout</button>
-        <button class="empty-state-btn secondary" id="emptyStateGenerateBtn">Generate Program</button>
+      <div class="nwe-card">
+        <div class="nwe-icon">💪</div>
+        <div class="nwe-title">Ready to Train?</div>
+        <div class="nwe-text">Start building your workout library. Every great transformation starts with a single rep.</div>
+        <div class="nwe-actions">
+          <button class="empty-state-btn" id="emptyStateBuildBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Create Workout</button>
+          <button class="empty-state-btn secondary" id="emptyStateGenerateBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Generate Program</button>
+        </div>
+        <div class="nwe-footer">
+          <div class="nwe-achievement">
+            <span class="nwe-ach-icon">🏅</span>
+            <span>Complete your first workout to unlock achievements</span>
+          </div>
+          <div class="nwe-achievement">
+            <span class="nwe-ach-icon">🎯</span>
+            <span>Set a goal to track your weekly progress</span>
+          </div>
+        </div>
       </div>`;
     document.getElementById("emptyStateBuildBtn")?.addEventListener("click", showNewWorkoutBuilder);
     document.getElementById("emptyStateGenerateBtn")?.addEventListener("click", openGenerateWorkout);
@@ -10584,209 +10596,494 @@ document.getElementById("newWoGenerate")?.addEventListener("click", () => {
 
 
 // ===== NEW WORKOUT BUILDER SCREEN =====
+// ===== NEW CREATE WORKOUT =====
 let nwSearchTerm = "";
 let nwActiveFilters = [];
+let nwSelectedExercises = [];
+let nwFavorites = [];
+
+function loadFavorites() {
+  try { nwFavorites = JSON.parse(localStorage.getItem("wl_fav_exercises")) || []; } catch { nwFavorites = []; }
+}
+function saveFavorites() {
+  localStorage.setItem("wl_fav_exercises", JSON.stringify(nwFavorites));
+}
 
 function showNewWorkoutBuilder() {
-  document.getElementById("nwName").value = "";
-  document.getElementById("nwSearch").value = "";
   nwSearchTerm = "";
   nwActiveFilters = [];
-  document.getElementById("nwCreateBar").style.display = "none";
-  document.getElementById("nwCreateSpacer").style.display = "none";
-  renderFilterChips();
-  renderNewWorkoutList();
+  nwSelectedExercises = [];
+  loadFavorites();
+  document.getElementById("nwName").value = "";
+  renderNewWorkout();
   showScreen("screen-new-workout");
 }
 
-const NW_FILTERS = ["Chest", "Back", "Shoulders", "Triceps", "Biceps", "Legs", "Core"];
-const NW_TYPE_FILTERS = ["Compound", "Isolation"];
+function renderNewWorkout() {
+  renderFilterChips();
+  renderExerciseList();
+  renderSelectedPanel();
+  updateSaveBtn();
+}
+
+const NW_MUSCLE_FILTERS = ["Chest", "Back", "Shoulders", "Triceps", "Biceps", "Legs", "Glutes", "Abs", "Calves", "Forearms"];
+const NW_EQUIP_FILTERS = ["Barbell", "Dumbbell", "Cable", "Machine", "Bodyweight", "Kettlebell", "Band"];
+const NW_DIFFICULTY_FILTERS = ["Beginner", "Intermediate", "Advanced"];
+const NW_MOVEMENT_FILTERS = ["Compound", "Isolation", "Push", "Pull"];
+
+function getExerciseDifficulty(e) {
+  const tags = (e.tags || []).map(t => t.toLowerCase());
+  if (tags.includes("advanced")) return "Advanced";
+  if (tags.includes("intermediate")) return "Intermediate";
+  return "Beginner";
+}
+
+function getExerciseMovement(e) {
+  const tags = (e.tags || []).map(t => t.toLowerCase());
+  if (tags.includes("compound")) return "Compound";
+  if (tags.includes("isolation")) return "Isolation";
+  return "Compound";
+}
+
+function getExerciseTags(e) {
+  const t = [];
+  const diff = getExerciseDifficulty(e);
+  const move = getExerciseMovement(e);
+  if (diff !== "Beginner") t.push(diff);
+  t.push(move);
+  const tags = (e.tags || []).map(tg => tg.charAt(0).toUpperCase() + tg.slice(1));
+  tags.forEach(tg => { if (!t.includes(tg)) t.push(tg); });
+  return t.slice(0, 3);
+}
 
 function renderFilterChips() {
   const bar = document.getElementById("nwFilterBar");
-  let html = `<div class="nw-filter-section"><span class="nw-filter-label">Muscle</span><div class="nw-filter-row">`;
-  html += NW_FILTERS.map(
-    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
-  ).join("");
-  html += `</div></div>`;
-  html += `<div class="nw-filter-section"><span class="nw-filter-label">Type</span><div class="nw-filter-row">`;
-  html += NW_TYPE_FILTERS.map(
-    (f) => `<button class="nw-chip ${nwActiveFilters.includes(f) ? "is-active" : ""}" data-filter="${f}">${f}</button>`
-  ).join("");
-  html += `</div></div>`;
+  if (!bar) return;
+  let html = "";
+  const groups = [
+    { label: "Muscle", filters: NW_MUSCLE_FILTERS },
+    { label: "Equipment", filters: NW_EQUIP_FILTERS },
+    { label: "Difficulty", filters: NW_DIFFICULTY_FILTERS },
+    { label: "Movement", filters: NW_MOVEMENT_FILTERS },
+  ];
+  const isFilterActive = nwActiveFilters.length > 0;
+
+  html += `<div class="nw-filter-scroll">`;
+  groups.forEach(g => {
+    html += `<div class="nw-filter-group">
+      <span class="nw-filter-label">${g.label}</span>
+      <div class="nw-filter-row">`;
+    g.filters.forEach(f => {
+      const active = nwActiveFilters.includes(f);
+      html += `<button class="nw-chip ${active ? "is-active" : ""}" data-filter="${f}">${f}</button>`;
+    });
+    html += `</div></div>`;
+  });
+  if (isFilterActive) {
+    html += `<button class="nw-clear-filters" id="nwClearFilters">Clear all</button>`;
+  }
+  html += `</div>`;
   bar.innerHTML = html;
-  bar.querySelectorAll(".nw-chip").forEach((chip) => {
+
+  bar.querySelectorAll(".nw-chip").forEach(chip => {
     chip.addEventListener("click", () => {
       const f = chip.dataset.filter;
       const idx = nwActiveFilters.indexOf(f);
       if (idx >= 0) nwActiveFilters.splice(idx, 1);
       else nwActiveFilters.push(f);
       renderFilterChips();
-      renderNewWorkoutList();
+      renderExerciseList();
     });
   });
+  const clearBtn = document.getElementById("nwClearFilters");
+  if (clearBtn) clearBtn.addEventListener("click", () => { nwActiveFilters = []; renderFilterChips(); renderExerciseList(); });
 }
 
-function renderNewWorkoutList() {
-  const container = document.getElementById("nwList");
-  const cats = ["Chest", "Shoulders", "Back", "Biceps", "Triceps", "Legs", "Glutes", "Calves", "Abs", "Forearms", "Traps", "Full Body"];
-  let html = "";
-  let total = 0;
-  const q = nwSearchTerm.toLowerCase().trim();
+function getRecentExercises() {
+  try {
+    const raw = JSON.parse(localStorage.getItem("wl_recent_exercises")) || [];
+    return raw.slice(0, 15).map(r => r.id || r);
+  } catch { return []; }
+}
 
-  // Get all exercises (library + custom)
+function logRecentExercise(id) {
+  try {
+    let recent = JSON.parse(localStorage.getItem("wl_recent_exercises")) || [];
+    recent = recent.filter(r => (r.id || r) !== id);
+    recent.unshift({ id, date: Date.now() });
+    if (recent.length > 30) recent = recent.slice(0, 30);
+    localStorage.setItem("wl_recent_exercises", JSON.stringify(recent));
+  } catch {}
+}
+
+function renderExerciseList() {
+  const container = document.getElementById("nwList");
+  if (!container) return;
   let allExercises = [...EXERCISE_LIBRARY];
   if (state.customExercises) allExercises = allExercises.concat(state.customExercises);
 
-  cats.forEach((cat) => {
-    let exs = allExercises.filter((e) => e.category === cat);
-    // Smart search: match name, tags, primaryMuscle, equipment
-    if (q) {
-      exs = exs.filter((e) => {
-        const name = e.name.toLowerCase();
-        const tags = (e.tags || []).map((t) => t.toLowerCase());
-        const muscle = e.primaryMuscle.toLowerCase();
-        const equip = e.equipment.toLowerCase();
-        return name.includes(q) || tags.some((t) => t.includes(q)) || muscle.includes(q) || equip.includes(q);
-      });
-    }
-    // Apply active filters
-    if (nwActiveFilters.length) {
-      exs = exs.filter((e) => {
-        const tags = e.tags || [];
-        return nwActiveFilters.some((f) => {
-          const fLow = f.toLowerCase();
-          return e.category.toLowerCase() === fLow || e.primaryMuscle.toLowerCase() === fLow || e.equipment.toLowerCase() === fLow || tags.some((t) => t.toLowerCase() === fLow);
-        });
-      });
-    }
-    if (!exs.length) return;
-    total += exs.length;
-    html += `<div class="nw-category">${cat}</div>`;
-    exs.forEach((ex) => {
-      html += `<label class="nw-ex-row" data-id="${ex.id}">
-        <input type="checkbox" class="nw-check" data-id="${ex.id}" />
-        <span class="nw-ex-name">${ex.name}</span>
-        <span class="nw-ex-muscle">${ex.primaryMuscle} · ${ex.equipment}</span>
-      </label>`;
+  const q = nwSearchTerm.toLowerCase().trim();
+  const recentIds = getRecentExercises();
+  const selectedIds = nwSelectedExercises.map(s => s.id);
+
+  if (q) {
+    allExercises = allExercises.filter(e => {
+      const name = e.name.toLowerCase();
+      const tags = (e.tags || []).map(t => t.toLowerCase());
+      const muscle = e.primaryMuscle.toLowerCase();
+      const equip = e.equipment.toLowerCase();
+      return name.includes(q) || tags.some(t => t.includes(q)) || muscle.includes(q) || equip.includes(q);
     });
+  }
+
+  if (nwActiveFilters.length) {
+    allExercises = allExercises.filter(e => {
+      const tags = (e.tags || []).map(t => t.toLowerCase());
+      return nwActiveFilters.some(f => {
+        const fLow = f.toLowerCase();
+        return e.category.toLowerCase() === fLow ||
+          e.primaryMuscle.toLowerCase() === fLow ||
+          e.equipment.toLowerCase() === fLow ||
+          e.name.toLowerCase().includes(fLow) ||
+          tags.includes(fLow) ||
+          getExerciseDifficulty(e).toLowerCase() === fLow ||
+          getExerciseMovement(e).toLowerCase() === fLow;
+      });
+    });
+  }
+
+  if (!allExercises.length) {
+    container.innerHTML = `<div class="nw-empty">
+      <div class="nw-empty-icon">
+        <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="1.5" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      </div>
+      <div class="nw-empty-title">No exercises found</div>
+      <div class="nw-empty-text">Try a different search or filter</div>
+      <button class="nw-empty-btn" id="nwCustomBtn">Create Custom Exercise</button>
+    </div>`;
+    const customBtn = document.getElementById("nwCustomBtn");
+    if (customBtn) customBtn.addEventListener("click", () => openCustomExerciseModal(null));
+    return;
+  }
+
+  // Sort: recently used first, then favorites, then alpha
+  allExercises.sort((a, b) => {
+    const aRecent = recentIds.indexOf(a.id);
+    const bRecent = recentIds.indexOf(b.id);
+    if (aRecent >= 0 && bRecent >= 0) return aRecent - bRecent;
+    if (aRecent >= 0) return -1;
+    if (bRecent >= 0) return 1;
+    const aFav = nwFavorites.includes(a.id) ? 0 : 1;
+    const bFav = nwFavorites.includes(b.id) ? 0 : 1;
+    if (aFav !== bFav) return aFav - bFav;
+    return a.name.localeCompare(b.name);
   });
 
-  if (!html) {
-    html = `<div class="nw-empty">No exercises found. <button class="nw-empty-btn" id="nwCustomBtn">Create Custom Exercise</button></div>`;
-  }
+  let html = "";
+  allExercises.forEach(ex => {
+    const isSelected = selectedIds.includes(ex.id);
+    const isFav = nwFavorites.includes(ex.id);
+    const tags = getExerciseTags(ex);
+    html += `<div class="nw-ex-card ${isSelected ? 'is-selected' : ''}" data-id="${ex.id}">
+      <div class="nw-ex-card-left">
+        <div class="nw-ex-card-icon">${ex.category === "Full Body" ? "💪" : ex.primaryMuscle === "Chest" ? "🏋️" : ex.category === "Legs" || ex.primaryMuscle?.startsWith("Quad") || ex.primaryMuscle?.startsWith("Hamstring") || ex.category === "Glutes" || ex.category === "Calves" ? "🦵" : ex.category === "Back" ? "🔙" : ex.category === "Shoulders" ? "🔺" : ex.category === "Triceps" || ex.category === "Biceps" || ex.primaryMuscle?.startsWith("Bicep") || ex.primaryMuscle?.startsWith("Tricep") ? "💪" : ex.equipment === "Bodyweight" ? "🧘" : "🏋️"}</div>
+        <div class="nw-ex-card-info">
+          <div class="nw-ex-card-name">
+            ${ex.name}
+            <button class="nw-ex-fav ${isFav ? 'is-fav' : ''}" data-id="${ex.id}">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="${isFav ? 'var(--orange)' : 'none'}" stroke="${isFav ? 'var(--orange)' : 'var(--text-secondary)'}" stroke-width="2"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></polygon>
+              </svg>
+            </button>
+          </div>
+          <div class="nw-ex-card-meta">
+            <span class="nw-ex-card-tag">${ex.primaryMuscle}</span>
+            <span class="nw-ex-card-tag">${ex.equipment}</span>
+            ${tags.map(t => `<span class="nw-ex-card-tag nw-ex-card-tag-${t.toLowerCase()}">${t}</span>`).join("")}
+          </div>
+        </div>
+      </div>
+      <button class="nw-ex-add ${isSelected ? 'is-added' : ''}" data-id="${ex.id}">
+        ${isSelected ? '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></polyline></svg>' : '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>'}
+      </button>
+    </div>`;
+  });
 
   container.innerHTML = html;
-  document.getElementById("nwCounter").textContent = total > 0 ? "0 Exercises Selected" : "No exercises found";
-  document.getElementById("nwHelperText").textContent = "Select at least one exercise";
-  document.getElementById("nwCreateBar").style.display = "none";
-  document.getElementById("nwCreateSpacer").style.display = "none";
 
-  container.querySelectorAll(".nw-check").forEach((cb) => {
-    cb.addEventListener("change", updateCreateBar);
+  // Add handlers
+  container.querySelectorAll(".nw-ex-add").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      toggleNwExercise(id);
+    });
+  });
+  container.querySelectorAll(".nw-ex-card").forEach(card => {
+    card.addEventListener("click", () => {
+      const id = card.dataset.id;
+      toggleNwExercise(id);
+    });
+  });
+  container.querySelectorAll(".nw-ex-fav").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const id = btn.dataset.id;
+      const idx = nwFavorites.indexOf(id);
+      if (idx >= 0) nwFavorites.splice(idx, 1);
+      else nwFavorites.push(id);
+      saveFavorites();
+      renderExerciseList();
+    });
+  });
+}
+
+function toggleNwExercise(id) {
+  const ex = [...EXERCISE_LIBRARY, ...(state.customExercises || [])].find(e => e.id === id);
+  if (!ex) return;
+  const idx = nwSelectedExercises.findIndex(s => s.id === id);
+  if (idx >= 0) {
+    nwSelectedExercises.splice(idx, 1);
+  } else {
+    nwSelectedExercises.push({
+      id: ex.id,
+      name: ex.name,
+      primaryMuscle: ex.primaryMuscle,
+      equipment: ex.equipment,
+      sets: 3,
+      reps: 10,
+      weight: "",
+      rest: 90,
+      rpe: "",
+      tempo: "",
+      notes: "",
+    });
+    logRecentExercise(id);
+  }
+  renderExerciseList();
+  renderSelectedPanel();
+  updateSaveBtn();
+}
+
+function renderSelectedPanel() {
+  const panel = document.getElementById("nwSelectedPanel");
+  const list = document.getElementById("nwSelectedList");
+  const count = document.getElementById("nwSelectedCount");
+  const clearBtn = document.getElementById("nwSelectedClear");
+  const title = document.getElementById("nwSelectedTitle");
+
+  if (!nwSelectedExercises.length) {
+    panel.classList.remove("has-items");
+    list.innerHTML = `<div class="nw-selected-empty">Add exercises from the library</div>`;
+    count.textContent = "0";
+    if (title) title.textContent = "Selected Exercises";
+    return;
+  }
+
+  panel.classList.add("has-items");
+  count.textContent = nwSelectedExercises.length;
+  if (title) title.textContent = `${nwSelectedExercises.length} exercise${nwSelectedExercises.length !== 1 ? 's' : ''}`;
+
+  let html = `<div class="nw-selected-items" id="nwSelectedItems">`;
+  nwSelectedExercises.forEach((ex, i) => {
+    html += `<div class="nw-selected-item" data-index="${i}">
+      <div class="nw-si-header">
+        <div class="nw-si-drag">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><line x1="8" y1="6" x2="16" y2="6"/><line x1="8" y1="12" x2="16" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/></svg>
+        </div>
+        <div class="nw-si-info">
+          <div class="nw-si-name">${ex.name}</div>
+          <div class="nw-si-meta">${ex.sets}×${ex.reps} · ${ex.weight || "BW"}</div>
+        </div>
+        <button class="nw-si-remove" data-index="${i}">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+      <div class="nw-si-detail">
+        <div class="nw-si-detail-row">
+          <div class="nw-si-field">
+            <label>Sets</label>
+            <input type="number" class="nw-si-input" data-index="${i}" data-field="sets" value="${ex.sets}" min="1" max="20" />
+          </div>
+          <div class="nw-si-field">
+            <label>Reps</label>
+            <input type="number" class="nw-si-input" data-index="${i}" data-field="reps" value="${ex.reps}" min="1" max="100" />
+          </div>
+          <div class="nw-si-field">
+            <label>Weight</label>
+            <input type="text" class="nw-si-input" data-index="${i}" data-field="weight" value="${ex.weight}" placeholder="kg" />
+          </div>
+          <div class="nw-si-field">
+            <label>Rest</label>
+            <select class="nw-si-input nw-si-select" data-index="${i}" data-field="rest">
+              <option value="30" ${ex.rest === 30 ? "selected" : ""}>30s</option>
+              <option value="60" ${ex.rest === 60 ? "selected" : ""}>60s</option>
+              <option value="90" ${ex.rest === 90 ? "selected" : ""} ${!ex.rest ? "selected" : ""}>90s</option>
+              <option value="120" ${ex.rest === 120 ? "selected" : ""}>2m</option>
+              <option value="180" ${ex.rest === 180 ? "selected" : ""}>3m</option>
+            </select>
+          </div>
+        </div>
+        <div class="nw-si-detail-row">
+          <div class="nw-si-field">
+            <label>RPE</label>
+            <select class="nw-si-input nw-si-select" data-index="${i}" data-field="rpe">
+              <option value="">None</option>
+              <option value="6" ${ex.rpe === "6" ? "selected" : ""}>6</option>
+              <option value="7" ${ex.rpe === "7" ? "selected" : ""}>7</option>
+              <option value="8" ${ex.rpe === "8" ? "selected" : ""}>8</option>
+              <option value="9" ${ex.rpe === "9" ? "selected" : ""}>9</option>
+              <option value="10" ${ex.rpe === "10" ? "selected" : ""}>10</option>
+            </select>
+          </div>
+          <div class="nw-si-field">
+            <label>Tempo</label>
+            <input type="text" class="nw-si-input" data-index="${i}" data-field="tempo" value="${ex.tempo}" placeholder="2-0-1-0" />
+          </div>
+          <div class="nw-si-field nw-si-field-wide">
+            <label>Notes</label>
+            <input type="text" class="nw-si-input" data-index="${i}" data-field="notes" value="${ex.notes}" placeholder="Optional notes" />
+          </div>
+        </div>
+      </div>
+    </div>`;
+  });
+  html += `</div>`;
+  list.innerHTML = html;
+
+  // Remove handlers
+  list.querySelectorAll(".nw-si-remove").forEach(btn => {
+    btn.addEventListener("click", (e) => {
+      e.stopPropagation();
+      const idx = parseInt(btn.dataset.index);
+      nwSelectedExercises.splice(idx, 1);
+      renderExerciseList();
+      renderSelectedPanel();
+      updateSaveBtn();
+    });
   });
 
-  const customBtn = document.getElementById("nwCustomBtn");
-  if (customBtn) {
-    customBtn.addEventListener("click", () => {
-      openCustomExerciseModal(null);
+  // Input handlers
+  list.querySelectorAll(".nw-si-input").forEach(input => {
+    input.addEventListener("change", () => {
+      const idx = parseInt(input.dataset.index);
+      const field = input.dataset.field;
+      let val = input.value;
+      if (field === "sets" || field === "reps") val = parseInt(val) || 0;
+      if (field === "rest") val = parseInt(val) || 90;
+      if (nwSelectedExercises[idx]) {
+        nwSelectedExercises[idx][field] = val;
+        renderSelectedPanel();
+      }
+    });
+    input.addEventListener("input", () => {
+      const idx = parseInt(input.dataset.index);
+      const field = input.dataset.field;
+      if (field === "notes" || field === "tempo" || field === "weight" || field === "rpe") {
+        if (nwSelectedExercises[idx]) {
+          nwSelectedExercises[idx][field] = input.value;
+        }
+      }
+    });
+  });
+
+  // Drag and drop
+  const itemsContainer = document.getElementById("nwSelectedItems");
+  if (itemsContainer) {
+    let dragIdx = null;
+    itemsContainer.querySelectorAll(".nw-selected-item").forEach(item => {
+      item.addEventListener("dragstart", () => {
+        dragIdx = parseInt(item.dataset.index);
+        item.classList.add("dragging");
+      });
+      item.addEventListener("dragend", () => {
+        item.classList.remove("dragging");
+        dragIdx = null;
+      });
+      item.addEventListener("dragover", (e) => {
+        e.preventDefault();
+        if (dragIdx === null) return;
+        const targetIdx = parseInt(item.dataset.index);
+        if (dragIdx === targetIdx) return;
+        const [moved] = nwSelectedExercises.splice(dragIdx, 1);
+        nwSelectedExercises.splice(targetIdx, 0, moved);
+        renderSelectedPanel();
+      });
+      item.setAttribute("draggable", "true");
     });
   }
+
+  // Clear all
+  clearBtn?.addEventListener("click", () => {
+    nwSelectedExercises = [];
+    renderExerciseList();
+    renderSelectedPanel();
+    updateSaveBtn();
+  });
 }
 
-function updateCreateBar() {
-  const checked = document.querySelectorAll(".nw-check:checked");
-  const count = checked.length;
-  const bar = document.getElementById("nwCreateBar");
-  const counter = document.getElementById("nwCounter");
+function updateSaveBtn() {
   const createBtn = document.getElementById("nwCreateBtn");
-  const helper = document.getElementById("nwHelperText");
-  const countLabel = document.getElementById("nwCreateCount");
-
-  const spacer = document.getElementById("nwCreateSpacer");
-
-  if (count === 0) {
-    bar.style.display = "none";
-    spacer.style.display = "none";
-    counter.textContent = "0 Exercises Selected";
-    return;
-  }
-
-  bar.style.display = "flex";
-  spacer.style.display = "block";
-  const label = count === 1 ? "Exercise Selected" : "Exercises Selected";
-  countLabel.textContent = `${count} ${label}`;
-  counter.textContent = `${count} ${label}`;
-
+  const saveBtn = document.getElementById("nwSaveBtn");
   const name = document.getElementById("nwName").value.trim();
-  const valid = name.length > 0;
-
-  if (!name) {
-    helper.textContent = "Enter a workout name";
-  } else {
-    helper.textContent = "Ready to create workout";
-  }
-
+  const hasEx = nwSelectedExercises.length > 0;
+  const valid = hasEx && name.length > 0;
   createBtn.disabled = !valid;
+  if (saveBtn) saveBtn.disabled = !valid;
+  document.getElementById("nwMetaStats").textContent = `${nwSelectedExercises.length} exercise${nwSelectedExercises.length !== 1 ? 's' : ''}`;
 }
 
-document.getElementById("nwSearch")?.addEventListener("input", (e) => {
-  nwSearchTerm = e.target.value;
-  renderNewWorkoutList();
+// Event listeners
+document.addEventListener("DOMContentLoaded", () => {
+  document.getElementById("nwSearch")?.addEventListener("input", (e) => {
+    nwSearchTerm = e.target.value;
+    renderExerciseList();
+  });
+
+  document.getElementById("nwBackBtn")?.addEventListener("click", () => {
+    showScreen("screen-home");
+  });
+
+  document.getElementById("nwName")?.addEventListener("input", updateSaveBtn);
+
+  document.getElementById("nwSaveBtn")?.addEventListener("click", saveNwWorkout);
+  document.getElementById("nwCreateBtn")?.addEventListener("click", saveNwWorkout);
+
+  // Type chips
+  document.querySelectorAll(".nw-type-chip").forEach(chip => {
+    chip.addEventListener("click", () => {
+      document.querySelectorAll(".nw-type-chip").forEach(c => c.classList.remove("is-active"));
+      chip.classList.add("is-active");
+    });
+  });
 });
 
-document.getElementById("nwBackBtn").addEventListener("click", () => {
-  showScreen("screen-home");
-});
-document.getElementById("nwName").addEventListener("input", () => {
+function saveNwWorkout() {
   const name = document.getElementById("nwName").value.trim();
-  const checked = document.querySelectorAll(".nw-check:checked").length;
-  const createBtn = document.getElementById("nwCreateBtn");
-  const helper = document.getElementById("nwHelperText");
-
-  if (checked > 0) {
-    if (name.length > 0) {
-      helper.textContent = "Ready to create workout";
-      createBtn.disabled = false;
-    } else {
-      helper.textContent = "Enter a workout name";
-      createBtn.disabled = true;
-    }
-  }
-});
-
-document.getElementById("nwCreateBtn").addEventListener("click", () => {
-  const name = document.getElementById("nwName").value.trim();
-  const checked = document.querySelectorAll(".nw-check:checked").length;
-
-  if (!name) {
-    showToast("Name your workout");
-    return;
-  }
-  if (!checked) {
-    showToast("Select at least one exercise");
-    return;
-  }
-
-  const workoutName = name;
-  const checkedEls = [...document.querySelectorAll(".nw-check:checked")];
+  if (!name) return showToast("Name your workout");
+  if (!nwSelectedExercises.length) return showToast("Add at least one exercise");
 
   const activePlan = loadCustomProgram() || [];
-  if (activePlan.some(w => w.name.toLowerCase() === workoutName.toLowerCase())) {
-    showToast("A workout with this name already exists.");
-    return;
+  if (activePlan.some(w => w.name.toLowerCase() === name.toLowerCase())) {
+    return showToast(`"${name}" already exists`);
   }
 
-  const exercises = checkedEls.map((cb) => {
-    const ex = EXERCISE_LIBRARY.find((e) => e.id === cb.dataset.id);
-    return { name: ex.name, sets: 3, reps: 10, weight: "", notes: "" };
-  });
+  const exercises = nwSelectedExercises.map(ex => ({
+    name: ex.name,
+    sets: ex.sets || 3,
+    reps: ex.reps || 10,
+    weight: ex.weight || "",
+    rest: ex.rest || 90,
+    rpe: ex.rpe || "",
+    tempo: ex.tempo || "",
+    notes: ex.notes || "",
+  }));
 
   const workout = {
     id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
-    name: workoutName,
+    name,
     exercises,
   };
+
   activePlan.push(workout);
   localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
   state.plan = activePlan;
@@ -10804,41 +11101,9 @@ document.getElementById("nwCreateBtn").addEventListener("click", () => {
       setTimeout(() => cards[cards.length - 1].classList.remove("is-active"), 2000);
     }
   }, 100);
-});
+}
 
-
-
-// ===== EVENT LISTENERS: CREATE WORKOUT =====
-document.getElementById("cwClose").addEventListener("click", () => {
-  document.getElementById("createWorkoutModal").classList.add("is-hidden");
-});
-document.getElementById("cwSaveBtn").addEventListener("click", () => {
-  const name = document.getElementById("cwName").value.trim();
-  if (!name) return;
-  const activePlan = loadCustomProgram() || [];
-  if (activePlan.some(w => w.name.toLowerCase() === name.toLowerCase())) {
-    showToast("A workout named '" + name + "' already exists");
-    return;
-  }
-  const newWorkout = {
-    id: "custom-" + crypto.randomUUID().slice(0, 8),
-    name,
-    focus: document.getElementById("cwDesc").value.trim() || "",
-    day: "",
-    duration: document.getElementById("cwDuration").value.trim() || "",
-    notes: document.getElementById("cwNotes").value.trim() || "",
-    rest: "",
-    exercises: [],
-  };
-  activePlan.push(newWorkout);
-  try {
-    localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
-  } catch {}
-  state.plan = activePlan;
-  saveState();
-  document.getElementById("createWorkoutModal").classList.add("is-hidden");
-  renderHome();
-});
+// Old legacy create workout modal listeners removed
 
 
 
@@ -11652,32 +11917,13 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
 });
 
 // Delete data modal (static elements)
-// Factory Reset Flow
-let frState = 0;
+// Factory Reset — single confirmation
 const ddModal = document.getElementById("deleteDataModal");
-document.getElementById("ddClose")?.addEventListener("click", () => { ddModal.classList.add("is-hidden"); });
 document.getElementById("frCancelBtn")?.addEventListener("click", () => { ddModal.classList.add("is-hidden"); });
-document.getElementById("frNextBtn")?.addEventListener("click", () => {
-  document.getElementById("frStep1").style.display = "none";
-  document.getElementById("frStep2").style.display = "";
-  document.getElementById("frInput").focus();
-});
-document.getElementById("frBackBtn")?.addEventListener("click", () => {
-  document.getElementById("frStep2").style.display = "none";
-  document.getElementById("frStep1").style.display = "";
-});
-document.getElementById("frFinalBackBtn")?.addEventListener("click", () => {
-  document.getElementById("frStep3").style.display = "none";
-  document.getElementById("frStep2").style.display = "";
-});
-document.getElementById("frInput")?.addEventListener("input", function() {
-  document.getElementById("frConfirmBtn").disabled = this.value.trim().toUpperCase() !== "RESET";
-});
-document.getElementById("frConfirmBtn")?.addEventListener("click", () => {
-  document.getElementById("frStep2").style.display = "none";
-  document.getElementById("frStep3").style.display = "";
-});
-document.getElementById("ddConfirmBtn")?.addEventListener("click", () => {
+ddModal?.addEventListener("click", (e) => { if (e.target === ddModal) ddModal.classList.add("is-hidden"); });
+document.getElementById("ddConfirmBtn")?.addEventListener("click", async () => {
+  document.getElementById("frLoading").classList.remove("is-hidden");
+  await new Promise(r => setTimeout(r, 600));
   const keys = [
     STORAGE_KEY, "wl_custom_program", "wl_prs", "nutrition_v2",
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
