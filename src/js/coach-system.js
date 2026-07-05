@@ -134,7 +134,11 @@ const CoachSystem = (() => {
     },
 
     getCoachEngine() {
-      return typeof CoachEngine !== "undefined" ? CoachEngine.runAll() : null;
+      try {
+        return typeof CoachEngine !== "undefined" ? CoachEngine.runAll() : null;
+      } catch (e) {
+        return null;
+      }
     },
 
     getSettings() {
@@ -346,19 +350,23 @@ const CoachSystem = (() => {
 
     html += '<div class="co-content">';
 
-    switch (base) {
-      case "home": html += renderHome(); break;
-      case "learn": html += renderLearn(); break;
-      case "exercises": html += renderExercises(); break;
-      case "muscles": html += renderMuscles(); break;
-      case "recovery": html += renderRecovery(); break;
-      case "nutrition": html += renderNutrition(); break;
-      case "goals": html += renderGoals(); break;
-      case "challenges": html += renderChallenges(); break;
-      case "insights": html += renderInsights(); break;
-      case "search": html += renderSearch(); break;
-      case "settings": html += renderCoachSettings(); break;
-      default: html += renderHome(); break;
+    try {
+      switch (base) {
+        case "home": html += renderHome(); break;
+        case "learn": html += renderLearn(); break;
+        case "exercises": html += renderExercises(); break;
+        case "muscles": html += renderMuscles(); break;
+        case "recovery": html += renderRecovery(); break;
+        case "nutrition": html += renderNutrition(); break;
+        case "goals": html += renderGoals(); break;
+        case "challenges": html += renderChallenges(); break;
+        case "insights": html += renderInsights(); break;
+        case "search": html += renderSearch(); break;
+        case "settings": html += renderCoachSettings(); break;
+        default: html += renderHome(); break;
+      }
+    } catch (e) {
+      html += Components.errorState("Something went wrong loading this section. Please try again.");
     }
 
     html += '</div></div>';

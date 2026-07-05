@@ -1075,17 +1075,21 @@ const CoachEngine = (() => {
   // ============================================================
   // 10. MASTER ORCHESTRATOR — runs all engines at once
   // ============================================================
+  function safe(fn, fallback) {
+    try { return fn(); } catch (e) { return fallback; }
+  }
+
   function runAll() {
     const result = {
-      daily: daily(),
-      goalStrategy: goalStrategy(),
-      insights: insights(),
-      recovery: recovery(),
-      nutrition: nutrition(),
-      progress: progress(),
-      reports: reports(),
-      problemSolver: problemSolver(),
-      education: education(),
+      daily: safe(daily, {}),
+      goalStrategy: safe(goalStrategy, {}),
+      insights: safe(insights, {}),
+      recovery: safe(recovery, {}),
+      nutrition: safe(nutrition, {}),
+      progress: safe(progress, {}),
+      reports: safe(reports, {}),
+      problemSolver: safe(problemSolver, {}),
+      education: safe(education, []),
     };
 
     // Attach CAS (challenges, achievements, streaks) data

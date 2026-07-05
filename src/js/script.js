@@ -1787,6 +1787,8 @@ function renderMealLogger() {
         <span><span style="color:var(--text-secondary)">${Math.round(m.cal || 0)}cal</span> <button class="ml-remove-btn" data-index="${i}" style="background:none;border:none;color:var(--red);cursor:pointer;font-size:0.75rem">✕</button></span>
       </div>`;
     });
+  } else {
+    html += `<div style="font-size:0.75rem;color:var(--text-secondary);text-align:center;padding:1rem 0">No meals logged today — add your first food above</div>`;
   }
   html += `</div></div>`;
   const el = document.createElement("div");
@@ -2917,254 +2919,172 @@ function renderHome() {
   const streak = getStreak();
   const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
   const weight = latestLog ? latestLog.weight : user ? user.weight : null;
-  const lastSession = state.sessions.filter((s) => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
-  const profileComplete = isProfileComplete();
-  const hasWeight = weight !== null && weight !== undefined;
-  const longestStreak = getLongestStreak();
+  const hasWeight = weight != null;
   const daysSinceWeight = getDaysSinceLastWeight();
-  const lastWeightText = getLastWeightText();
   const checkInDue = daysSinceWeight !== null && daysSinceWeight > 7;
-  const goalLabel = GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
+  const goalLabel = typeof GoalCenter !== "undefined" && GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
+  const activePlan = loadCustomProgram() || plan;
+  const todaySession = getTodaySession();
+  const hasPlan = activePlan && activePlan.length > 0;
   const hasData = (state.sessions || []).filter(s => s.finishedAt).length > 0 || (state.weightLog || []).length > 0;
-  document.getElementById("homeGreeting").innerHTML = `
-    <div class="home-greeting-line">${g.text} ${g.emoji}</div>
-    <div class="home-name-line">${name}</div>
-    <div class="home-greeting-message">${getDailyMessage()}</div>
 
-    <div class="home-qa-row">
-      <button class="home-qa-btn primary" id="qaStartWorkout">▶ Start Workout</button>
-      <button class="home-qa-btn secondary" id="qaLogWeight">⚖️ Log Weight</button>
-      <button class="home-qa-btn secondary" id="qaGenerate">🤖 Generate</button>
-      <button class="home-qa-btn secondary" id="qaViewProgress">📊 Progress</button>
+  // Greeting
+  let html = `
+    <div class="hm-greeting">
+      <div class="hm-greeting-text">${g.text}, ${escapeHtml(name)}</div>
+      <div class="hm-greeting-msg">${getDailyMessage()}</div>
+    </div>`;
+
+  // Quick Stats row
+  html += `<div class="hm-stats">
+    <div class="hm-stat">
+      <div class="hm-stat-val">${streak}</div>
+      <div class="hm-stat-lbl">Streak</div>
     </div>
+    <div class="hm-stat">
+      <div class="hm-stat-val">${hasWeight ? displayWeight(weight) : "—"}</div>
+      <div class="hm-stat-lbl">Weight ${checkInDue ? '<span class="hm-stat-due">Due</span>' : ""}</div>
+    </div>
+    <div class="hm-stat">
+      <div class="hm-stat-val">${goalLabel || "—"}</div>
+      <div class="hm-stat-lbl">Goal</div>
+    </div>
+  </div>`;
 
-    <div class="home-dash-card" id="homeDashCard">
-      <div class="home-dash-grid">
-        <div class="home-dash-item" id="heroStreakCard">
-          <span class="home-dash-value">${streak}</span>
-          <span class="home-dash-label">Streak</span>
-        </div>
-        <div class="home-dash-item" id="heroWeightCard">
-          <span class="home-dash-value">${hasWeight ? displayWeight(weight) : "—"}</span>
-          <span class="home-dash-label">Weight</span>
-          ${checkInDue ? '<span class="home-dash-due">Due</span>' : ""}
-        </div>
-        <div class="home-dash-item" id="heroGoalCard">
-          <span class="home-dash-value">${goalLabel || "—"}</span>
-          <span class="home-dash-label">Goal</span>
-        </div>
-        <div class="home-dash-item">
-          <span class="home-dash-value">${longestStreak}</span>
-          <span class="home-dash-label">Best</span>
-        </div>
+  // Log Weight button
+  html += `<button class="hm-log-weight" id="qaLogWeight">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+    Log Weight
+  </button>`;
+
+  // Today's Workout section
+  html += `<div class="hm-section">
+    <div class="hm-section-title">Today</div>`;
+
+  if (todaySession && todaySession.exercises && todaySession.exercises.length > 0) {
+    const totalSets = todaySession.exercises.reduce((a, e) => a + (e.sets || []).length, 0);
+    const doneSets = todaySession.exercises.reduce((a, e) => a + (e.sets || []).filter(s => s.done).length, 0);
+    const pct = totalSets > 0 ? Math.round(doneSets / totalSets * 100) : 0;
+    const nextEx = todaySession.exercises.find(e => (e.sets || []).some(s => !s.done));
+    const estTime = totalSets * 2;
+
+    html += `<div class="hm-workout-card">
+      <div class="hm-wc-top">
+        <div class="hm-wc-name">${escapeHtml(todaySession.workoutName || "Workout")}</div>
+        <div class="hm-wc-pct">${pct}%</div>
       </div>
-    </div>
-
-    ${profileComplete || state.profileBannerDismissed ? "" : `<div class="home-incomplete-banner" id="homeIncompleteBanner"><span style="font-size:0.75rem;font-weight:600">Complete your profile</span><span style="font-size:0.7rem;color:var(--accent);font-weight:700">Set Up →</span></div>`}
-
-    ${!hasData ? "" : `
-    <div class="home-stats-row">
-      <div class="home-stat-card">
-        <div class="home-stat-label">Last Workout</div>
-        <div class="home-stat-value">${lastSession ? lastSession.workoutName : "—"}</div>
-        <div class="home-stat-sub">${lastSession ? formatRelativeDate(lastSession.dateKey) : ""}</div>
+      <div class="hm-wc-bar"><div class="hm-wc-fill" style="width:${pct}%"></div></div>
+      <div class="hm-wc-info">
+        <span>${totalSets - doneSets} sets remaining</span>
+        <span>~${estTime} min</span>
       </div>
-      <div class="home-stat-card">
-        <div class="home-stat-label">${hasWeight ? "Current" : "Target"}</div>
-        <div class="home-stat-value">${hasWeight ? displayWeight(weight) : (state.user?.targetWeight ? displayWeight(state.user.targetWeight) : "—")}</div>
-        <div class="home-stat-sub">${lastWeightText}</div>
+      ${nextEx ? `<div class="hm-wc-next">Next: ${escapeHtml(nextEx.name)}</div>` : ""}
+      <button class="hm-wc-btn" id="hmStartWorkout">${doneSets > 0 ? "Continue" : "Start"} Workout</button>
+    </div>`;
+  } else if (hasPlan) {
+    const todayWorkout = activePlan.find(w => {
+      if (!w.id) return false;
+      return !state.sessions.some(s => s.workoutId === w.id && s.finishedAt && s.dateKey === getDateKey());
+    }) || activePlan[0];
+    const lastSesh = state.sessions.filter(s => s.finishedAt && s.workoutId === todayWorkout?.id).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
+    html += `<div class="hm-workout-card">
+      <div class="hm-wc-top">
+        <div class="hm-wc-name">${todayWorkout ? escapeHtml(todayWorkout.name) : "Today's Workout"}</div>
+        <div class="hm-wc-pct">Ready</div>
       </div>
-    </div>
-    `}
-
-    <div class="home-health-row" id="todayHealthWidgets">
-      ${hasData ? renderNutritionWidget() : ""}
-      ${hasData ? renderWaterWidget() : ""}
-    </div>
-
-    ${!hasData ? "" : `
-    <div class="home-coach-sect" id="homeCoachInsights">
-      <div class="home-coach-label">Coach</div>
-      <button class="home-coach-btn" id="homeCoachOpen">
-        <span style="font-size:0.78rem;font-weight:600">${getCoachSummary()}</span>
-        <span style="font-size:0.65rem;color:var(--text-secondary)">Open Coach →</span>
+      <div class="hm-wc-info">
+        <span>${todayWorkout ? (todayWorkout.exercises || []).length + " exercises" : ""}</span>
+      </div>
+      ${lastSesh ? `<div class="hm-wc-next">Last: ${formatRelativeDate(lastSesh.dateKey)}</div>` : ""}
+      <button class="hm-wc-btn" id="hmStartWorkout">Start Workout</button>
+    </div>`;
+  } else {
+    html += `<div class="hm-empty-workout">
+      <button class="hm-empty-card" id="hmGenerateBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+        <span class="hm-empty-title">Generate My Workout</span>
+        <span class="hm-empty-desc">AI builds a program for your goal</span>
       </button>
-      <button class="home-coach-btn" id="homeCoachRecovery" style="${typeof CoachEngine === "undefined" ? "display:none" : ""}">
-        <span style="font-size:0.78rem;font-weight:600">${typeof CoachEngine !== "undefined" ? getRecoverySummary() : "Recovery"}</span>
-        <span style="font-size:0.65rem;color:var(--text-secondary)">View Recovery →</span>
+      <button class="hm-empty-card" id="hmCreateBtn">
+        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="hm-empty-title">Create My Own</span>
+        <span class="hm-empty-desc">Build from our exercise library</span>
       </button>
-    </div>
-    `}
-  `;
+    </div>`;
+  }
+  html += `</div>`;
 
-  // Quick action bindings
-  document.getElementById("qaStartWorkout")?.addEventListener("click", () => {
-    const todaySession = getTodaySession();
-    if (todaySession) {
-      startOrContinueWorkout(todaySession.workoutId);
+  // Nutrition card (always show if hasData)
+  if (hasData) {
+    html += `<div class="hm-section">
+      <div class="hm-section-title">Nutrition</div>
+      <div class="hm-nutrition-row" id="todayHealthWidgets">
+        ${renderNutritionWidget()}
+        ${renderWaterWidget()}
+      </div>
+    </div>`;
+  }
+
+  // Recent Activity
+  if (hasData) {
+    const lastSessions = [...(state.sessions || [])].filter(s => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey)).slice(0, 3);
+    html += `<div class="hm-section">
+      <div class="hm-section-title">Activity</div>
+      <div class="hm-recent-list">`;
+    if (lastSessions.length) {
+      for (const s of lastSessions) {
+        const done = s.exercises ? s.exercises.reduce((a, e) => a + (e.sets || []).filter(set => set.done).length, 0) : 0;
+        const total = s.exercises ? s.exercises.reduce((a, e) => a + (e.sets || []).length, 0) : 0;
+        html += `<div class="hm-recent-item">
+          <div class="hm-recent-name">${escapeHtml(s.workoutName || "Workout")}</div>
+          <div class="hm-recent-meta">${done}/${total} sets · ${formatRelativeDate(s.dateKey)}</div>
+        </div>`;
+      }
     } else {
-      showNewWorkoutBuilder();
+      html += `<div class="hm-recent-empty">No workouts logged yet</div>`;
     }
-  });
+    html += `</div></div>`;
+  }
+
+  // Progress link
+  if (hasData) {
+    html += `<button class="hm-view-progress" id="qaViewProgress">View Full Progress →</button>`;
+  }
+
+  document.getElementById("homeGreeting").innerHTML = html;
+
+  // Bind events
   document.getElementById("qaLogWeight")?.addEventListener("click", () => {
     document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
   });
-  document.getElementById("qaGenerate")?.addEventListener("click", openGenerateWorkout);
   document.getElementById("qaViewProgress")?.addEventListener("click", () => activateTab("progress"));
+  document.getElementById("hmStartWorkout")?.addEventListener("click", () => {
+    const ts = getTodaySession();
+    if (ts && ts.workoutId) return startOrContinueWorkout(ts.workoutId);
+    const ap = loadCustomProgram() || plan;
+    if (ap && ap.length > 0) startOrContinueWorkout(ap[0].id);
+  });
+  document.getElementById("hmGenerateBtn")?.addEventListener("click", openGenerateWorkout);
+  document.getElementById("hmCreateBtn")?.addEventListener("click", showNewWorkoutBuilder);
 
-  const activePlan = loadCustomProgram() || plan;
-  const todaySession = getTodaySession();
+  // Home workout list (hidden section for future reference, kept minimal)
   const container = document.getElementById("homeWorkoutList");
-
-  // Sort: active workout first, then rest
-  const sorted = [...activePlan].sort((a, b) => {
-    const aActive = todaySession && todaySession.workoutId === a.id ? 1 : 0;
-    const bActive = todaySession && todaySession.workoutId === b.id ? 1 : 0;
-    return bActive - aActive;
-  });
-
-  if (!sorted.length) {
-    container.innerHTML = `
-      <div class="nwe-card">
-        <div class="nwe-icon">💪</div>
-        <div class="nwe-title">Ready to Train?</div>
-        <div class="nwe-text">Start building your workout library. Every great transformation starts with a single rep.</div>
-        <div class="nwe-actions">
-          <button class="empty-state-btn" id="emptyStateBuildBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> Create Workout</button>
-          <button class="empty-state-btn secondary" id="emptyStateGenerateBtn"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg> Generate Program</button>
-        </div>
-        <div class="nwe-footer">
-          <div class="nwe-achievement">
-            <span class="nwe-ach-icon">🏅</span>
-            <span>Complete your first workout to unlock achievements</span>
-          </div>
-          <div class="nwe-achievement">
-            <span class="nwe-ach-icon">🎯</span>
-            <span>Set a goal to track your weekly progress</span>
-          </div>
-        </div>
-      </div>`;
-    document.getElementById("emptyStateBuildBtn")?.addEventListener("click", showNewWorkoutBuilder);
-    document.getElementById("emptyStateGenerateBtn")?.addEventListener("click", openGenerateWorkout);
-  } else {
-    // Group by programName, keep ungrouped workouts separate
-    let html = "";
-    const groups = {};
-    const ungrouped = [];
-    sorted.forEach(function(w) {
-      if (w.programName) {
-        if (!groups[w.programName]) groups[w.programName] = [];
-        groups[w.programName].push(w);
-      } else {
-        ungrouped.push(w);
-      }
+  if (hasPlan) {
+    const sorted = [...activePlan].sort((a, b) => {
+      const aActive = todaySession && todaySession.workoutId === a.id ? 1 : 0;
+      const bActive = todaySession && todaySession.workoutId === b.id ? 1 : 0;
+      return bActive - aActive;
     });
-    const pgIds = Object.keys(groups);
-    pgIds.forEach(function(pn) {
-      const pWorkouts = groups[pn];
-      var expanded = pWorkouts.some(function(w) { return todaySession && todaySession.workoutId === w.id; });
-      html += '<div class="wo-program-group' + (expanded ? " is-expanded" : "") + '">' +
-        '<div class="wo-program-header">' +
-        '<span class="wo-program-name">' + pn + '</span>' +
-        '<span class="wo-program-toggle">' + (expanded ? "▲" : "▼") + '</span>' +
-        '</div>' +
-        '<div class="wo-program-body"' + (expanded ? '' : ' style="display:none"') + '>' +
-        pWorkouts.map(function(w) { return renderWorkoutCardItem(w, todaySession); }).join("") +
-        '</div></div>';
-    });
-    html += ungrouped.map(function(w) { return renderWorkoutCardItem(w, todaySession); }).join("");
-    container.innerHTML = html;
-
-    // Bind program header toggles
-    container.querySelectorAll(".wo-program-header").forEach(function(hdr) {
-      hdr.addEventListener("click", function() {
-        var group = hdr.closest(".wo-program-group");
-        var body = group.querySelector(".wo-program-body");
-        var toggle = hdr.querySelector(".wo-program-toggle");
-        if (body.style.display === "none") {
-          body.style.display = "";
-          toggle.textContent = "▲";
-          group.classList.add("is-expanded");
-        } else {
-          body.style.display = "none";
-          toggle.textContent = "▼";
-          group.classList.remove("is-expanded");
-        }
+    // Just show workout names as a simple list below
+    container.innerHTML = `<div class="hm-section"><div class="hm-section-title">My Workouts</div><div class="hm-workout-list-sm">${
+      sorted.slice(0, 5).map(w => `<button class="hm-workout-sm" data-wid="${escapeHtml(w.id)}">${escapeHtml(w.name)}<span class="hm-workout-sm-arrow">→</span></button>`).join("")
+    }</div></div>`;
+    // Bind workout item clicks
+    container.querySelectorAll(".hm-workout-sm").forEach(btn => {
+      btn.addEventListener("click", () => {
+        const wid = btn.dataset.wid;
+        startOrContinueWorkout(wid);
       });
-    });
-  }
-
-  // Bind card taps => details
-  container.querySelectorAll(".wo-card-item").forEach((card) => {
-    card.addEventListener("click", (e) => {
-      if (e.target.closest(".wo-card-item-btn") || e.target.closest(".wo-card-item-menu")) return;
-      openWorkoutDetails(card.dataset.wId);
-    });
-  });
-
-  // Bind Start/Continue buttons
-  container.querySelectorAll(".wo-card-item-btn").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      const id = btn.dataset.wId;
-      const action = btn.dataset.action;
-      if (action === "start") handleStartWorkout(id);
-      else if (action === "continue") startOrContinueWorkout(id);
-    });
-  });
-
-  // Bind menu buttons
-  container.querySelectorAll(".wo-card-item-menu").forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.stopPropagation();
-      showWorkoutActionsSheet(btn.dataset.wId);
-    });
-  });
-
-  // Hero cards
-  document.getElementById("heroStreakCard")?.addEventListener("click", openStreakDrawer);
-  document.getElementById("heroWeightCard")?.addEventListener("click", () => {
-    const entry = latestWeight();
-    document.getElementById("wlSheetWeight").value = entry ? entry.weight : "";
-    updateWeightDisplay();
-    document.getElementById("weightLogSheet").classList.remove("is-hidden");
-    setTimeout(() => document.getElementById("wlSheetWeight").select(), 150);
-  });
-  document.getElementById("heroGoalCard")?.addEventListener("click", openGoalCenter);
-
-  // Water widget buttons
-  document.getElementById("waterAdd250")?.addEventListener("click", () => { addWater(250); renderHome(); });
-  document.getElementById("waterAdd500")?.addEventListener("click", () => { addWater(500); renderHome(); });
-  document.getElementById("waterAdd750")?.addEventListener("click", () => { addWater(750); renderHome(); });
-  document.getElementById("mlOpenBtn")?.addEventListener("click", () => { renderMealLogger(); });
-
-  // Coach insight buttons
-  document.getElementById("homeCoachOpen")?.addEventListener("click", () => activateTab("trainer"));
-  document.getElementById("homeCoachRecovery")?.addEventListener("click", () => {
-    if (typeof CoachSystem !== "undefined" && CoachSystem.navigate) {
-      activateTab("trainer");
-      setTimeout(() => CoachSystem.navigate("recovery"), 50);
-    } else {
-      activateTab("trainer");
-    }
-  });
-
-  const banner = document.getElementById("homeIncompleteBanner");
-  if (banner) {
-    setTimeout(() => {
-      banner.style.transition = "opacity 0.5s ease";
-      banner.style.opacity = "0";
-      setTimeout(() => banner.remove(), 500);
-      state.profileBannerDismissed = true;
-      saveState();
-    }, 5000);
-    banner.addEventListener("click", () => {
-      banner.style.transition = "opacity 0.3s ease";
-      banner.style.opacity = "0";
-      setTimeout(() => banner.remove(), 300);
-      state.profileBannerDismissed = true;
-      saveState();
-      openOnboarding(true);
     });
   }
 
@@ -3380,7 +3300,18 @@ function getAllReportKeys() {
 function renderWeeklyReport() {
   const report = generateWeeklyReport();
   const reportEl = document.getElementById("homeWeeklyReport");
-  if (!report || !reportEl) return;
+  if (!reportEl) return;
+  if (!report || report.sessions === 0) {
+    reportEl.innerHTML = `
+      <div class="home-section-header">
+        <span class="home-section-label">📊 Weekly Summary</span>
+      </div>
+      <div class="empty-card" style="padding:1rem;text-align:center;color:var(--text-secondary);font-size:0.85rem">
+        Complete your first workout this week to see your weekly summary.
+      </div>`;
+    reportEl.style.display = "";
+    return;
+  }
   const wins = generateWeeklyWins(report);
   reportEl.innerHTML = `
     <div class="home-section-header">
@@ -3985,7 +3916,7 @@ function renderNutritionWidget() {
         <div><div class="tc-macro-row"><span style="color:#ffd43b">Carbs</span><span>${Math.round(macros.carbs)}/${cGoal}g</span></div><div class="tc-bar"><div class="tc-bar-fill" style="width:${cPct}%;background:#ffd43b"></div></div></div>
         <div><div class="tc-macro-row"><span style="color:#69db7c">Fat</span><span>${Math.round(macros.fat)}/${fGoal}g</span></div><div class="tc-bar"><div class="tc-bar-fill" style="width:${fPct}%;background:#69db7c"></div></div></div>
       </div>
-      ${macros.meals > 0 ? `<div class="tc-meals">${macros.meals} meal${macros.meals > 1 ? "s" : ""} logged</div>` : ""}
+      ${macros.meals > 0 ? `<div class="tc-meals">${macros.meals} meal${macros.meals > 1 ? "s" : ""} logged</div>` : `<div style="font-size:0.75rem;color:var(--text-secondary);text-align:center;padding:0.5rem 0">No food logged today — tap + Add Food to get started</div>`}
     </div>`;
 }
 
@@ -3996,6 +3927,7 @@ function renderWaterWidget() {
   const radius = 28;
   const circ = 2 * Math.PI * radius;
   const offset = circ - (pct / 100) * circ;
+  const empty = current === 0;
   return `
     <div class="today-card row" id="todayWaterCard">
       <div class="tc-ring-wrap">
@@ -4008,6 +3940,7 @@ function renderWaterWidget() {
       <div class="tc-water-info">
         <div class="tc-water-title">Water</div>
         <div class="tc-water-goal">${current}ml / ${goal}ml</div>
+        ${empty ? `<div style="font-size:0.75rem;color:var(--text-secondary);margin-bottom:0.4rem">Tap a button below to start tracking</div>` : ""}
         <div class="tc-water-actions">
           <button id="waterAdd250" class="tc-water-btn">+250ml</button>
           <button id="waterAdd500" class="tc-water-btn">+500ml</button>
@@ -6269,7 +6202,20 @@ function renderGoalsSection() {
   const container = document.getElementById("goalsContent");
   if (!container) return;
   const user = state.user || {};
-  const goalName = user.goal ? user.goal.replace(/-/g, " ") : "Not set";
+  const goalName = user.goal ? user.goal.replace(/-/g, " ") : null;
+  if (!goalName) {
+    container.innerHTML = `
+      <div class="empty-state" style="padding:1.5rem 0">
+        <div class="empty-state-icon" style="font-size:2rem;margin-bottom:0.5rem">🎯</div>
+        <div class="empty-state-title">No Goal Set</div>
+        <div class="empty-state-text">Set a fitness goal to track your progress.</div>
+        <button class="empty-state-btn" id="goalsOpenCoachBtn" style="margin-top:0.75rem">Set Goal →</button>
+      </div>`;
+    document.getElementById("goalsOpenCoachBtn")?.addEventListener("click", () => {
+      if (typeof openGoalCenter === "function") openGoalCenter();
+    });
+    return;
+  }
   container.innerHTML = `
     <div class="card-content" style="display:flex;flex-direction:column;gap:0.4rem">
       <div class="log-item"><strong>Fitness Goal</strong><span style="text-transform:capitalize">${goalName}</span></div>
@@ -6284,26 +6230,43 @@ function renderGoalsSection() {
 // ===== TRAINER PAGE =====
 function renderTrainerTab() {
   if (typeof CoachSystem !== "undefined" && CoachSystem.init) {
-    if (CoachSystem.getCurrentRoute() !== "home") {
-      CoachSystem.navigate("home", {}, false);
+    try {
+      if (CoachSystem.getCurrentRoute() !== "home") {
+        CoachSystem.navigate("home", {}, false);
+      }
+      CoachSystem.init();
+    } catch (e) {
+      const container = document.getElementById("trainerPageContent");
+      if (container) {
+        container.innerHTML = '<div class="co-page"><div class="co-content">' +
+          '<div class="co-empty-state"><div class="co-empty-icon">⚠️</div>' +
+          '<div class="co-empty-title">Coach Temporarily Unavailable</div>' +
+          '<div class="co-empty-desc">There was an issue loading Coach. Please try switching tabs or refreshing.</div></div></div></div>';
+      }
     }
-    CoachSystem.init();
     return;
   }
   // Fallback: render directly
   const container = document.getElementById("trainerPageContent");
   if (!container) return;
 
-  const coach = CoachEngine.runAll();
-  const dc = coach.daily;
+  try {
+    const coach = typeof CoachEngine !== "undefined" ? CoachEngine.runAll() : null;
+    const dc = coach ? coach.daily : {};
 
-  container.innerHTML = '<div class="co-page"><div class="co-content">' +
-    '<div class="co-home-hero"><div class="co-hero-greeting">Hello, <strong>' + (dc.name || "Athlete") + '</strong></div>' +
-    '<div class="co-hero-message">' + (dc.coachMessage || "Welcome to Coach") + '</div></div>' +
-    '<div class="co-empty-state"><div class="co-empty-icon">📭</div>' +
-    '<div class="co-empty-title">Coach System Loading</div>' +
-    '<div class="co-empty-desc">The Coach System module is loading. Please refresh or check the console.</div></div></div></div>';
-
+    container.innerHTML = '<div class="co-page"><div class="co-content">' +
+      '<div class="co-home-hero"><div class="co-hero-greeting">Hello, <strong>' + (dc.name || "Athlete") + '</strong></div>' +
+      '<div class="co-hero-message">' + (dc.coachMessage || "Welcome to Coach") + '</div></div>' + (coach ? "" :
+      '<div class="co-empty-state" style="margin-top:1rem"><div class="co-empty-icon">📭</div>' +
+      '<div class="co-empty-title">Coach Engine Unavailable</div>' +
+      '<div class="co-empty-desc">The Coach Engine module is still loading. Please refresh the page or check the console for errors.</div></div>') +
+      '</div></div>';
+  } catch (e) {
+    container.innerHTML = '<div class="co-page"><div class="co-content">' +
+      '<div class="co-empty-state"><div class="co-empty-icon">⚠️</div>' +
+      '<div class="co-empty-title">Something Went Wrong</div>' +
+      '<div class="co-empty-desc">Coach encountered an error. Try switching tabs and coming back.</div></div></div></div>';
+  }
 }
 
 
@@ -7537,12 +7500,12 @@ function renderGoalCenterDashboard(gc) {
   if (strategy) {
     html += `<div class="gc-section"><div class="gc-section-title">Goal Strategy</div>
     <div class="gc-strategy-grid">
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Calories</div><div class="gc-strategy-value">${strategy.targets.calories}</div></div>
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Protein</div><div class="gc-strategy-value">${strategy.targets.protein}</div></div>
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Water</div><div class="gc-strategy-value">${strategy.targets.water}</div></div>
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Steps</div><div class="gc-strategy-value">${strategy.targets.steps}</div></div>
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Cardio</div><div class="gc-strategy-value">${strategy.targets.cardio}</div></div>
-      <div class="gc-strategy-target"><div class="gc-strategy-label">Sleep</div><div class="gc-strategy-value">${strategy.targets.sleep}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Calories</div><div class="gc-strategy-value">${strategy.targets.calories || "—"}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Protein</div><div class="gc-strategy-value">${strategy.targets.protein || "—"}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Water</div><div class="gc-strategy-value">${strategy.targets.water || "—"}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Steps</div><div class="gc-strategy-value">${strategy.targets.steps || "—"}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Cardio</div><div class="gc-strategy-value">${strategy.targets.cardio || "—"}</div></div>
+      <div class="gc-strategy-target"><div class="gc-strategy-label">Sleep</div><div class="gc-strategy-value">${strategy.targets.sleep || "—"}</div></div>
     </div>`;
     if (strategy.expectedRate) {
       html += `<div class="gc-strategy-rate">Expected Rate: ${strategy.expectedRate}</div>`;
@@ -8001,19 +7964,19 @@ function renderWeightIntelligence() {
     <div class="wi-section-title">Logging Consistency</div>
     <div class="wi-streak-row">
       <div class="wi-streak-card">
-        <div class="wi-streak-value">${wi.streak.current}</div>
+        <div class="wi-streak-value">${wi.streak.current != null ? wi.streak.current : "0"}</div>
         <div class="wi-streak-label">Current Streak</div>
       </div>
       <div class="wi-streak-card">
-        <div class="wi-streak-value">${wi.streak.longest}</div>
+        <div class="wi-streak-value">${wi.streak.longest != null ? wi.streak.longest : "0"}</div>
         <div class="wi-streak-label">Longest Streak</div>
       </div>
       <div class="wi-streak-card">
         <div class="wi-score-bar">
           <div class="wi-score-track">
-            <div class="wi-score-fill ${wi.loggingScore >= 7 ? "full" : wi.loggingScore >= 4 ? "good" : wi.loggingScore >= 1 ? "low" : "empty"}" style="width:${wi.loggingScore * 10}%"></div>
+            <div class="wi-score-fill ${(wi.loggingScore || 0) >= 7 ? "full" : (wi.loggingScore || 0) >= 4 ? "good" : (wi.loggingScore || 0) >= 1 ? "low" : "empty"}" style="width:${(wi.loggingScore || 0) * 10}%"></div>
           </div>
-          <span class="wi-score-text">${wi.loggingScore}/10</span>
+          <span class="wi-score-text">${wi.loggingScore != null ? wi.loggingScore : "0"}/10</span>
         </div>
         <div class="wi-streak-label" style="margin-top:4px">Logging Score</div>
       </div>
@@ -8077,7 +8040,7 @@ function renderWeeklyReportPage(weekKey) {
   const ra = f.recoveryAnalysis || {};
   const parent = rpt.full ? rpt : null;
 
-  const cScore = f.coachScore;
+  const cScore = f.coachScore != null ? f.coachScore : 0;
   const grade = cScore >= 85 ? "A" : cScore >= 75 ? "B" : cScore >= 60 ? "C" : cScore >= 40 ? "D" : "F";
   const gradeColor = cScore >= 85 ? "var(--accent)" : cScore >= 60 ? "var(--orange)" : "var(--red)";
 
@@ -8300,7 +8263,7 @@ function renderReadinessPage() {
   const rdComp = rec.components || {};
   const rdDet = rec.details || {};
 
-  const score = rec.score;
+  const score = rec.score || 0;
   const color = score >= 75 ? "var(--accent)" : score >= 60 ? "var(--orange)" : "var(--red)";
   const ringCirc = 2 * Math.PI * 40;
   const ringOff = ringCirc - (score / 100) * ringCirc;
@@ -8317,9 +8280,9 @@ function renderReadinessPage() {
         <circle class="rr-ring-bg" cx="48" cy="48" r="40"/>
         <circle class="rr-ring-fill" cx="48" cy="48" r="40" stroke-dasharray="${ringCirc}" stroke-dashoffset="${ringOff}" style="stroke:${color}"/>
       </svg>
-      <div class="rr-hero-full-text"><span class="rr-hero-full-score" style="color:${color}">${score}</span><span class="rr-hero-full-label">${rec.label}</span></div>
+      <div class="rr-hero-full-text"><span class="rr-hero-full-score" style="color:${color}">${score}</span><span class="rr-hero-full-label">${rec.label || "—"}</span></div>
     </div>
-    <div class="rr-hero-full-message">${rec.coachMessage}</div>
+    <div class="rr-hero-full-message">${rec.coachMessage || "No readiness data yet."}</div>
     ${rd.weekAvg !== null ? `<div class="rr-hero-full-avg">7-Day Avg: <strong>${rd.weekAvg}</strong></div>` : ""}
   </div>`;
 
@@ -8659,7 +8622,7 @@ function renderCoachCommandCenter() {
   html += `<div class="cc-metrics-row">
     <div class="cc-metric-card"><div class="cc-metric-label">Goal Health</div><div class="cc-metric-value" style="color:${gsColor}">${prog.gcHealthScore !== null ? prog.gcHealthScore : "—"}</div></div>
     <div class="cc-metric-card"><div class="cc-metric-label">Coach Score</div><div class="cc-metric-value" style="color:${csColor}">${csScore}</div></div>
-    <div class="cc-metric-card"><div class="cc-metric-label">Recovery</div><div class="cc-metric-value" style="color:${rec.score >= 75 ? "var(--accent)" : rec.score >= 60 ? "var(--orange)" : "var(--red)"}">${rec.score}</div></div>
+    <div class="cc-metric-card"><div class="cc-metric-label">Recovery</div><div class="cc-metric-value" style="color:${(rec.score || 0) >= 75 ? "var(--accent)" : (rec.score || 0) >= 60 ? "var(--orange)" : "var(--red)"}">${rec.score != null ? rec.score : "—"}</div></div>
     <div class="cc-metric-card"><div class="cc-metric-label">Level</div><div class="cc-metric-value" style="color:var(--accent)">${cas ? cas.level : "—"}</div></div>
   </div>`;
 
@@ -8827,8 +8790,8 @@ function renderProgramReview() {
     <div class="pr-metrics-grid">
       <div class="pr-metric-card"><span class="pr-metric-label">Recovery Score</span><span class="pr-metric-value" style="color:${rc.score >= 80 ? "var(--accent)" : rc.score >= 65 ? "var(--orange)" : "var(--red)"}">${rc.score !== null ? rc.score : "—"}</span></div>
       ${rc.avgSleep !== null ? `<div class="pr-metric-card"><span class="pr-metric-label">Avg Sleep</span><span class="pr-metric-value" style="color:${rc.avgSleep >= 7.5 ? "var(--accent)" : rc.avgSleep >= 6.5 ? "var(--orange)" : "var(--red)"}">${rc.avgSleep.toFixed(1)}h</span></div>` : ""}
-      <div class="pr-metric-card"><span class="pr-metric-label">Training Load</span><span class="pr-metric-value">${rc.trainingLoad} exercises</span></div>
-      <div class="pr-metric-card"><span class="pr-metric-label">Avg Load/Session</span><span class="pr-metric-value">${rc.avgTrainingLoad.toFixed(1)}</span></div>
+      <div class="pr-metric-card"><span class="pr-metric-label">Training Load</span><span class="pr-metric-value">${rc.trainingLoad != null ? rc.trainingLoad : "—"} exercises</span></div>
+      <div class="pr-metric-card"><span class="pr-metric-label">Avg Load/Session</span><span class="pr-metric-value">${rc.avgTrainingLoad != null ? rc.avgTrainingLoad.toFixed(1) : "—"}</span></div>
     </div>
     <div class="pr-verdict">${rc.verdict}</div>
     ${rc.sleepVerdict ? `<div class="pr-verdict pr-verdict-sub">${rc.sleepVerdict}</div>` : ""}
@@ -9503,11 +9466,9 @@ function isProfileComplete() {
 
 const OB_STEPS_CONFIG = [
   { id: "welcome", title: "", desc: "" },
-  { id: "name", title: "What should I call you?", desc: "I need a name to personalize your experience." },
-  { id: "age", title: "How old are you?", desc: "This helps me calculate your training zones." },
-  { id: "height", title: "What's your height?", desc: "I'll use this to track your body metrics." },
-  { id: "weight", title: "What's your current weight?", desc: "Your starting point for progress tracking." },
-  { id: "goal", title: "What's your primary goal?", desc: "This shapes your entire training program." },
+  { id: "name", title: "What's your name?", desc: "" },
+  { id: "body", title: "Your body stats", desc: "Height, weight, and age help calculate your metrics." },
+  { id: "training", title: "Training setup", desc: "We'll use this to build your personalized program." },
 ];
 
 let obData = {};
@@ -9640,7 +9601,7 @@ function obGoToStep(index) {
   document.getElementById("obStepsFill").style.width = pct + "%";
   document.getElementById("obStepsLabel").textContent = index === 0 ? "Get Started" : "Step " + index + " of " + total;
 
-  const timeLabels = ["About 60 seconds", "About 50 seconds", "About 40 seconds", "About 30 seconds", "About 20 seconds", "Almost done!"];
+  const timeLabels = ["About 30 seconds", "About 20 seconds", "About 10 seconds", "Almost done!"];
   document.getElementById("obTimeLabel").textContent = timeLabels[index] || "";
 
   const body = document.getElementById("obBody");
@@ -9674,111 +9635,95 @@ function obGoToStep(index) {
 function obRenderStepContent(stepId) {
   if (stepId === "welcome") {
     return `<div class="ob-welcome">
-      <div class="ob-coach-wrap">
-        <svg class="ob-coach-svg" viewBox="0 0 200 220" fill="none">
-          <circle cx="100" cy="110" r="85" fill="var(--accent)" opacity="0.08"/>
-          <rect x="76" y="150" width="48" height="50" rx="14" fill="var(--surface-3)"/>
-          <rect x="95" y="140" width="10" height="14" rx="3" fill="var(--surface-3)"/>
-          <circle cx="100" cy="100" r="38" fill="var(--surface-3)"/>
-          <path d="M62 90 Q62 58 100 54 Q138 58 138 90" fill="var(--text-secondary)" opacity="0.9"/>
-          <circle cx="87" cy="96" r="4" fill="var(--text)" class="ob-coach-eye"/>
-          <circle cx="113" cy="96" r="4" fill="var(--text)" class="ob-coach-eye"/>
-          <circle cx="88" cy="97" r="1.5" fill="var(--bg)"/>
-          <circle cx="114" cy="97" r="1.5" fill="var(--bg)"/>
-          <path d="M91 110 Q100 118 109 110" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round" opacity="0.8"/>
-          <path d="M72 158 Q52 140 48 118" stroke="var(--surface-3)" stroke-width="12" stroke-linecap="round" class="ob-coach-arm ob-coach-wave-arm"/>
-          <circle cx="47" cy="115" r="7" fill="var(--surface-3)"/>
-          <path d="M128 160 Q148 170 155 188" stroke="var(--surface-3)" stroke-width="10" stroke-linecap="round"/>
-          <rect x="80" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
-          <rect x="104" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
+      <div class="ob-welcome-hero">
+        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <rect x="4" y="16" width="8" height="28" rx="3" fill="var(--accent)" opacity="0.6"/>
+          <rect x="14" y="10" width="8" height="34" rx="3" fill="var(--accent)" opacity="0.8"/>
+          <rect x="24" y="6" width="8" height="38" rx="3" fill="var(--accent)"/>
+          <rect x="34" y="12" width="8" height="32" rx="3" fill="var(--accent)" opacity="0.7"/>
         </svg>
       </div>
-      <div class="ob-welcome-text">
-        <div class="ob-coach-greeting">Hey <span class="ob-coach-wave-emoji">&#x1F44B;</span></div>
-        <div class="ob-coach-msg">I'm your IronLog Coach.<br>I'll help you build your training plan.</div>
-        <div class="ob-time-badge">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-          Takes about 60 seconds
+      <div class="ob-welcome-title">Welcome to IronLog</div>
+      <div class="ob-welcome-steps">
+        <div class="ob-welcome-step">
+          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="ob-ws-text">Build your profile</div>
+        </div>
+        <div class="ob-welcome-step">
+          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="ob-ws-text">Generate your personalized plan</div>
+        </div>
+        <div class="ob-welcome-step">
+          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
+          <div class="ob-ws-text">Track workouts & see progress</div>
         </div>
       </div>
-      <div class="ob-welcome-actions">
-        <button class="ob-btn-primary ob-btn-glow" id="obNextBtn">Get Started</button>
-        <button class="ob-btn-link" onclick="document.getElementById('onboardSkipBtn').click()">Skip Setup</button>
-      </div>
+      <button class="ob-btn-primary ob-btn-glow" id="obNextBtn" style="margin-top:2rem;width:100%">Get Started</button>
     </div>`;
   }
 
   if (stepId === "name") {
     const nameVal = obData.name || "";
     return `<div class="ob-name-wrap">
-      <input type="text" class="ob-name-input" id="obName" placeholder="Your name" maxlength="30" value="${nameVal}" autocomplete="name" />
-      <div class="ob-name-preview" id="obNamePreview">${nameVal ? "Nice to meet you, " + escapeHtml(nameVal) + "." : ""}</div>
-      <div class="ob-actions ob-actions-center">
-        <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
-      </div>
+      <input type="text" class="ob-name-input" id="obName" placeholder="Your name" maxlength="30" value="${escapeHtml(nameVal)}" autocomplete="name" />
+      <button class="ob-btn-primary" id="obNextBtn" disabled style="margin-top:1.5rem;width:100%">Continue</button>
     </div>`;
   }
 
-  if (stepId === "age") {
-    const ageVal = obData.age || 25;
-    const ages = Array.from({length: 73}, (_, i) => i + 13);
-    return `<div class="ob-picker-wrap">
-      ${_obWheelHTML("obAgeWheel", ages, Number(ageVal), "years")}
-      <div class="ob-actions ob-actions-center">
-        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-        <button class="ob-btn-primary" id="obNextBtn">Continue</button>
-      </div>
-    </div>`;
-  }
-
-  if (stepId === "height") {
-    const heightVal = obData.height || 175;
-    const heights = Array.from({length: 91}, (_, i) => i + 130);
-    return `<div class="ob-picker-wrap">
-      ${_obWheelHTML("obHeightWheel", heights, Number(heightVal), "cm")}
-      <div class="ob-actions ob-actions-center">
-        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-        <button class="ob-btn-primary" id="obNextBtn">Continue</button>
-      </div>
-    </div>`;
-  }
-
-  if (stepId === "weight") {
-    const weightVal = obData.weight || "";
-    return `<div class="ob-weight-wrap">
-      <div class="ob-weight-input-wrap">
-        <input type="number" class="ob-weight-input" id="obWeight" placeholder="70" min="20" max="400" step="0.1" value="${weightVal}" inputmode="decimal" autocomplete="off" />
-        <span class="ob-weight-unit">kg</span>
-      </div>
-      <div class="ob-actions ob-actions-center">
-        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-        <button class="ob-btn-primary" id="obNextBtn" disabled>Continue</button>
-      </div>
-    </div>`;
-  }
-
-  if (stepId === "goal") {
-    const goals = [
-      { id: "fat-loss", label: "Lose Fat", desc: "Drop body fat while preserving muscle", icon: "🔥", time: "8-16 weeks" },
-      { id: "muscle-gain", label: "Build Muscle", desc: "Add lean mass and shape your body", icon: "🏋️", time: "12-20 weeks" },
-      { id: "recomp", label: "Recomposition", desc: "Shed fat and gain muscle simultaneously", icon: "⚖️", time: "16-24 weeks" },
-      { id: "strength", label: "Strength", desc: "Increase raw power and performance", icon: "⚡", time: "8-12 weeks" },
-      { id: "general-fitness", label: "General Fitness", desc: "Stay active, healthy, and feel great", icon: "❤️", time: "Ongoing" },
-      { id: "endurance", label: "Endurance", desc: "Build stamina and cardiovascular fitness", icon: "🏃", time: "8-16 weeks" },
-    ];
-    return `<div class="ob-goal-grid">
-      ${goals.map(g => `<button class="ob-goal-card${obData.goalType === g.id ? " is-active" : ""}" data-ob-goal="${g.id}">
-        <div class="ob-goal-icon">${g.icon}</div>
-        <div class="ob-goal-body">
-          <div class="ob-goal-label">${g.label}</div>
-          <div class="ob-goal-desc">${g.desc}</div>
-          <div class="ob-goal-time">${g.time}</div>
+  if (stepId === "body") {
+    const hVal = obData.height || 175;
+    const wVal = obData.weight || "";
+    const aVal = obData.age || 25;
+    return `<div class="ob-body-wrap">
+      <div class="ob-body-row">
+        <div class="ob-field-group">
+          <label class="ob-field-label">Height</label>
+          <input type="number" class="ob-input ob-input-md" id="obHeight" placeholder="175" value="${hVal}" min="80" max="280" autocomplete="off" />
+          <span class="ob-input-suffix">cm</span>
         </div>
-      </button>`).join("")}
-      <div class="ob-actions ob-actions-center" style="margin-top:0.75rem">
-        <button class="ob-btn-secondary" id="obBackBtn">Back</button>
-        <button class="ob-btn-primary" id="obNextBtn" disabled>Create My Profile</button>
+        <div class="ob-field-group">
+          <label class="ob-field-label">Weight</label>
+          <input type="number" class="ob-input ob-input-md" id="obWeight" placeholder="70" value="${wVal}" min="20" max="400" step="0.1" inputmode="decimal" autocomplete="off" />
+          <span class="ob-input-suffix">kg</span>
+        </div>
       </div>
+      <div class="ob-body-row">
+        <div class="ob-field-group">
+          <label class="ob-field-label">Age</label>
+          <input type="number" class="ob-input ob-input-sm" id="obAge" placeholder="25" value="${aVal}" min="13" max="120" autocomplete="off" />
+          <span class="ob-input-suffix">years</span>
+        </div>
+      </div>
+      <button class="ob-btn-primary" id="obNextBtn" style="margin-top:1.5rem;width:100%">Continue</button>
+    </div>`;
+  }
+
+  if (stepId === "training") {
+    const exps = ["Beginner", "Intermediate", "Advanced"];
+    const locs = [
+      { id: "gym", label: "Gym", icon: "🏋️" },
+      { id: "home", label: "Home", icon: "🏠" },
+      { id: "minimal", label: "Minimal", icon: "🎒" },
+    ];
+    return `<div class="ob-training-wrap">
+      <div class="ob-section-label">Your Goal</div>
+      <div class="ob-goal-grid ob-goal-grid-sm" id="obGoalGrid">
+        <button class="ob-goal-card-sm${obData.goalType === "fat-loss" ? " is-active" : ""}" data-ob-goal="fat-loss"><span class="ob-goal-icon-sm">🔥</span>Lose Fat</button>
+        <button class="ob-goal-card-sm${obData.goalType === "muscle-gain" ? " is-active" : ""}" data-ob-goal="muscle-gain"><span class="ob-goal-icon-sm">🏋️</span>Build Muscle</button>
+        <button class="ob-goal-card-sm${obData.goalType === "strength" ? " is-active" : ""}" data-ob-goal="strength"><span class="ob-goal-icon-sm">⚡</span>Strength</button>
+        <button class="ob-goal-card-sm${obData.goalType === "general-fitness" ? " is-active" : ""}" data-ob-goal="general-fitness"><span class="ob-goal-icon-sm">❤️</span>General</button>
+        <button class="ob-goal-card-sm${obData.goalType === "recomp" ? " is-active" : ""}" data-ob-goal="recomp"><span class="ob-goal-icon-sm">⚖️</span>Recomp</button>
+        <button class="ob-goal-card-sm${obData.goalType === "endurance" ? " is-active" : ""}" data-ob-goal="endurance"><span class="ob-goal-icon-sm">🏃</span>Endurance</button>
+      </div>
+      <div class="ob-section-label" style="margin-top:1.25rem">Experience</div>
+      <div class="ob-chip-row" id="obExpRow">
+        ${exps.map(e => `<button class="ob-chip${obData.experience === e ? " is-active" : ""}" data-ob-exp="${e}">${e}</button>`).join("")}
+      </div>
+      <div class="ob-section-label" style="margin-top:1.25rem">Where do you train?</div>
+      <div class="ob-chip-row" id="obLocRow">
+        ${locs.map(l => `<button class="ob-chip${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}">${l.icon} ${l.label}</button>`).join("")}
+      </div>
+      <button class="ob-btn-primary" id="obNextBtn" disabled style="margin-top:1.5rem;width:100%">Create My Profile</button>
     </div>`;
   }
 
@@ -9792,38 +9737,36 @@ function escapeHtml(str) {
 }
 
 function obRenderDoneScreen() {
-  return `<div class="ob-done">
-    <div class="celebration-overlay">
-      <div class="celebration-particle"></div>
-      <div class="celebration-particle"></div>
-      <div class="celebration-particle"></div>
-      <div class="celebration-particle"></div>
-      <div class="celebration-particle"></div>
-      <div class="celebration-particle"></div>
-    </div>
-    <div class="ob-coach-wrap ob-coach-done">
-      <svg class="ob-coach-svg ob-coach-svg-done" viewBox="0 0 200 220" fill="none">
-        <circle cx="100" cy="110" r="85" fill="var(--accent)" opacity="0.08"/>
-        <rect x="76" y="150" width="48" height="50" rx="14" fill="var(--surface-3)"/>
-        <rect x="95" y="140" width="10" height="14" rx="3" fill="var(--surface-3)"/>
-        <circle cx="100" cy="100" r="38" fill="var(--surface-3)"/>
-        <path d="M62 90 Q62 58 100 54 Q138 58 138 90" fill="var(--text-secondary)" opacity="0.9"/>
-        <path d="M80 96 Q87 90 94 96 Q100 88 106 96 Q113 90 120 96" stroke="var(--text)" stroke-width="2" stroke-linecap="round" fill="none" class="ob-coach-squint"/>
-        <path d="M91 112 Q100 120 109 112" stroke="var(--text-secondary)" stroke-width="2.5" stroke-linecap="round" fill="none" opacity="0.9"/>
-        <path d="M128 158 Q148 170 155 188" stroke="var(--surface-3)" stroke-width="10" stroke-linecap="round" class="ob-coach-arm ob-coach-wave-arm"/>
-        <circle cx="155" cy="190" r="6" fill="var(--surface-3)"/>
-        <path d="M72 158 Q52 142 48 122" stroke="var(--surface-3)" stroke-width="12" stroke-linecap="round"/>
-        <circle cx="47" cy="119" r="7" fill="var(--surface-3)"/>
-        <rect x="80" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
-        <rect x="104" y="198" width="16" height="28" rx="6" fill="var(--surface-3)"/>
+  return `<div class="ob-ready">
+    <div class="ob-ready-icon">
+      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
+        <circle cx="28" cy="28" r="27" stroke="var(--accent)" stroke-width="2" stroke-dasharray="170" stroke-dashoffset="40" opacity="0.3"/>
+        <path d="M18 28 L25 35 L38 22" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </div>
-    <div class="ob-done-title celebration-bounce">Awesome!<br>Everything is ready.</div>
-    <div class="ob-done-desc">I've built your profile.<br>Now let's create your first workout.</div>
-    <div class="ob-done-actions">
-      <button class="ob-btn-primary ob-btn-glow celebration-glow" id="obGenFirstBtn">Generate My First Program</button>
-      <button class="ob-btn-link" id="obExploreBtn">Explore IronLog</button>
+    <div class="ob-ready-title">Ready to Train?</div>
+    <div class="ob-ready-desc">Your profile is set up. Time to create your first workout.</div>
+    <div class="ob-ready-cards">
+      <button class="ob-ready-card" id="obGenFirstBtn">
+        <div class="ob-ready-card-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
+        </div>
+        <div class="ob-ready-card-body">
+          <div class="ob-ready-card-title">Generate My Workout</div>
+          <div class="ob-ready-card-desc">AI builds a program based on your goals</div>
+        </div>
+      </button>
+      <button class="ob-ready-card" id="obExploreBtn">
+        <div class="ob-ready-card-icon">
+          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        </div>
+        <div class="ob-ready-card-body">
+          <div class="ob-ready-card-title">Create My Own Workout</div>
+          <div class="ob-ready-card-desc">Build from scratch with our exercise library</div>
+        </div>
+      </button>
     </div>
+    <button class="ob-btn-link" id="obSkipOnboarding" style="margin-top:1rem">Start with empty dashboard</button>
   </div>`;
 }
 
@@ -9831,7 +9774,7 @@ function obBindStepEvents(stepId, index) {
   const back = document.getElementById("obBackBtn");
   if (back) {
     back.addEventListener("click", () => {
-      if (index > 0) obGoToStep(stepId === "goal" ? index : index - 1);
+      if (index > 0) obGoToStep(index - 1);
     });
   }
 
@@ -9843,15 +9786,10 @@ function obBindStepEvents(stepId, index) {
   if (stepId === "name") {
     const nameIn = document.getElementById("obName");
     const nextBtn = document.getElementById("obNextBtn");
-    const preview = document.getElementById("obNamePreview");
 
     function checkName() {
       const val = nameIn ? nameIn.value.trim() : "";
       if (nextBtn) nextBtn.disabled = !val;
-      if (preview) {
-        preview.textContent = val ? "Nice to meet you, " + val + "." : "";
-        preview.style.opacity = val ? "1" : "0";
-      }
     }
 
     if (nameIn) {
@@ -9875,17 +9813,35 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "age") {
+  if (stepId === "body") {
+    const hInput = document.getElementById("obHeight");
+    const wInput = document.getElementById("obWeight");
+    const aInput = document.getElementById("obAge");
     const nextBtn = document.getElementById("obNextBtn");
-    const wheel = document.querySelector("[data-wheel='obAgeWheel']");
-    if (wheel) {
-      _obInitWheel(wheel, (val) => {
-        obData.age = Number(val);
-      });
+
+    function checkBody() {
+      const h = parseFloat(hInput?.value);
+      const w = parseFloat(wInput?.value);
+      const a = parseInt(aInput?.value);
+      if (nextBtn) nextBtn.disabled = !(h > 50 && h < 300 && w > 10 && w < 500 && a > 0 && a < 150);
     }
+
+    [hInput, wInput, aInput].forEach(el => {
+      if (el) {
+        el.addEventListener("input", checkBody);
+        el.addEventListener("keydown", (e) => {
+          if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
+        });
+      }
+    });
+
+    checkBody();
+
     if (nextBtn) {
       nextBtn.addEventListener("click", () => {
-        obData.age = Number(_obWheelValue(wheel));
+        obData.height = parseFloat(hInput?.value) || 175;
+        obData.weight = parseFloat(wInput?.value) || 70;
+        obData.age = parseInt(aInput?.value) || 25;
         Object.assign(state.onboardingData, obData); saveState();
         obGoToStep(3);
       });
@@ -9893,75 +9849,45 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "height") {
-    const nextBtn = document.getElementById("obNextBtn");
-    const wheel = document.querySelector("[data-wheel='obHeightWheel']");
-    if (wheel) {
-      _obInitWheel(wheel, (val) => {
-        obData.height = Number(val);
-      });
-    }
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => {
-        obData.height = Number(_obWheelValue(wheel));
-        Object.assign(state.onboardingData, obData); saveState();
-        obGoToStep(4);
-      });
-    }
-    return;
-  }
-
-  if (stepId === "weight") {
-    const input = document.getElementById("obWeight");
-    const nextBtn = document.getElementById("obNextBtn");
-
-    function checkWeight() {
-      const val = input ? parseFloat(input.value) : 0;
-      if (nextBtn) nextBtn.disabled = !(val > 0 && val < 500);
-    }
-
-    if (input) {
-      input.addEventListener("input", checkWeight);
-      input.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
-      });
-    }
-
-    checkWeight();
-
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => {
-        const val = parseFloat(input.value);
-        if (!(val > 0 && val < 500)) { showToast("Please enter a valid weight."); return; }
-        obData.weight = val;
-        Object.assign(state.onboardingData, obData); saveState();
-        obGoToStep(5);
-      });
-    }
-    return;
-  }
-
-  if (stepId === "goal") {
+  if (stepId === "training") {
     document.querySelectorAll("[data-ob-goal]").forEach(btn => {
       btn.addEventListener("click", () => {
-        const wasActive = btn.classList.contains("is-active");
         document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
-        if (!wasActive) {
-          btn.classList.add("is-active");
-          btn.style.animation = "none";
-          btn.offsetHeight;
-          btn.style.animation = "obCardPop 0.35s cubic-bezier(0.34, 1.56, 0.64, 1)";
-          obData.goalType = btn.dataset.obGoal;
-        } else {
-          obData.goalType = "";
-        }
-        const nextBtn = document.getElementById("obNextBtn");
-        if (nextBtn) nextBtn.disabled = !obData.goalType;
+        btn.classList.add("is-active");
+        obData.goalType = btn.dataset.obGoal;
+        checkTrainingReady();
       });
     });
 
+    document.querySelectorAll("[data-ob-exp]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-exp]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.experience = btn.dataset.obExp;
+        checkTrainingReady();
+      });
+    });
+
+    document.querySelectorAll("[data-ob-equip]").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll("[data-ob-equip]").forEach(b => b.classList.remove("is-active"));
+        btn.classList.add("is-active");
+        obData.equipment = btn.dataset.obEquip;
+        checkTrainingReady();
+      });
+    });
+
+    function checkTrainingReady() {
+      const nextBtn = document.getElementById("obNextBtn");
+      if (nextBtn) nextBtn.disabled = !(obData.goalType && obData.experience && obData.equipment);
+    }
+
+    checkTrainingReady();
+
     document.getElementById("obNextBtn")?.addEventListener("click", () => {
       if (!obData.goalType) { showToast("Please select a goal."); return; }
+      if (!obData.experience) { showToast("Please select your experience level."); return; }
+      if (!obData.equipment) { showToast("Please select where you train."); return; }
       obFinishSetup();
     });
     return;
@@ -9986,6 +9912,9 @@ function obFinishSetup() {
   state.user.height = Number(obData.height) || 175;
   state.user.weight = w;
   state.user.goal = mappedGoal;
+  state.user.experience = obData.experience || "Beginner";
+  state.user.equipment = obData.equipment || "gym";
+  state.user.trainingDays = 3;
   state.bodyGoal = mappedGoal;
 
   if (typeof CoachEngine !== "undefined") {
@@ -10020,14 +9949,11 @@ function obFinishSetup() {
   const wasComplete = state.onboardingComplete;
   if (!isProfileEdit) {
     state.onboardingComplete = true;
-    state.coachActivated = true;
-    state.activatedAt = state.activatedAt || getDateKey(new Date());
   }
   Object.assign(state.onboardingData, obData);
   saveState();
 
   if (!isProfileEdit && !wasComplete) {
-    // Show done screen inside the onboarding modal
     const skipBtn = document.getElementById("onboardSkipBtn");
     if (skipBtn) skipBtn.style.display = "none";
     document.getElementById("obStepsFill").style.width = "100%";
@@ -10049,6 +9975,13 @@ function obFinishSetup() {
       });
     });
     document.getElementById("obExploreBtn")?.addEventListener("click", () => {
+      closeOnboarding(true, () => {
+        render();
+        renderProfileScreen();
+        openNewWorkout();
+      });
+    });
+    document.getElementById("obSkipOnboarding")?.addEventListener("click", () => {
       closeOnboarding(true, () => {
         render();
         renderProfileScreen();
@@ -10184,12 +10117,9 @@ document.getElementById("onboardConfirmCancel").addEventListener("click", () => 
 });
 document.getElementById("onboardConfirmSkip").addEventListener("click", () => {
   document.getElementById("onboardConfirmModal").classList.add("is-hidden");
-  state.user = { name: "Athlete", goal: "general", experience: "beginner" };
+  state.user = { name: "Athlete", goal: "general", experience: "Beginner", equipment: "gym", trainingDays: 3 };
   state.bodyGoal = "general";
-  saveState();
   state.onboardingComplete = true;
-  state.coachActivated = true;
-  state.activatedAt = state.activatedAt || getDateKey(new Date());
   saveState();
   closeOnboarding(true, () => render());
 });
