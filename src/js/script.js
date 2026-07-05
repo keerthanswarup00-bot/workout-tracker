@@ -2177,7 +2177,18 @@ function renderSettings() {
     <button class="sg-row" data-setting="export-json"><span>Export Data (JSON)</span><span class="sg-chevron">›</span></button>
     <button class="sg-row" data-setting="import-json"><span>Import Data (JSON)</span><span class="sg-chevron">›</span></button>
     <button class="sg-row" data-setting="restore-backup"><span>Restore Pre-Import Backup</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row sg-row-danger" data-setting="delete-all"><span>Delete All Data</span><span class="sg-chevron">›</span></button>
+  </div>
+
+  <!-- SECTION 10: DANGER ZONE -->
+  <div class="sg sg-danger">
+    <div class="sg-label" style="color:var(--error)">DANGER ZONE</div>
+    <div class="sg-card sg-card-danger" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')">
+      <div class="sg-card-body">
+        <div class="sg-card-name" style="color:var(--error)">Factory Reset</div>
+        <div class="sg-card-meta">Permanently delete all data and start fresh</div>
+      </div>
+      <span class="sg-chevron" style="color:var(--error)">›</span>
+    </div>
   </div>
 
   <!-- SECTION 7: FEEDBACK -->
@@ -3623,19 +3634,24 @@ function renderProfileAchievements() {
   if (achievements) {
     const unlocked = achievements.filter(a => a.unlocked);
     const total = achievements.length;
-    let html = `<div style="display:flex;align-items:center;gap:0.75rem;padding:0.75rem 0">
-      <span style="font-size:0.85rem;font-weight:600;color:var(--text)">${unlocked.length}/${total} Unlocked</span>
-    </div><div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(56px,1fr));gap:0.5rem">`;
+    let html = `<div style="display:flex;align-items:center;gap:0.5rem;padding:0.75rem 0">
+      <div style="flex:1;font-size:0.85rem;font-weight:600">${unlocked.length}/${total} Unlocked</div>
+      <div style="font-size:0.65rem;color:var(--text-secondary);background:var(--surface);padding:0.2rem 0.5rem;border-radius:999px">${total - unlocked.length} remaining</div>
+    </div><div class="pa-grid">`;
     achievements.forEach(a => {
-      html += `<div style="text-align:center;padding:0.5rem;border-radius:8px;background:${a.unlocked ? 'color-mix(in srgb,var(--orange) 15%,transparent)' : 'var(--bg)'};opacity:${a.unlocked ? 1 : 0.35}">
-        <div style="font-size:1.3rem">${a.icon || "🏅"}</div>
-        <div style="font-size:0.6rem;color:var(--text-secondary);margin-top:0.2rem">${a.name || ""}</div>
+      html += `<div class="pa-card${a.unlocked ? '' : ' pa-locked'}">
+        <div class="pa-icon">${a.icon || "🏅"}</div>
+        <div class="pa-name">${a.name || ""}</div>
+        ${a.unlocked ? '<div class="pa-desc">Unlocked</div>' : '<div class="pa-desc">Locked</div>'}
       </div>`;
     });
     html += `</div>`;
     container.innerHTML = html;
   } else {
-    container.innerHTML = `<div style="padding:0.75rem 0;font-size:0.78rem;color:var(--text-secondary);line-height:1.4">Complete workouts and challenges to unlock achievements.</div>`;
+    container.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:0.5rem;padding:1.25rem 0;font-size:0.78rem;color:var(--text-secondary);line-height:1.4;text-align:center">
+      <span style="font-size:1.5rem">🏅</span>
+      <span>Complete workouts and challenges to unlock achievements.</span>
+    </div>`;
   }
 }
 function renderProfileScreen() {
@@ -9261,28 +9277,57 @@ function weeklyWeightChange() {
 function openGoalSelector() {
   const list = document.getElementById("gsList");
   const goals = [
-    { id: "fat-loss", label: "Fat Loss", desc: "Lose body fat while preserving muscle", rate: "0.5–1 kg/week" },
-    { id: "recomp", label: "Recomp", desc: "Build muscle while losing fat", rate: "Maintenance" },
-    { id: "lean-bulk", label: "Lean Bulk", desc: "Gain muscle with minimal fat", rate: "0.25 kg/week" },
-    { id: "aggressive-bulk", label: "Aggressive Bulk", desc: "Maximize muscle gain", rate: "0.5 kg/week" },
+    {
+      id: "fat-loss", label: "Fat Loss", icon: "🔥",
+      desc: "Build a lean physique while preserving muscle.",
+      benefits: "Improved definition, better health markers, increased energy",
+      timeline: "3–6 months to see significant results",
+      examples: "Calorie deficit, HIIT, increased protein intake",
+    },
+    {
+      id: "recomp", label: "Recomposition", icon: "⚖️",
+      desc: "Lose fat while building muscle simultaneously.",
+      benefits: "Body transformation without extreme dieting, sustainable approach",
+      timeline: "6–12 months for noticeable transformation",
+      examples: "Moderate deficit, progressive overload, adequate protein",
+    },
+    {
+      id: "lean-bulk", label: "Lean Bulk", icon: "💪",
+      desc: "Gain muscle mass while minimizing fat gain.",
+      benefits: "Steady strength gains, improved physique, controlled growth",
+      timeline: "4–8 months per bulk phase",
+      examples: "Slight calorie surplus, compound lifts, progressive overload",
+    },
+    {
+      id: "aggressive-bulk", label: "Aggressive Bulk", icon: "🏋️",
+      desc: "Maximize muscle and strength gains rapidly.",
+      benefits: "Fast strength increases, maximum muscle growth potential",
+      timeline: "3–6 months per bulk phase",
+      examples: "High calorie surplus, heavy compounds, higher volume",
+    },
   ];
   const cur = state.bodyGoal || "recomp";
   list.innerHTML = goals.map(g => `
-    <button class="gs-option${cur === g.id ? " is-sel" : ""}" data-goal="${g.id}">
-      <span class="gs-option-title">${g.label}</span>
-      <span class="gs-option-desc">${g.desc}</span>
-      <span class="gs-option-rate">${g.rate}</span>
+    <button class="gs-card${cur === g.id ? " is-sel" : ""}" data-goal="${g.id}">
+      <div class="gs-card-icon">${g.icon}</div>
+      <div class="gs-card-body">
+        <div class="gs-card-title">${g.label}</div>
+        <div class="gs-card-desc">${g.desc}</div>
+        <div class="gs-card-meta">
+          <span class="gs-card-tag">${g.timeline}</span>
+        </div>
+      </div>
     </button>
   `).join("");
   document.getElementById("goalSelectorSheet").classList.remove("is-hidden");
 }
 
-document.getElementById("gsOverlay")?.addEventListener("click", () => {
+document.getElementById("gsCloseBtn")?.addEventListener("click", () => {
   document.getElementById("goalSelectorSheet").classList.add("is-hidden");
 });
 
 document.getElementById("gsList")?.addEventListener("click", (e) => {
-  const opt = e.target.closest(".gs-option");
+  const opt = e.target.closest(".gs-card");
   if (!opt) return;
   const goal = opt.dataset.goal;
   state.bodyGoal = goal;
@@ -11607,13 +11652,32 @@ document.getElementById("settingsContent").addEventListener("change", (e) => {
 });
 
 // Delete data modal (static elements)
-document.getElementById("ddClose").addEventListener("click", () => {
-  document.getElementById("deleteDataModal").classList.add("is-hidden");
+// Factory Reset Flow
+let frState = 0;
+const ddModal = document.getElementById("deleteDataModal");
+document.getElementById("ddClose")?.addEventListener("click", () => { ddModal.classList.add("is-hidden"); });
+document.getElementById("frCancelBtn")?.addEventListener("click", () => { ddModal.classList.add("is-hidden"); });
+document.getElementById("frNextBtn")?.addEventListener("click", () => {
+  document.getElementById("frStep1").style.display = "none";
+  document.getElementById("frStep2").style.display = "";
+  document.getElementById("frInput").focus();
 });
-document.getElementById("ddCancelBtn").addEventListener("click", () => {
-  document.getElementById("deleteDataModal").classList.add("is-hidden");
+document.getElementById("frBackBtn")?.addEventListener("click", () => {
+  document.getElementById("frStep2").style.display = "none";
+  document.getElementById("frStep1").style.display = "";
 });
-document.getElementById("ddConfirmBtn").addEventListener("click", () => {
+document.getElementById("frFinalBackBtn")?.addEventListener("click", () => {
+  document.getElementById("frStep3").style.display = "none";
+  document.getElementById("frStep2").style.display = "";
+});
+document.getElementById("frInput")?.addEventListener("input", function() {
+  document.getElementById("frConfirmBtn").disabled = this.value.trim().toUpperCase() !== "RESET";
+});
+document.getElementById("frConfirmBtn")?.addEventListener("click", () => {
+  document.getElementById("frStep2").style.display = "none";
+  document.getElementById("frStep3").style.display = "";
+});
+document.getElementById("ddConfirmBtn")?.addEventListener("click", () => {
   const keys = [
     STORAGE_KEY, "wl_custom_program", "wl_prs", "nutrition_v2",
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
@@ -11621,7 +11685,6 @@ document.getElementById("ddConfirmBtn").addEventListener("click", () => {
     "wl_preferred_unit", "wl_nutrition_mode", "wl_generator_profile", "wt_autosave",
     "ironlog_learning_progress", "ironlog_goal_center", "ironlog_onboarding",
   ];
-  // Gather all date-prefixed keys
   const allKeys = Object.keys(localStorage);
   allKeys.forEach((k) => {
     if (k.startsWith("wl_meals_") || k.startsWith("wl_water_")) keys.push(k);
@@ -12653,322 +12716,494 @@ function getSortedSplits(goal) {
     .sort((a, b) => b.score - a.score);
 }
 
-// --- Step Renderers ---
-function renderStep1() {
+// --- NEW Step Renderers (Premium Guided Flow) ---
+const GN_TOTAL_STEPS = 11;
+const GN_TITLES = {
+  1: { title: "Where do you train?", desc: "Select your training environment" },
+  2: { title: "Available Equipment", desc: "What equipment do you have access to?" },
+  3: { title: "Workout Days", desc: "How many days per week can you train?" },
+  4: { title: "Workout Duration", desc: "How long per session?" },
+  5: { title: "Primary Goal", desc: "What's your main fitness focus?" },
+  6: { title: "Split Preference", desc: "How should your workouts be structured?" },
+  7: { title: "Muscle Priority", desc: "Any muscle group you want to emphasize?" },
+  8: { title: "Weak Areas", desc: "Any areas you'd like to bring up? (optional)" },
+  9: { title: "Injuries", desc: "Any injuries or limitations? (optional)" },
+  10: { title: "Cardio", desc: "How much cardio do you want included?" },
+  11: { title: "Your Program", desc: "Review and generate your personalized plan" },
+};
+
+function gnUpdateNav(step) {
+  const pct = (step / GN_TOTAL_STEPS * 100);
+  document.getElementById("gmProgressFill").style.width = pct + "%";
+  document.getElementById("gmStepBadge").textContent = "Step " + step + " of " + GN_TOTAL_STEPS;
+  const timeLabels = ["About 2 min", "About 2 min", "About 90s", "About 75s", "About 60s", "About 50s", "About 40s", "About 30s", "About 20s", "About 10s", "Almost done!"];
+  document.getElementById("gmTimeLabel").textContent = timeLabels[step - 1] || "";
+  const info = GN_TITLES[step];
+  if (info) {
+    document.getElementById("gmStepTitle").textContent = info.title;
+    document.getElementById("gmStepDesc").textContent = info.desc;
+  }
+  document.getElementById("gmBackBtn").style.display = step === 1 ? "none" : "";
+  const nextBtn = document.getElementById("gmNextBtn");
+  nextBtn.textContent = step === GN_TOTAL_STEPS ? "Generate My Program" : "Continue";
+  nextBtn.disabled = false;
+}
+
+function gnRenderLocation() {
   const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "What's your goal?";
-  let html = "";
-  Object.entries(GOAL_META).forEach(([key, val]) => {
-    const active = genState.goal === key ? " is-active" : "";
-    html += `<div class="gw-option${active}" data-gw-goal="${key}">
-      <div class="gw-option-icon">${val.icon}</div>
-      <div class="gw-option-content">
-        <div class="gw-option-title">${key}</div>
-        <div class="gw-option-desc">${val.desc}</div>
+  const locs = [
+    { id: "gym", icon: "🏋️", title: "Gym", desc: "Machines · Free Weights · Cables" },
+    { id: "home", icon: "🏠", title: "Home", desc: "Dumbbells · Bands · Bodyweight" },
+    { id: "hybrid", icon: "⚡", title: "Hybrid", desc: "Both Gym and Home" },
+  ];
+  const active = genState.trainingLocation || "";
+  body.innerHTML = `<div class="gn-location-grid">${locs.map(l =>
+    `<button class="gn-location-card${active === l.id ? " is-active" : ""}" data-gn-loc="${l.id}">
+      <div class="gn-loc-icon">${l.icon}</div>
+      <div class="gn-loc-title">${l.title}</div>
+      <div class="gn-loc-desc">${l.desc}</div>
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-location-card").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-location-card").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.trainingLocation = el.dataset.gnLoc;
+      genState.equipment = null;
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderEquipment() {
+  const body = document.getElementById("gmBody");
+  const loc = genState.trainingLocation;
+  if (loc === "home") {
+    const options = [
+      { id: "bodyweight-only", icon: "🤸", label: "Bodyweight Only", desc: "No equipment needed" },
+      { id: "bands", icon: "💪", label: "Resistance Bands", desc: "Various resistance levels" },
+      { id: "dumbbells", icon: "🏋️", label: "Adjustable Dumbbells", desc: "Up to 50kg each" },
+      { id: "full-home", icon: "🏠", label: "Full Home Gym", desc: "Bench, pull-up bar, kettlebells" },
+    ];
+    const selected = genState.equipmentLevel || [];
+    body.innerHTML = `<div class="gn-chips">${options.map(o =>
+      `<button class="gn-chip${selected.includes(o.id) ? " is-active" : ""}" data-gn-eq="${o.id}">
+        <span class="gn-chip-icon">${o.icon}</span> ${o.label}
+      </button>`
+    ).join("")}</div>
+    <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--text-tertiary)">Select all that apply</div>`;
+    body.querySelectorAll(".gn-chip").forEach(el => {
+      el.addEventListener("click", () => {
+        el.classList.toggle("is-active");
+        genState.equipmentLevel = [...body.querySelectorAll(".gn-chip.is-active")].map(c => c.dataset.gnEq);
+        document.getElementById("gmNextBtn").disabled = genState.equipmentLevel.length === 0;
+      });
+    });
+  } else {
+    const options = [
+      { id: "full-gym", icon: "🏛️", label: "Full Gym", desc: "Machines, free weights, cables, racks" },
+      { id: "commercial", icon: "🏋️", label: "Commercial Gym", desc: "Standard commercial gym equipment" },
+      { id: "apartment", icon: "🏢", label: "Apartment Gym", desc: "Limited machines, dumbbells up to 50kg" },
+      { id: "limited", icon: "🎯", label: "Limited Equipment", desc: "Dumbbells, bench, basic gear" },
+    ];
+    const active = genState.equipmentLevel || "";
+    body.innerHTML = `<div class="gn-options">${options.map(o =>
+      `<button class="gn-option${active === o.id ? " is-active" : ""}" data-gn-eq="${o.id}">
+        <div class="gn-option-icon">${o.icon}</div>
+        <div class="gn-option-body">
+          <div class="gn-option-title">${o.label}</div>
+          <div class="gn-option-desc">${o.desc}</div>
+        </div>
+      </button>`
+    ).join("")}</div>`;
+    body.querySelectorAll(".gn-option").forEach(el => {
+      el.addEventListener("click", () => {
+        body.querySelectorAll(".gn-option").forEach(c => c.classList.remove("is-active"));
+        el.classList.add("is-active");
+        genState.equipmentLevel = el.dataset.gnEq;
+        document.getElementById("gmNextBtn").disabled = false;
+      });
+    });
+  }
+}
+
+function gnRenderDays() {
+  const body = document.getElementById("gmBody");
+  const days = [2, 3, 4, 5, 6];
+  const labels = { 2: "Minimal", 3: "Standard", 4: "Frequent", 5: "Dedicated", 6: "Intensive" };
+  const active = genState.days || "";
+  body.innerHTML = `<div class="gn-day-grid">${days.map(d =>
+    `<button class="gn-day-card${active === d ? " is-active" : ""}" data-gn-days="${d}">
+      <div class="gn-day-num">${d}</div>
+      <div class="gn-day-label">${labels[d]}</div>
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-day-card").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-day-card").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.days = parseInt(el.dataset.gnDays);
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderDuration() {
+  const body = document.getElementById("gmBody");
+  const durations = [30, 45, 60, 75, 90];
+  const labels = { 30: "Quick", 45: "Standard", 60: "Extended", 75: "Full", 90: "Intensive" };
+  const active = genState.duration || "";
+  body.innerHTML = `<div class="gn-duration-grid">${durations.map(d =>
+    `<button class="gn-duration-card${active === d ? " is-active" : ""}" data-gn-dur="${d}">
+      <div class="gn-dur-num">${d}</div>
+      <div class="gn-dur-label">${labels[d]} min</div>
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-duration-card").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-duration-card").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.duration = parseInt(el.dataset.gnDur);
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderGoal() {
+  const body = document.getElementById("gmBody");
+  const goals = [
+    { id: "Fat Loss", icon: "🔥", label: "Fat Loss", desc: "Burn fat while preserving muscle", tag: "Popular" },
+    { id: "Muscle Gain", icon: "💪", label: "Build Muscle", desc: "Increase size through progressive overload", tag: "" },
+    { id: "Recomp", icon: "⚖️", label: "Body Recomposition", desc: "Lose fat and build muscle simultaneously", tag: "" },
+    { id: "Strength", icon: "🏋️", label: "Strength", desc: "Increase your compound lifts", tag: "" },
+    { id: "Athletic", icon: "🏃", label: "Athletic Performance", desc: "Improve speed, power, and agility", tag: "" },
+    { id: "Endurance", icon: "❤️", label: "Endurance", desc: "Build stamina and conditioning", tag: "" },
+  ];
+  const active = genState.goal || "";
+  body.innerHTML = `<div class="gn-options">${goals.map(g =>
+    `<button class="gn-option${active === g.id ? " is-active" : ""}" data-gn-goal="${g.id}">
+      <div class="gn-option-icon">${g.icon}</div>
+      <div class="gn-option-body">
+        <div class="gn-option-title">${g.label}</div>
+        <div class="gn-option-desc">${g.desc}</div>
       </div>
-    </div>`;
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(el => {
+      ${g.tag ? '<span class="ob-card-badge">' + g.tag + '</span>' : ""}
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-option").forEach(el => {
     el.addEventListener("click", () => {
-      body.querySelectorAll(".gw-option").forEach(c => c.classList.remove("is-active"));
+      body.querySelectorAll(".gn-option").forEach(c => c.classList.remove("is-active"));
       el.classList.add("is-active");
-      genState.goal = el.dataset.gwGoal;
+      genState.goal = el.dataset.gnGoal;
+      document.getElementById("gmNextBtn").disabled = false;
     });
   });
 }
 
-function renderStep2() {
+function gnRenderSplit() {
   const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Experience Level";
-  let html = "";
-  Object.entries(EXP_META).forEach(([key, val]) => {
-    const active = genState.experience === key ? " is-active" : "";
-    html += `<div class="gw-option${active}" data-gw-exp="${key}">
-      <div class="gw-option-content">
-        <div class="gw-option-title">${key}</div>
-        <div class="gw-option-desc">${val.desc}</div>
-      </div>
-    </div>`;
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(el => {
-    el.addEventListener("click", () => {
-      body.querySelectorAll(".gw-option").forEach(c => c.classList.remove("is-active"));
-      el.classList.add("is-active");
-      genState.experience = el.dataset.gwExp;
-    });
-  });
-}
-
-function renderStep3() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Training Days Per Week";
-  const options = [3, 4, 5, 6];
-  let html = `<div class="gw-days-grid">`;
-  options.forEach(d => {
-    const active = genState.days === d ? " is-active" : "";
-    html += `<div class="gw-day-card${active}" data-gw-days="${d}">
-      <div class="gw-day-num">${d}</div>
-      <div class="gw-day-label">days / week</div>
-    </div>`;
-  });
-  html += `</div>`;
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-day-card").forEach(el => {
-    el.addEventListener("click", () => {
-      body.querySelectorAll(".gw-day-card").forEach(c => c.classList.remove("is-active"));
-      el.classList.add("is-active");
-      genState.days = parseInt(el.dataset.gwDays);
-    });
-  });
-}
-
-function renderStep4() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Available Workout Time";
-  let html = "";
-  Object.entries(TIME_META).forEach(function(_ref) {
-    var key = _ref[0], val = _ref[1];
-    var active = genState.time === key ? " is-active" : "";
-    html += '<div class="gw-option' + active + '" data-gw-time="' + key + '">' +
-      '<div class="gw-option-icon">' + val.icon + '</div>' +
-      '<div class="gw-option-content">' +
-      '<div class="gw-option-title">' + val.label + '</div>' +
-      '<div class="gw-option-desc">' + val.short + '</div></div></div>';
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(function(el) {
-    el.addEventListener("click", function() {
-      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
-      el.classList.add("is-active");
-      genState.time = el.dataset.gwTime;
-    });
-  });
-}
-
-function renderStep5() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Priority Muscle (Optional)";
-  let html = "";
-  Object.entries(PRIORITY_META).forEach(function(_ref) {
-    var key = _ref[0], val = _ref[1];
-    var active = genState.priority === key ? " is-active" : "";
-    html += '<div class="gw-option' + active + '" data-gw-priority="' + key + '">' +
-      '<div class="gw-option-content">' +
-      '<div class="gw-option-title">' + val.label + '</div>' +
-      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(function(el) {
-    el.addEventListener("click", function() {
-      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
-      el.classList.add("is-active");
-      genState.priority = el.dataset.gwPriority;
-    });
-  });
-}
-
-function renderStep6() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Available Equipment";
-  let html = "";
-  Object.entries(EQUIPMENT_META).forEach(function(_ref) {
-    var key = _ref[0], val = _ref[1];
-    var active = genState.equipment === key ? " is-active" : "";
-    html += '<div class="gw-option' + active + '" data-gw-equipment="' + key + '">' +
-      '<div class="gw-option-content">' +
-      '<div class="gw-option-title">' + val.label + '</div>' +
-      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(function(el) {
-    el.addEventListener("click", function() {
-      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
-      el.classList.add("is-active");
-      genState.equipment = el.dataset.gwEquipment;
-    });
-  });
-}
-
-function renderStep7() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Limitations / Injuries";
-  let html = "";
-  Object.entries(LIMITATION_META).forEach(function(_ref) {
-    var key = _ref[0], val = _ref[1];
-    var active = genState.limitation === key ? " is-active" : "";
-    html += '<div class="gw-option' + active + '" data-gw-limitation="' + key + '">' +
-      '<div class="gw-option-content">' +
-      '<div class="gw-option-title">' + val.label + '</div>' +
-      '<div class="gw-option-desc">' + val.desc + '</div></div></div>';
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-option").forEach(function(el) {
-    el.addEventListener("click", function() {
-      body.querySelectorAll(".gw-option").forEach(function(c) { c.classList.remove("is-active"); });
-      el.classList.add("is-active");
-      genState.limitation = el.dataset.gwLimitation;
-    });
-  });
-}
-
-function renderStep8() {
-  const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Choose Your Split";
+  const splits = [
+    { id: "Push Pull Legs", icon: "🔄", desc: "Dedicated push, pull, and leg days. Each muscle group gets 48h recovery.", tag: "Balanced" },
+    { id: "Upper Lower", icon: "📈", desc: "Upper body one day, lower body the next. Great for strength.", tag: "Strength" },
+    { id: "Full Body", icon: "🦾", desc: "Every muscle group each session. Maximum frequency.", tag: "Frequency" },
+    { id: "Arnold", icon: "🏆", desc: "Chest & Back, Shoulders & Arms, Legs. Classic bodybuilding.", tag: "Bodybuilding" },
+    { id: "Bro Split", icon: "💪", desc: "One muscle group per day. Maximum isolation focus.", tag: "Isolation" },
+    { id: "Custom", icon: "✨", desc: "AI selects the optimal split based on your goal and experience.", tag: "Recommended" },
+  ];
   const sorted = getSortedSplits(genState.goal);
-  const recommendedName = sorted[0].name;
-  if (!genState.split) genState.split = recommendedName;
-  let html = "";
-  sorted.forEach(function(s) {
-    const active = genState.split === s.name ? " is-active" : "";
-    const badge = s.name === recommendedName ? '<span class="gw-split-badge gw-split-badge-rec">&#11088; Recommended</span>' : '';
-    const check = active ? '<span class="gw-split-check">&#10003; Selected</span>' : '';
-    html += '<div class="gw-split-card' + active + '" data-gw-split="' + s.name + '">' +
-      '<div class="gw-split-top">' +
-      '<span class="gw-split-name">' + s.name + '</span>' +
-      check +
-      '<span class="gw-split-pct">' + s.score + '% match</span></div>' +
-      '<div class="gw-split-desc">' + s.rec.desc + '</div>' +
-      badge + '</div>';
-  });
-  body.innerHTML = html;
-  body.querySelectorAll(".gw-split-card").forEach(function(el) {
-    el.addEventListener("click", function() {
-      body.querySelectorAll(".gw-split-card").forEach(function(c) { c.classList.remove("is-active"); });
+  const recommended = sorted[0]?.name || "Push Pull Legs";
+  if (!genState.split || genState.split === "AI Recommended") genState.split = recommended;
+  body.innerHTML = `<div class="gn-options">${splits.map(s => {
+    const active = genState.split === s.id ? " is-active" : "";
+    const isRec = s.id === recommended;
+    return `<button class="gn-option${active}" data-gn-split="${s.id}">
+      <div class="gn-option-icon">${s.icon}</div>
+      <div class="gn-option-body">
+        <div class="gn-option-title">${s.id}</div>
+        <div class="gn-option-desc">${s.desc}</div>
+      </div>
+      ${isRec ? '<span class="ob-card-badge">Best Match</span>' : '<span style="font-size:0.65rem;color:var(--text-tertiary)">' + s.tag + '</span>'}
+    </button>`;
+  }).join("")}</div>`;
+  body.querySelectorAll(".gn-option").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-option").forEach(c => c.classList.remove("is-active"));
       el.classList.add("is-active");
-      genState.split = el.dataset.gwSplit;
+      genState.split = el.dataset.gnSplit;
+      document.getElementById("gmNextBtn").disabled = false;
     });
   });
 }
 
-function renderStep9() {
+function gnRenderPriority() {
   const body = document.getElementById("gmBody");
-  document.getElementById("gmStepTitle").textContent = "Program Health";
+  const muscles = [
+    { id: "none", label: "None (Balanced)", icon: "⚖️" },
+    { id: "chest", label: "Chest", icon: "🏋️" },
+    { id: "back", label: "Back", icon: "🔙" },
+    { id: "shoulders", label: "Shoulders", icon: "🔺" },
+    { id: "legs", label: "Legs", icon: "🦵" },
+    { id: "arms", label: "Arms", icon: "💪" },
+  ];
+  const active = genState.priority || "none";
+  body.innerHTML = `<div class="gn-chips">${muscles.map(m =>
+    `<button class="gn-chip${active === m.id ? " is-active" : ""}" data-gn-pri="${m.id}">
+      <span class="gn-chip-icon">${m.icon}</span> ${m.label}
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-chip").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-chip").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.priority = el.dataset.gnPri;
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderWeakAreas() {
+  const body = document.getElementById("gmBody");
+  const areas = ["Chest", "Back", "Legs", "Shoulders", "Arms", "Core", "Mobility", "Cardio"];
+  const selected = genState.weakAreas || [];
+  body.innerHTML = `<div class="gn-chips">${areas.map(a =>
+    `<button class="gn-chip${selected.includes(a) ? " is-active" : ""}" data-gn-weak="${a}">${a}</button>`
+  ).join("")}</div>
+  <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--text-tertiary)">Optional — skip if none</div>`;
+  body.querySelectorAll(".gn-chip").forEach(el => {
+    el.addEventListener("click", () => {
+      el.classList.toggle("is-active");
+      genState.weakAreas = [...body.querySelectorAll(".gn-chip.is-active")].map(c => c.dataset.gnWeak);
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderInjuries() {
+  const body = document.getElementById("gmBody");
+  const injs = [
+    { id: "shoulder", label: "Shoulder" }, { id: "knee", label: "Knee" },
+    { id: "back", label: "Lower Back" }, { id: "wrist", label: "Wrist" },
+    { id: "hip", label: "Hip" }, { id: "ankle", label: "Ankle" },
+    { id: "elbow", label: "Elbow" }, { id: "neck", label: "Neck" },
+  ];
+  const selected = genState.limitation || [];
+  body.innerHTML = `<div class="gn-chips">${injs.map(inj =>
+    `<button class="gn-chip${selected.includes(inj.id) ? " is-active" : ""}" data-gn-inj="${inj.id}">${inj.label}</button>`
+  ).join("")}</div>
+  <div style="margin-top:0.75rem;font-size:0.78rem;color:var(--text-tertiary)">Optional — skip if none</div>`;
+  body.querySelectorAll(".gn-chip").forEach(el => {
+    el.addEventListener("click", () => {
+      el.classList.toggle("is-active");
+      genState.limitation = [...body.querySelectorAll(".gn-chip.is-active")].map(c => c.dataset.gnInj);
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderCardio() {
+  const body = document.getElementById("gmBody");
+  const options = [
+    { id: "none", icon: "🛑", label: "None", desc: "Focus purely on strength" },
+    { id: "walking", icon: "🚶", label: "Walking", desc: "10-15 min post-workout" },
+    { id: "running", icon: "🏃", label: "Running", desc: "20-30 min steady state" },
+    { id: "cycling", icon: "🚴", label: "Cycling", desc: "Moderate intensity" },
+    { id: "hiit", icon: "🔥", label: "HIIT", desc: "High intensity intervals" },
+  ];
+  const active = genState.cardio || "none";
+  body.innerHTML = `<div class="gn-options">${options.map(o =>
+    `<button class="gn-option${active === o.id ? " is-active" : ""}" data-gn-cardio="${o.id}">
+      <div class="gn-option-icon">${o.icon}</div>
+      <div class="gn-option-body">
+        <div class="gn-option-title">${o.label}</div>
+        <div class="gn-option-desc">${o.desc}</div>
+      </div>
+    </button>`
+  ).join("")}</div>`;
+  body.querySelectorAll(".gn-option").forEach(el => {
+    el.addEventListener("click", () => {
+      body.querySelectorAll(".gn-option").forEach(c => c.classList.remove("is-active"));
+      el.classList.add("is-active");
+      genState.cardio = el.dataset.gnCardio;
+      document.getElementById("gmNextBtn").disabled = false;
+    });
+  });
+}
+
+function gnRenderSummary() {
+  const body = document.getElementById("gmBody");
+
+  // Map new fields to backend values
+  const equipMap = {
+    "full-gym": "full-gym", "commercial": "full-gym", "apartment": "dumbbells-only", "limited": "bodyweight-only",
+    "bodyweight-only": "bodyweight-only", "bands": "bodyweight-only", "dumbbells": "dumbbells-only", "full-home": "home-gym",
+  };
+  if (genState.trainingLocation === "home" && Array.isArray(genState.equipmentLevel)) {
+    genState.equipment = genState.equipmentLevel.map(e => equipMap[e] || "bodyweight-only")[0] || "bodyweight-only";
+  } else {
+    genState.equipment = equipMap[genState.equipmentLevel] || "full-gym";
+  }
+
+  // Map duration to time slot
+  const durationMap = { 30: "30-45", 45: "45-60", 60: "60-75", 75: "75-90", 90: "75-90" };
+  genState.time = durationMap[genState.duration] || "45-60";
+
+  // Map goal names to backend goal format
+  const goalMap = {
+    "Fat Loss": "Fat Loss", "Muscle Gain": "Muscle Gain", "Recomp": "General Fitness",
+    "Strength": "Strength", "Athletic": "General Fitness", "Endurance": "Endurance",
+  };
+  genState.goal = goalMap[genState.goal] || "General Fitness";
+
+  // Map split names
+  const splitMap = {
+    "Push Pull Legs": "Push Pull Legs", "Upper Lower": "Upper Lower", "Full Body": "Full Body",
+    "Arnold": "Push Pull Legs", "Bro Split": "Push Pull Legs", "Custom": "Push Pull Legs",
+  };
+  genState.split = splitMap[genState.split] || "Push Pull Legs";
+
+  // Prefill experience from user profile if not set
+  if (!genState.experience) {
+    const u = state.user;
+    const expMap = { "beginner": "Beginner", "intermediate": "Intermediate", "advanced": "Advanced" };
+    genState.experience = (u && expMap[u.experience]) || "Beginner";
+  }
+
+  // Generate the schedule
   const schedule = generateWeeklySchedule(genState.goal, genState.experience, genState.split, genState.days, genState.time, genState.priority, genState.equipment, genState.limitation);
   genState.schedule = schedule;
-  const totWorkouts = schedule.filter(function(d) { return d.type === "workout"; }).length;
-  const totRecovery = schedule.filter(function(d) { return d.type === "recovery"; }).length;
-  const timeLabel = TIME_META[genState.time] ? TIME_META[genState.time].label : "";
-  const equipLabel = EQUIPMENT_META[genState.equipment] ? EQUIPMENT_META[genState.equipment].label : "";
-  const limLabel = LIMITATION_META[genState.limitation] ? LIMITATION_META[genState.limitation].label : "";
-  const prioLabel = PRIORITY_META[genState.priority] ? PRIORITY_META[genState.priority].label : "";
-  var duration = "45-60 min";
-  if (genState.time === "30-45") duration = "30-45 min";
-  else if (genState.time === "60-75") duration = "60-75 min";
-  else if (genState.time === "75-90") duration = "75-90 min";
 
-  let html = '<div class="gw-program-summary">' +
-    '<div class="gw-ps-name">' + genState.split + ' Program</div>' +
-    '<div class="gw-ps-grid">' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Goal</span><span class="gw-ps-val">' + genState.goal + '</span></div>' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Split</span><span class="gw-ps-val">' + genState.split + '</span></div>' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Experience</span><span class="gw-ps-val">' + genState.experience + '</span></div>' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Training Days</span><span class="gw-ps-val">' + totWorkouts + '</span></div>' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Recovery Days</span><span class="gw-ps-val">' + totRecovery + '</span></div>' +
-    '<div class="gw-ps-item"><span class="gw-ps-label">Duration</span><span class="gw-ps-val">' + duration + '</span></div>' +
-    '</div></div>';
-
-  schedule.forEach(function(d) {
-    if (d.type === "workout") {
-      html += '<div class="gw-review-day">' +
-        '<div class="gw-review-day-header">' +
-        '<span>' + DAY_LABELS[d.day] + ' · ' + d.name + '</span>' +
-        '<span class="gw-day-tag">Workout</span></div>';
-      d.exercises.forEach(function(ex) {
-        var sVal = (typeof ex.sets === "number" && !isNaN(ex.sets)) ? ex.sets : "—";
-        var rVal = (typeof ex.reps === "number" && !isNaN(ex.reps)) ? ex.reps : "—";
-        html += '<div class="gw-review-ex">' +
-          '<span class="gw-review-ex-name">' + ex.name + '</span>' +
-          '<span class="gw-review-ex-meta">' + sVal + ' Sets × ' + rVal + ' Reps</span></div>';
-      });
-      html += '</div>';
-    } else {
-      html += '<div class="gw-review-day">' +
-        '<div class="gw-review-day-header">' +
-        '<span>' + DAY_LABELS[d.day] + ' · Recovery</span>' +
-        '<span class="gw-day-tag is-recovery">Recovery</span></div>' +
-        '<div class="gw-review-recovery">' +
-        '<div class="gw-review-recovery-title">' + d.icon + ' ' + d.title + '</div>' +
-        '<div class="gw-review-recovery-desc">' + d.desc + '</div></div></div>';
+  const totWorkouts = schedule.filter(d => d.type === "workout").length;
+  const totRecovery = schedule.filter(d => d.type === "recovery").length;
+  const totalSets = schedule.reduce((sum, d) => {
+    if (d.type === "workout" && Array.isArray(d.exercises)) {
+      return sum + d.exercises.reduce((s, ex) => s + (typeof ex.sets === "number" ? ex.sets : 3), 0);
     }
-  });
-  body.innerHTML = html;
+    return sum;
+  }, 0);
+  const weeklyVolume = totalSets * (genState.days || 3);
+  const durLabels = { 30: "30 min", 45: "45 min", 60: "60 min", 75: "75 min", 90: "90 min" };
+  const locLabels = { gym: "Gym", home: "Home", hybrid: "Hybrid" };
+
+  body.innerHTML = `<div class="gn-summary">
+    <div class="gn-summary-volume">
+      <div class="gn-summary-volume-label">Estimated Weekly Volume</div>
+      <div class="gn-summary-volume-value">${weeklyVolume} reps</div>
+      <div style="font-size:0.75rem;color:var(--text-secondary);margin-top:0.2rem">${durLabels[genState.duration] || "45 min"} · ${genState.split} · ${totWorkouts}x/week</div>
+    </div>
+    <div class="gn-summary-grid">
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Goal</div>
+        <div class="gn-summary-value">${genState.goal}</div>
+      </div>
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Experience</div>
+        <div class="gn-summary-value">${genState.experience}</div>
+      </div>
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Location</div>
+        <div class="gn-summary-value">${locLabels[genState.trainingLocation] || "Gym"}</div>
+      </div>
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Duration</div>
+        <div class="gn-summary-value">${durLabels[genState.duration] || "45 min"}</div>
+      </div>
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Workout Days</div>
+        <div class="gn-summary-value">${totWorkouts}x / week</div>
+      </div>
+      <div class="gn-summary-card">
+        <div class="gn-summary-label">Recovery Days</div>
+        <div class="gn-summary-value">${totRecovery}x / week</div>
+      </div>
+    </div>
+    <p class="gn-summary-note">You can adjust or regenerate anytime after creation.</p>
+  </div>`;
 }
 
 // --- Wizard Navigation ---
-function goToStep(step) {
+function gnGoToStep(step) {
   genState.step = step;
-  const backBtn = document.getElementById("gmBackBtn");
-  const nextBtn = document.getElementById("gmNextBtn");
-  backBtn.style.display = step === 1 ? "none" : "";
-  if (step === 9) {
-    nextBtn.textContent = "Save Program";
-  } else {
-    nextBtn.textContent = "Next";
-  }
-  document.getElementById("gmStepBadge").textContent = "Step " + step + " of 9";
+  gnUpdateNav(step);
+  // Re-trigger slide animation on body
+  const body = document.getElementById("gmBody");
+  body.style.animation = "none";
+  body.offsetHeight;
+  body.style.animation = "";
+
   switch (step) {
-    case 1: renderStep1(); break;
-    case 2: renderStep2(); break;
-    case 3: renderStep3(); break;
-    case 4: renderStep4(); break;
-    case 5: renderStep5(); break;
-    case 6: renderStep6(); break;
-    case 7: renderStep7(); break;
-    case 8: renderStep8(); break;
-    case 9: renderStep9(); break;
+    case 1: gnRenderLocation(); break;
+    case 2: gnRenderEquipment(); break;
+    case 3: gnRenderDays(); break;
+    case 4: gnRenderDuration(); break;
+    case 5: gnRenderGoal(); break;
+    case 6: gnRenderSplit(); break;
+    case 7: gnRenderPriority(); break;
+    case 8: gnRenderWeakAreas(); break;
+    case 9: gnRenderInjuries(); break;
+    case 10: gnRenderCardio(); break;
+    case 11: gnRenderSummary(); break;
   }
+  // Disable next when no selection made (except for optional steps)
+  const nextBtn = document.getElementById("gmNextBtn");
+  const s = step;
+  if (s === 1 && !genState.trainingLocation) nextBtn.disabled = true;
+  else if (s === 2 && !genState.equipmentLevel) nextBtn.disabled = true;
+  else if (s === 3 && !genState.days) nextBtn.disabled = true;
+  else if (s === 4 && !genState.duration) nextBtn.disabled = true;
+  else if (s === 5 && !genState.goal) nextBtn.disabled = true;
+  else if (s === 6 && !genState.split) nextBtn.disabled = true;
+  else if (s === 7 && !genState.priority) nextBtn.disabled = true;
+  else if (s === 8) nextBtn.disabled = false; // optional
+  else if (s === 9) nextBtn.disabled = false; // optional
+  else if (s === 10 && !genState.cardio) nextBtn.disabled = true;
 }
 
-function nextStep() {
+function gnNextStep() {
   const s = genState.step;
-  if (s === 1 && !genState.goal) { showToast("Select a goal to continue."); return; }
-  if (s === 2 && !genState.experience) { showToast("Select your experience level."); return; }
+  if (s === 1 && !genState.trainingLocation) { showToast("Select where you train."); return; }
+  if (s === 2 && !genState.equipmentLevel) { showToast("Select your equipment."); return; }
   if (s === 3 && !genState.days) { showToast("Select training days."); return; }
-  if (s === 4 && !genState.time) { showToast("Select available workout time."); return; }
-  if (s === 8 && !genState.split) { showToast("Select a workout split."); return; }
-  if (s === 9) { saveGeneratedProgram(); return; }
-  goToStep(s + 1);
+  if (s === 4 && !genState.duration) { showToast("Select workout duration."); return; }
+  if (s === 5 && !genState.goal) { showToast("Select a goal."); return; }
+  if (s === 6 && !genState.split) { showToast("Select a split."); return; }
+  if (s === 10 && !genState.cardio) { genState.cardio = "none"; }
+  if (s === GN_TOTAL_STEPS) { saveGeneratedProgram(); return; }
+  gnGoToStep(s + 1);
 }
 
-function prevStep() {
-  if (genState.step > 1) goToStep(genState.step - 1);
+function gnPrevStep() {
+  if (genState.step > 1) gnGoToStep(genState.step - 1);
 }
 
-// --- Open / Cancel ---
+// --- Open ---
 function openGenerateWorkout() {
   const u = state.user;
-  const goalMap = {
-    "build-muscle": "Muscle Gain",
-    "lose-fat": "Fat Loss",
-    "fat-loss": "Fat Loss",
-    "recomp": "General Fitness",
-    "strength": "Strength",
-    "general": "General Fitness",
-    "athletic": "General Fitness",
-    "custom": "General Fitness",
-  };
-  const expMap = {
-    "beginner": "Beginner",
-    "intermediate": "Intermediate",
-    "advanced": "Advanced",
-  };
-  genState.step = 1;
-  genState.goal = goalMap[GoalCenter.getGoalType()] || goalMap[u.goal] || null;
-  genState.experience = (u && expMap[u.experience]) || null;
-  genState.days = (u && u.trainingDays) || null;
-  genState.time = null;
-  genState.priority = "none";
-  const equipMap = { "gym": "full-gym", "home": "home-gym", "minimal": "dumbbells-only", "bodyweight": "bodyweight-only" };
-  genState.equipment = equipMap[u.equipment] || "full-gym";
+  const expMap = { "beginner": "Beginner", "intermediate": "Intermediate", "advanced": "Advanced" };
+  const equipMap = { "gym": "full-gym", "home": "bodyweight-only", "minimal": "dumbbells-only", "bodyweight": "bodyweight-only" };
   const injuryLimits = { "shoulder": "shoulder", "knee": "knee", "back": "lower-back", "lower-back": "lower-back", "wrist": "wrist", "hip": "hip", "neck": "neck", "ankle": "ankle", "elbow": "elbow" };
-  genState.limitation = (Array.isArray(u.injuries) && u.injuries.length > 0) ? u.injuries.filter(i => injuryLimits[i]).map(i => injuryLimits[i]) : [];
-  genState.split = null;
-  genState.schedule = null;
+  const goalMap = { "build-muscle": "Muscle Gain", "lose-fat": "Fat Loss", "fat-loss": "Fat Loss", "recomp": "Recomp", "strength": "Strength", "general": "General Fitness", "athletic": "Athletic", "custom": "General Fitness" };
+
+  genState = {
+    ...genState,
+    step: 1,
+    trainingLocation: null,
+    equipmentLevel: null,
+    duration: null,
+    cardio: null,
+    weakAreas: [],
+    goal: goalMap[GoalCenter.getGoalType()] || goalMap[u?.goal] || null,
+    experience: (u && expMap[u.experience]) || null,
+    days: (u && u.trainingDays) || null,
+    time: null,
+    priority: "none",
+    equipment: equipMap[u?.equipment] || "full-gym",
+    limitation: (Array.isArray(u?.injuries) && u.injuries.length > 0) ? u.injuries.filter(i => injuryLimits[i]).map(i => injuryLimits[i]) : [],
+    split: null,
+    schedule: null,
+  };
   document.getElementById("generateModal").classList.remove("is-hidden");
   showGmOverlay(null);
-  goToStep(1);
+  gnGoToStep(1);
 }
 
 // --- Save ---
@@ -13100,7 +13335,6 @@ document.getElementById("gmViewProgramBtn")?.addEventListener("click", () => {
   showScreen("screen-home");
   renderHome();
 
-  // Scroll to and highlight the newly created program
   setTimeout(() => {
     const cards = document.querySelectorAll(".wo-card-item");
     if (cards.length > 0) {
@@ -13115,9 +13349,9 @@ document.getElementById("gmFailureClose")?.addEventListener("click", () => {
   showGmOverlay(null);
 });
 
-document.getElementById("gmNextBtn")?.addEventListener("click", nextStep);
-document.getElementById("gmBackBtn")?.addEventListener("click", prevStep);
-document.getElementById("gmCancelBtn")?.addEventListener("click", () => {
+document.getElementById("gmNextBtn")?.addEventListener("click", gnNextStep);
+document.getElementById("gmBackBtn")?.addEventListener("click", gnPrevStep);
+document.getElementById("gmCloseBtn")?.addEventListener("click", () => {
   document.getElementById("generateModal").classList.add("is-hidden");
   showGmOverlay(null);
 });
