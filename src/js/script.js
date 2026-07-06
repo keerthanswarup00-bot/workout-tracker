@@ -10134,7 +10134,7 @@ function obBindEvents(stepId, idx) {
     document.getElementById("obNextBtn")?.addEventListener("click", function() {
       if (!obData.goalType) return;
       Object.assign(state.onboardingData, obData); saveState();
-    obGoToStep(7);
+    obGoToStep(6);
     });
     return;
   }
@@ -10238,7 +10238,7 @@ function obFinishSetup() {
   body.style.transform = "scale(0.96)";
 
   setTimeout(function() {
-    obGoToStep(6);
+    obGoToStep(7);
   }, 280);
 }
 
