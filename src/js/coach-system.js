@@ -438,7 +438,6 @@ const CoachSystem = (() => {
 
   // ===== MODULE: HOME =====
   function renderHome() {
-    const coach = Data.getCoachEngine();
     const gc = Data.getGoalCenterAll();
     const profile = Data.getProfile();
     const sessions = Data.getSessions();
@@ -448,32 +447,7 @@ const CoachSystem = (() => {
     const gMsg = Data.getDailyMessage();
     const settings = Data.getSettings();
 
-    if (!coach) {
-      var fallbackCoach = {
-        daily: { name: profile.name || "Athlete", coachMessage: gMsg || "Keep showing up — progress takes time." },
-        recovery: { score: 50, label: "Moderate", assessments: [] },
-        goalStrategy: { label: "Stay active", progress: 0, milestones: [] },
-        insights: [],
-        progress: { weeklyWorkouts: weekSessions, weeklyVolume: weekVolume, totalWorkouts: sessions.length },
-        reports: [],
-        education: [{ title: "Trust the Process", summary: "Consistency matters more than perfection. Show up every day." }],
-      };
-      coach = fallbackCoach;
-    }
-
-    const dc = coach.daily;
-    const rec = coach.recovery;
-    const gs = coach.goalStrategy;
-    const ins = coach.insights;
-    const prog = coach.progress;
-    const rep = coach.reports;
-
-    // Recovery readiness
-    const rcScore = rec.score || 0;
-    const rcLabel = rec.label || "Unknown";
-    const rcColor = rcScore >= 75 ? "green" : rcScore >= 60 ? "orange" : "red";
-
-    // Weekly stats
+    // Weekly stats (computed before fallback in case coach is null)
     const weekSessions = sessions.filter(function(s) {
       const weekAgo = new Date();
       weekAgo.setDate(weekAgo.getDate() - 7);
@@ -490,6 +464,32 @@ const CoachSystem = (() => {
         }, 0);
       }, 0);
     }, 0);
+
+    let coach = Data.getCoachEngine();
+
+    if (!coach) {
+      coach = {
+        daily: { name: profile.name || "Athlete", coachMessage: gMsg || "Keep showing up — progress takes time." },
+        recovery: { score: 50, label: "Moderate", assessments: [] },
+        goalStrategy: { label: "Stay active", progress: 0, milestones: [] },
+        insights: [],
+        progress: { weeklyWorkouts: weekSessions, weeklyVolume: weekVolume, totalWorkouts: sessions.length },
+        reports: [],
+        education: [{ title: "Trust the Process", summary: "Consistency matters more than perfection. Show up every day." }],
+      };
+    }
+
+    const dc = coach.daily;
+    const rec = coach.recovery;
+    const gs = coach.goalStrategy;
+    const ins = coach.insights;
+    const prog = coach.progress;
+    const rep = coach.reports;
+
+    // Recovery readiness
+    const rcScore = rec.score || 0;
+    const rcLabel = rec.label || "Unknown";
+    const rcColor = rcScore >= 75 ? "green" : rcScore >= 60 ? "orange" : "red";
 
     // Daily macros
     const dateKey = typeof getDateKey === "function" ? getDateKey() : new Date().toISOString().slice(0, 10);

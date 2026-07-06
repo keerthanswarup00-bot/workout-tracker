@@ -290,9 +290,9 @@ const GoalCenter = (() => {
     let engineProtein = null;
     let engineCalories = null;
     let engineWater = null;
-    if (typeof CoachEngine !== "undefined") {
-      const engProfile = CoachEngine.buildProfile(state);
-      const engResult = CoachEngine.generate(engProfile);
+    if (typeof CoachCore !== "undefined") {
+      const engProfile = CoachCore.buildProfile(state);
+      const engResult = CoachCore.generate(engProfile);
       if (engResult.valid) {
         const p = engResult.nutrition.protein;
         engineProtein = p ? `${p.recommended}g (${p.low}-${p.high}g)` : null;

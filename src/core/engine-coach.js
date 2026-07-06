@@ -1,7 +1,7 @@
 // ===== COACH ENGINE: ORCHESTRATOR =====
 // Centralized recommendation engine — all app logic flows through here
 
-const CoachEngine = (() => {
+const CoachCore = (() => {
 
   const C = typeof CoachCalculators !== "undefined" ? CoachCalculators : {};
   const R = typeof CoachRules !== "undefined" ? CoachRules : {};
@@ -439,4 +439,4 @@ const CoachEngine = (() => {
   };
 })();
 
-if (typeof window !== "undefined") window.CoachEngine = CoachEngine;
+if (typeof window !== "undefined") window.CoachCore = CoachCore;

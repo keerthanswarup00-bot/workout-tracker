@@ -119,7 +119,7 @@ const ProgramGenerator = (() => {
     if (days >= 5) {
       if (goal === "build-muscle" || goal === "general-fitness") return "Push Pull Legs";
       if (goal === "strength") return "Upper Lower";
-      if (goal === "fat-loss") return "Full Body";
+      if (goal === "lose-fat") return "Full Body";
     }
     return "Push Pull Legs";
   }
@@ -136,7 +136,10 @@ const ProgramGenerator = (() => {
 
   function selectExercisesForDay(focusMuscles, allExercises, goal, experience, duration, equipment) {
     const available = filterByEquipment(allExercises, equipment);
-    const repRange = R.getRepRange ? R.getRepRange(goal) : { min: 6, max: 12 };
+    const repRanges = {
+      compound: R.getRepRange ? R.getRepRange(goal, true, experience) : { min: 6, max: 12 },
+      isolation: R.getRepRange ? R.getRepRange(goal, false, experience) : { min: 8, max: 15 },
+    };
     const exCount = R.getExerciseCount ? R.getExerciseCount(experience) : { min: 4, max: 6 };
     const compoundRatio = R.getCompoundRatio ? R.getCompoundRatio(goal) : { compound: 0.6, isolation: 0.4 };
 
@@ -166,7 +169,10 @@ const ProgramGenerator = (() => {
     }
 
     const allSelected = [...selectedCompounds, ...selectedIsolations];
-    const restTime = R.getRestSeconds ? R.getRestSeconds(goal) : { compound: 90, isolation: 60 };
+    const restTimes = {
+      compound: R.getRestSeconds ? R.getRestSeconds(goal, true) : 90,
+      isolation: R.getRestSeconds ? R.getRestSeconds(goal, false) : 60,
+    };
 
     const durationMinutes = Math.max(20, duration || 45);
     const availableMinutesPerEx = durationMinutes / Math.max(allSelected.length, 1);
@@ -174,9 +180,9 @@ const ProgramGenerator = (() => {
 
     return allSelected.map(ex => {
       const isComp = ex.isCompound;
-      const reps = isComp ? repRange.compound || repRange : repRange.isolation || repRange;
+      const reps = isComp ? repRanges.compound : repRanges.isolation;
       const sets = clamp(adjustedSets, 2, isComp ? 5 : 4);
-      const rest = isComp ? restTime.compound : restTime.isolation;
+      const rest = isComp ? restTimes.compound : restTimes.isolation;
 
       return {
         id: ex.id,

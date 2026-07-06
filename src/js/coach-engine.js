@@ -204,9 +204,9 @@ const CoachEngine = (() => {
   // ============================================================
   function daily() {
     const user = state.user || {};
-    const goal = CoachEngine.getGoalType();
-    const profile = CoachEngine.buildProfile(state);
-    const engineResult = CoachEngine.generate(profile);
+    const goal = CoachCore.getGoalType();
+    const profile = CoachCore.buildProfile(state);
+    const engineResult = CoachCore.generate(profile);
     const proteinGoal = engineResult?.nutrition?.protein?.recommended || user.proteinGoal || Math.round(profile.weight * 1.6);
     const waterGoal = engineResult?.nutrition?.water?.liters || (user.waterGoal ? user.waterGoal / 1000 : Math.round(profile.weight * 0.04 * 10) / 10);
     const stepGoal = goal === "lose-fat" ? 12000 : 10000;
@@ -777,9 +777,9 @@ const CoachEngine = (() => {
   // ============================================================
   function nutrition() {
     const user = state.user || {};
-    const goal = CoachEngine.getGoalType();
-    const profile = CoachEngine.buildProfile(state);
-    const engineResult = CoachEngine.generate(profile);
+    const goal = CoachCore.getGoalType();
+    const profile = CoachCore.buildProfile(state);
+    const engineResult = CoachCore.generate(profile);
     const targetWeight = getLastWeight()?.weight || user.weight || 70;
 
     const proteinTarget = engineResult?.nutrition?.protein?.recommended || user.proteinGoal || Math.round(targetWeight * 1.6);
