@@ -5737,3 +5737,15 @@ h4, .h4 { font-size: 16px; font-weight: 600; line-height: 1.3 }
 .hm-workout-sm { display:flex;justify-content:space-between;align-items:center;padding:0.65rem 0.75rem;background:var(--surface-2);border-radius:var(--radius-sm);border:none;color:var(--text);font-size:var(--text-body);font-weight:600;cursor:pointer;text-align:left;width:100%; }
 .hm-workout-sm:active { background:var(--surface-3); }
 .hm-workout-sm-arrow { font-size:var(--text-caption);color:var(--text-tertiary); }
+
+/* Utility: Section labels & cards */
+.section-label { font-size:var(--text-caption);font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:0.5rem 0 0.35rem; }
+.card-content { display:flex;flex-direction:column;gap:0.35rem; }
+.empty-card { padding:1rem;background:var(--surface-2);border-radius:var(--radius-sm);font-size:var(--text-body);color:var(--text-tertiary);text-align:center; }
+.empty-card-content { font-size:var(--text-body);color:var(--text-tertiary);line-height:1.4; }
+.btn-danger { display:inline-flex;align-items:center;gap:0.35rem;padding:0.55rem 1rem;border-radius:8px;font-size:0.8rem;font-weight:700;cursor:pointer;font-family:inherit;transition:all 0.15s;border:none;color:#fff;background:color-mix(in srgb,var(--error) 80%,#000); }
+.btn-danger:active { transform:scale(0.97);opacity:0.85; }
+
+/* PE Sheet (profile editor bottom sheet) */
+.pe-section { transition:transform 0.12s ease; }
+.pe-section:active { transform:scale(0.99); }

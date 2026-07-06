@@ -6,6 +6,17 @@ const CAL_GOAL = 2100;
 const WATER_TARGET = 3000;
 const DEFAULT_REST = 90;
 
+const AVATAR_GRADIENTS = [
+  ["#00d26a", "#00994d"],
+  ["#3b82f6", "#1d4ed8"],
+  ["#8b5cf6", "#6d28d9"],
+  ["#f59e0b", "#d97706"],
+  ["#ef4444", "#dc2626"],
+  ["#ec4899", "#db2777"],
+  ["#06b6d4", "#0891b2"],
+  ["#f97316", "#ea580c"],
+];
+
 window.addEventListener("error", (e) => {
   if (typeof showToast === "function") {
     showToast("Something went wrong. Try refreshing.");
@@ -2180,6 +2191,10 @@ function activateTab(tabName) {
     document.querySelectorAll(".panel").forEach((p) => p.classList.toggle("is-active", p.id === panelId));
   }
   positionNavIndicator();
+  var avatarBtn = document.getElementById("topbarAvatarBtn");
+  if (avatarBtn) {
+    avatarBtn.style.display = tabName === "sets" ? "" : "none";
+  }
   if (tabName === "progress") renderProgressPage();
   if (tabName === "sessions") renderSessionsTab();
   if (tabName === "sets") renderSetsPanel();
@@ -2839,6 +2854,14 @@ function showScreen(screenId) {
     restTimerInterval = null;
     document.getElementById("restTimer")?.classList.add("is-hidden");
   }
+  var avatarBtn = document.getElementById("topbarAvatarBtn");
+  if (avatarBtn) {
+    if (screenId === "screen-home") {
+      avatarBtn.style.display = "";
+    } else {
+      avatarBtn.style.display = "none";
+    }
+  }
 }
 
 // ===== HOME DASHBOARD =====
@@ -2867,182 +2890,137 @@ function getLastWorkoutForPlan(workoutId) {
 }
 
 function renderHome() {
-  const user = state.user;
-  const name = user ? user.name : "there";
-  const g = getGreeting();
-  const streak = getStreak();
-  const latestLog = (state.weightLog || []).sort((a, b) => b.date.localeCompare(a.date))[0];
-  const weight = latestLog ? latestLog.weight : user ? user.weight : null;
-  const hasWeight = weight != null;
-  const daysSinceWeight = getDaysSinceLastWeight();
-  const checkInDue = daysSinceWeight !== null && daysSinceWeight > 7;
-  const goalLabel = typeof GoalCenter !== "undefined" && GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
-  const activePlan = loadCustomProgram() || plan;
-  const todaySession = getTodaySession();
-  const hasPlan = activePlan && activePlan.length > 0;
-  const hasData = (state.sessions || []).filter(s => s.finishedAt).length > 0 || (state.weightLog || []).length > 0;
+  var user = state.user;
+  var name = user ? user.name : "there";
+  var g = getGreeting();
+  var streak = getStreak();
+  var latestLog = (state.weightLog || []).sort(function(a,b){return b.date.localeCompare(a.date)})[0];
+  var weight = latestLog ? latestLog.weight : user ? user.weight : null;
+  var hasWeight = weight != null;
+  var daysSinceWeight = getDaysSinceLastWeight();
+  var checkInDue = daysSinceWeight !== null && daysSinceWeight > 7;
+  var goalLabel = typeof GoalCenter !== "undefined" && GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
+  var activePlan = loadCustomProgram() || plan;
+  var todaySession = getTodaySession();
+  var hasPlan = activePlan && activePlan.length > 0;
+  var hasData = (state.sessions || []).filter(function(s){return s.finishedAt}).length > 0 || (state.weightLog || []).length > 0;
 
-  // Greeting
-  let html = `
-    <div class="hm-greeting">
-      <div class="hm-greeting-text">${g.text}, ${escapeHtml(name)}</div>
-      <div class="hm-greeting-msg">${getDailyMessage()}</div>
-    </div>`;
+  // 1. Greeting (always)
+  var html = '<div class="hm-greeting">' +
+    '<div class="hm-greeting-text">' + g.text + ', ' + escapeHtml(name) + '</div>' +
+    '<div class="hm-greeting-msg">' + getDailyMessage() + '</div>' +
+  '</div>';
 
-  // Quick Stats row
-  html += `<div class="hm-stats">
-    <div class="hm-stat">
-      <div class="hm-stat-val">${streak}</div>
-      <div class="hm-stat-lbl">Streak</div>
-    </div>
-    <div class="hm-stat">
-      <div class="hm-stat-val">${hasWeight ? displayWeight(weight) : "—"}</div>
-      <div class="hm-stat-lbl">Weight ${checkInDue ? '<span class="hm-stat-due">Due</span>' : ""}</div>
-    </div>
-    <div class="hm-stat">
-      <div class="hm-stat-val">${goalLabel || "—"}</div>
-      <div class="hm-stat-lbl">Goal</div>
-    </div>
-  </div>`;
-
-  // Log Weight button
-  html += `<button class="hm-log-weight" id="qaLogWeight">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-    Log Weight
-  </button>`;
-
-  // Today's Workout section
-  html += `<div class="hm-section">
-    <div class="hm-section-title">Today</div>`;
+  // 2. Current Program / Start Workout (top priority)
+  html += '<div class="hm-section"><div class="hm-section-title">Today</div>';
 
   if (todaySession && todaySession.exercises && todaySession.exercises.length > 0) {
-    const totalSets = todaySession.exercises.reduce((a, e) => a + (e.sets || []).length, 0);
-    const doneSets = todaySession.exercises.reduce((a, e) => a + (e.sets || []).filter(s => s.done).length, 0);
-    const pct = totalSets > 0 ? Math.round(doneSets / totalSets * 100) : 0;
-    const nextEx = todaySession.exercises.find(e => (e.sets || []).some(s => !s.done));
-    const estTime = totalSets * 2;
+    var totalSets = todaySession.exercises.reduce(function(a,e){return a + (e.sets||[]).length}, 0);
+    var doneSets = todaySession.exercises.reduce(function(a,e){return a + (e.sets||[]).filter(function(s){return s.done}).length}, 0);
+    var pct = totalSets > 0 ? Math.round(doneSets / totalSets * 100) : 0;
+    var nextEx = todaySession.exercises.find(function(e){return (e.sets||[]).some(function(s){return !s.done})});
 
-    html += `<div class="hm-workout-card">
-      <div class="hm-wc-top">
-        <div class="hm-wc-name">${escapeHtml(todaySession.workoutName || "Workout")}</div>
-        <div class="hm-wc-pct">${pct}%</div>
-      </div>
-      <div class="hm-wc-bar"><div class="hm-wc-fill" style="width:${pct}%"></div></div>
-      <div class="hm-wc-info">
-        <span>${totalSets - doneSets} sets remaining</span>
-        <span>~${estTime} min</span>
-      </div>
-      ${nextEx ? `<div class="hm-wc-next">Next: ${escapeHtml(nextEx.name)}</div>` : ""}
-      <button class="hm-wc-btn" id="hmStartWorkout">${doneSets > 0 ? "Continue" : "Start"} Workout</button>
-    </div>`;
+    html += '<div class="hm-workout-card">' +
+      '<div class="hm-wc-top"><div class="hm-wc-name">' + escapeHtml(todaySession.workoutName || "Workout") + '</div><div class="hm-wc-pct">' + pct + '%</div></div>' +
+      '<div class="hm-wc-bar"><div class="hm-wc-fill" style="width:' + pct + '%"></div></div>' +
+      '<div class="hm-wc-info"><span>' + (totalSets - doneSets) + ' sets remaining</span></div>' +
+      (nextEx ? '<div class="hm-wc-next">Next: ' + escapeHtml(nextEx.name) + '</div>' : '') +
+      '<button class="hm-wc-btn" id="hmStartWorkout">' + (doneSets > 0 ? "Continue" : "Start") + ' Workout</button>' +
+    '</div>';
   } else if (hasPlan) {
-    const todayWorkout = activePlan.find(w => {
+    var todayWorkout = activePlan.find(function(w){
       if (!w.id) return false;
-      return !state.sessions.some(s => s.workoutId === w.id && s.finishedAt && s.dateKey === getDateKey());
+      return !state.sessions.some(function(s){return s.workoutId === w.id && s.finishedAt && s.dateKey === getDateKey()});
     }) || activePlan[0];
-    const lastSesh = state.sessions.filter(s => s.finishedAt && s.workoutId === todayWorkout?.id).sort((a, b) => b.dateKey.localeCompare(a.dateKey))[0];
-    html += `<div class="hm-workout-card">
-      <div class="hm-wc-top">
-        <div class="hm-wc-name">${todayWorkout ? escapeHtml(todayWorkout.name) : "Today's Workout"}</div>
-        <div class="hm-wc-pct">Ready</div>
-      </div>
-      <div class="hm-wc-info">
-        <span>${todayWorkout ? (todayWorkout.exercises || []).length + " exercises" : ""}</span>
-      </div>
-      ${lastSesh ? `<div class="hm-wc-next">Last: ${formatRelativeDate(lastSesh.dateKey)}</div>` : ""}
-      <button class="hm-wc-btn" id="hmStartWorkout">Start Workout</button>
-    </div>`;
+    html += '<div class="hm-workout-card">' +
+      '<div class="hm-wc-top"><div class="hm-wc-name">' + (todayWorkout ? escapeHtml(todayWorkout.name) : "Today's Workout") + '</div><div class="hm-wc-pct">Ready</div></div>' +
+      '<div class="hm-wc-info"><span>' + (todayWorkout ? (todayWorkout.exercises||[]).length + " exercises" : "") + '</span></div>' +
+      '<button class="hm-wc-btn" id="hmStartWorkout">Start Workout</button>' +
+    '</div>';
   } else {
-    html += `<div class="hm-empty-workout">
-      <button class="hm-empty-card" id="hmGenerateBtn">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-        <span class="hm-empty-title">Generate My Workout</span>
-        <span class="hm-empty-desc">AI builds a program for your goal</span>
-      </button>
-      <button class="hm-empty-card" id="hmCreateBtn">
-        <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        <span class="hm-empty-title">Create My Own</span>
-        <span class="hm-empty-desc">Build from our exercise library</span>
-      </button>
-    </div>`;
+    html += '<div class="hm-empty-workout">' +
+      '<button class="hm-empty-card" id="hmGenerateBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg><span class="hm-empty-title">Generate My Workout</span><span class="hm-empty-desc">AI builds a program for your goal</span></button>' +
+      '<button class="hm-empty-card" id="hmCreateBtn"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg><span class="hm-empty-title">Create My Own</span><span class="hm-empty-desc">Build from our exercise library</span></button>' +
+    '</div>';
   }
-  html += `</div>`;
+  html += '</div>';
 
-  // Nutrition card (always show if hasData)
-  if (hasData) {
-    html += `<div class="hm-section">
-      <div class="hm-section-title">Nutrition</div>
-      <div class="hm-nutrition-row" id="todayHealthWidgets">
-        ${renderNutritionWidget()}
-        ${renderWaterWidget()}
-      </div>
-    </div>`;
+  // 3. Log Weight button (always visible)
+  html += '<button class="hm-log-weight" id="qaLogWeight"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>Log Weight</button>';
+
+  // 4. Quick Stats (always visible)
+  html += '<div class="hm-stats">' +
+    '<div class="hm-stat"><div class="hm-stat-val">' + streak + '</div><div class="hm-stat-lbl">Streak</div></div>' +
+    '<div class="hm-stat"><div class="hm-stat-val">' + (hasWeight ? displayWeight(weight) : "—") + '</div><div class="hm-stat-lbl">Weight' + (checkInDue ? ' <span class="hm-stat-due">Due</span>' : "") + '</div></div>' +
+    '<div class="hm-stat"><div class="hm-stat-val">' + (goalLabel || "—") + '</div><div class="hm-stat-lbl">Goal</div></div>' +
+  '</div>';
+
+  // 5. Nutrition + Water row (condensed, always visible)
+  html += '<div class="hm-section"><div class="hm-section-title">Nutrition</div>' +
+    '<div class="hm-nutrition-row" id="todayHealthWidgets">' +
+      renderNutritionWidget() +
+      renderWaterWidget() +
+    '</div></div>';
+
+  // 6. My Workouts (quick access)
+  if (hasPlan) {
+    var sorted = activePlan.slice().sort(function(a,b){
+      var aA = todaySession && todaySession.workoutId === a.id ? 1 : 0;
+      var bA = todaySession && todaySession.workoutId === b.id ? 1 : 0;
+      return bA - aA;
+    });
+    html += '<div class="hm-section"><div class="hm-section-title">My Workouts</div>' +
+      '<div class="hm-workout-list-sm">' +
+      sorted.slice(0, 5).map(function(w){
+        return '<button class="hm-workout-sm" data-wid="' + escapeHtml(w.id) + '">' + escapeHtml(w.name) + '<span class="hm-workout-sm-arrow">→</span></button>';
+      }).join("") +
+    '</div></div>';
   }
 
-  // Recent Activity
+  // 7. Recent Activity (if has data)
   if (hasData) {
-    const lastSessions = [...(state.sessions || [])].filter(s => s.finishedAt).sort((a, b) => b.dateKey.localeCompare(a.dateKey)).slice(0, 3);
-    html += `<div class="hm-section">
-      <div class="hm-section-title">Activity</div>
-      <div class="hm-recent-list">`;
+    var lastSessions = (state.sessions || []).filter(function(s){return s.finishedAt}).sort(function(a,b){return b.dateKey.localeCompare(a.dateKey)}).slice(0, 3);
+    html += '<div class="hm-section"><div class="hm-section-title">Activity</div><div class="hm-recent-list">';
     if (lastSessions.length) {
-      for (const s of lastSessions) {
-        const done = s.exercises ? s.exercises.reduce((a, e) => a + (e.sets || []).filter(set => set.done).length, 0) : 0;
-        const total = s.exercises ? s.exercises.reduce((a, e) => a + (e.sets || []).length, 0) : 0;
-        html += `<div class="hm-recent-item">
-          <div class="hm-recent-name">${escapeHtml(s.workoutName || "Workout")}</div>
-          <div class="hm-recent-meta">${done}/${total} sets · ${formatRelativeDate(s.dateKey)}</div>
-        </div>`;
+      for (var i = 0; i < lastSessions.length; i++) {
+        var s = lastSessions[i];
+        var done = s.exercises ? s.exercises.reduce(function(a,e){return a + (e.sets||[]).filter(function(st){return st.done}).length}, 0) : 0;
+        var total = s.exercises ? s.exercises.reduce(function(a,e){return a + (e.sets||[]).length}, 0) : 0;
+        html += '<div class="hm-recent-item"><div class="hm-recent-name">' + escapeHtml(s.workoutName || "Workout") + '</div><div class="hm-recent-meta">' + done + '/' + total + ' sets · ' + formatRelativeDate(s.dateKey) + '</div></div>';
       }
-    } else {
-      html += `<div class="hm-recent-empty">No workouts logged yet</div>`;
     }
-    html += `</div></div>`;
-  }
-
-  // Progress link
-  if (hasData) {
-    html += `<button class="hm-view-progress" id="qaViewProgress">View Full Progress →</button>`;
+    html += '</div></div>';
+    html += '<button class="hm-view-progress" id="qaViewProgress">View Full Progress →</button>';
   }
 
   document.getElementById("homeGreeting").innerHTML = html;
 
   // Bind events
-  document.getElementById("qaLogWeight")?.addEventListener("click", () => {
-    document.getElementById("weightLogSheet")?.classList.remove("is-hidden");
+  document.getElementById("qaLogWeight")?.addEventListener("click", function(){
+    var sheet = document.getElementById("weightLogSheet");
+    if (sheet) sheet.classList.remove("is-hidden");
   });
-  document.getElementById("qaViewProgress")?.addEventListener("click", () => activateTab("progress"));
-  document.getElementById("hmStartWorkout")?.addEventListener("click", () => {
-    const ts = getTodaySession();
+  document.getElementById("qaViewProgress")?.addEventListener("click", function(){activateTab("progress")});
+  document.getElementById("hmStartWorkout")?.addEventListener("click", function(){
+    var ts = getTodaySession();
     if (ts && ts.workoutId) return startOrContinueWorkout(ts.workoutId);
-    const ap = loadCustomProgram() || plan;
+    var ap = loadCustomProgram() || plan;
     if (ap && ap.length > 0) startOrContinueWorkout(ap[0].id);
   });
   document.getElementById("hmGenerateBtn")?.addEventListener("click", openGenerateWorkout);
   document.getElementById("hmCreateBtn")?.addEventListener("click", showNewWorkoutBuilder);
 
-  // Home workout list (hidden section for future reference, kept minimal)
-  const container = document.getElementById("homeWorkoutList");
-  if (hasPlan) {
-    const sorted = [...activePlan].sort((a, b) => {
-      const aActive = todaySession && todaySession.workoutId === a.id ? 1 : 0;
-      const bActive = todaySession && todaySession.workoutId === b.id ? 1 : 0;
-      return bActive - aActive;
-    });
-    // Just show workout names as a simple list below
-    container.innerHTML = `<div class="hm-section"><div class="hm-section-title">My Workouts</div><div class="hm-workout-list-sm">${
-      sorted.slice(0, 5).map(w => `<button class="hm-workout-sm" data-wid="${escapeHtml(w.id)}">${escapeHtml(w.name)}<span class="hm-workout-sm-arrow">→</span></button>`).join("")
-    }</div></div>`;
-    // Bind workout item clicks
-    container.querySelectorAll(".hm-workout-sm").forEach(btn => {
-      btn.addEventListener("click", () => {
-        const wid = btn.dataset.wid;
-        startOrContinueWorkout(wid);
+  // Bind my workout list clicks
+  var homeEl = document.getElementById("homeGreeting");
+  if (homeEl) {
+    homeEl.querySelectorAll(".hm-workout-sm").forEach(function(btn){
+      btn.addEventListener("click", function(){
+        startOrContinueWorkout(this.dataset.wid);
       });
     });
   }
 
-  // First 7 Days banner on home screen
+  // First 7 Days banner
   if (state.onboardingComplete) {
     const homeGreeting = document.getElementById("homeGreeting");
     if (homeGreeting) {
@@ -3483,9 +3461,15 @@ function closeWorkout() {
 }
 
 // ===== PROFILE AVATAR =====
+function getAvatarGradient(index) {
+  var idx = index != null ? index : (state.user?.avatarGradient || 0);
+  var g = AVATAR_GRADIENTS[idx % AVATAR_GRADIENTS.length];
+  return "linear-gradient(135deg," + g[0] + "," + g[1] + ")";
+}
+
 function renderProfileAvatar() {
   const name = state.user?.name || "User";
-  const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "IL";
+  const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "ST";
   const circle = document.getElementById("avatarCircle");
   const topbarName = document.getElementById("topbarProfileName");
   const topbarGoal = document.getElementById("topbarProfileGoal");
@@ -3494,9 +3478,62 @@ function renderProfileAvatar() {
     strength: "Strength", athletic: "Athletic", general: "Fitness", custom: "Custom",
   };
   const goal = GoalCenter?.getGoalType?.() || state.bodyGoal || state.user?.goal || "";
-  if (circle) circle.textContent = initials;
+  if (circle) {
+    circle.textContent = initials;
+    circle.style.background = getAvatarGradient();
+  }
   if (topbarName) topbarName.textContent = name;
   if (topbarGoal) topbarGoal.textContent = goalLabels[goal] || "Set Goal";
+}
+
+function openAvatarSheet() {
+  var existing = document.getElementById("avatarSheet");
+  if (existing) existing.remove();
+  var sheet = document.createElement("div");
+  sheet.id = "avatarSheet";
+  sheet.className = "bottom-sheet-overlay";
+  sheet.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center";
+  var idx = state.user?.avatarGradient || 0;
+  var gradients = AVATAR_GRADIENTS;
+  var picks = gradients.map(function(g, i) {
+    var sel = i === idx ? "2px solid var(--accent)" : "2px solid transparent";
+    return '<button class="as-gradient-pick" data-idx="' + i + '" style="width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,' + g[0] + ',' + g[1] + ');border:' + sel + ';cursor:pointer;transition:transform 0.15s"></button>';
+  }).join("");
+  sheet.innerHTML = '<div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:500px;padding:1rem 1.25rem 2rem">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem">' +
+      '<div style="font-weight:700;font-size:1rem">Profile Picture</div>' +
+      '<button id="asClose" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>' +
+    '</div>' +
+    '<div class="as-preview" style="text-align:center;margin-bottom:1rem">' +
+      '<div class="pr-avatar" style="width:80px;height:80px;margin:0 auto;background:' + getAvatarGradient() + ';font-size:1.75rem;font-weight:800;color:#0a0a0a;border-radius:50%;display:grid;place-items:center">' +
+        (state.user?.name || "User").split(" ").map(function(n){return n[0]}).join("").toUpperCase().slice(0,2) +
+      '</div>' +
+    '</div>' +
+    '<div style="font-size:0.78rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.5rem">Pick a style</div>' +
+    '<div class="as-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem">' + picks + '</div>' +
+    '<button id="asShuffle" class="btn-secondary" style="width:100%;padding:0.6rem;border-radius:12px;font-weight:600;font-size:0.82rem">🔄 Shuffle Gradient</button>' +
+  '</div>';
+  document.body.appendChild(sheet);
+  document.getElementById("asClose").onclick = function() { sheet.remove(); };
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
+  document.getElementById("asShuffle").onclick = function() {
+    var newIdx = Math.floor(Math.random() * gradients.length);
+    if (!state.user) state.user = {};
+    state.user.avatarGradient = newIdx;
+    saveState();
+    openAvatarSheet();
+    renderProfileAvatar();
+  };
+  sheet.querySelectorAll(".as-gradient-pick").forEach(function(btn) {
+    btn.onclick = function() {
+      var newIdx = parseInt(this.dataset.idx);
+      if (!state.user) state.user = {};
+      state.user.avatarGradient = newIdx;
+      saveState();
+      openAvatarSheet();
+      renderProfileAvatar();
+    };
+  });
 }
 
 // ===== PROFILE SCREEN =====
@@ -3572,38 +3609,34 @@ function renderProfileAchievements() {
   }
 }
 function renderProfileScreen() {
-  const p = getProfile();
-  const name = p.name && p.name.trim() ? p.name.trim() : "Athlete";
-  const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "IL";
-  const streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
-  const totalWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
-  const trainDays = p.trainingDays || 3;
-  const weeklyPct = Math.min(100, Math.round((totalWorkouts / Math.max(trainDays * 4, 1)) * 100));
-  const calGoal = p.calorieTarget;
-  const proGoal = p.proteinGoal;
-  const bmi = p.height && p.weight ? (p.weight / ((p.height / 100) * (p.height / 100))).toFixed(1) : null;
-  const goalLabel = getGoalLabel(p.goal);
-  const expLabel = getExpLabel(p.experience);
-  const completeness = renderProfileCompleteness();
-  const memberSince = state.activatedAt || state.onboardingData?.createdAt || null;
-  const memberDate = memberSince ? new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : null;
+  var p = getProfile();
+  var name = p.name && p.name.trim() ? p.name.trim() : "Athlete";
+  var initials = name.split(" ").map(function(n){return n[0]}).join("").toUpperCase().slice(0, 2) || "ST";
+  var streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
+  var totalWorkouts = (state.sessions || []).filter(function(s){return s.finishedAt}).length;
+  var calGoal = p.calorieTarget;
+  var proGoal = p.proteinGoal;
+  var bmi = p.height && p.weight ? (p.weight / ((p.height / 100) * (p.height / 100))).toFixed(1) : null;
+  var goalLabel = getGoalLabel(p.goal);
+  var expLabel = getExpLabel(p.experience);
+  var completeness = renderProfileCompleteness();
+  var memberSince = state.activatedAt || state.onboardingData?.createdAt || null;
+  var memberDate = memberSince ? new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : null;
+  var activePlan = loadCustomProgram() || plan;
+  var activePrograms = activePlan.length;
 
-  const safe = function(v, suffix) {
+  var safe = function(v, suffix) {
     if (v !== null && v !== undefined && v !== "" && v !== 0 && v !== "0") return v + (suffix || "");
     return null;
   };
-  const orNotSet = function(v, suffix) {
+  var orNotSet = function(v, suffix) {
     var r = safe(v, suffix);
     return r !== null ? r : '<span class="pr-row-val ns">Not set</span>';
-  };
-  const orAdd = function(v, suffix) {
-    var r = safe(v, suffix);
-    return r !== null ? r : '<span class="pr-row-action" data-action="edit" data-section="' + suffix + '">Add</span>';
   };
 
   // ---- Hero ----
   var html = '<div class="pr-hero">' +
-    '<div class="pr-avatar" onclick="openProfileSectionEditor(\'personal\')">' + initials +
+    '<div class="pr-avatar" onclick="openAvatarSheet()" style="background:' + getAvatarGradient() + '">' + initials +
       '<span class="pr-avatar-edit">✎</span>' +
     '</div>' +
     '<div class="pr-name">' + escapeHtml(name) + '</div>' +
@@ -3611,34 +3644,31 @@ function renderProfileScreen() {
       '<span class="pr-badge pr-badge-accent">' + goalLabel + '</span>' +
       '<span class="pr-badge pr-badge-blue">' + expLabel + '</span>' +
       (p.trainingDays ? '<span class="pr-badge pr-badge-orange">' + p.trainingDays + 'x/week</span>' : '') +
+      (streak.currentStreak > 0 ? '<span class="pr-badge" style="background:color-mix(in srgb,var(--orange) 20%,transparent);color:var(--orange)">🔥 ' + streak.currentStreak + ' days</span>' : '') +
     '</div>' +
-    '<div class="pr-meta">' +
-      (memberDate ? '<span>Joined ' + memberDate + '</span>' : '') +
-      '<span>' + totalWorkouts + ' workout' + (totalWorkouts !== 1 ? 's' : '') + '</span>' +
-      (streak.currentStreak > 0 ? '<span class="pr-streak">🔥 ' + streak.currentStreak + ' day streak</span>' : '') +
-    '</div>' +
+    (memberDate ? '<div class="pr-meta">Joined ' + memberDate + ' · ' + totalWorkouts + ' workout' + (totalWorkouts !== 1 ? 's' : '') + '</div>' : '') +
   '</div>';
 
-  // ---- Stats row (4 cols) ----
+  // ---- Quick Stats (4 cols) ----
   var weightVal = p.weight ? displayWeight(p.weight) : "—";
   var targetVal = state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : "—";
   var bfVal = p.bodyMeasurements?.bodyFat != null ? p.bodyMeasurements.bodyFat + "%" : "—";
   html += '<div class="pr-stats">' +
     '<div class="pr-stat" onclick="openWeightSheet()"><span class="pr-stat-val">' + weightVal + '</span><span class="pr-stat-lbl">Weight</span></div>' +
-    '<div class="pr-stat"><span class="pr-stat-val">' + targetVal + '</span><span class="pr-stat-lbl">Target</span></div>' +
+    '<div class="pr-stat"><span class="pr-stat-val">' + targetVal + '</span><span class="pr-stat-lbl">Goal</span></div>' +
     '<div class="pr-stat"><span class="pr-stat-val">' + bfVal + '</span><span class="pr-stat-lbl">Body Fat</span></div>' +
-    '<div class="pr-stat"><span class="pr-stat-val">' + totalWorkouts + '</span><span class="pr-stat-lbl">Workouts</span></div>' +
+    '<div class="pr-stat"><span class="pr-stat-val">' + activePrograms + '</span><span class="pr-stat-lbl">Programs</span></div>' +
   '</div>';
 
   // ---- Completion card (hide at 100%) ----
   if (completeness.pct < 100) {
-    var missingItems = completeness.items.filter(function(i) { return !i.ok; });
-    var missingLabel = missingItems.length ? missingItems[0].label : "your profile";
+    var missingItems = completeness.items.filter(function(i){return !i.ok});
+    var missingLabel = missingItems.length ? missingItems[0].label : "profile";
     html += '<div class="pr-complete">' +
       '<div class="pr-complete-ring">' + completeness.pct + '%</div>' +
       '<div class="pr-complete-body">' +
         '<div class="pr-complete-title">Profile ' + completeness.pct + '% Complete</div>' +
-        '<div class="pr-complete-desc">Complete ' + missingLabel.toLowerCase() + ' to unlock better recommendations.</div>' +
+        '<div class="pr-complete-desc">Finish ' + missingLabel.toLowerCase() + ' for better recommendations</div>' +
       '</div>' +
       '<button class="pr-complete-btn" onclick="openProfileEditor()">Complete</button>' +
     '</div>';
@@ -3650,6 +3680,7 @@ function renderProfileScreen() {
       fields: [
         { label: "Age", val: safe(p.age, " years") },
         { label: "Height", val: orNotSet(p.height, " cm") },
+        { label: "Weight", val: safe(p.weight, " kg") },
         { label: "Gender", val: orNotSet(p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : null) },
       ],
       editAction: "personal" },
@@ -3664,7 +3695,7 @@ function renderProfileScreen() {
       fields: [
         { label: "Location", val: orNotSet({ gym: "Gym", home: "Home", minimal: "Both" }[p.equipment]) },
         { label: "Days/Week", val: orNotSet(p.trainingDays) },
-        { label: "Rest Timer", val: (state.restTimer || 90) + "s" },
+        { label: "Activity Level", val: orNotSet(p.activity) },
       ],
       editAction: "training" },
     { id: "nutrition", icon: "🍎", label: "Nutrition", color: "var(--protein)",
@@ -3675,13 +3706,19 @@ function renderProfileScreen() {
       ],
       editAction: "nutrition" },
     { id: "body", icon: "📐", label: "Body Measurements", color: "var(--accent)",
-      fields: Object.keys(p.bodyMeasurements).length ? Object.entries(p.bodyMeasurements).slice(0, 3).map(function(e) {
-        return { label: e[0].charAt(0).toUpperCase() + e[0].slice(1), val: e[1] + (e[0] === "bodyFat" ? "%" : " cm") };
-      }) : [{ label: "No data yet", val: '<span class="pr-row-action" data-action="edit" data-section="body">Add measurements</span>' }],
+      fields: (function(){
+        var bm = p.bodyMeasurements;
+        var keys = Object.keys(bm || {});
+        if (!keys.length) return [{ label: "No data yet", val: '<span style="color:var(--accent);font-weight:600">Add</span>' }];
+        return keys.slice(0, 3).map(function(k){
+          return { label: k.charAt(0).toUpperCase() + k.slice(1), val: bm[k] + (k === "bodyFat" ? "%" : " cm") };
+        });
+      })(),
       editAction: "body" },
     { id: "achievements", icon: "🏅", label: "Achievements", color: "var(--orange)",
       fields: [
-        { label: "Longest Streak", val: streak.longestStreak ? streak.longestStreak + " days" : "No streak yet" },
+        { label: "Longest Streak", val: streak.longestStreak ? streak.longestStreak + " days" : "Not started" },
+        { label: "Workouts", val: totalWorkouts + " total" },
       ],
       editAction: null },
   ];
@@ -3689,9 +3726,10 @@ function renderProfileScreen() {
   sections.forEach(function(s) {
     var preview = "";
     for (var i = 0; i < s.fields.length; i++) {
-      if (s.fields[i].val && !s.fields[i].val.includes("Not set") && !s.fields[i].val.includes("Add")) {
-        preview = s.fields[i].val;
-        if (typeof preview === "string" && preview.length > 18) preview = preview.slice(0, 18) + "…";
+      var v = s.fields[i].val;
+      if (v && typeof v === "string" && !v.includes("Not set") && !v.includes("Add") && !v.includes("Not started")) {
+        preview = v;
+        if (preview.length > 18) preview = preview.slice(0, 18) + "…";
         break;
       }
     }
@@ -3705,14 +3743,15 @@ function renderProfileScreen() {
     '</div>';
   });
 
-  // ---- Achievements grid (always visible) ----
+  // ---- Achievements grid ----
   html += '<div id="profileAchievements"></div>';
 
-  // ---- Quick actions ----
-  html += '<div style="margin:0.5rem 1rem 1.5rem;display:flex;flex-direction:column;gap:0.4rem">' +
-    '<button class="st-row" style="border-radius:14px;background:var(--surface-2);padding:0.65rem 0.85rem" onclick="openProfileEditor()"><span style="flex:1;font-size:0.82rem">✏️ Edit All Profile Data</span><span class="st-chevron">›</span></button>' +
-    '<button class="st-row" style="border-radius:14px;background:var(--surface-2);padding:0.65rem 0.85rem" onclick="previousScreen=\'screen-profile\';showScreen(\'screen-settings\');renderSettings()"><span style="flex:1;font-size:0.82rem">⚙️ App Settings</span><span class="st-chevron">›</span></button>' +
-    '<button class="st-row" style="border-radius:14px;background:color-mix(in srgb,var(--error) 8%,var(--surface-2));padding:0.65rem 0.85rem;color:var(--error)" onclick="document.getElementById(\'deleteDataModal\').classList.remove(\'is-hidden\')"><span style="flex:1;font-size:0.82rem">🗑 Delete All Data</span><span class="st-chevron">›</span></button>' +
+  // ---- Settings link ----
+  html += '<div style="margin:0.5rem 1rem 1.5rem">' +
+    '<button class="st-row" style="border-radius:14px;background:var(--surface-2);padding:0.75rem 0.85rem;width:100%;justify-content:space-between" onclick="previousScreen=\'screen-profile\';showScreen(\'screen-settings\');renderSettings()">' +
+      '<span style="display:flex;align-items:center;gap:0.4rem;font-size:0.82rem;font-weight:500">⚙️ Settings</span>' +
+      '<span class="st-chevron">›</span>' +
+    '</button>' +
   '</div>';
 
   document.getElementById("profileContent").innerHTML = html;
@@ -5752,11 +5791,108 @@ function renderEdAnalyze() {
 
 // ===== SESSIONS TAB =====
 function renderSessionsTab() {
-  renderSessionLog();
-  renderPRBoard();
-  renderWeeklyReport();
-  renderMonthlyReport();
-  renderAdherenceGrid();
+  var container = document.getElementById("sessionsPageContent");
+  if (!container) return;
+  var sessions = state.sessions.filter(function(s){return s.finishedAt});
+  var hasData = sessions.length > 0;
+  var activePlan = loadCustomProgram() || plan;
+  var hasPlan = activePlan && activePlan.length > 0;
+  var todaySession = getTodaySession();
+  var allPRs = getAllPRs();
+  var hasPRs = Object.keys(allPRs).length > 0;
+
+  var html = '';
+
+  // Today's Workout section
+  html += '<div class="section-label">Today\'s Workout</div>';
+  if (todaySession && todaySession.exercises && todaySession.exercises.length > 0) {
+    var totalSets = todaySession.exercises.reduce(function(a,e){return a + (e.sets||[]).length}, 0);
+    var doneSets = todaySession.exercises.reduce(function(a,e){return a + (e.sets||[]).filter(function(s){return s.done}).length}, 0);
+    var pct = totalSets > 0 ? Math.round(doneSets / totalSets * 100) : 0;
+    html += '<div class="log-item" onclick="renderSetsPanel()" style="cursor:pointer"><div><strong>' + escapeHtml(todaySession.workoutName || "Workout") + '</strong><span>In progress — ' + pct + '% done</span></div><span style="color:var(--accent)">Continue →</span></div>';
+  } else if (hasPlan) {
+    var todayW = activePlan.find(function(w){
+      return !state.sessions.some(function(s){return s.workoutId === w.id && s.finishedAt && s.dateKey === getDateKey()});
+    }) || activePlan[0];
+    html += '<div class="log-item" onclick="startWorkout(\'' + (todayW?.id || "") + '\')" style="cursor:pointer"><div><strong>' + (todayW ? escapeHtml(todayW.name) : "Today's Workout") + '</strong><span>' + (todayW ? (todayW.exercises||[]).length + " exercises" : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
+  } else {
+    html += '<div class="empty-card" style="padding:1.25rem 1rem;text-align:center">' +
+      '<div style="font-size:2rem;margin-bottom:0.5rem">🏋️</div>' +
+      '<div class="empty-state-title">No workouts yet</div>' +
+      '<div class="empty-state-text" style="margin-bottom:0.75rem">Create your first program or generate one with AI.</div>' +
+      '<div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap">' +
+        '<button class="btn-primary" onclick="document.getElementById(\'generateModal\').classList.remove(\'is-hidden\')">Generate Workout</button>' +
+        '<button class="btn-secondary" onclick="openNewWorkout()">Create My Own</button>' +
+        '<button class="btn-secondary" onclick="openLoadProgram()">Import Template</button>' +
+      '</div>' +
+    '</div>';
+  }
+
+  // Saved Programs
+  html += '<div class="section-label ml-gap-lg">Saved Programs</div>';
+  if (hasPlan) {
+    html += '<div class="card-content">';
+    activePlan.slice(0, 3).forEach(function(w, i) {
+      var lastSesh = state.sessions.filter(function(s){return s.finishedAt && s.workoutId === w.id}).sort(function(a,b){return b.dateKey.localeCompare(a.dateKey)})[0];
+      html += '<div class="log-item" onclick="startWorkout(\'' + (w.id || "") + '\')" style="cursor:pointer"><div><strong>' + escapeHtml(w.name || "Workout " + (i+1)) + '</strong><span>' + (w.exercises||[]).length + " exercises" + (lastSesh ? " · Last: " + formatReadableDate(parseDateKey(lastSesh.dateKey)) : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
+    });
+    if (activePlan.length > 3) {
+      html += '<div style="text-align:center;padding:0.4rem;font-size:0.72rem;color:var(--text-secondary)">+' + (activePlan.length - 3) + ' more workouts</div>';
+    }
+    html += '</div>';
+  } else {
+    html += '<div class="empty-card"><div class="empty-card-content">Generate a program to see your saved workouts here.</div></div>';
+  }
+
+  // Recent Sessions
+  html += '<div class="section-label ml-gap-lg">Recent Sessions</div>';
+  if (hasData) {
+    var recent = sessions.slice().sort(function(a,b){return b.dateKey.localeCompare(a.dateKey)}).slice(0, 5);
+    html += '<div class="card-content">' +
+      recent.map(function(s){
+        var c = getCompletion(s);
+        var d = s.duration ? formatStopwatch(s.duration) : "";
+        var vol = s.exercises.reduce(function(sum, ex){return sum + ex.sets.filter(function(st){return st.done && Number(st.weight) > 0}).reduce(function(s2, st){return s2 + Number(st.weight) * (st.reps || 0)}, 0)}, 0);
+        var volStr = vol >= 1000 ? (vol / 1000).toFixed(1) + "k" : vol || "";
+        return '<div class="log-item" onclick="openWorkoutReport(state.sessions.find(function(ses){return ses.id===\'' + s.id + '\'}))" style="cursor:pointer"><div><strong>' + escapeHtml(s.workoutName || "Workout") + '</strong><span>' + formatReadableDate(parseDateKey(s.dateKey)) + '</span></div><span>' + c.done + "/" + c.total + (volStr ? " · " + volStr : "") + (d ? " · " + d : "") + '</span></div>';
+      }).join("") +
+    '</div>';
+    if (sessions.length > 5) {
+      html += '<div style="text-align:center;padding:0.4rem;font-size:0.72rem;color:var(--text-secondary)">+' + (sessions.length - 5) + ' more sessions — <button style="background:none;border:none;color:var(--accent);cursor:pointer;font-size:0.72rem" onclick="document.getElementById(\'sessionLog\').scrollIntoView({behavior:\'smooth\'})">View all</button></div>';
+    }
+  } else {
+    html += '<div class="empty-card"><div class="empty-card-content">Complete your first workout to see your session history.</div></div>';
+  }
+
+  // Personal Records
+  html += '<div class="section-label ml-gap-lg">Personal Records</div>';
+  if (hasPRs) {
+    var prEntries = Object.entries(allPRs).sort(function(a,b){
+      var aD = a[1].weightPR?.date || a[1].volumePR?.date || "";
+      var bD = b[1].weightPR?.date || b[1].volumePR?.date || "";
+      return bD.localeCompare(aD);
+    }).slice(0, 4);
+    html += '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.4rem">' +
+      prEntries.map(function(e){
+        var name = e[0], data = e[1];
+        var w = data.weightPR ? displayWeight(data.weightPR.value) : "—";
+        return '<div class="pr-card" onclick="showExerciseAnalytics(\'' + name.replace(/'/g, "\\'") + '\')" style="cursor:pointer"><strong>' + name.replace(/([A-Z])/g, " $1").trim() + '</strong><div class="pr-stats"><span class="pr-stat"><span class="pr-stat-val">' + w + '</span><span class="pr-stat-lbl">PR</span></span></div></div>';
+      }).join("") +
+    '</div>';
+  } else {
+    html += '<div class="empty-card"><div class="empty-card-content">Set a personal record to see it here.</div></div>';
+  }
+
+  // Quick Actions
+  html += '<div class="section-label ml-gap-lg">Quick Actions</div>' +
+    '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.4rem;margin-bottom:2rem">' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="document.getElementById(\'generateModal\').classList.remove(\'is-hidden\')">🤖 Generate Program</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openNewWorkout()">✏️ Create Workout</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openLoadProgram()">📂 Import Template</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="window.openWorkoutReport ? toggleHistoryView() : null">📊 View History</button>' +
+    '</div>';
+
+  container.innerHTML = html;
 }
 
 function renderMonthlyReport() {
@@ -6005,6 +6141,17 @@ function renderTrainingCalendar() {
 function renderProgressPage() {
   const container = document.getElementById("progressPageContent");
   if (!container) return;
+  const hasData = (state.sessions || []).filter(s => s.finishedAt).length > 0;
+  if (!hasData) {
+    container.innerHTML =
+      '<div style="padding:2rem 1rem;text-align:center">' +
+        '<div style="font-size:2.5rem;margin-bottom:0.75rem">📊</div>' +
+        '<div class="empty-state-title">No progress data yet</div>' +
+        '<div class="empty-state-text" style="margin-bottom:1rem">Complete your first workout to unlock progress tracking, insights, and trends.</div>' +
+        '<button class="btn-primary" onclick="renderSetsPanel()">Start Your First Workout</button>' +
+      '</div>';
+    return;
+  }
   renderTrainingCalendar();
   renderProgressInsights();
   renderRecoveryStatus();
@@ -6014,11 +6161,7 @@ function renderProgressPage() {
 function renderProgressInsights() {
   const container = document.getElementById("coachInsights");
   if (!container) return;
-  const sessions = state.sessions.filter((s) => s.finishedAt);
-  if (!sessions.length) {
-    container.innerHTML = `<div class="empty-card"><div class="empty-card-content">Complete workouts to see training insights.</div></div>`;
-    return;
-  }
+  if (!state.sessions.filter(s => s.finishedAt).length) return;
   const weekAgo = getDateKey(new Date(Date.now() - 7 * 86400000));
   const weekSessions = sessions.filter((s) => s.dateKey >= weekAgo);
   const totalVolume = weekSessions.reduce((sum, s) => sum + s.exercises.reduce((s2, ex) => s2 + ex.sets.filter(st => st.done).reduce((s3, st) => s3 + (Number(st.weight)||0) * (st.reps||0), 0), 0), 0);
@@ -11161,35 +11304,60 @@ document.addEventListener("click", (e) => {
 
 
 
+// ===== REDESIGNED PROFILE EDITOR =====
 function openProfileEditor() {
-  const user = state.user || {};
-  document.getElementById("peName").value = user.name || "";
-  document.getElementById("peAge").value = user.age || "";
-  document.getElementById("peGender").value = user.gender || "";
-  document.getElementById("peHeight").value = user.height || "";
-  document.getElementById("peWeight").value = user.weight || "";
-  document.getElementById("peGoal").value = getGoalType() || user.goal || state.bodyGoal || "recomp";
-  document.getElementById("peActivity").value = user.activity || "";
-  document.getElementById("peExperience").value = user.experience || "";
-  document.getElementById("peTrainingDays").value = user.trainingDays || "";
-  document.getElementById("peEquipment").value = user.equipment || "";
-  document.getElementById("peCalories").value = state.calorieTarget || user.calorieTarget || "";
-  document.getElementById("peProtein").value = state.proteinGoal || user.proteinGoal || "";
-  document.getElementById("peDiet").value = user.dietPreference || "";
-  document.getElementById("peInjuries").value = Array.isArray(user.injuries) ? user.injuries.join(", ") : "";
-  document.getElementById("peInjuryNotes").value = user.injuryNotes || "";
-  document.getElementById("peSupplements").value = Array.isArray(user.supplements) ? user.supplements.join(", ") : "";
-  document.getElementById("peEquipmentDetails").value = Array.isArray(user.equipmentDetails) ? user.equipmentDetails.join(", ") : "";
-  document.getElementById("peWaterGoal").value = state.waterGoal || "";
-  const bm = user.bodyMeasurements || {};
-  document.getElementById("peBodyFat").value = bm.bodyFat || "";
-  document.getElementById("peChest").value = bm.chest || "";
-  document.getElementById("peWaist").value = bm.waist || "";
-  document.getElementById("peArms").value = bm.arms || "";
-  document.getElementById("peThighs").value = bm.thighs || "";
-  document.getElementById("peNeck").value = bm.neck || "";
-  document.getElementById("peHips").value = bm.hips || "";
-  document.getElementById("profileEditorModal").classList.remove("is-hidden");
+  var existing = document.getElementById("peBottomSheet");
+  if (existing) existing.remove();
+  var p = getProfile();
+  var name = p.name || "Athlete";
+  var safe = function(v, suffix) {
+    if (v !== null && v !== undefined && v !== "" && v !== 0 && v !== "0") return v + (suffix || "");
+    return "—";
+  };
+  var sheet = document.createElement("div");
+  sheet.id = "peBottomSheet";
+  sheet.className = "bottom-sheet-overlay";
+  sheet.style.cssText = "position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:1000;display:flex;align-items:flex-end;justify-content:center";
+  sheet.innerHTML = '<div class="bottom-sheet" style="background:var(--surface-2);border-radius:16px 16px 0 0;width:100%;max-width:480px;max-height:85vh;overflow-y:auto;padding:0 0 2rem">' +
+    '<div style="display:flex;justify-content:space-between;align-items:center;padding:1rem 1.25rem 0.5rem;position:sticky;top:0;background:var(--surface-2);z-index:2">' +
+      '<div style="font-weight:700;font-size:1.05rem">Edit Profile</div>' +
+      '<button id="peCloseSheet" style="background:none;border:none;color:var(--text-secondary);font-size:1.25rem;cursor:pointer">✕</button>' +
+    '</div>' +
+    '<div style="padding:0 1rem">' +
+      // Personal section
+      '<div style="font-size:0.65rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:0.75rem 0.25rem 0.35rem">Personal</div>' +
+      '<div class="pe-section" onclick="openProfileSectionEditor(\'personal\')" style="background:var(--surface);border-radius:12px;overflow:hidden">' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Name</span><span style="font-size:0.8rem;font-weight:600">' + safe(name) + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Age</span><span style="font-size:0.8rem;font-weight:600">' + safe(p.age, " years") + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Height</span><span style="font-size:0.8rem;font-weight:600">' + safe(p.height, " cm") + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Weight</span><span style="font-size:0.8rem;font-weight:600">' + safe(p.weight, " kg") + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem"><span style="color:var(--text-secondary);font-size:0.8rem">Gender</span><span style="font-size:0.8rem;font-weight:600">' + (p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : "—") + '</span></div>' +
+      '</div>' +
+      // Training section
+      '<div style="font-size:0.65rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:0.75rem 0.25rem 0.35rem">Training</div>' +
+      '<div class="pe-section" onclick="openProfileSectionEditor(\'goals\')" style="background:var(--surface);border-radius:12px;overflow:hidden">' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Goal</span><span style="font-size:0.8rem;font-weight:600">' + getGoalLabel(p.goal) + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Experience</span><span style="font-size:0.8rem;font-weight:600">' + getExpLabel(p.experience) + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Days/Week</span><span style="font-size:0.8rem;font-weight:600">' + safe(p.trainingDays) + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem"><span style="color:var(--text-secondary);font-size:0.8rem">Location</span><span style="font-size:0.8rem;font-weight:600">' + ({gym:"Gym",home:"Home",minimal:"Both"}[p.equipment] || "—") + '</span></div>' +
+      '</div>' +
+      // Nutrition section
+      '<div style="font-size:0.65rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:0.75rem 0.25rem 0.35rem">Nutrition</div>' +
+      '<div class="pe-section" onclick="openProfileSectionEditor(\'nutrition\')" style="background:var(--surface);border-radius:12px;overflow:hidden">' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Daily Calories</span><span style="font-size:0.8rem;font-weight:600">' + safe(state.calorieTarget) + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem;border-bottom:1px solid rgba(255,255,255,0.04)"><span style="color:var(--text-secondary);font-size:0.8rem">Protein Goal</span><span style="font-size:0.8rem;font-weight:600">' + safe(state.proteinGoal, "g") + '</span></div>' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem"><span style="color:var(--text-secondary);font-size:0.8rem">Water Goal</span><span style="font-size:0.8rem;font-weight:600">' + safe(state.waterGoal, "ml") + '</span></div>' +
+      '</div>' +
+      // Body Measurements section
+      '<div style="font-size:0.65rem;font-weight:600;color:var(--text-tertiary);text-transform:uppercase;letter-spacing:0.05em;padding:0.75rem 0.25rem 0.35rem">Body Measurements</div>' +
+      '<div class="pe-section" onclick="openProfileSectionEditor(\'body\')" style="background:var(--surface);border-radius:12px;overflow:hidden">' +
+        '<div class="pe-row" style="display:flex;justify-content:space-between;align-items:center;padding:0.7rem 0.85rem"><span style="color:var(--text-secondary);font-size:0.8rem">Body Fat</span><span style="font-size:0.8rem;font-weight:600">' + safe(p.bodyMeasurements?.bodyFat, "%") + '</span></div>' +
+      '</div>' +
+    '</div>' +
+  '</div>';
+  document.body.appendChild(sheet);
+  document.getElementById("peCloseSheet").onclick = function() { sheet.remove(); };
+  sheet.onclick = function(e) { if (e.target === sheet) sheet.remove(); };
 }
 
 // ===== SMART NUTRITION: PROFILE EDITOR =====

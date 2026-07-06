@@ -448,7 +448,18 @@ const CoachSystem = (() => {
     const gMsg = Data.getDailyMessage();
     const settings = Data.getSettings();
 
-    if (!coach) return Components.errorState("Coach engine not loaded");
+    if (!coach) {
+      var fallbackCoach = {
+        daily: { name: profile.name || "Athlete", coachMessage: gMsg || "Keep showing up — progress takes time." },
+        recovery: { score: 50, label: "Moderate", assessments: [] },
+        goalStrategy: { label: "Stay active", progress: 0, milestones: [] },
+        insights: [],
+        progress: { weeklyWorkouts: weekSessions, weeklyVolume: weekVolume, totalWorkouts: sessions.length },
+        reports: [],
+        education: [{ title: "Trust the Process", summary: "Consistency matters more than perfection. Show up every day." }],
+      };
+      coach = fallbackCoach;
+    }
 
     const dc = coach.daily;
     const rec = coach.recovery;
