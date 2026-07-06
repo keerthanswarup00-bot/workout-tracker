@@ -2062,7 +2062,6 @@ function getMonthlyStats(month, year) {
 function renderSettings() {
   var html = "";
 
-  // Group helper: renders a card with rows
   function group(label, rows) {
     var r = '<div class="st-group"><div class="st-group-label">' + label + '</div><div class="st-card">';
     rows.forEach(function(row) {
@@ -2084,32 +2083,31 @@ function renderSettings() {
     return r;
   }
 
-  // ACCOUNT
   var modeLabel = state.experienceMode === "tracker" ? "Tracker" : "Guided";
+
   html += group("Account", [
     { type: "nav", icon: "👤", label: "Profile", setting: "profile", iconColor: "var(--accent)" },
     { type: "nav", icon: state.experienceMode === "tracker" ? "📋" : "✨", label: "Experience Mode", setting: "experience-mode", val: modeLabel, iconColor: "var(--accent)" },
-    { type: "nav", icon: "📧", label: "Email", setting: "email", iconColor: "var(--blue)" },
     { type: "nav", icon: "💾", label: "Backup & Export", setting: "export-json", iconColor: "var(--orange)" },
   ]);
 
-  // PREFERENCES
   html += group("Preferences", [
-    { type: "nav", icon: "📏", label: "Units", setting: "weight-unit", val: (state.weightUnit || "kg") + " / " + (state.heightUnit || "cm"), iconColor: "var(--accent)" },
-    { type: "toggle", label: "Dark Mode", setting: "theme", checked: (state.theme || "dark") !== "light" },
-    { type: "nav", icon: "🔔", label: "Notifications", setting: "notifications", iconColor: "var(--orange)" },
+    { type: "nav", icon: "📏", label: "Units", setting: "units", val: (state.weightUnit || "kg") + " / " + (state.heightUnit || "cm"), iconColor: "var(--accent)" },
+    { type: "nav", icon: state.theme === "light" ? "☀️" : "🌙", label: "Theme", setting: "theme", val: state.theme || "Dark", iconColor: "var(--blue)" },
+    { type: "nav", icon: "🎨", label: "Accent Color", setting: "accent", val: state.accent || "Green", iconColor: "var(--orange)" },
+    { type: "nav", icon: "🔤", label: "Font Size", setting: "font-size", val: state.fontSize || "Medium", iconColor: "var(--protein)" },
   ]);
 
-  // WORKOUT
   html += group("Workout", [
     { type: "nav", icon: "⏱", label: "Rest Timer", setting: "rest-timer", val: (state.restTimer || 90) + "s", iconColor: "var(--accent)" },
     { type: "toggle", label: "Auto-Start Rest Timer", setting: "auto-rest", checked: !!state.autoRest },
     { type: "toggle", label: "Auto-Open Next Exercise", setting: "auto-next", checked: !!state.autoNext },
-    { type: "nav", icon: "📊", label: "Default Weight Unit", setting: "weight-unit", val: state.weightUnit || "kg", iconColor: "var(--blue)" },
     { type: "nav", icon: "👁", label: "Default Workout View", setting: "workout-view", val: state.workoutView || "Standard", iconColor: "var(--protein)" },
+    { type: "toggle", label: "Daily Weight Reminder", setting: "weight-reminder", checked: !!state.weightReminder },
+    { type: "toggle", label: "Daily Nutrition Reminder", setting: "nutrition-reminder", checked: !!state.nutritionReminder },
+    { type: "toggle", label: "Weekly Review Summary", setting: "weekly-review", checked: state.weeklyReview !== false },
   ]);
 
-  // ADVANCED (collapsed under Workout as toggles)
   html += group("Advanced", [
     { type: "toggle", label: "Keep Screen Awake", setting: "screen-awake", checked: !!state.screenAwake },
     { type: "toggle", label: "Auto Warm-Up Sets", setting: "auto-warmup", checked: state.autoWarmup !== false },
@@ -2122,35 +2120,40 @@ function renderSettings() {
     { type: "toggle", label: "Compact Mode", setting: "compact-mode", checked: !!state.compactMode },
   ]);
 
-  // NUTRITION GOALS
   html += group("Nutrition Goals", [
     { type: "nav", icon: "🔥", label: "Daily Calories", setting: "calorie-target", val: (state.calorieTarget || CAL_GOAL) + " cal", iconColor: "var(--orange)" },
     { type: "nav", icon: "🥩", label: "Daily Protein", setting: "protein-goal", val: (state.proteinGoal || PROTEIN_GOAL) + "g", iconColor: "var(--protein)" },
     { type: "nav", icon: "💧", label: "Daily Water", setting: "water-goal", val: (state.waterGoal || WATER_TARGET) + "ml", iconColor: "var(--blue)" },
   ]);
 
-  // DATA
   html += group("Data", [
     { type: "nav", icon: "📝", label: "Weight Log", setting: "weight-log", val: (state.weightLog || []).length + " entries", iconColor: "var(--accent)" },
-    { type: "nav", icon: "📤", label: "Export Data", setting: "export-json", iconColor: "var(--orange)" },
     { type: "nav", icon: "📥", label: "Import Data", setting: "import-json", iconColor: "var(--blue)" },
     { type: "nav", icon: "🔄", label: "Restore Backup", setting: "restore-backup", iconColor: "var(--protein)" },
+    { type: "about", label: "Storage", val: '<span id="storageInfo">—</span>' },
   ]);
 
-  // PRIVACY
   html += group("Privacy", [
-    { type: "nav", icon: "🔒", label: "Health Data", setting: "privacy-health", iconColor: "var(--accent)" },
     { type: "nav", icon: "🚫", label: "Delete All Data", setting: "delete-data", iconColor: "var(--error)" },
     { type: "danger", label: "Factory Reset — Permanently delete all data", action: 'onclick="document.getElementById(\'deleteDataModal\').classList.remove(\'is-hidden\')"' },
   ]);
 
-  // SUPPORT
   html += group("Support", [
-    { type: "nav", icon: "❓", label: "Help Center", setting: "help", iconColor: "var(--accent)" },
     { type: "nav", icon: "🐛", label: "Report a Bug", setting: "feedback-bug", iconColor: "var(--orange)" },
     { type: "about", label: "Version", val: "2.0" },
     { type: "about", label: "Built for Striv", val: "❤️" },
   ]);
+
+  // Storage info
+  if (navigator.storage && navigator.storage.estimate) {
+    navigator.storage.estimate().then(function(est) {
+      var usedEl = document.getElementById("storageInfo");
+      if (!usedEl) return;
+      var used = (est.usage / 1024 / 1024).toFixed(1);
+      var quota = (est.quota / 1024 / 1024).toFixed(0);
+      usedEl.textContent = used + " MB / " + quota + " MB used";
+    });
+  }
 
   document.getElementById("settingsContent").innerHTML = html;
 }
@@ -2889,11 +2892,11 @@ function getProfile() {
   const u = state.user || {};
   return {
     name: u.name || "",
-    age: u.age || 0,
+    age: u.age || null,
     gender: u.gender || "",
-    height: u.height || 0,
-    weight: u.weight || 0,
-    goal: u.goal || "recomp",
+    height: u.height || null,
+    weight: u.weight || null,
+    goal: u.goal || "general",
     activity: u.activity || "moderate",
     experience: u.experience || "beginner",
     trainingDays: u.trainingDays || 3,
@@ -2904,11 +2907,12 @@ function getProfile() {
     dietPreference: u.dietPreference || "none",
     supplements: Array.isArray(u.supplements) ? u.supplements : [],
     bodyMeasurements: u.bodyMeasurements || {},
-    calorieTarget: state.calorieTarget || 0,
-    proteinGoal: state.proteinGoal || 0,
-    waterGoal: state.waterGoal || 0,
+    calorieTarget: state.calorieTarget || null,
+    proteinGoal: state.proteinGoal || null,
+    waterGoal: state.waterGoal || null,
     restTimer: state.restTimer || 90,
-    bodyGoal: state.bodyGoal || u.goal || "recomp",
+    bodyGoal: state.bodyGoal || u.goal || "general",
+    avatarGradient: u.avatarGradient != null ? u.avatarGradient : null,
   };
 }
 
@@ -3634,6 +3638,7 @@ function openAvatarSheet() {
       '<div class="pr-avatar" style="width:80px;height:80px;margin:0 auto;background:' + getAvatarGradient() + ';font-size:1.75rem;font-weight:800;color:#0a0a0a;border-radius:50%;display:grid;place-items:center">' +
         (state.user?.name || "User").split(" ").map(function(n){return n[0]}).join("").toUpperCase().slice(0,2) +
       '</div>' +
+      '<button id="asUploadPhoto" style="margin-top:0.75rem;background:var(--surface);border:1px dashed var(--border);border-radius:12px;padding:0.5rem 1.25rem;font-size:0.82rem;color:var(--text-secondary);cursor:pointer;font-family:inherit;width:100%">📷 Upload Photo</button>' +
     '</div>' +
     '<div style="font-size:0.78rem;font-weight:600;color:var(--text-secondary);margin-bottom:0.5rem">Pick a style</div>' +
     '<div class="as-grid" style="display:grid;grid-template-columns:repeat(4,1fr);gap:0.5rem;margin-bottom:1rem">' + picks + '</div>' +
@@ -3649,6 +3654,9 @@ function openAvatarSheet() {
     saveState();
     openAvatarSheet();
     renderProfileAvatar();
+  };
+  document.getElementById("asUploadPhoto").onclick = function() {
+    showToast("Photo upload coming soon");
   };
   sheet.querySelectorAll(".as-gradient-pick").forEach(function(btn) {
     btn.onclick = function() {
@@ -9608,14 +9616,14 @@ function isProfileComplete() {
 
 const OB_CONFIG = {
   steps: [
-    { id: "welcome" },
-    { id: "name", question: "What should we call you?", why: "So we can address you personally." },
-    { id: "age", question: "How old are you?", why: "Used to personalize calorie and recovery recommendations." },
-    { id: "height", question: "What's your height?", why: "Helps estimate your daily energy needs." },
-    { id: "weight", question: "What's your weight?", why: "Used to calculate nutrition and training recommendations." },
-    { id: "goal", question: "What's your primary goal?", why: "Determines how your workout plan is generated." },
-    { id: "experience", question: "How would you like to use Striv?", why: "You can change this anytime in Settings." },
-    { id: "done" },
+    { id: "welcome", canBack: false, canSkip: false },
+    { id: "name", question: "What should we call you?", why: "So we can address you personally.", canBack: true, canSkip: false },
+    { id: "age", question: "How old are you?", why: "Used to personalize calorie and recovery recommendations.", canBack: true, canSkip: false },
+    { id: "height", question: "What's your height?", why: "Helps estimate your daily energy needs.", canBack: true, canSkip: false },
+    { id: "weight", question: "What's your weight?", why: "Used to calculate nutrition and training recommendations.", canBack: true, canSkip: false },
+    { id: "goal", question: "What's your primary goal?", why: "Determines how your workout plan is generated.", canBack: true, canSkip: false },
+    { id: "experience", question: "How would you like to use Striv?", why: "You can change this anytime in Settings.", canBack: true, canSkip: false },
+    { id: "done", canBack: false, canSkip: false },
   ],
   TOTAL: 8,
 };
@@ -9727,6 +9735,11 @@ function obWheelValue(container) {
 function openOnboarding(animateIn, startStep) {
   obData = {};
   isProfileEdit = false;
+  // Restore saved step if resuming
+  var savedStep = state.onboardingData?.obStepIndex;
+  if (startStep === undefined && savedStep !== undefined && savedStep > 0 && savedStep < OB_CONFIG.TOTAL - 1) {
+    startStep = savedStep;
+  }
   var p = getProfile();
   obData = {
     name: state.onboardingData?.name || p.name || "",
@@ -9734,6 +9747,7 @@ function openOnboarding(animateIn, startStep) {
     height: state.onboardingData?.height || p.height || 170,
     weight: state.onboardingData?.weight || p.weight || 60,
     goalType: state.onboardingData?.goalType || "general-fitness",
+    experienceMode: state.onboardingData?.experienceMode || p.experienceMode || "guided",
   };
   var modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
@@ -9743,6 +9757,21 @@ function openOnboarding(animateIn, startStep) {
     modal.addEventListener("animationend", onEnd);
   }
   obGoToStep(startStep || 0);
+
+  // Escape key closes onboarding
+  var onKeyDown = function(e) {
+    if (e.key === "Escape") {
+      var closeBtn = document.getElementById("obCloseBtn");
+      if (closeBtn) closeBtn.click();
+    }
+  };
+  document.addEventListener("keydown", onKeyDown);
+  // Clean up listener when modal closes
+  var origClose = closeOnboarding;
+  closeOnboarding = function(animateOut, callback) {
+    document.removeEventListener("keydown", onKeyDown);
+    return origClose.call(this, animateOut, callback);
+  };
 }
 
 function openProfileSectionEditor(section) {
@@ -9791,6 +9820,10 @@ function closeOnboarding(animateOut, callback) {
 function obGoToStep(idx) {
   var cfg = OB_CONFIG.steps[idx];
   if (!cfg) return;
+
+  // Save current step index for resume
+  state.onboardingData = state.onboardingData || {};
+  state.onboardingData.obStepIndex = idx;
   saveState();
 
   var body = document.getElementById("obBody");
@@ -9813,6 +9846,25 @@ function obGoToStep(idx) {
   body.style.transform = "translateY(0)";
 
   obBindEvents(cfg.id, idx);
+
+  // Show/hide back button
+  if (cfg.canBack && idx > 0) {
+    obRenderBackBtn(idx);
+  }
+
+  // Bind close button
+  var closeBtn = document.getElementById("obCloseBtn");
+  if (closeBtn) {
+    closeBtn.onclick = function() {
+      if (isProfileEdit) {
+        closeOnboarding(true);
+      } else {
+        if (idx === 0 || confirm("Exit onboarding? Your progress is saved.")) {
+          closeOnboarding(true);
+        }
+      }
+    };
+  }
 
   // Render live summary
   obRenderLiveSummary();
@@ -9862,6 +9914,21 @@ function obRenderLiveSummary() {
   if (mode) parts.push(mode);
 
   el.innerHTML = parts.join(" &nbsp;·&nbsp; ");
+}
+
+function obRenderBackBtn(idx) {
+  var stage = document.getElementById("obStage");
+  if (!stage) return;
+  var existing = document.getElementById("obBackBtnWrap");
+  if (existing) existing.remove();
+  var wrap = document.createElement("div");
+  wrap.id = "obBackBtnWrap";
+  wrap.className = "ob-back-wrap";
+  wrap.innerHTML = '<button class="ob-btn ob-btn-back" id="obBackBtn" type="button" aria-label="Go back"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M10 4L6 8l4 4" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg> Back</button>';
+  stage.insertBefore(wrap, stage.firstChild);
+  document.getElementById("obBackBtn")?.addEventListener("click", function() {
+    obGoToStep(idx - 1);
+  });
 }
 
 // ---- Render per step ----
@@ -9950,7 +10017,7 @@ function obRenderStep(idx, cfg) {
       { id: "muscle-gain", label: "Build Muscle", desc: "Gain lean muscle through progressive overload.", icon: "🏋" },
       { id: "fat-loss", label: "Lose Fat", desc: "Burn body fat while maintaining muscle.", icon: "🔥" },
       { id: "strength", label: "Strength", desc: "Increase your overall strength and power.", icon: "⚡" },
-      { id: "athletic", label: "Athletic", desc: "Improve speed, agility, and endurance.", icon: "🏃" },
+      { id: "endurance", label: "Endurance", desc: "Improve speed, agility, and stamina.", icon: "🏃" },
       { id: "general-fitness", label: "General Fitness", desc: "Build healthy habits and improve overall fitness.", icon: "❤️" },
     ];
     var cards = goals.map(function(g) {
@@ -10174,7 +10241,7 @@ function obFinishSetup() {
   const goalTypeMap = {
     "fat-loss": "lose-fat",
     "muscle-gain": "build-muscle",
-    "athletic": "athletic",
+    "endurance": "endurance",
     "strength": "strength",
     "general-fitness": "general",
   };
@@ -10227,6 +10294,7 @@ function obFinishSetup() {
   const wasComplete = state.onboardingComplete;
   if (!isProfileEdit) {
     state.onboardingComplete = true;
+    delete state.onboardingData.obStepIndex;
   }
   Object.assign(state.onboardingData, obData);
   saveState();
@@ -11869,13 +11937,8 @@ document.getElementById("screen-settings").addEventListener("click", (e) => {
     renderSettings();
     return;
   }
-  if (setting === "weight-unit") {
+  if (setting === "units") {
     state.weightUnit = state.weightUnit === "kg" ? "lb" : "kg";
-    saveState();
-    renderSettings();
-    return;
-  }
-  if (setting === "height-unit") {
     state.heightUnit = state.heightUnit === "cm" ? "ft/in" : "cm";
     saveState();
     renderSettings();
@@ -12007,18 +12070,6 @@ if (setting === "theme") {
   }
   if (setting === "delete-all" || setting === "delete-data") {
     document.getElementById("deleteDataModal").classList.remove("is-hidden");
-    return;
-  }
-  if (setting === "email") {
-    showToast("Email settings coming soon.");
-    return;
-  }
-  if (setting === "help") {
-    showToast("Help center coming soon.");
-    return;
-  }
-  if (setting === "privacy-health" || setting === "notifications") {
-    showToast("This feature is coming soon.");
     return;
   }
   if (setting === "workout-view") {
