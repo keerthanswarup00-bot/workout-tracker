@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG PROGRAM REVIEW & ADJUSTMENT ENGINE V1
+// STRIV PROGRAM REVIEW & ADJUSTMENT ENGINE
 // Evaluates training program effectiveness every 4 weeks.
 // Recommends smallest change first (consistency → structure).
 // ============================================================
@@ -7,7 +7,7 @@
 /* global state:readonly, GoalCenter:readonly, CoachEngine:readonly */
 
 const ProgramReviewEngine = (() => {
-  const STORAGE_KEY = "ironlog_program_review";
+  const STORAGE_KEY = "striv_program_review";
 
   // ---- Helpers -------------------------------------------------------
   function getDateKey(date) {

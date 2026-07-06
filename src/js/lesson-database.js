@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG LEARNING HUB V2 — Lesson Database
+// STRIV LEARNING HUB — Lesson Database
 // Each lesson is practical, beginner-friendly, and actionable.
 // ============================================================
 
@@ -15,7 +15,7 @@ const LESSON_DATABASE = [
     whyItMatters: "If you lift the same weight for months, your body has no reason to adapt. Progressive overload is one of the main drivers of muscle growth and strength gains.",
     realLifeExample: "Week 1: Bench Press 50kg x 8 reps. Week 2: 50kg x 10 reps. Week 3: 52.5kg x 8 reps. That small increase each week is progressive overload in action.",
     commonMistakes: ["Adding weight too quickly and breaking form", "Sacrificing technique for heavier loads", "Not tracking workouts consistently", "Chasing PRs every single session", "Ignoring smaller progress like an extra rep"],
-    actionSteps: ["Track every set you complete", "Add 1 rep where possible before adding weight", "Maintain proper form on every rep", "Record performance in IronLog after each set"],
+    actionSteps: ["Track every set you complete", "Add 1 rep where possible before adding weight", "Maintain proper form on every rep", "Record performance in Striv after each set"],
     coachRecommendation: "Focus on adding 1-2 reps or 2.5kg each week on compound lifts. Small consistent progress beats sporadic heavy sessions.",
     relatedLessons: ["training-volume", "training-frequency", "intensity-basics", "compound-movements"],
     goalRelevance: { "build-muscle": "high", "lose-fat": "medium", "strength": "high", "general": "high", "athletic": "high" },
@@ -227,7 +227,7 @@ const LESSON_DATABASE = [
     whyItMatters: "Training below MEV wastes your time. Training above MRV causes excessive fatigue and poor recovery. The sweet spot between them (the adaptive range) is where growth happens.",
     realLifeExample: "For most people, chest responds to 8-12 sets per week (MEV) but starts accumulating too much fatigue above 20 sets (MRV). The ideal range is 12-18 sets.",
     commonMistakes: ["Doing too few sets to stimulate growth", "Adding sets every week without limit", "Not adjusting volume based on recovery", "Using the same volume for all muscle groups"],
-    actionSteps: ["Start at 10 sets per muscle group per week", "Add 1-2 sets if no progress for 3 weeks", "Reduce volume if joints hurt or progress stalls", "Track total weekly volume in IronLog"],
+    actionSteps: ["Start at 10 sets per muscle group per week", "Add 1-2 sets if no progress for 3 weeks", "Reduce volume if joints hurt or progress stalls", "Track total weekly volume in Striv"],
     coachRecommendation: "Start with 10-12 hard sets per muscle per week. Add more only when progress stalls for 3+ weeks.",
     relatedLessons: ["training-volume", "muscle-growth-basics", "progressive-overload", "exercise-selection"],
     goalRelevance: { "build-muscle": "high", "lose-fat": "low", "strength": "high", "general": "low", "athletic": "medium" },
@@ -679,12 +679,12 @@ const LESSON_DATABASE = [
     category: "Beginner Essentials",
     difficulty: "beginner",
     readingTime: "2 min",
-    description: "Log every workout in IronLog. Record exercises, sets, reps, and weights. Tracking turns guesswork into data and lets you make informed decisions about your training.",
+    description: "Log every workout in Striv. Record exercises, sets, reps, and weights. Tracking turns guesswork into data and lets you make informed decisions about your training.",
     whyItMatters: "Untrained lifters who track workouts progress 2-3x faster than those who don't. Tracking ensures progressive overload and reveals patterns in your performance.",
     realLifeExample: "Without tracking: 'I think I did bench last week.' With tracking: 'Last week I did 50kg x 8, today I need to hit 50kg x 9 or 52.5kg x 8.'",
     commonMistakes: ["Relying on memory", "Not recording rest times", "Only tracking main lifts", "Forgetting to log warmups"],
-    actionSteps: ["Log every working set in IronLog", "Record weight, reps, and RPE", "Note how the set felt", "Review last session before training"],
-    coachRecommendation: "Track every working set. IronLog makes it easy. Reviewing your last session before you train helps you beat your previous performance.",
+    actionSteps: ["Log every working set in Striv", "Record weight, reps, and RPE", "Note how the set felt", "Review last session before training"],
+    coachRecommendation: "Track every working set. Striv makes it easy. Reviewing your last session before you train helps you beat your previous performance.",
     relatedLessons: ["what-matters-most", "goal-setting", "consistency-guide", "weight-logging"],
     goalRelevance: { "build-muscle": "high", "lose-fat": "medium", "strength": "high", "general": "high", "athletic": "high" },
     applyAction: null
@@ -695,11 +695,11 @@ const LESSON_DATABASE = [
     category: "Beginner Essentials",
     difficulty: "beginner",
     readingTime: "2 min",
-    description: "Weigh yourself weekly at the same time (morning, after bathroom, before food/water). Log the number in IronLog and watch the trend over weeks, not days.",
+    description: "Weigh yourself weekly at the same time (morning, after bathroom, before food/water). Log the number in Striv and watch the trend over weeks, not days.",
     whyItMatters: "Regular weight logging helps you understand if your nutrition matches your goal. One data point isn't useful — the trend over 4+ weeks tells the real story.",
     realLifeExample: "Weight might be 71kg Monday, 72.5kg Wednesday, 70.5kg Friday. The trend over a month (weekly averages) shows if you're actually losing or gaining.",
     commonMistakes: ["Weighing daily and panicking", "Weighing at different times of day", "Not tracking weight at all", "Obsessing over single measurements"],
-    actionSteps: ["Weigh once weekly on Friday morning", "Log in IronLog after weighing", "Look at the 4-week trend", "Adjust calories based on trend"],
+    actionSteps: ["Weigh once weekly on Friday morning", "Log in Striv after weighing", "Look at the 4-week trend", "Adjust calories based on trend"],
     coachRecommendation: "Weigh once a week, same conditions. Log it and move on. The monthly trend tells you what's working — daily numbers are just noise.",
     relatedLessons: ["tracking-workouts", "what-matters-most", "goal-setting", "weight-fluctuations"],
     goalRelevance: { "build-muscle": "high", "lose-fat": "high", "strength": "medium", "general": "high", "athletic": "medium" },
@@ -749,7 +749,7 @@ const LESSON_DATABASE = [
     whyItMatters: "Your body adapts to whatever you ask it to do. If you don't increase the demand over time, your body has no reason to get stronger or bigger.",
     realLifeExample: "Week 1-4: Squat 40kg. Week 5-8: Squat 45kg. Week 9-12: Squat 50kg. Each increase forces your body to adapt and grow.",
     commonMistakes: ["Using the same weight for months", "Not tracking workouts", "Adding weight too fast", "Progressing on exercises that don't matter"],
-    actionSteps: ["Record every workout in IronLog", "Aim to add 1 rep or 2.5kg each session", "Focus on the 6 main compound lifts", "Deload every 6 weeks to continue progressing"],
+    actionSteps: ["Record every workout in Striv", "Aim to add 1 rep or 2.5kg each session", "Focus on the 6 main compound lifts", "Deload every 6 weeks to continue progressing"],
     coachRecommendation: "Try to beat your last session by 1 rep or a small weight increase. Small consistent wins compound into significant progress.",
     relatedLessons: ["training-volume", "intensity-basics", "deload-weeks", "compound-movements"],
     goalRelevance: { "build-muscle": "high", "lose-fat": "low", "strength": "high", "general": "high", "athletic": "high" },
@@ -826,4 +826,4 @@ const LESSON_CATEGORIES = [
 ];
 
 // Learning progress storage key
-const LH_PROGRESS_KEY = "ironlog_learning_progress";
+const LH_PROGRESS_KEY = "striv_learning_progress";

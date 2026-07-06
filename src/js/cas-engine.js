@@ -1,10 +1,10 @@
 // ============================================================
-// IRONLOG CAS ENGINE — Challenges, Achievements, Streaks
+// STRIV CAS ENGINE — Challenges, Achievements, Streaks
 // Gamification, Retention & Motivation System V1
 // ============================================================
 
 const CASEngine = (() => {
-  const STORAGE_KEY = "ironlog_cas_data";
+  const STORAGE_KEY = "striv_cas_data";
 
   // ---- XP Thresholds & Level Titles -------------------------
   // Level n requires XP_THRESHOLDS[n-1] XP to reach

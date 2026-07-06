@@ -1,11 +1,11 @@
 // ============================================================
-// IRONLOG GOAL CENTER V1 — The brain of the IronLog ecosystem.
+// STRIV GOAL CENTER — The brain of the Striv ecosystem.
 // Every recommendation, report, workout, insight and coaching
 // action should originate from Goal Center data.
 // ============================================================
 
 const GoalCenter = (() => {
-  const GC_KEY = "ironlog_goal_center";
+  const GC_KEY = "striv_goal_center";
 
   // ---- Defaults -------------------------------------------------------
   function getDefaults() {

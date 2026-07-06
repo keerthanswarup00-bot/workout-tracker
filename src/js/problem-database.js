@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG PROBLEM DATABASE V2
+// STRIV PROBLEM DATABASE
 // Structured data for all 35 problems. Loaded dynamically.
 // ============================================================
 

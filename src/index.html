@@ -9,7 +9,7 @@
     <link rel="icon" type="image/svg+xml" href="assets/icons/favicon.svg" />
   <link rel="apple-touch-icon" href="assets/icons/favicon.svg" />
   <link rel="manifest" href="manifest.json" />
-  <title>IronLog</title>
+  <title>Striv</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@500;600;700;800&display=swap" rel="stylesheet" />
@@ -20,7 +20,7 @@
     <div class="app-layout">
       <!-- SIDEBAR (desktop) -->
       <aside class="sidebar" id="sidebar">
-        <div class="sidebar-brand">IronLog</div>
+        <div class="sidebar-brand">Striv</div>
         <nav class="sidebar-nav" id="sidebarNav">
           <button class="nav-btn is-active" data-tab="sets">Today</button>
           <button class="nav-btn" data-tab="sessions">Workout</button>
@@ -414,21 +414,24 @@
 
           <!-- Profile Screen -->
           <div id="screen-profile" class="screen is-hidden">
-            <div class="profile-header">
-              <button class="btn-back" id="profileBackBtn">←</button>
-              <span class="profile-header-title">My Fitness Identity</span>
-              <button class="profile-header-btn" id="profileEditBtn" style="font-size:0.75rem;font-weight:600;color:var(--accent);background:color-mix(in srgb,var(--accent) 15%,transparent);border:none;border-radius:8px;padding:0.35rem 0.75rem;cursor:pointer">Edit</button>
+            <div class="pr-header">
+              <button class="btn-back pr-header-btn" id="profileBackBtn" aria-label="Back">←</button>
+              <span class="pr-header-title">Profile</span>
+              <button class="pr-header-btn" id="profileSettingsBtn" aria-label="Settings">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+              </button>
             </div>
-            <div class="profile-scroll" id="profileContent"></div>
+            <div class="pr-scroll" id="profileContent"></div>
           </div>
 
           <!-- Settings Screen -->
           <div id="screen-settings" class="screen is-hidden">
-            <div class="settings-header">
-              <button class="btn-back" id="settingsBackBtn">←</button>
-              <span class="settings-header-title">Settings</span>
+            <div class="st-header">
+              <button class="btn-back" id="settingsBackBtn" aria-label="Back">←</button>
+              <span class="st-header-title">Settings</span>
+              <span style="width:36px"></span>
             </div>
-            <div class="settings-scroll" id="settingsContent"></div>
+            <div class="st-scroll" id="settingsContent"></div>
           </div>
 
           <!-- Profile Editor Modal -->
@@ -487,6 +490,14 @@
                 <div class="section-label ml-section-gap">Nutrition</div>
                 <input type="number" id="peCalories" class="ml-field" placeholder="Daily calorie target" min="1200" max="6000" step="50" />
                 <input type="number" id="peProtein" class="ml-field" placeholder="Daily protein goal (g)" min="30" max="500" />
+                <button class="btn-secondary" id="peSmartApply" style="width:100%;font-size:0.85rem;min-height:36px;margin-bottom:0.5rem">Calculate From Profile</button>
+                <div id="peSmartPreview" style="display:none;background:var(--surface-2);border-radius:var(--radius-sm);padding:0.75rem;margin-bottom:0.5rem">
+                  <div style="font-size:0.75rem;font-weight:600;color:var(--text-secondary);text-transform:uppercase;letter-spacing:0.05em;margin-bottom:0.4rem">Smart Recommendations</div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.85rem"><span style="color:var(--text-secondary)">Calories</span><span id="peSmartCal" style="font-weight:600">—</span></div>
+                  <div style="display:flex;justify-content:space-between;font-size:0.85rem;margin-top:0.25rem"><span style="color:var(--text-secondary)">Protein</span><span id="peSmartProtein" style="font-weight:600">—</span></div>
+                  <div id="peSmartNote" style="display:none;font-size:0.7rem;color:var(--text-tertiary);margin-top:0.35rem;line-height:1.3">Adjusted for body composition (using lean mass reference)</div>
+                  <button class="btn-primary" id="peSmartFill" style="width:100%;margin-top:0.5rem;font-size:0.85rem">Use These Values</button>
+                </div>
                 <select id="peDiet" class="ml-select">
                   <option value="">Diet Preference</option>
                   <option value="none">No Preference</option>
@@ -560,7 +571,7 @@
             <div class="modal-card fr-modal">
               <div class="fr-header">
                 <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--error)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
-                <h2>Reset IronLog?</h2>
+                <h2>Reset Striv?</h2>
               </div>
               <p class="fr-warning">This will permanently delete all your data:</p>
               <div class="fr-list">
@@ -592,7 +603,7 @@
                 <div class="dev-avatar">AS</div>
                 <div class="dev-subtitle">Aryan Swaroop</div>
                 <p class="dev-desc">
-                  A passionate developer and fitness enthusiast, I built IronLog to combine my love for coding with my dedication to health and fitness. I believe in clean code, effective workouts, and continuous improvement.
+                  Built for people who take their training seriously. Striv combines smart programming with honest tracking — no noise, no gimmicks, just your best work.
                 </p>
                 <a href="mailto:Aryanswaroop00@gmail.com" class="dev-mail-btn">✉ Aryanswaroop00@gmail.com</a>
               </div>
@@ -912,21 +923,10 @@
     <!-- ONBOARDING MODAL V2 -->
     <div class="onboard-overlay is-hidden" id="onboardingModal">
       <div class="onboard-modal">
-        <!-- Top bar: skip + progress -->
-        <div class="onboard-top">
-          <button class="onboard-skip" id="onboardSkipBtn" aria-label="Skip onboarding">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-          </button>
-          <div class="onboard-progress-wrap">
-            <div class="onboard-progress" id="obStepsFill"></div>
-          </div>
-          <div class="onboard-step-label" id="obStepsLabel">Step 1 of 6</div>
-          <div class="onboard-time-label" id="obTimeLabel">About 1 minute left</div>
-        </div>
-
-        <!-- Step content slides in here -->
         <div class="onboard-stage" id="obStage">
+          <div class="ob-progress-dots" id="obProgressDots"></div>
           <div class="onboard-body" id="obBody"></div>
+          <div class="ob-live-summary" id="obLiveSummary"></div>
         </div>
       </div>
     </div>
@@ -939,27 +939,14 @@
             <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="8 12 11 15 16 9"/></svg>
           </div>
           <h2 class="ob-activation-title">You're All Set!</h2>
-          <p class="ob-activation-sub">Your IronLog Coach is activated and ready.</p>
+          <p class="ob-activation-sub">Your Striv Coach is activated and ready.</p>
         </div>
         <div class="ob-activation-grid" id="obActivationGrid"></div>
         <button class="btn-primary ob-activation-btn" id="obActivationStartBtn">Start My First Workout</button>
       </div>
     </div>
 
-    <!-- ONBOARDING SKIP CONFIRM -->
-    <div class="onboard-overlay is-hidden" id="onboardConfirmModal">
-      <div class="onboard-modal" style="max-width: 380px; text-align: center;">
-        <div class="onboard-skip-content" style="padding: 2.5rem 2rem;">
-          <svg width="48" height="48" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" class="mb-md"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
-          <h3 style="font-size: 1.25rem; font-weight: 700; margin: 0 0 0.5rem;">Skip Setup?</h3>
-          <p style="font-size: 0.9rem; color: var(--text-secondary); margin: 0 0 1.5rem; line-height: 1.5;">You can complete your profile later from Settings.</p>
-          <div style="display: flex; flex-direction: column; gap: 0.65rem;">
-            <button class="btn-secondary" id="onboardConfirmCancel" style="width: 100%;">Cancel</button>
-            <button class="btn-ghost" id="onboardConfirmSkip">Skip For Now</button>
-          </div>
-        </div>
-      </div>
-    </div>
+
 
     <!-- LOAD PROGRAM MODAL -->
     <div class="modal-overlay is-hidden" id="loadProgramModal">
@@ -1186,6 +1173,8 @@
   <script defer src="core/engine-rules.js"></script>
   <script defer src="core/engine-validator.js"></script>
   <script defer src="core/engine-coach.js"></script>
+  <script defer src="core/engine-program-generator.js"></script>
+  <script defer src="core/engine-nutrition.js"></script>
   <script defer src="js/goal-center.js"></script>
   <script defer src="js/cas-engine.js"></script>
   <script defer src="js/adaptive-engine.js"></script>

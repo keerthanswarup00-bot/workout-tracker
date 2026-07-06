@@ -1369,6 +1369,17 @@ function loadState() {
     quickStartProgress: {},
     customExercises: [],
   };
+  // Migrate old localStorage keys from IronLog → Striv
+  const OLD_PREFIX = "ironlog_";
+  const NEW_PREFIX = "striv_";
+  const keysToMigrate = ["goal_center", "onboarding", "learning_progress", "reports", "saved_exercises", "cas_data", "report_keys", "pre_import_backup", "recovery_history", "program_review", "fitness_profile", "search_history"];
+  keysToMigrate.forEach(key => {
+    const oldKey = OLD_PREFIX + key;
+    const newKey = NEW_PREFIX + key;
+    if (localStorage.getItem(oldKey) !== null && localStorage.getItem(newKey) === null) {
+      localStorage.setItem(newKey, localStorage.getItem(oldKey));
+    }
+  });
   try {
     const stored = JSON.parse(localStorage.getItem(STORAGE_KEY));
     const loaded = { ...fallback, ...stored };
@@ -1411,7 +1422,7 @@ function loadState() {
     // Migrate GoalCenter data into unified state
     if (!loaded.goalCenter) {
       try {
-        const gcRaw = localStorage.getItem("ironlog_goal_center");
+        const gcRaw = localStorage.getItem("striv_goal_center");
         if (gcRaw) {
           const gcData = JSON.parse(gcRaw);
           if (gcData && gcData.goalType) loaded.goalCenter = gcData;
@@ -1422,7 +1433,7 @@ function loadState() {
     // Migrate onboarding-engine.js data into unified state
     if (!loaded.onboardingComplete) {
       try {
-        const obRaw = localStorage.getItem("ironlog_onboarding");
+        const obRaw = localStorage.getItem("striv_onboarding");
         if (obRaw) {
           const obData = JSON.parse(obRaw);
           if (obData) {
@@ -1704,7 +1715,7 @@ function collectMealLog() {
 
 function loadLearningProgress() {
   try {
-    return JSON.parse(localStorage.getItem("ironlog_learning_progress")) || { completed: [] };
+    return JSON.parse(localStorage.getItem("striv_learning_progress")) || { completed: [] };
   } catch {
     return { completed: [] };
   }
@@ -1899,9 +1910,12 @@ function playBeep() {
   try { navigator.vibrate(500); } catch {}
 }
 
-function startRestTimer() {
+var _restTimerTotal = 0;
+
+function startRestTimer(seconds) {
   clearInterval(restTimerInterval);
-  restTimerSeconds = state.restTimer || DEFAULT_REST;
+  restTimerSeconds = seconds || state.restTimer || DEFAULT_REST;
+  _restTimerTotal = restTimerSeconds;
   const el = document.getElementById("restTimer");
   el.classList.remove("is-hidden");
   updateRestTimerDisplay();
@@ -1927,7 +1941,7 @@ function updateRestTimerDisplay() {
   const m = Math.floor(restTimerSeconds / 60);
   const s = restTimerSeconds % 60;
   document.getElementById("rtTime").textContent = `${m}:${String(s).padStart(2, "0")}`;
-  const total = state.restTimer || DEFAULT_REST;
+  const total = _restTimerTotal || state.restTimer || DEFAULT_REST;
   const pct = restTimerSeconds / total;
   const circumference = 188.5;
   const offset = circumference * (1 - pct);
@@ -2039,193 +2053,97 @@ function getMonthlyStats(month, year) {
 // ===== SETTINGS =====
 // ===== SETTINGS RENDER =====
 function renderSettings() {
-  const u = state.user || {};
-  const bmi = u.height && u.weight ? (u.weight / ((u.height / 100) * (u.height / 100))).toFixed(1) : null;
-  const bmiCat = bmi ? (bmi < 18.5 ? "Underweight" : bmi < 25 ? "Normal" : bmi < 30 ? "Overweight" : "Obese") : null;
-  const goalLabels = {
-    "fat-loss": "Fat Loss",
-    "build-muscle": "Build Muscle",
-    recomp: "Recomp",
-    strength: "Strength",
-    athletic: "Athletic",
-    general: "Fitness",
-    custom: "Custom",
-  };
-  const sgGoal = typeof GoalCenter !== "undefined" && GoalCenter.getGoalType ? GoalCenter.getGoalType() : null;
-  const gcLabel = typeof GoalCenter !== "undefined" && GoalCenter.getGoalLabel ? GoalCenter.getGoalLabel() : "";
-  const mCals = u.weight
-    ? Math.round(
-        u.weight *
-          (u.activity === "sedentary" ? 24 : u.activity === "light" ? 26.5 : u.activity === "moderate" ? 29 : u.activity === "very" ? 31.5 : 34) *
-          (sgGoal === "lose-fat" ? 0.8 : sgGoal === "build-muscle" || sgGoal === "strength" ? 1.1 : 1),
-      )
-    : "—";
-  const initials = u.name
-    ? u.name
-        .split(" ")
-        .map((w) => w[0])
-        .join("")
-        .toUpperCase()
-        .slice(0, 2)
-    : "IL";
+  var html = "";
 
-  let html = `
-  <!-- SECTION 1: PROFILE -->
-  <div class="sg">
-    <div class="sg-label">PROFILE</div>
-    <button class="sg-card" data-setting="profile">
-      <div class="sg-avatar" style="background:var(--accent);color:#000;font-weight:800">${initials}</div>
-      <div class="sg-card-body">
-        <div class="sg-card-name">${u.name || "Tap to set up"}</div>
-        <div class="sg-card-meta">${[u.age ? u.age + " yrs" : "", u.height ? u.height + " cm" : "", u.weight ? displayWeight(u.weight) : "", gcLabel].filter(Boolean).join(" · ") || "No profile yet"}</div>
-      </div>
-      <span class="sg-chevron">›</span>
-    </button>
-    <div class="sg-stats">
-      <div class="sg-stat"><span class="sg-stat-val">${u.age || "—"}</span><span class="sg-stat-lbl">Age</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.height ? displayHeight(u.height) : "—"}</span><span class="sg-stat-lbl">Height</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${u.weight ? displayWeight(u.weight) : "—"}</span><span class="sg-stat-lbl">Weight</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${gcLabel}</span><span class="sg-stat-lbl">Goal</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${bmi || "—"}</span><span class="sg-stat-lbl">BMI</span></div>
-      <div class="sg-stat"><span class="sg-stat-val">${mCals}</span><span class="sg-stat-lbl">Calories</span></div>
-    </div>
-    ${bmi ? '<div class="sg-bmi-bar"><div class="sg-bmi-fill" style="width:' + (bmi / 40) * 100 + "%;background:" + (bmiCat === "Underweight" ? "#4a9eff" : bmiCat === "Normal" ? "#00d26a" : bmiCat === "Overweight" ? "#ff9500" : "#ff3b30") + '"></div></div><div class="sg-bmi-labels"><span>Underweight</span><span>Normal</span><span>Overweight</span><span>Obese</span></div>' : ""}
-    ${!isProfileComplete() ? '<button class="sg-card sg-card-cta" id="settingsCompleteProfile"><div class="sg-card-body"><div class="sg-card-name">Complete Your Profile</div><div class="sg-card-meta">Add your stats to unlock features</div></div><span class="sg-chevron">›</span></button>' : ""}
-    <button class="sg-row" style="color:var(--accent)" data-setting="profile"><span>View Full Profile</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" id="settingsGoalCenterBtn"><span>Goals</span><span class="sg-chevron">›</span></button>
-  </div>
+  // Group helper: renders a card with rows
+  function group(label, rows) {
+    var r = '<div class="st-group"><div class="st-group-label">' + label + '</div><div class="st-card">';
+    rows.forEach(function(row) {
+      if (row.type === "toggle") {
+        r += '<label class="st-toggle"><span>' + row.label + '</span><input type="checkbox" ' + (row.checked ? "checked" : "") + ' data-setting="' + row.setting + '" /><span class="st-toggle-track"></span></label>';
+      } else if (row.type === "nav") {
+        r += '<button class="st-row" data-setting="' + row.setting + '">' +
+          (row.icon ? '<span class="st-row-icon" style="background:color-mix(in srgb,' + (row.iconColor || "var(--text-secondary)") + ' 15%,transparent);color:' + (row.iconColor || "var(--text-secondary)") + '">' + row.icon + '</span>' : '') +
+          '<span>' + row.label + '</span>' +
+          (row.val !== undefined ? '<span class="st-row-val">' + row.val + '</span>' : '') +
+          '<span class="st-chevron">›</span></button>';
+      } else if (row.type === "danger") {
+        r += '<div class="st-danger"><button class="st-danger-btn" ' + (row.action || "") + '>' + row.label + '</button></div>';
+      } else if (row.type === "about") {
+        r += '<div class="st-row" style="cursor:default"><span>' + row.label + '</span><span class="st-row-val">' + row.val + '</span></div>';
+      }
+    });
+    r += '</div></div>';
+    return r;
+  }
 
-  <!-- SECTION 2: FITNESS GOALS -->
-  <div class="sg">
-    <div class="sg-label">FITNESS GOALS</div>
-    <div class="sg-radio-group" data-setting="goal">
-      ${["fat-loss", "recomp", "lean-bulk", "aggressive-bulk"]
-        .map((g) => {
-          const labels = { "fat-loss": "Fat Loss", recomp: "Recomp", "lean-bulk": "Lean Bulk", "aggressive-bulk": "Aggressive Bulk" };
-          const descs = {
-            "fat-loss": "Lose body fat while preserving muscle",
-            recomp: "Build muscle while losing fat",
-            "lean-bulk": "Gain muscle with minimal fat",
-            "aggressive-bulk": "Maximize muscle gain",
-          };
-          const rates = { "fat-loss": "0.5–1 kg/week", recomp: "Maintenance", "lean-bulk": "0.25 kg/week", "aggressive-bulk": "0.5 kg/week" };
-          const sel = (state.bodyGoal || "recomp") === g;
-          return (
-            '<label class="sg-radio' +
-            (sel ? " is-sel" : "") +
-            '"><input type="radio" name="sg-goal" value="' +
-            g +
-            '"' +
-            (sel ? " checked" : "") +
-            '><span class="sg-radio-dot"></span><span class="sg-radio-body"><span class="sg-radio-title">' +
-            labels[g] +
-            '</span><span class="sg-radio-desc">' +
-            descs[g] +
-            '</span><span class="sg-radio-rate">' +
-            rates[g] +
-            "</span></span></label>"
-          );
-        })
-        .join("")}
-    </div>
-  </div>
+  // ACCOUNT
+  html += group("Account", [
+    { type: "nav", icon: "👤", label: "Profile", setting: "profile", iconColor: "var(--accent)" },
+    { type: "nav", icon: "📧", label: "Email", setting: "email", iconColor: "var(--blue)" },
+    { type: "nav", icon: "💾", label: "Backup & Export", setting: "export-json", iconColor: "var(--orange)" },
+  ]);
 
-  <!-- SECTION 3: CUSTOM GOALS -->
-  <div class="sg">
-    <div class="sg-label">CUSTOM GOALS</div>
-    <div id="goalsContent"></div>
-  </div>
+  // PREFERENCES
+  html += group("Preferences", [
+    { type: "nav", icon: "📏", label: "Units", setting: "weight-unit", val: (state.weightUnit || "kg") + " / " + (state.heightUnit || "cm"), iconColor: "var(--accent)" },
+    { type: "toggle", label: "Dark Mode", setting: "theme", checked: (state.theme || "dark") !== "light" },
+    { type: "nav", icon: "🔔", label: "Notifications", setting: "notifications", iconColor: "var(--orange)" },
+  ]);
 
-  <!-- SECTION 4: WORKOUT -->
-  <div class="sg">
-    <div class="sg-label">WORKOUT</div>
-    <div class="sg-row" data-setting="rest-timer"><span>Rest Timer</span><span class="sg-row-val" id="sgRestVal">${state.restTimer || 90}s</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Auto-Start Rest Timer</span><input type="checkbox" ${state.autoRest ? "checked" : ""} data-setting="auto-rest" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto-Open Next Exercise</span><input type="checkbox" ${state.autoNext ? "checked" : ""} data-setting="auto-next" /><span class="sg-toggle-track"></span></label>
-    <div class="sg-row" data-setting="weight-inc"><span>Weight Increment</span><span class="sg-row-val">${displayWeight(state.weightInc || 1)}</span><span class="sg-chevron">›</span></div>
-    <label class="sg-row sg-toggle"><span>Focus Mode</span><input type="checkbox" ${state.focusMode ? "checked" : ""} data-setting="focus-mode" /><span class="sg-toggle-track"></span></label>
-  </div>
+  // WORKOUT
+  html += group("Workout", [
+    { type: "nav", icon: "⏱", label: "Rest Timer", setting: "rest-timer", val: (state.restTimer || 90) + "s", iconColor: "var(--accent)" },
+    { type: "toggle", label: "Auto-Start Rest Timer", setting: "auto-rest", checked: !!state.autoRest },
+    { type: "toggle", label: "Auto-Open Next Exercise", setting: "auto-next", checked: !!state.autoNext },
+    { type: "nav", icon: "📊", label: "Default Weight Unit", setting: "weight-unit", val: state.weightUnit || "kg", iconColor: "var(--blue)" },
+    { type: "nav", icon: "👁", label: "Default Workout View", setting: "workout-view", val: state.workoutView || "Standard", iconColor: "var(--protein)" },
+  ]);
 
-  <!-- SECTION 5: NOTIFICATIONS -->
-  <div class="sg">
-    <div class="sg-label">NOTIFICATIONS</div>
-    <label class="sg-row sg-toggle"><span>Weight Reminder</span><input type="checkbox" ${state.weightReminder ? "checked" : ""} data-setting="weight-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Nutrition Reminder</span><input type="checkbox" ${state.nutritionReminder ? "checked" : ""} data-setting="nutrition-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Weekly Review Summary</span><input type="checkbox" ${state.weeklyReview !== false ? "checked" : ""} data-setting="weekly-review" /><span class="sg-toggle-track"></span></label>
-  </div>
+  // ADVANCED (collapsed under Workout as toggles)
+  html += group("Advanced", [
+    { type: "toggle", label: "Keep Screen Awake", setting: "screen-awake", checked: !!state.screenAwake },
+    { type: "toggle", label: "Auto Warm-Up Sets", setting: "auto-warmup", checked: state.autoWarmup !== false },
+    { type: "toggle", label: "Warm-Up Reminder", setting: "warmup-reminder", checked: state.warmupReminder !== false },
+    { type: "toggle", label: "Stretch Reminder", setting: "stretch-reminder", checked: state.stretchReminder !== false },
+    { type: "toggle", label: "Auto Summary After Workout", setting: "auto-summary", checked: state.autoSummary !== false },
+    { type: "toggle", label: "Auto Cool-Down", setting: "auto-cooldown", checked: state.autoCooldown !== false },
+    { type: "toggle", label: "Show Tomorrow Preview", setting: "tomorrow-preview", checked: state.showTomorrowPreview !== false },
+    { type: "toggle", label: "Show Workout Progress", setting: "workout-progress", checked: state.showWorkoutProgress !== false },
+    { type: "toggle", label: "Compact Mode", setting: "compact-mode", checked: !!state.compactMode },
+  ]);
 
-  <!-- SECTION 6: HEALTH -->
-  <div class="sg">
-    <div class="sg-label">HEALTH</div>
-    <div class="sg-row" data-setting="calorie-target"><span>Daily Calorie Target</span><span class="sg-row-val">${state.calorieTarget || CAL_GOAL}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="protein-goal"><span>Daily Protein Goal</span><span class="sg-row-val">${state.proteinGoal || PROTEIN_GOAL}g</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="water-goal"><span>Daily Water Goal</span><span class="sg-row-val">${state.waterGoal || WATER_TARGET}ml</span><span class="sg-chevron">›</span></div>
-  </div>
+  // NUTRITION GOALS
+  html += group("Nutrition Goals", [
+    { type: "nav", icon: "🔥", label: "Daily Calories", setting: "calorie-target", val: (state.calorieTarget || CAL_GOAL) + " cal", iconColor: "var(--orange)" },
+    { type: "nav", icon: "🥩", label: "Daily Protein", setting: "protein-goal", val: (state.proteinGoal || PROTEIN_GOAL) + "g", iconColor: "var(--protein)" },
+    { type: "nav", icon: "💧", label: "Daily Water", setting: "water-goal", val: (state.waterGoal || WATER_TARGET) + "ml", iconColor: "var(--blue)" },
+  ]);
 
-  <!-- SECTION 7: APPEARANCE -->
-  <div class="sg">
-    <div class="sg-label">APPEARANCE</div>
-    <div class="sg-row" data-setting="theme"><span>Theme</span><span class="sg-row-val">${state.theme || "Dark"}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="accent"><span>Accent Color</span><span class="sg-row-val" style="color:var(--accent)">${state.accent || "Green"}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="font-size"><span>Font Size</span><span class="sg-row-val">${state.fontSize || "Medium"}</span><span class="sg-chevron">›</span></div>
-  </div>
+  // DATA
+  html += group("Data", [
+    { type: "nav", icon: "📝", label: "Weight Log", setting: "weight-log", val: (state.weightLog || []).length + " entries", iconColor: "var(--accent)" },
+    { type: "nav", icon: "📤", label: "Export Data", setting: "export-json", iconColor: "var(--orange)" },
+    { type: "nav", icon: "📥", label: "Import Data", setting: "import-json", iconColor: "var(--blue)" },
+    { type: "nav", icon: "🔄", label: "Restore Backup", setting: "restore-backup", iconColor: "var(--protein)" },
+  ]);
 
-  <!-- SECTION 8: ADVANCED -->
-  <div class="sg">
-    <div class="sg-label">ADVANCED</div>
-    <label class="sg-row sg-toggle"><span>Keep Screen Awake</span><input type="checkbox" ${state.screenAwake ? "checked" : ""} data-setting="screen-awake" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto Warm-Up Sets</span><input type="checkbox" ${state.autoWarmup !== false ? "checked" : ""} data-setting="auto-warmup" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Warm-Up Reminder</span><input type="checkbox" ${state.warmupReminder !== false ? "checked" : ""} data-setting="warmup-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Stretch Reminder</span><input type="checkbox" ${state.stretchReminder !== false ? "checked" : ""} data-setting="stretch-reminder" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto Summary After Workout</span><input type="checkbox" ${state.autoSummary !== false ? "checked" : ""} data-setting="auto-summary" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Auto Cool-Down</span><input type="checkbox" ${state.autoCooldown !== false ? "checked" : ""} data-setting="auto-cooldown" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Show Tomorrow Preview</span><input type="checkbox" ${state.showTomorrowPreview !== false ? "checked" : ""} data-setting="tomorrow-preview" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Show Workout Progress</span><input type="checkbox" ${state.showWorkoutProgress !== false ? "checked" : ""} data-setting="workout-progress" /><span class="sg-toggle-track"></span></label>
-    <label class="sg-row sg-toggle"><span>Compact Mode</span><input type="checkbox" ${state.compactMode ? "checked" : ""} data-setting="compact-mode" /><span class="sg-toggle-track"></span></label>
-  </div>
+  // PRIVACY
+  html += group("Privacy", [
+    { type: "nav", icon: "🔒", label: "Health Data", setting: "privacy-health", iconColor: "var(--accent)" },
+    { type: "nav", icon: "🚫", label: "Delete All Data", setting: "delete-data", iconColor: "var(--error)" },
+    { type: "danger", label: "Factory Reset — Permanently delete all data", action: 'onclick="document.getElementById(\'deleteDataModal\').classList.remove(\'is-hidden\')"' },
+  ]);
 
-  <!-- SECTION 9: DATA & BACKUP -->
-  <div class="sg">
-    <div class="sg-label">DATA</div>
-    <div class="sg-row" data-setting="weight-log"><span>Weight Log</span><span class="sg-row-val">${(state.weightLog || []).length} entries</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="weight-unit"><span>Weight Unit</span><span class="sg-row-val">${state.weightUnit || "kg"}</span><span class="sg-chevron">›</span></div>
-    <div class="sg-row" data-setting="height-unit"><span>Height Unit</span><span class="sg-row-val">${state.heightUnit || "cm"}</span><span class="sg-chevron">›</span></div>
-    <button class="sg-row" data-setting="export-json"><span>Export Data (JSON)</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="import-json"><span>Import Data (JSON)</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="restore-backup"><span>Restore Pre-Import Backup</span><span class="sg-chevron">›</span></button>
-  </div>
-
-  <!-- SECTION 10: DANGER ZONE -->
-  <div class="sg sg-danger">
-    <div class="sg-label" style="color:var(--error)">DANGER ZONE</div>
-    <div class="sg-card sg-card-danger" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')">
-      <div class="sg-card-body">
-        <div class="sg-card-name" style="color:var(--error)">Factory Reset</div>
-        <div class="sg-card-meta">Permanently delete all data and start fresh</div>
-      </div>
-      <span class="sg-chevron" style="color:var(--error)">›</span>
-    </div>
-  </div>
-
-  <!-- SECTION 7: FEEDBACK -->
-  <div class="sg">
-    <div class="sg-label">FEEDBACK</div>
-    <button class="sg-row" data-setting="feedback-bug"><span>🐛 Report a Bug</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="feedback-feature"><span>💡 Suggest a Feature</span><span class="sg-chevron">›</span></button>
-    <button class="sg-row" data-setting="feedback-general"><span>⭐ Share Feedback</span><span class="sg-chevron">›</span></button>
-  </div>
-
-  <!-- SECTION 8: ABOUT -->
-  <div class="sg">
-    <div class="sg-label">ABOUT</div>
-    <div class="sg-row"><span>Version</span><span class="sg-row-val">2.0</span></div>
-    <button class="sg-row" data-setting="about-developer"><span>About The Developer</span><span class="sg-chevron">›</span></button>
-    <div class="sg-row" style="cursor:default"><span style="font-size:0.7rem;color:var(--text-secondary)">Built with ❤️</span></div>
-  </div>`;
+  // SUPPORT
+  html += group("Support", [
+    { type: "nav", icon: "❓", label: "Help Center", setting: "help", iconColor: "var(--accent)" },
+    { type: "nav", icon: "🐛", label: "Report a Bug", setting: "feedback-bug", iconColor: "var(--orange)" },
+    { type: "about", label: "Version", val: "2.0" },
+    { type: "about", label: "Built for Striv", val: "❤️" },
+  ]);
 
   document.getElementById("settingsContent").innerHTML = html;
-  const goalsContainer = document.getElementById("goalsContent");
-  if (goalsContainer) renderGoals();
 }
 
 function openDeveloperModal() {
@@ -2746,6 +2664,48 @@ function renderBodyTab() {
   renderWeightChart();
   renderGoalPrediction();
   renderBodyAnalysis();
+  renderNutritionTrends();
+}
+
+function renderNutritionTrends() {
+  const container = document.getElementById("nutritionTrends");
+  if (!container) return;
+  try {
+    const snapshots = JSON.parse(localStorage.getItem("striv_nutrition_snapshots")) || [];
+    if (snapshots.length < 2) {
+      container.innerHTML = "";
+      return;
+    }
+    const last = snapshots[snapshots.length - 1];
+    const first = snapshots[0];
+    const tdeeChange = last.tdee && first.tdee ? last.tdee - first.tdee : null;
+    const bmiChange = last.bmi && first.bmi ? (last.bmi - first.bmi).toFixed(1) : null;
+
+    let html = '<div class="body-section-header" style="margin-top:0.75rem"><span class="body-section-label">Nutrition Trends</span></div>';
+    html += '<div style="display:grid;grid-template-columns:1fr 1fr;gap:0.4rem">';
+
+    if (last.tdee) {
+      html += '<div class="stat-card"><div class="stat-label">TDEE</div><div class="stat-value">' + last.tdee + ' cal' +
+        (tdeeChange ? '<span style="font-size:0.6rem;color:var(--text-secondary);display:block">' + (tdeeChange > 0 ? "+" : "") + tdeeChange + ' change</span>' : "") +
+        '</div></div>';
+    }
+    if (last.calorieTarget) {
+      html += '<div class="stat-card"><div class="stat-label">Calorie Target</div><div class="stat-value">' + last.calorieTarget + ' cal</div></div>';
+    }
+    if (last.proteinGoal) {
+      html += '<div class="stat-card"><div class="stat-label">Protein Goal</div><div class="stat-value">' + last.proteinGoal + 'g</div></div>';
+    }
+    if (last.bmi) {
+      html += '<div class="stat-card"><div class="stat-label">BMI</div><div class="stat-value">' + last.bmi +
+        (bmiChange ? '<span style="font-size:0.6rem;color:var(--text-secondary);display:block">' + (bmiChange > 0 ? "+" : "") + bmiChange + ' change</span>' : "") +
+        '</div></div>';
+    }
+
+    html += '</div>';
+    container.innerHTML = html;
+  } catch (e) {
+    container.innerHTML = "";
+  }
 }
 
 function exportJSON() {
@@ -2807,7 +2767,7 @@ function exportJSON() {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = `ironlog-export-${getDateKey()}.json`;
+  a.download = `striv-export-${getDateKey()}.json`;
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
@@ -3251,7 +3211,7 @@ function generateWeeklyWins(report) {
 }
 
 // ===== REPORT STORAGE =====
-const REPORT_KEY = "ironlog_reports";
+const REPORT_KEY = "striv_reports";
 function loadAllReports() {
   try { return JSON.parse(localStorage.getItem(REPORT_KEY)) || { weekly: {}, monthly: {} }; }
   catch { return { weekly: {}, monthly: {} }; }
@@ -3619,233 +3579,150 @@ function renderProfileAchievements() {
 }
 function renderProfileScreen() {
   const p = getProfile();
-  const initials = (p.name || "IL").split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+  const name = p.name && p.name.trim() ? p.name.trim() : "Athlete";
+  const initials = name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "IL";
   const streak = state.workoutStreak || { currentStreak: 0, longestStreak: 0 };
   const totalWorkouts = (state.sessions || []).filter(s => s.finishedAt).length;
   const trainDays = p.trainingDays || 3;
-  const weeklyPct = Math.min(100, Math.round((totalWorkouts / (trainDays * 4)) * 100));
+  const weeklyPct = Math.min(100, Math.round((totalWorkouts / Math.max(trainDays * 4, 1)) * 100));
   const calGoal = p.calorieTarget;
   const proGoal = p.proteinGoal;
   const bmi = p.height && p.weight ? (p.weight / ((p.height / 100) * (p.height / 100))).toFixed(1) : null;
   const goalLabel = getGoalLabel(p.goal);
   const expLabel = getExpLabel(p.experience);
   const completeness = renderProfileCompleteness();
-  const healthItems = renderProfileHealth();
   const memberSince = state.activatedAt || state.onboardingData?.createdAt || null;
   const memberDate = memberSince ? new Date(memberSince).toLocaleDateString("en-US", { month: "long", year: "numeric" }) : null;
 
-  let html = `
-    <div class="profile-hero">
-      <div class="profile-hero-avatar">${initials}</div>
-      <div class="profile-hero-name">${p.name || "Athlete"}</div>
-      <div class="profile-hero-badges">
-        <span class="profile-badge profile-badge-accent">${goalLabel}</span>
-        <span class="profile-badge profile-badge-blue">${expLabel}</span>
-        <span class="profile-badge profile-badge-orange">${p.trainingDays || "?"}x/week</span>
-      </div>
-      <div class="profile-hero-meta">
-        ${memberDate ? `<span>Joined ${memberDate}</span>` : ""}
-        <span>${totalWorkouts} workout${totalWorkouts !== 1 ? "s" : ""}</span>
-        <span class="profile-hero-streak">${streak.currentStreak > 0 ? "🔥 " + streak.currentStreak + " day streak" : "No active streak"}</span>
-      </div>
-    </div>
-  `;
+  const safe = function(v, suffix) {
+    if (v !== null && v !== undefined && v !== "" && v !== 0 && v !== "0") return v + (suffix || "");
+    return null;
+  };
+  const orNotSet = function(v, suffix) {
+    var r = safe(v, suffix);
+    return r !== null ? r : '<span class="pr-row-val ns">Not set</span>';
+  };
+  const orAdd = function(v, suffix) {
+    var r = safe(v, suffix);
+    return r !== null ? r : '<span class="pr-row-action" data-action="edit" data-section="' + suffix + '">Add</span>';
+  };
 
-  // Stats row
-  html += `<div class="profile-stats">
-    <div class="profile-stat"><span class="profile-stat-val">${p.weight ? displayWeight(p.weight) : "—"}</span><span class="profile-stat-lbl">Weight</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : "—"}</span><span class="profile-stat-lbl">Target</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${p.bodyMeasurements?.bodyFat != null ? p.bodyMeasurements.bodyFat + "%" : "—"}</span><span class="profile-stat-lbl">Body Fat</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${totalWorkouts}</span><span class="profile-stat-lbl">Workouts</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${streak.currentStreak}</span><span class="profile-stat-lbl">Streak</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${streak.longestStreak}</span><span class="profile-stat-lbl">Best</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${weeklyPct}%</span><span class="profile-stat-lbl">Consistency</span></div>
-    <div class="profile-stat"><span class="profile-stat-val">${calGoal ? calGoal : "—"}</span><span class="profile-stat-lbl">Calories</span></div>
-  </div>`;
+  // ---- Hero ----
+  var html = '<div class="pr-hero">' +
+    '<div class="pr-avatar" onclick="openProfileSectionEditor(\'personal\')">' + initials +
+      '<span class="pr-avatar-edit">✎</span>' +
+    '</div>' +
+    '<div class="pr-name">' + escapeHtml(name) + '</div>' +
+    '<div class="pr-badges">' +
+      '<span class="pr-badge pr-badge-accent">' + goalLabel + '</span>' +
+      '<span class="pr-badge pr-badge-blue">' + expLabel + '</span>' +
+      (p.trainingDays ? '<span class="pr-badge pr-badge-orange">' + p.trainingDays + 'x/week</span>' : '') +
+    '</div>' +
+    '<div class="pr-meta">' +
+      (memberDate ? '<span>Joined ' + memberDate + '</span>' : '') +
+      '<span>' + totalWorkouts + ' workout' + (totalWorkouts !== 1 ? 's' : '') + '</span>' +
+      (streak.currentStreak > 0 ? '<span class="pr-streak">🔥 ' + streak.currentStreak + ' day streak</span>' : '') +
+    '</div>' +
+  '</div>';
 
-  // Completeness bar
-  html += `<div class="profile-completeness">
-    <div class="profile-completeness-top"><span>Profile</span><span>${completeness.pct}% · ${completeness.label}</span></div>
-    <div class="profile-completeness-bar"><div class="profile-completeness-fill" style="width:${completeness.pct}%"></div></div>
-  </div>`;
+  // ---- Stats row (4 cols) ----
+  var weightVal = p.weight ? displayWeight(p.weight) : "—";
+  var targetVal = state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : "—";
+  var bfVal = p.bodyMeasurements?.bodyFat != null ? p.bodyMeasurements.bodyFat + "%" : "—";
+  html += '<div class="pr-stats">' +
+    '<div class="pr-stat" onclick="openWeightSheet()"><span class="pr-stat-val">' + weightVal + '</span><span class="pr-stat-lbl">Weight</span></div>' +
+    '<div class="pr-stat"><span class="pr-stat-val">' + targetVal + '</span><span class="pr-stat-lbl">Target</span></div>' +
+    '<div class="pr-stat"><span class="pr-stat-val">' + bfVal + '</span><span class="pr-stat-lbl">Body Fat</span></div>' +
+    '<div class="pr-stat"><span class="pr-stat-val">' + totalWorkouts + '</span><span class="pr-stat-lbl">Workouts</span></div>' +
+  '</div>';
 
-  // Health suggestions
-  if (healthItems.length) {
-    html += `<div class="profile-health">`;
-    healthItems.slice(0, 4).forEach(h => {
-      const dotClass = h.type;
-      html += `<button class="profile-health-item" data-health-section="${h.section}"><span class="profile-health-dot ${dotClass}"></span>${h.text}</button>`;
-    });
-    html += `</div>`;
+  // ---- Completion card (hide at 100%) ----
+  if (completeness.pct < 100) {
+    var missingItems = completeness.items.filter(function(i) { return !i.ok; });
+    var missingLabel = missingItems.length ? missingItems[0].label : "your profile";
+    html += '<div class="pr-complete">' +
+      '<div class="pr-complete-ring">' + completeness.pct + '%</div>' +
+      '<div class="pr-complete-body">' +
+        '<div class="pr-complete-title">Profile ' + completeness.pct + '% Complete</div>' +
+        '<div class="pr-complete-desc">Complete ' + missingLabel.toLowerCase() + ' to unlock better recommendations.</div>' +
+      '</div>' +
+      '<button class="pr-complete-btn" onclick="openProfileEditor()">Complete</button>' +
+    '</div>';
   }
 
-  // --- Expandable sections ---
-  const sections = [
-    {
-      id: "personal", icon: "person", label: "Personal",
+  // ---- Section cards ----
+  var sections = [
+    { id: "personal", icon: "👤", label: "Personal Information", color: "var(--accent)",
       fields: [
-        { label: "Name", val: p.name || null },
-        { label: "Age", val: p.age ? p.age + " yrs" : null },
-        { label: "Gender", val: p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : null },
-        { label: "Height", val: p.height ? p.height + " cm" : null },
-        { label: "Weight", val: p.weight ? displayWeight(p.weight) : null },
-        { label: "BMI", val: bmi || null },
-      ]
-    },
-    {
-      id: "goals", icon: "flag", label: "Goals",
+        { label: "Age", val: safe(p.age, " years") },
+        { label: "Height", val: orNotSet(p.height, " cm") },
+        { label: "Gender", val: orNotSet(p.gender ? p.gender.charAt(0).toUpperCase() + p.gender.slice(1) : null) },
+      ],
+      editAction: "personal" },
+    { id: "goals", icon: "🎯", label: "Fitness Goals", color: "var(--orange)",
       fields: [
-        { label: "Primary Goal", val: goalLabel },
-        { label: "Activity Level", val: { sedentary: "Sedentary", light: "Light", moderate: "Moderate", very: "Very Active", athlete: "Athlete" }[p.activity] || null },
-        { label: "Target Weight", val: state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : null },
-        { label: "Goal Date", val: state.weightGoal?.targetDate || null },
-      ]
-    },
-    {
-      id: "training", icon: "dumbbell", label: "Training",
-      fields: [
+        { label: "Goal", val: goalLabel },
         { label: "Experience", val: expLabel },
-        { label: "Training Days", val: p.trainingDays ? p.trainingDays + "/week" : null },
-        { label: "Training Location", val: { gym: "Gym", home: "Home", minimal: "Both" }[p.equipment] || null },
+        { label: "Target Weight", val: orNotSet(state.weightGoal?.targetWeight ? displayWeight(state.weightGoal.targetWeight) : null) },
+      ],
+      editAction: "goals" },
+    { id: "training", icon: "💪", label: "Training", color: "var(--blue)",
+      fields: [
+        { label: "Location", val: orNotSet({ gym: "Gym", home: "Home", minimal: "Both" }[p.equipment]) },
+        { label: "Days/Week", val: orNotSet(p.trainingDays) },
         { label: "Rest Timer", val: (state.restTimer || 90) + "s" },
-      ]
-    },
-    {
-      id: "equipment", icon: "tools", label: "Equipment",
+      ],
+      editAction: "training" },
+    { id: "nutrition", icon: "🍎", label: "Nutrition", color: "var(--protein)",
       fields: [
-        { label: "Access Level", val: { gym: "Full Gym", home: "Home Gym", minimal: "Both" }[p.equipment] || null },
-        ...(Array.isArray(p.equipmentDetails) && p.equipmentDetails.length ? [{ label: "Available", val: p.equipmentDetails.join(", ") }] : []),
-        ...(Array.isArray(p.injuries) && p.injuries.length ? [{ label: "Limitations", val: p.injuries.join(", ") }] : []),
-        ...(p.injuryNotes ? [{ label: "Injury Notes", val: p.injuryNotes }] : []),
-      ]
-    },
-    {
-      id: "nutrition", icon: "nutrition", label: "Nutrition",
+        { label: "Calories", val: orNotSet(calGoal) },
+        { label: "Protein", val: orNotSet(proGoal, "g") },
+        { label: "Water", val: orNotSet(state.waterGoal, "ml") },
+      ],
+      editAction: "nutrition" },
+    { id: "body", icon: "📐", label: "Body Measurements", color: "var(--accent)",
+      fields: Object.keys(p.bodyMeasurements).length ? Object.entries(p.bodyMeasurements).slice(0, 3).map(function(e) {
+        return { label: e[0].charAt(0).toUpperCase() + e[0].slice(1), val: e[1] + (e[0] === "bodyFat" ? "%" : " cm") };
+      }) : [{ label: "No data yet", val: '<span class="pr-row-action" data-action="edit" data-section="body">Add measurements</span>' }],
+      editAction: "body" },
+    { id: "achievements", icon: "🏅", label: "Achievements", color: "var(--orange)",
       fields: [
-        { label: "Daily Calories", val: calGoal ? calGoal + " cal" : null },
-        { label: "Daily Protein", val: proGoal ? proGoal + "g" : null },
-        { label: "Daily Water", val: state.waterGoal ? state.waterGoal + "ml" : null },
-        { label: "Diet Preference", val: p.dietPreference && p.dietPreference !== "none" ? p.dietPreference.charAt(0).toUpperCase() + p.dietPreference.slice(1) : null },
-        { label: "Supplements", val: Array.isArray(p.supplements) && p.supplements.length ? p.supplements.join(", ") : null },
-      ]
-    },
-    {
-      id: "body", icon: "body", label: "Body",
-      fields: Object.keys(p.bodyMeasurements).length ? Object.entries(p.bodyMeasurements).map(([k, v]) => ({
-        label: k.charAt(0).toUpperCase() + k.slice(1), val: k === "bodyFat" ? v + "%" : v + " cm"
-      })) : [{ label: "Measurements", val: null }],
-    },
+        { label: "Longest Streak", val: streak.longestStreak ? streak.longestStreak + " days" : "No streak yet" },
+      ],
+      editAction: null },
   ];
 
-  const iconSvgs = {
-    person: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>',
-    flag: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z"/><line x1="4" y1="22" x2="4" y2="15"/></svg>',
-    dumbbell: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--blue)" stroke-width="2"><path d="M6 4h12a2 2 0 0 1 2 2v12a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2z"/><path d="M12 9v6"/><path d="M9 12h6"/></svg>',
-    tools: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2"><path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/></svg>',
-    nutrition: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--protein)" stroke-width="2"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-6"/></svg>',
-    body: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>',
-  };
-  const sectionColors = {
-    personal: "var(--accent)", goals: "var(--orange)", training: "var(--blue)",
-    equipment: "var(--protein)", nutrition: "var(--protein)", body: "var(--accent)",
-  };
-
-  sections.forEach(s => {
-    const color = sectionColors[s.id] || "var(--accent)";
-    html += `<div class="profile-section" data-section="${s.id}">
-      <button class="profile-section-header" data-toggle-section="${s.id}">
-        <div class="profile-section-icon" style="background:color-mix(in srgb,${color} 20%,transparent)">${iconSvgs[s.id]}</div>
-        <span class="profile-section-title">${s.label}</span>
-        <button class="profile-section-edit" data-edit-section="${s.id}" onclick="event.stopPropagation()">Edit</button>
-        <span class="profile-section-chevron">›</span>
-      </button>
-      <div class="profile-section-body">
-        ${s.fields.filter(f => f.val !== null && f.val !== "").map(f => `
-          <div class="profile-section-row">
-            <span class="profile-section-label">${f.label}</span>
-            <span class="profile-section-value">${f.val}</span>
-          </div>
-        `).join("")}
-        ${s.fields.every(f => f.val === null || f.val === "") ? '<div class="profile-section-row"><span class="profile-section-value empty">No data — tap Edit to add</span></div>' : ""}
-      </div>
-    </div>`;
+  sections.forEach(function(s) {
+    var preview = "";
+    for (var i = 0; i < s.fields.length; i++) {
+      if (s.fields[i].val && !s.fields[i].val.includes("Not set") && !s.fields[i].val.includes("Add")) {
+        preview = s.fields[i].val;
+        if (typeof preview === "string" && preview.length > 18) preview = preview.slice(0, 18) + "…";
+        break;
+      }
+    }
+    html += '<div class="pr-section" data-section="' + s.id + '">' +
+      '<button class="pr-section-header"' + (s.editAction ? ' onclick="openProfileSectionEditor(\'' + s.editAction + '\')"' : '') + '>' +
+        '<span class="pr-section-icon" style="background:color-mix(in srgb,' + s.color + ' 18%,transparent)">' + s.icon + '</span>' +
+        '<span class="pr-section-title">' + s.label + '</span>' +
+        (preview ? '<span class="pr-section-preview">' + preview + '</span>' : '') +
+        '<span class="pr-section-chevron">›</span>' +
+      '</button>' +
+    '</div>';
   });
 
-  // Body Log section
-  html += `
-    <div class="profile-section" data-section="body-log">
-      <button class="profile-section-header" data-toggle-section="body-log">
-        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--accent) 20%,transparent)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
-        </div>
-        <span class="profile-section-title">Body Log</span>
-        <button class="profile-section-edit" data-edit-section="body-log" onclick="event.stopPropagation()">Edit</button>
-        <span class="profile-section-chevron">›</span>
-      </button>
-      <div class="profile-section-body">
-        <div class="section-label">Weigh-In</div>
-        <div id="weighInCard" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Body Measurements</div>
-        <div id="bodyMeasurementsCard" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Weight Trend</div>
-        <div class="trend-header"><span class="trend-badge" id="trendBadge"></span></div>
-        <div class="trend-averages" id="trendAverages"></div>
-        <div class="chart-wrap"><canvas id="weightChart"></canvas></div>
-        <div class="section-label" style="margin-top:1.25rem">Goal Prediction</div>
-        <div id="goalPredictionContent" class="card-content"></div>
-        <div class="section-label" style="margin-top:1.25rem">Body Analysis</div>
-        <div class="bm-search-wrap">
-          <input type="text" id="muscleSearch" class="bm-search" placeholder="Search muscle..." autocomplete="off" />
-        </div>
-        <div id="bodyAnalysis" class="card-content"></div>
-      </div>
-    </div>
-    <div class="profile-section" data-section="achievements">
-      <button class="profile-section-header" data-toggle-section="achievements">
-        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--orange) 20%,transparent)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--orange)" stroke-width="2"><path d="M6 9H4.5a2.5 2.5 0 0 1 0-5h.5"/><path d="M18 9h1.5a2.5 2.5 0 0 0 0-5H19"/><path d="M4 22h16"/><path d="M10 14.66V17a3 3 0 0 0 4 0v-2.34"/><path d="M14.5 9a4.5 4.5 0 0 1-9 0V5h9v4z"/></svg>
-        </div>
-        <span class="profile-section-title">Achievements</span>
-        <span class="profile-section-chevron">›</span>
-      </button>
-      <div class="profile-section-body" id="profileAchievements"></div>
-    </div>`;
+  // ---- Achievements grid (always visible) ----
+  html += '<div id="profileAchievements"></div>';
 
-  // Data & Backup + Quick actions at bottom
-  html += `
-    <div class="profile-section" data-section="preferences">
-      <button class="profile-section-header" data-toggle-section="preferences">
-        <div class="profile-section-icon" style="background:color-mix(in srgb,var(--text-secondary) 20%,transparent)">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
-        </div>
-        <span class="profile-section-title">Preferences & Data</span>
-        <span class="profile-section-chevron">›</span>
-      </button>
-      <div class="profile-section-body">
-        <button class="profile-section-row profile-section-row-btn" onclick="openProfileSectionEditor('personal')">
-          <span class="profile-section-label">Edit All Profile Data</span>
-          <span class="profile-section-chevron">›</span>
-        </button>
-        <button class="profile-section-row profile-section-row-btn" onclick="if(confirm('Export all data as JSON?')){exportJSON();}">
-          <span class="profile-section-label">Export Data</span>
-          <span class="profile-section-chevron">›</span>
-        </button>
-        <button class="profile-section-row profile-section-row-btn" onclick="previousScreen='screen-profile';showScreen('screen-settings');renderSettings()">
-          <span class="profile-section-label">App Settings</span>
-          <span class="profile-section-chevron">›</span>
-        </button>
-        <button class="profile-section-row profile-section-row-btn danger" onclick="document.getElementById('deleteDataModal').classList.remove('is-hidden')">
-          <span class="profile-section-label">Delete All Data</span>
-          <span class="profile-section-chevron">›</span>
-        </button>
-      </div>
-    </div>
-  `;
+  // ---- Quick actions ----
+  html += '<div style="margin:0.5rem 1rem 1.5rem;display:flex;flex-direction:column;gap:0.4rem">' +
+    '<button class="st-row" style="border-radius:14px;background:var(--surface-2);padding:0.65rem 0.85rem" onclick="openProfileEditor()"><span style="flex:1;font-size:0.82rem">✏️ Edit All Profile Data</span><span class="st-chevron">›</span></button>' +
+    '<button class="st-row" style="border-radius:14px;background:var(--surface-2);padding:0.65rem 0.85rem" onclick="previousScreen=\'screen-profile\';showScreen(\'screen-settings\');renderSettings()"><span style="flex:1;font-size:0.82rem">⚙️ App Settings</span><span class="st-chevron">›</span></button>' +
+    '<button class="st-row" style="border-radius:14px;background:color-mix(in srgb,var(--error) 8%,var(--surface-2));padding:0.65rem 0.85rem;color:var(--error)" onclick="document.getElementById(\'deleteDataModal\').classList.remove(\'is-hidden\')"><span style="flex:1;font-size:0.82rem">🗑 Delete All Data</span><span class="st-chevron">›</span></button>' +
+  '</div>';
 
   document.getElementById("profileContent").innerHTML = html;
-  renderBodyTab();
   renderProfileAchievements();
-  attachProfileListeners();
 }
 
 function attachProfileListeners() {
@@ -3895,8 +3772,8 @@ function attachProfileListeners() {
 function renderNutritionWidget() {
   const macros = getDailyMacros(getDateKey());
   const pGoal = state.proteinGoal || PROTEIN_GOAL;
-  const cGoal = CARBS_GOAL;
-  const fGoal = FAT_GOAL;
+  const cGoal = state.carbsTarget || CARBS_GOAL;
+  const fGoal = state.fatTarget || FAT_GOAL;
   const calGoal = state.calorieTarget || CAL_GOAL;
   const pPct = Math.min(100, Math.round((macros.protein / pGoal) * 100));
   const cPct = Math.min(100, Math.round((macros.carbs / cGoal) * 100));
@@ -3958,7 +3835,7 @@ function renderHeroWelcome() {
     <div class="hero-welcome" id="heroWelcome">
       <div class="hero-welcome-bg"></div>
       <button class="hero-welcome-dismiss" id="heroWelcomeDismiss" aria-label="Dismiss welcome">✕</button>
-      <div class="hero-welcome-brand">IronLog</div>
+      <div class="hero-welcome-brand">Striv</div>
       <div class="hero-welcome-sub">Build Muscle. Lose Fat. Stay Consistent.</div>
       <div class="hero-welcome-body">Track workouts, monitor progress, improve recovery, and achieve your fitness goals with your personal training system.</div>
       <div class="hero-welcome-features">
@@ -4322,11 +4199,15 @@ function renderExerciseSetup(ex) {
     ? '<span style="font-size:0.65rem;color:var(--accent);background:rgba(0,210,106,0.1);padding:0.15rem 0.4rem;border-radius:4px;font-weight:600">Compound</span>'
     : '<span style="font-size:0.65rem;color:var(--text-secondary);background:var(--surface-2);padding:0.15rem 0.4rem;border-radius:4px;font-weight:600">Isolation</span>';
 
+  const suggTag = defaultWeight && defaultWeight !== "20"
+    ? '<span style="font-size:0.65rem;color:var(--orange);background:rgba(255,183,77,0.12);padding:0.15rem 0.4rem;border-radius:4px;font-weight:600;margin-left:0.25rem">Suggested: ' + displayWeight(defaultWeight) + '</span>'
+    : "";
+
   const container = document.getElementById("edSetList");
   container.innerHTML = `
     <div class="ed-setup-card">
       <div class="ed-setup-title">Quick Setup</div>
-      <div class="ed-setup-meta">${compoundTag} <span style="font-size:0.72rem;color:var(--text-secondary)">Enter your working weight, sets, and reps</span></div>
+      <div class="ed-setup-meta">${compoundTag}${suggTag} <span style="font-size:0.72rem;color:var(--text-secondary)">Enter working weight, sets, reps</span></div>
       <div class="ed-setup-row">
         <label class="ed-setup-label">Weight (kg)</label>
         <div class="ed-setup-controls">
@@ -4597,7 +4478,7 @@ function saveAddSet() {
       if (newPRs) showPRToast(newPRs);
     } catch (e) { /* PR detection failed, continue */ }
   }
-  if (state.autoRest) startRestTimer();
+  if (state.autoRest) startRestTimer(ex.restSeconds);
 
   closeAddSetModal();
   renderExerciseDetail();
@@ -4669,7 +4550,7 @@ function completeSetFromSheet() {
   }
 
   closeEditBottomSheet();
-  if (Number(set.weight) > 0 && state.autoRest) startRestTimer();
+  if (Number(set.weight) > 0 && state.autoRest) startRestTimer(ex.restSeconds);
   renderExerciseDetail();
   const el = document.querySelector(`[data-set-id="${editSetId}"]`);
   if (el) {
@@ -5777,16 +5658,41 @@ function getTargetSuggestion(exName) {
 function renderTargetCard(exName) {
   const container = document.getElementById("edTargetCard");
   const suggestion = getTargetSuggestion(exName);
-  if (!suggestion) {
-    container.innerHTML = "";
-    return;
-  }
-  container.innerHTML = `
+  const session = getTodaySession();
+  const ex = session ? session.exercises.find((e) => e.name === exName) : null;
+  const restSeconds = ex ? ex.restSeconds : null;
+
+  let html = "";
+
+  if (suggestion) {
+    html += `
     <div class="ed-target">
       <div class="ed-target-header">Suggested</div>
       <div class="ed-target-value">${displayWeight(suggestion.weight)} × ${suggestion.reps}</div>
       <div class="ed-target-reason">${suggestion.reason}</div>
     </div>`;
+  }
+
+  if (restSeconds) {
+    html += `
+    <div class="ed-rest-info">
+      <span class="ed-rest-label">Rest: </span>
+      <span class="ed-rest-value">${restSeconds}s</span>
+      <button class="ed-rest-apply" data-rest-seconds="${restSeconds}">Use</button>
+    </div>`;
+  }
+
+  container.innerHTML = html;
+
+  const applyBtn = container.querySelector(".ed-rest-apply");
+  if (applyBtn) {
+    applyBtn.addEventListener("click", function() {
+      state.restTimer = Number(this.dataset.restSeconds);
+      saveState();
+      this.textContent = "Active";
+      this.style.opacity = "0.5";
+    });
+  }
 }
 
 // ===== SET PROGRESS TRACKER =====
@@ -7350,7 +7256,7 @@ function renderExerciseDetailPage(exerciseId) {
       btn.classList.add("is-saved");
       showToast("Saved for later");
     }
-    localStorage.setItem("ironlog_saved_exercises", JSON.stringify(saved));
+    localStorage.setItem("striv_saved_exercises", JSON.stringify(saved));
   });
 
   // Check if already saved
@@ -7372,7 +7278,7 @@ function renderExerciseDetailPage(exerciseId) {
 }
 
 function getSavedExercises() {
-  try { return JSON.parse(localStorage.getItem("ironlog_saved_exercises") || "[]"); }
+  try { return JSON.parse(localStorage.getItem("striv_saved_exercises") || "[]"); }
   catch { return []; }
 }
 
@@ -9464,67 +9370,181 @@ function isProfileComplete() {
     && state.calorieTarget && state.proteinGoal && state.waterGoal);
 }
 
-const OB_STEPS_CONFIG = [
-  { id: "welcome", title: "", desc: "" },
-  { id: "name", title: "What's your name?", desc: "" },
-  { id: "body", title: "Your body stats", desc: "Height, weight, and age help calculate your metrics." },
-  { id: "training", title: "Training setup", desc: "We'll use this to build your personalized program." },
-];
+// ============================================================
+// ONBOARDING — Premium native-style flow
+// ============================================================
+
+const OB_CONFIG = {
+  steps: [
+    { id: "welcome" },
+    { id: "name", question: "What should we call you?", why: "So we can address you personally." },
+    { id: "age", question: "How old are you?", why: "Used to personalize calorie and recovery recommendations." },
+    { id: "height", question: "What's your height?", why: "Helps estimate your daily energy needs." },
+    { id: "weight", question: "What's your weight?", why: "Used to calculate nutrition and training recommendations." },
+    { id: "goal", question: "What's your primary goal?", why: "Determines how your workout plan is generated." },
+    { id: "done" },
+  ],
+  TOTAL: 7,
+};
 
 let obData = {};
-
 let isProfileEdit = false;
 
 function getGoalType() {
   return typeof GoalCenter !== "undefined" && typeof GoalCenter.getGoalType === "function" ? GoalCenter.getGoalType() : (state.user && state.user.goal) || "general";
 }
 
+// ---- Wheel Picker Component ----
+function obWheelHTML(values, selected, unit) {
+  const rows = values.map(function(v) {
+    var sel = v === selected ? " is-selected" : "";
+    return '<div class="ob-wi' + sel + '" data-v="' + v + '">' + v + '</div>';
+  }).join("");
+  return '<div class="ob-wheel-clip">' +
+    '<div class="ob-wheel-shade ob-wheel-shade-top"></div>' +
+    '<div class="ob-wheel-highlight"></div>' +
+    '<div class="ob-wheel-shade ob-wheel-shade-bot"></div>' +
+    '<div class="ob-wheel-viewport" tabindex="0">' +
+    '<div class="ob-wheel-track">' + rows + '</div>' +
+    '</div>' +
+    (unit ? '<div class="ob-wheel-unit">' + unit + '</div>' : '') +
+    '</div>';
+}
+
+function obWheelInit(container, onChange) {
+  var vp = container.querySelector(".ob-wheel-viewport");
+  var track = container.querySelector(".ob-wheel-track");
+  if (!vp || !track) return;
+  var items = track.querySelectorAll(".ob-wi");
+  var itemH = 40;
+  var padding = 3;
+
+  var totalH = items.length * itemH;
+  var padTotal = padding * itemH * 2;
+  track.style.paddingTop = (vp.offsetHeight / 2 - itemH / 2) + "px";
+  track.style.paddingBottom = track.style.paddingTop;
+
+  function snap() {
+    var scrollTop = vp.scrollTop;
+    var idx = Math.round(scrollTop / itemH);
+    idx = Math.max(0, Math.min(items.length - 1, idx));
+    var target = idx * itemH;
+    if (Math.abs(scrollTop - target) > 2) {
+      vp.scrollTo({ top: target, behavior: "smooth" });
+    }
+    items.forEach(function(i) { i.classList.remove("is-selected"); });
+    if (items[idx]) items[idx].classList.add("is-selected");
+    if (onChange) onChange(items[idx]?.dataset?.v);
+  }
+
+  function onScroll() {
+    if (vp._obTick) return;
+    vp._obTick = true;
+    requestAnimationFrame(function() {
+      vp._obTick = false;
+      snap();
+    });
+  }
+
+  vp.addEventListener("scroll", onScroll, { passive: true });
+
+  vp.addEventListener("mousewheel", function(e) {
+    var delta = Math.sign(e.deltaY) * 20;
+    vp.scrollTop += delta;
+    snap();
+  }, { passive: true });
+
+  vp.addEventListener("keydown", function(e) {
+    if (e.key === "ArrowUp") { vp.scrollTop -= itemH; snap(); e.preventDefault(); }
+    if (e.key === "ArrowDown") { vp.scrollTop += itemH; snap(); e.preventDefault(); }
+  });
+
+  // Touch momentum
+  var touchData = null;
+  vp.addEventListener("touchstart", function(e) {
+    touchData = { startY: e.touches[0].clientY, startScroll: vp.scrollTop, time: Date.now() };
+  }, { passive: true });
+  vp.addEventListener("touchmove", function(e) {
+    if (!touchData) return;
+    var dy = touchData.startY - e.touches[0].clientY;
+    vp.scrollTop = touchData.startScroll + dy;
+    snap();
+  }, { passive: true });
+  vp.addEventListener("touchend", function(e) {
+    touchData = null;
+  }, { passive: true });
+
+  // Init scroll to selected
+  var selIdx = -1;
+  items.forEach(function(i, idx) {
+    if (i.classList.contains("is-selected")) selIdx = idx;
+  });
+  if (selIdx >= 0) {
+    vp.scrollTop = selIdx * itemH;
+  }
+  snap();
+}
+
+function obWheelValue(container) {
+  var sel = container.querySelector(".ob-wi.is-selected");
+  return sel ? sel.dataset.v : "";
+}
+
+// ---- Open / Close ----
 function openOnboarding(animateIn, startStep) {
   obData = {};
   isProfileEdit = false;
-  const modal = document.getElementById("onboardingModal");
+  var p = getProfile();
+  obData = {
+    name: state.onboardingData?.name || p.name || "",
+    age: state.onboardingData?.age || p.age || 24,
+    height: state.onboardingData?.height || p.height || 170,
+    weight: state.onboardingData?.weight || p.weight || 60,
+    goalType: state.onboardingData?.goalType || "general-fitness",
+  };
+  var modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
   if (animateIn) {
     modal.classList.add("animate-in");
-    const onAnimEnd = () => { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onAnimEnd); };
-    modal.addEventListener("animationend", onAnimEnd);
+    var onEnd = function() { modal.classList.remove("animate-in"); modal.removeEventListener("animationend", onEnd); };
+    modal.addEventListener("animationend", onEnd);
   }
   obGoToStep(startStep || 0);
 }
 
 function openProfileSectionEditor(section) {
-  const p = getProfile();
-  const stepMap = { personal: 1, goals: 5, body: 4, "body-log": 4 };
-  const step = stepMap[section] || 1;
+  var p = getProfile();
+  var stepMap = { personal: 0, "body-log": 2, body: 2, goals: 5 };
+  var step = stepMap[section] || 0;
   obData = {
-    name: p.name || "", age: p.age || 25, height: p.height || 175, weight: p.weight || 70,
-    goalType: p.bodyGoal === "build-muscle" ? "muscle-gain" : p.bodyGoal === "lose-fat" ? "fat-loss" : p.bodyGoal === "general" ? "general-fitness" : p.bodyGoal || "general-fitness",
-    metrics: p.bodyMeasurements || {},
+    name: state.onboardingData?.name || p.name || "",
+    age: state.onboardingData?.age || p.age || 24,
+    height: state.onboardingData?.height || p.height || 170,
+    weight: state.onboardingData?.weight || p.weight || 60,
+    goalType: state.onboardingData?.goalType || "general-fitness",
   };
-  if (state.onboardingData) Object.assign(obData, state.onboardingData, obData);
   isProfileEdit = true;
-  const modal = document.getElementById("onboardingModal");
+  var modal = document.getElementById("onboardingModal");
   modal.classList.remove("is-hidden");
   obGoToStep(step);
 }
 
 function closeOnboarding(animateOut, callback) {
-  const modal = document.getElementById("onboardingModal");
+  var modal = document.getElementById("onboardingModal");
   if (animateOut) {
     modal.classList.add("animate-out");
-    const onAnimEnd = () => {
+    var onEnd = function() {
       modal.classList.add("is-hidden");
       modal.classList.remove("animate-out");
-      modal.removeEventListener("animationend", onAnimEnd);
+      modal.removeEventListener("animationend", onEnd);
       if (callback) callback();
     };
-    modal.addEventListener("animationend", onAnimEnd);
-    // Fallback: fire callback after animation timeout if animationend doesn't fire
-    setTimeout(() => {
+    modal.addEventListener("animationend", onEnd);
+    setTimeout(function() {
       if (modal.classList.contains("animate-out")) {
         modal.classList.add("is-hidden");
         modal.classList.remove("animate-out");
-        modal.removeEventListener("animationend", onAnimEnd);
+        modal.removeEventListener("animationend", onEnd);
         if (callback) callback();
       }
     }, 600);
@@ -9534,278 +9554,235 @@ function closeOnboarding(animateOut, callback) {
   }
 }
 
-function _obWheelHTML(id, values, selected, unit) {
-  const rows = values.map((v, i) => {
-    const sel = v === selected ? " is-selected" : "";
-    return `<div class="ob-wheel-item${sel}" data-wi="${i}">${v}</div>`;
-  }).join("");
-  return `<div class="ob-wheel-wrap" data-wheel="${id}">
-    <div class="ob-wheel-highlight"></div>
-    <div class="ob-wheel" data-wv="${values.join(",")}">${rows}</div>
-    ${unit ? `<div class="ob-wheel-caption">${unit}</div>` : ""}
-  </div>`;
-}
-
-function _obWheelValue(wrapEl) {
-  const sel = wrapEl.querySelector(".ob-wheel-item.is-selected");
-  return sel ? sel.textContent.trim() : "";
-}
-
-function _obInitWheel(wrapEl, onChange) {
-  const list = wrapEl.querySelector(".ob-wheel");
-  if (!list) return;
-  const items = list.querySelectorAll(".ob-wheel-item");
-  let ticking = false;
-
-  function update() {
-    const listRect = list.getBoundingClientRect();
-    const mid = listRect.top + listRect.height / 2;
-    let best = null, bestDist = Infinity;
-    items.forEach(item => {
-      const r = item.getBoundingClientRect();
-      const d = Math.abs(r.top + r.height / 2 - mid);
-      if (d < bestDist) { bestDist = d; best = item; }
-    });
-    items.forEach(i => i.classList.remove("is-selected"));
-    if (best) {
-      best.classList.add("is-selected");
-      if (onChange) onChange(best.textContent.trim());
-    }
-  }
-
-  list.addEventListener("scroll", () => {
-    if (!ticking) { requestAnimationFrame(() => { update(); ticking = false; }); ticking = true; }
-  });
-
-  update();
-
-  // Scroll to selected on init
-  const selIdx = [...items].findIndex(i => i.classList.contains("is-selected"));
-  if (selIdx >= 0) {
-    const target = items[selIdx];
-    const listRect = list.getBoundingClientRect();
-    const targetRect = target.getBoundingClientRect();
-    const offset = targetRect.top - listRect.top - (listRect.height / 2 - targetRect.height / 2);
-    list.scrollTop += offset;
-    setTimeout(update, 100);
-  }
-}
-
-function obGoToStep(index) {
-  const cfg = OB_STEPS_CONFIG[index];
+// ---- Step Navigation ----
+function obGoToStep(idx) {
+  var cfg = OB_CONFIG.steps[idx];
   if (!cfg) return;
   saveState();
 
-  const total = OB_STEPS_CONFIG.length;
-  const pct = ((index) / total * 100);
-  document.getElementById("obStepsFill").style.width = pct + "%";
-  document.getElementById("obStepsLabel").textContent = index === 0 ? "Get Started" : "Step " + index + " of " + total;
+  var body = document.getElementById("obBody");
+  var stage = document.getElementById("obStage");
 
-  const timeLabels = ["About 30 seconds", "About 20 seconds", "About 10 seconds", "Almost done!"];
-  document.getElementById("obTimeLabel").textContent = timeLabels[index] || "";
+  // Update progress dots
+  obRenderProgress(idx);
 
-  const body = document.getElementById("obBody");
+  // Fade out, then render, then fade in
+  body.style.opacity = "0";
+  body.style.transform = "translateY(8px)";
+  body.style.transition = "none";
+  body.offsetHeight;
 
-  let html = `<div class="ob-step ob-step-${cfg.id}">`;
-  if (cfg.title) html += `<div class="ob-title">${cfg.title}</div>`;
-  if (cfg.desc && index > 0 && index < total - 1) html += `<div class="ob-desc">${cfg.desc}</div>`;
-  html += obRenderStepContent(cfg.id);
-  html += `</div>`;
+  var html = obRenderStep(idx, cfg);
   body.innerHTML = html;
 
-  body.style.animation = "none";
-  body.offsetHeight;
-  body.style.animation = "";
+  body.style.transition = "opacity 0.35s ease, transform 0.35s ease";
+  body.style.opacity = "1";
+  body.style.transform = "translateY(0)";
 
-  obBindStepEvents(cfg.id, index);
+  obBindEvents(cfg.id, idx);
 
-  const skipBtn = document.getElementById("onboardSkipBtn");
-  if (skipBtn) {
-    skipBtn.onclick = () => {
-      document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
-    };
-  }
+  // Render live summary
+  obRenderLiveSummary();
 
-  setTimeout(() => {
-    const firstInput = body.querySelector("input, button, [tabindex]:not([disabled])");
-    if (firstInput) firstInput.focus();
+  setTimeout(function() {
+    var first = body.querySelector("input, button, [tabindex]:not([disabled])");
+    if (first) first.focus();
   }, 100);
 }
 
-function obRenderStepContent(stepId) {
-  if (stepId === "welcome") {
-    return `<div class="ob-welcome">
-      <div class="ob-welcome-hero">
-        <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
-          <rect x="4" y="16" width="8" height="28" rx="3" fill="var(--accent)" opacity="0.6"/>
-          <rect x="14" y="10" width="8" height="34" rx="3" fill="var(--accent)" opacity="0.8"/>
-          <rect x="24" y="6" width="8" height="38" rx="3" fill="var(--accent)"/>
-          <rect x="34" y="12" width="8" height="32" rx="3" fill="var(--accent)" opacity="0.7"/>
-        </svg>
-      </div>
-      <div class="ob-welcome-title">Welcome to IronLog</div>
-      <div class="ob-welcome-steps">
-        <div class="ob-welcome-step">
-          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="ob-ws-text">Build your profile</div>
-        </div>
-        <div class="ob-welcome-step">
-          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="ob-ws-text">Generate your personalized plan</div>
-        </div>
-        <div class="ob-welcome-step">
-          <div class="ob-ws-icon"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2.5" stroke-linecap="round"><polyline points="20 6 9 17 4 12"/></svg></div>
-          <div class="ob-ws-text">Track workouts & see progress</div>
-        </div>
-      </div>
-      <button class="ob-btn-primary ob-btn-glow" id="obNextBtn" style="margin-top:2rem;width:100%">Get Started</button>
-    </div>`;
+function obRenderProgress(idx) {
+  var total = OB_CONFIG.TOTAL - 1; // exclude "done" from dots
+  var container = document.getElementById("obProgressDots");
+  if (!container) return;
+  var dots = "";
+  for (var i = 0; i < total; i++) {
+    if (i === idx - 1) dots += '<span class="ob-dot is-active"></span>';
+    else if (i < idx - 1) dots += '<span class="ob-dot is-done"></span>';
+    else dots += '<span class="ob-dot"></span>';
+  }
+  container.innerHTML = dots;
+  container.style.display = idx > 0 && idx <= total ? "flex" : "none";
+}
+
+function obRenderLiveSummary() {
+  var el = document.getElementById("obLiveSummary");
+  if (!el) return;
+  var name = obData.name ? obData.name.trim() : "";
+  var age = obData.age || "—";
+  var h = obData.height || "—";
+  var w = obData.weight || "—";
+  var goalLabels = { "muscle-gain": "Build Muscle", "fat-loss": "Lose Fat", "strength": "Strength", "athletic": "Athletic", "general-fitness": "General Fitness" };
+  var goal = goalLabels[obData.goalType] || "";
+
+  var show = name || obData.age || obData.height || obData.weight || goal;
+  if (!show) { el.style.display = "none"; return; }
+  el.style.display = "block";
+
+  var parts = [];
+  if (name) parts.push(name);
+  if (age) parts.push(age + " years");
+  if (h) parts.push(h + " cm");
+  if (w) parts.push(w + " kg");
+  if (goal) parts.push(goal);
+
+  el.innerHTML = parts.join(" &nbsp;·&nbsp; ");
+}
+
+// ---- Render per step ----
+function obRenderStep(idx, cfg) {
+  var id = cfg.id;
+
+  // Welcome
+  if (id === "welcome") {
+    return '<div class="ob-step">' +
+      '<div class="ob-welcome">' +
+      '<div class="ob-welcome-logo">' +
+      '<svg width="48" height="48" viewBox="0 0 48 48" fill="none">' +
+      '<rect x="4" y="16" width="8" height="28" rx="3" fill="var(--accent)" opacity="0.5"/>' +
+      '<rect x="14" y="10" width="8" height="34" rx="3" fill="var(--accent)" opacity="0.75"/>' +
+      '<rect x="24" y="4" width="8" height="40" rx="3" fill="var(--accent)"/>' +
+      '</svg></div>' +
+      '<div class="ob-welcome-tagline">Train with purpose.</div>' +
+      '<div class="ob-welcome-sub">Your intelligent fitness companion</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-glow" id="obNextBtn">Get Started</button>' +
+      '</div></div>';
   }
 
-  if (stepId === "name") {
-    const nameVal = obData.name || "";
-    return `<div class="ob-name-wrap">
-      <input type="text" class="ob-name-input" id="obName" placeholder="Your name" maxlength="30" value="${escapeHtml(nameVal)}" autocomplete="name" />
-      <button class="ob-btn-primary" id="obNextBtn" disabled style="margin-top:1.5rem;width:100%">Continue</button>
-    </div>`;
+  // Name
+  if (id === "name") {
+    var nameVal = escapeHtml(obData.name || "");
+    return '<div class="ob-step ob-step-question">' +
+      '<div class="ob-question">' + cfg.question + '</div>' +
+      '<div class="ob-why">' + cfg.why + '</div>' +
+      '<div class="ob-name-wrap">' +
+      '<input class="ob-input ob-input-name" id="obName" type="text" placeholder="Your name" maxlength="30" value="' + nameVal + '" autocomplete="name" />' +
+      '<button class="ob-btn ob-btn-primary" id="obNextBtn" disabled>Continue</button>' +
+      '</div></div>';
   }
 
-  if (stepId === "body") {
-    const hVal = obData.height || 175;
-    const wVal = obData.weight || "";
-    const aVal = obData.age || 25;
-    return `<div class="ob-body-wrap">
-      <div class="ob-body-row">
-        <div class="ob-field-group">
-          <label class="ob-field-label">Height</label>
-          <input type="number" class="ob-input ob-input-md" id="obHeight" placeholder="175" value="${hVal}" min="80" max="280" autocomplete="off" />
-          <span class="ob-input-suffix">cm</span>
-        </div>
-        <div class="ob-field-group">
-          <label class="ob-field-label">Weight</label>
-          <input type="number" class="ob-input ob-input-md" id="obWeight" placeholder="70" value="${wVal}" min="20" max="400" step="0.1" inputmode="decimal" autocomplete="off" />
-          <span class="ob-input-suffix">kg</span>
-        </div>
-      </div>
-      <div class="ob-body-row">
-        <div class="ob-field-group">
-          <label class="ob-field-label">Age</label>
-          <input type="number" class="ob-input ob-input-sm" id="obAge" placeholder="25" value="${aVal}" min="13" max="120" autocomplete="off" />
-          <span class="ob-input-suffix">years</span>
-        </div>
-      </div>
-      <button class="ob-btn-primary" id="obNextBtn" style="margin-top:1.5rem;width:100%">Continue</button>
-    </div>`;
+  // Age (wheel)
+  if (id === "age") {
+    var ages = [];
+    for (var a = 13; a <= 100; a++) ages.push(a);
+    var defAge = obData.age || 24;
+    return '<div class="ob-step ob-step-question">' +
+      '<div class="ob-question">' + cfg.question + '</div>' +
+      '<div class="ob-why">' + cfg.why + '</div>' +
+      '<div class="ob-wheel-area" id="obAgeWheel">' + obWheelHTML(ages, defAge, "years") + '</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-next" id="obNextBtn">Continue</button>' +
+      '</div>';
   }
 
-  if (stepId === "training") {
-    const exps = ["Beginner", "Intermediate", "Advanced"];
-    const locs = [
-      { id: "gym", label: "Gym", icon: "🏋️" },
-      { id: "home", label: "Home", icon: "🏠" },
-      { id: "minimal", label: "Minimal", icon: "🎒" },
+  // Height (wheel)
+  if (id === "height") {
+    var heights = [];
+    for (var hh = 120; hh <= 230; hh++) heights.push(hh);
+    var defH = obData.height || 170;
+    return '<div class="ob-step ob-step-question">' +
+      '<div class="ob-question">' + cfg.question + '</div>' +
+      '<div class="ob-why">' + cfg.why + '</div>' +
+      '<div class="ob-wheel-area" id="obHeightWheel">' + obWheelHTML(heights, defH, "cm") + '</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-next" id="obNextBtn">Continue</button>' +
+      '</div>';
+  }
+
+  // Weight (dual wheel)
+  if (id === "weight") {
+    var wholes = [];
+    for (var ww = 40; ww <= 150; ww++) wholes.push(ww);
+    var decimals = [];
+    for (var dd = 0; dd <= 9; dd++) decimals.push(dd);
+    var curW = obData.weight || 60;
+    var wWhole = Math.floor(curW);
+    var wDec = Math.round((curW - wWhole) * 10);
+    return '<div class="ob-step ob-step-question">' +
+      '<div class="ob-question">' + cfg.question + '</div>' +
+      '<div class="ob-why">' + cfg.why + '</div>' +
+      '<div class="ob-weight-dual">' +
+      '<div class="ob-wheel-area ob-wheel-half" id="obWeightWhole">' + obWheelHTML(wholes, wWhole, "") + '</div>' +
+      '<div class="ob-weight-dot">.</div>' +
+      '<div class="ob-wheel-area ob-wheel-half ob-wheel-decimal" id="obWeightDec">' + obWheelHTML(decimals, wDec, "") + '</div>' +
+      '<div class="ob-weight-unit">kg</div>' +
+      '</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-next" id="obNextBtn">Continue</button>' +
+      '</div>';
+  }
+
+  // Goal
+  if (id === "goal") {
+    var goals = [
+      { id: "muscle-gain", label: "Build Muscle", desc: "Gain lean muscle through progressive overload.", icon: "🏋" },
+      { id: "fat-loss", label: "Lose Fat", desc: "Burn body fat while maintaining muscle.", icon: "🔥" },
+      { id: "strength", label: "Strength", desc: "Increase your overall strength and power.", icon: "⚡" },
+      { id: "athletic", label: "Athletic", desc: "Improve speed, agility, and endurance.", icon: "🏃" },
+      { id: "general-fitness", label: "General Fitness", desc: "Build healthy habits and improve overall fitness.", icon: "❤️" },
     ];
-    return `<div class="ob-training-wrap">
-      <div class="ob-section-label">Your Goal</div>
-      <div class="ob-goal-grid ob-goal-grid-sm" id="obGoalGrid">
-        <button class="ob-goal-card-sm${obData.goalType === "fat-loss" ? " is-active" : ""}" data-ob-goal="fat-loss"><span class="ob-goal-icon-sm">🔥</span>Lose Fat</button>
-        <button class="ob-goal-card-sm${obData.goalType === "muscle-gain" ? " is-active" : ""}" data-ob-goal="muscle-gain"><span class="ob-goal-icon-sm">🏋️</span>Build Muscle</button>
-        <button class="ob-goal-card-sm${obData.goalType === "strength" ? " is-active" : ""}" data-ob-goal="strength"><span class="ob-goal-icon-sm">⚡</span>Strength</button>
-        <button class="ob-goal-card-sm${obData.goalType === "general-fitness" ? " is-active" : ""}" data-ob-goal="general-fitness"><span class="ob-goal-icon-sm">❤️</span>General</button>
-        <button class="ob-goal-card-sm${obData.goalType === "recomp" ? " is-active" : ""}" data-ob-goal="recomp"><span class="ob-goal-icon-sm">⚖️</span>Recomp</button>
-        <button class="ob-goal-card-sm${obData.goalType === "endurance" ? " is-active" : ""}" data-ob-goal="endurance"><span class="ob-goal-icon-sm">🏃</span>Endurance</button>
-      </div>
-      <div class="ob-section-label" style="margin-top:1.25rem">Experience</div>
-      <div class="ob-chip-row" id="obExpRow">
-        ${exps.map(e => `<button class="ob-chip${obData.experience === e ? " is-active" : ""}" data-ob-exp="${e}">${e}</button>`).join("")}
-      </div>
-      <div class="ob-section-label" style="margin-top:1.25rem">Where do you train?</div>
-      <div class="ob-chip-row" id="obLocRow">
-        ${locs.map(l => `<button class="ob-chip${obData.equipment === l.id ? " is-active" : ""}" data-ob-equip="${l.id}">${l.icon} ${l.label}</button>`).join("")}
-      </div>
-      <button class="ob-btn-primary" id="obNextBtn" disabled style="margin-top:1.5rem;width:100%">Create My Profile</button>
-    </div>`;
+    var cards = goals.map(function(g) {
+      var active = obData.goalType === g.id ? " is-active" : "";
+      return '<button class="ob-goal-card' + active + '" data-goal="' + g.id + '">' +
+        '<span class="ob-goal-icon">' + g.icon + '</span>' +
+        '<span class="ob-goal-body">' +
+        '<span class="ob-goal-label">' + g.label + '</span>' +
+        '<span class="ob-goal-desc">' + g.desc + '</span>' +
+        '</span>' +
+        '<span class="ob-goal-check"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M4 8l3 3 5-5" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"/></svg></span>' +
+        '</button>';
+    }).join("");
+    return '<div class="ob-step ob-step-question">' +
+      '<div class="ob-question">' + cfg.question + '</div>' +
+      '<div class="ob-why">' + cfg.why + '</div>' +
+      '<div class="ob-goal-list" id="obGoalList">' + cards + '</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-next" id="obNextBtn">Finish Setup</button>' +
+      '</div>';
+  }
+
+  // Done
+  if (id === "done") {
+    return '<div class="ob-step ob-step-done">' +
+      '<div class="ob-done-icon"><svg width="48" height="48" viewBox="0 0 48 48" fill="none"><circle cx="24" cy="24" r="22" stroke="var(--accent)" stroke-width="2.5" stroke-dasharray="138" stroke-dashoffset="34" opacity="0.3"/><path d="M16 24l6 6 10-10" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/></svg></div>' +
+      '<div class="ob-done-title">Profile Ready</div>' +
+      '<div class="ob-done-desc">Everything is set. Let\'s start building your fitness journey.</div>' +
+      '<button class="ob-btn ob-btn-primary ob-btn-glow" id="obDoneBtn">Go to Dashboard</button>' +
+      '</div>';
   }
 
   return "";
 }
 
 function escapeHtml(str) {
-  const d = document.createElement("div");
+  var d = document.createElement("div");
   d.textContent = str;
   return d.innerHTML;
 }
 
-function obRenderDoneScreen() {
-  return `<div class="ob-ready">
-    <div class="ob-ready-icon">
-      <svg width="56" height="56" viewBox="0 0 56 56" fill="none">
-        <circle cx="28" cy="28" r="27" stroke="var(--accent)" stroke-width="2" stroke-dasharray="170" stroke-dashoffset="40" opacity="0.3"/>
-        <path d="M18 28 L25 35 L38 22" stroke="var(--accent)" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>
-      </svg>
-    </div>
-    <div class="ob-ready-title">Ready to Train?</div>
-    <div class="ob-ready-desc">Your profile is set up. Time to create your first workout.</div>
-    <div class="ob-ready-cards">
-      <button class="ob-ready-card" id="obGenFirstBtn">
-        <div class="ob-ready-card-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--accent)" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg>
-        </div>
-        <div class="ob-ready-card-body">
-          <div class="ob-ready-card-title">Generate My Workout</div>
-          <div class="ob-ready-card-desc">AI builds a program based on your goals</div>
-        </div>
-      </button>
-      <button class="ob-ready-card" id="obExploreBtn">
-        <div class="ob-ready-card-icon">
-          <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="var(--text-secondary)" stroke-width="2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
-        </div>
-        <div class="ob-ready-card-body">
-          <div class="ob-ready-card-title">Create My Own Workout</div>
-          <div class="ob-ready-card-desc">Build from scratch with our exercise library</div>
-        </div>
-      </button>
-    </div>
-    <button class="ob-btn-link" id="obSkipOnboarding" style="margin-top:1rem">Start with empty dashboard</button>
-  </div>`;
-}
-
-function obBindStepEvents(stepId, index) {
-  const back = document.getElementById("obBackBtn");
-  if (back) {
-    back.addEventListener("click", () => {
-      if (index > 0) obGoToStep(index - 1);
-    });
-  }
-
+// ---- Event binding per step ----
+function obBindEvents(stepId, idx) {
   if (stepId === "welcome") {
-    document.getElementById("obNextBtn")?.addEventListener("click", () => obGoToStep(1));
+    document.getElementById("obNextBtn")?.addEventListener("click", function() { obGoToStep(1); });
     return;
   }
 
   if (stepId === "name") {
-    const nameIn = document.getElementById("obName");
-    const nextBtn = document.getElementById("obNextBtn");
-
-    function checkName() {
-      const val = nameIn ? nameIn.value.trim() : "";
-      if (nextBtn) nextBtn.disabled = !val;
+    var inp = document.getElementById("obName");
+    var btn = document.getElementById("obNextBtn");
+    function check() {
+      var v = inp ? inp.value.trim() : "";
+      if (btn) btn.disabled = !v;
+      if (v) obData.name = v;
+      obRenderLiveSummary();
     }
-
-    if (nameIn) {
-      nameIn.addEventListener("input", checkName);
-      nameIn.addEventListener("keydown", (e) => {
-        if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
+    if (inp) {
+      inp.addEventListener("input", check);
+      inp.addEventListener("keydown", function(e) {
+        if (e.key === "Enter" && !btn.disabled) btn.click();
       });
     }
-
-    checkName();
-
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => {
-        const val = nameIn ? nameIn.value.trim() : "";
-        if (!val) { showToast("Please enter your name."); return; }
-        obData.name = val;
+    check();
+    if (btn) {
+      btn.addEventListener("click", function() {
+        var v = inp ? inp.value.trim() : "";
+        if (!v) return;
+        obData.name = v;
         Object.assign(state.onboardingData, obData); saveState();
         obGoToStep(2);
       });
@@ -9813,123 +9790,137 @@ function obBindStepEvents(stepId, index) {
     return;
   }
 
-  if (stepId === "body") {
-    const hInput = document.getElementById("obHeight");
-    const wInput = document.getElementById("obWeight");
-    const aInput = document.getElementById("obAge");
-    const nextBtn = document.getElementById("obNextBtn");
-
-    function checkBody() {
-      const h = parseFloat(hInput?.value);
-      const w = parseFloat(wInput?.value);
-      const a = parseInt(aInput?.value);
-      if (nextBtn) nextBtn.disabled = !(h > 50 && h < 300 && w > 10 && w < 500 && a > 0 && a < 150);
-    }
-
-    [hInput, wInput, aInput].forEach(el => {
-      if (el) {
-        el.addEventListener("input", checkBody);
-        el.addEventListener("keydown", (e) => {
-          if (e.key === "Enter" && !nextBtn.disabled) nextBtn.click();
-        });
-      }
-    });
-
-    checkBody();
-
-    if (nextBtn) {
-      nextBtn.addEventListener("click", () => {
-        obData.height = parseFloat(hInput?.value) || 175;
-        obData.weight = parseFloat(wInput?.value) || 70;
-        obData.age = parseInt(aInput?.value) || 25;
-        Object.assign(state.onboardingData, obData); saveState();
-        obGoToStep(3);
+  if (stepId === "age") {
+    var wheel = document.getElementById("obAgeWheel");
+    if (wheel) {
+      obWheelInit(wheel, function(val) {
+        obData.age = Number(val);
+        obRenderLiveSummary();
       });
     }
+    document.getElementById("obNextBtn")?.addEventListener("click", function() {
+      obData.age = Number(obWheelValue(wheel) || 24);
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(3);
+    });
     return;
   }
 
-  if (stepId === "training") {
-    document.querySelectorAll("[data-ob-goal]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-goal]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.goalType = btn.dataset.obGoal;
-        checkTrainingReady();
+  if (stepId === "height") {
+    var wheel = document.getElementById("obHeightWheel");
+    if (wheel) {
+      obWheelInit(wheel, function(val) {
+        obData.height = Number(val);
+        obRenderLiveSummary();
       });
-    });
-
-    document.querySelectorAll("[data-ob-exp]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-exp]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.experience = btn.dataset.obExp;
-        checkTrainingReady();
-      });
-    });
-
-    document.querySelectorAll("[data-ob-equip]").forEach(btn => {
-      btn.addEventListener("click", () => {
-        document.querySelectorAll("[data-ob-equip]").forEach(b => b.classList.remove("is-active"));
-        btn.classList.add("is-active");
-        obData.equipment = btn.dataset.obEquip;
-        checkTrainingReady();
-      });
-    });
-
-    function checkTrainingReady() {
-      const nextBtn = document.getElementById("obNextBtn");
-      if (nextBtn) nextBtn.disabled = !(obData.goalType && obData.experience && obData.equipment);
     }
+    document.getElementById("obNextBtn")?.addEventListener("click", function() {
+      obData.height = Number(obWheelValue(wheel) || 170);
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(4);
+    });
+    return;
+  }
 
-    checkTrainingReady();
+  if (stepId === "weight") {
+    var wWheel = document.getElementById("obWeightWhole");
+    var dWheel = document.getElementById("obWeightDec");
+    if (wWheel) {
+      obWheelInit(wWheel, function() {
+        var w = Number(obWheelValue(wWheel) || 60);
+        var d = Number(obWheelValue(dWheel) || 0);
+        obData.weight = w + d / 10;
+        obRenderLiveSummary();
+      });
+    }
+    if (dWheel) {
+      obWheelInit(dWheel, function() {
+        var w = Number(obWheelValue(wWheel) || 60);
+        var d = Number(obWheelValue(dWheel) || 0);
+        obData.weight = w + d / 10;
+        obRenderLiveSummary();
+      });
+    }
+    document.getElementById("obNextBtn")?.addEventListener("click", function() {
+      var w = Number(obWheelValue(wWheel) || 60);
+      var d = Number(obWheelValue(dWheel) || 0);
+      obData.weight = w + d / 10;
+      Object.assign(state.onboardingData, obData); saveState();
+      obGoToStep(5);
+    });
+    return;
+  }
 
-    document.getElementById("obNextBtn")?.addEventListener("click", () => {
-      if (!obData.goalType) { showToast("Please select a goal."); return; }
-      if (!obData.experience) { showToast("Please select your experience level."); return; }
-      if (!obData.equipment) { showToast("Please select where you train."); return; }
+  if (stepId === "goal") {
+    var list = document.getElementById("obGoalList");
+    if (list) {
+      list.addEventListener("click", function(e) {
+        var card = e.target.closest(".ob-goal-card");
+        if (!card) return;
+        list.querySelectorAll(".ob-goal-card").forEach(function(c) { c.classList.remove("is-active"); });
+        card.classList.add("is-active");
+        obData.goalType = card.dataset.goal;
+        obRenderLiveSummary();
+      });
+    }
+    document.getElementById("obNextBtn")?.addEventListener("click", function() {
+      if (!obData.goalType) return;
       obFinishSetup();
+    });
+    return;
+  }
+
+  if (stepId === "done") {
+    document.getElementById("obDoneBtn")?.addEventListener("click", function() {
+      closeOnboarding(true, function() {
+        render();
+        renderProfileScreen();
+      });
     });
     return;
   }
 }
 
+// ---- Finish Setup ----
 function obFinishSetup() {
   const goalTypeMap = {
     "fat-loss": "lose-fat",
     "muscle-gain": "build-muscle",
-    "recomp": "recomp",
+    "athletic": "athletic",
     "strength": "strength",
     "general-fitness": "general",
-    "endurance": "athletic",
   };
   const mappedGoal = goalTypeMap[obData.goalType] || "general";
   const w = Number(obData.weight) || 70;
 
-  state.user = state.user || {};
-  state.user.name = (obData.name || "Athlete").trim();
-  state.user.age = Number(obData.age) || 25;
-  state.user.height = Number(obData.height) || 175;
-  state.user.weight = w;
-  state.user.goal = mappedGoal;
-  state.user.experience = obData.experience || "Beginner";
-  state.user.equipment = obData.equipment || "gym";
-  state.user.trainingDays = 3;
+  state.user = {
+    ...(state.user || {}),
+    name: (obData.name || "Athlete").trim(),
+    age: Number(obData.age) || 24,
+    height: Number(obData.height) || 170,
+    weight: w,
+    goal: mappedGoal,
+    experience: "Beginner",
+    equipment: "gym",
+    trainingDays: 3,
+  };
   state.bodyGoal = mappedGoal;
 
   if (typeof CoachEngine !== "undefined") {
     state.user.bodyFat = state.user.bodyMeasurements?.bodyFat || null;
-    const profile = CoachEngine.buildProfile(state);
-    const engResult = CoachEngine.generate(profile);
-    if (!state.calorieTarget && engResult?.energy?.target) {
-      state.calorieTarget = engResult.energy.target;
-    }
-    if (!state.proteinGoal && engResult?.nutrition?.protein?.recommended) {
-      state.proteinGoal = engResult.nutrition.protein.recommended;
-    }
-    if (!state.waterGoal && engResult?.nutrition?.water?.ml) {
-      state.waterGoal = engResult.nutrition.water.ml;
-    }
+    try {
+      const profile = CoachEngine.buildProfile(state);
+      const engResult = CoachEngine.generate(profile);
+      if (!state.calorieTarget && engResult?.energy?.target) {
+        state.calorieTarget = engResult.energy.target;
+      }
+      if (!state.proteinGoal && engResult?.nutrition?.protein?.recommended) {
+        state.proteinGoal = engResult.nutrition.protein.recommended;
+      }
+      if (!state.waterGoal && engResult?.nutrition?.water?.ml) {
+        state.waterGoal = engResult.nutrition.water.ml;
+      }
+    } catch (e) { /* coach engine not critical */ }
   }
   if (!state.calorieTarget) {
     state.calorieTarget = obData.goalType === "fat-loss" ? Math.round(w * 28) : obData.goalType === "muscle-gain" ? Math.round(w * 34) : Math.round(w * 30);
@@ -9944,8 +9935,6 @@ function obFinishSetup() {
     state.weightLog.push({ weight: w, date: getDateKey(), notes: "Initial", loggedAt: new Date().toISOString() });
   }
 
-  saveState();
-
   const wasComplete = state.onboardingComplete;
   if (!isProfileEdit) {
     state.onboardingComplete = true;
@@ -9953,46 +9942,15 @@ function obFinishSetup() {
   Object.assign(state.onboardingData, obData);
   saveState();
 
-  if (!isProfileEdit && !wasComplete) {
-    const skipBtn = document.getElementById("onboardSkipBtn");
-    if (skipBtn) skipBtn.style.display = "none";
-    document.getElementById("obStepsFill").style.width = "100%";
-    document.getElementById("obStepsLabel").textContent = "Ready!";
-    document.getElementById("obTimeLabel").textContent = "All set!";
+  // Go to done screen
+  var body = document.getElementById("obBody");
+  body.style.transition = "opacity 0.25s ease, transform 0.25s ease";
+  body.style.opacity = "0";
+  body.style.transform = "scale(0.96)";
 
-    const body = document.getElementById("obBody");
-    body.innerHTML = obRenderDoneScreen();
-    body.style.animation = "none";
-    body.offsetHeight;
-    body.style.animation = "";
-
-    document.getElementById("obGenFirstBtn")?.addEventListener("click", () => {
-      closeOnboarding(true, () => {
-        render();
-        renderProfileScreen();
-        activateTab("sets");
-        openNewWorkoutGenerator();
-      });
-    });
-    document.getElementById("obExploreBtn")?.addEventListener("click", () => {
-      closeOnboarding(true, () => {
-        render();
-        renderProfileScreen();
-        openNewWorkout();
-      });
-    });
-    document.getElementById("obSkipOnboarding")?.addEventListener("click", () => {
-      closeOnboarding(true, () => {
-        render();
-        renderProfileScreen();
-      });
-    });
-  } else {
-    closeOnboarding(true, () => {
-      render();
-      renderProfileScreen();
-    });
-  }
+  setTimeout(function() {
+    obGoToStep(6);
+  }, 280);
 }
 
 // ===== FIRST 7 DAYS EXPERIENCE =====
@@ -10076,13 +10034,13 @@ function checkFirst7DayProgress() {
 
   let hasLearning = false;
   try {
-    const lhProg = JSON.parse(localStorage.getItem("ironlog_learning_progress"));
+    const lhProg = JSON.parse(localStorage.getItem("striv_learning_progress"));
     hasLearning = lhProg && lhProg.completed && lhProg.completed.length > 0;
   } catch (e) { /* ignore */ }
 
   let hasChallenge = false;
   try {
-    const casRaw = localStorage.getItem("ironlog_cas_data");
+    const casRaw = localStorage.getItem("striv_cas_data");
     if (casRaw) {
       const casData = JSON.parse(casRaw);
       hasChallenge = casData.challenges && casData.challenges.personalized && casData.challenges.personalized.length > 0;
@@ -10091,7 +10049,7 @@ function checkFirst7DayProgress() {
 
   let hasReport = false;
   try {
-    const repKeys = JSON.parse(localStorage.getItem("ironlog_report_keys") || "[]");
+    const repKeys = JSON.parse(localStorage.getItem("striv_report_keys") || "[]");
     hasReport = Array.isArray(repKeys) && repKeys.length > 0;
   } catch (e) { /* ignore */ }
 
@@ -10108,21 +10066,7 @@ function checkFirst7DayProgress() {
   if (changed) saveState();
 }
 
-// ===== ONBOARDING EVENT LISTENERS =====
-document.getElementById("onboardSkipBtn").addEventListener("click", () => {
-  document.getElementById("onboardConfirmModal").classList.remove("is-hidden");
-});
-document.getElementById("onboardConfirmCancel").addEventListener("click", () => {
-  document.getElementById("onboardConfirmModal").classList.add("is-hidden");
-});
-document.getElementById("onboardConfirmSkip").addEventListener("click", () => {
-  document.getElementById("onboardConfirmModal").classList.add("is-hidden");
-  state.user = { name: "Athlete", goal: "general", experience: "Beginner", equipment: "gym", trainingDays: 3 };
-  state.bodyGoal = "general";
-  state.onboardingComplete = true;
-  saveState();
-  closeOnboarding(true, () => render());
-});
+
 
 // ===== EXERCISE LIBRARY =====
 let elActiveCategory = "";
@@ -11166,6 +11110,19 @@ document.getElementById("ewSearch").addEventListener("input", () => {
   });
 });
 
+// Quick weight edit bottom sheet
+function openWeightSheet() {
+  var sheet = document.getElementById("weightLogSheet");
+  if (sheet) sheet.classList.remove("is-hidden");
+}
+
+// Settings gear icon in profile header
+document.getElementById("profileSettingsBtn").addEventListener("click", function() {
+  previousScreen = "screen-profile";
+  showScreen("screen-settings");
+  renderSettings();
+});
+
 document.getElementById("settingsBackBtn").addEventListener("click", () => {
   if (previousScreen === "screen-profile") {
     showScreen("screen-profile");
@@ -11284,6 +11241,63 @@ function openProfileEditor() {
   document.getElementById("profileEditorModal").classList.remove("is-hidden");
 }
 
+// ===== SMART NUTRITION: PROFILE EDITOR =====
+document.getElementById("peSmartApply")?.addEventListener("click", () => {
+  if (typeof SmartNutrition === "undefined") return;
+  const nutResult = SmartNutrition.calculateNutrition(state);
+  const calEl = document.getElementById("peSmartCal");
+  const proEl = document.getElementById("peSmartProtein");
+  const noteEl = document.getElementById("peSmartNote");
+  const previewEl = document.getElementById("peSmartPreview");
+  if (calEl) calEl.textContent = nutResult.energy.target != null ? nutResult.energy.target.toLocaleString() : "—";
+  if (proEl) proEl.textContent = nutResult.protein.recommended ? `${nutResult.protein.recommended}g` : "—";
+  if (noteEl) noteEl.style.display = nutResult.protein.usingAdjustedWeight ? "block" : "none";
+  if (previewEl) previewEl.style.display = "block";
+});
+document.getElementById("peSmartFill")?.addEventListener("click", () => {
+  if (typeof SmartNutrition === "undefined") return;
+  const nutResult = SmartNutrition.calculateNutrition(state);
+  const calEl = document.getElementById("peCalories");
+  const proEl = document.getElementById("peProtein");
+  if (calEl && nutResult.energy.target != null) calEl.value = nutResult.energy.target;
+  if (proEl && nutResult.protein.recommended) proEl.value = nutResult.protein.recommended;
+  document.getElementById("peSmartPreview").style.display = "none";
+});
+
+function saveNutritionSnapshot() {
+  try {
+    const nutHistory = JSON.parse(localStorage.getItem("striv_nutrition_snapshots")) || [];
+    const u = state.user || {};
+    const bm = u.bodyMeasurements || {};
+    const bf = bm.bodyFat || 0;
+    const weight = u.weight || 0;
+    const height = u.height || 0;
+    const age = u.age || 0;
+    const gender = u.gender || "";
+    const goal = getGoalType() || u.goal || "general";
+
+    const bmi = weight > 0 && height > 0 ? Math.round((weight / ((height / 100) * (height / 100))) * 10) / 10 : null;
+    const tdee = typeof SmartNutrition !== "undefined" ? SmartNutrition.calculateNutrition(state) : null;
+    const energy = tdee && tdee.energy ? tdee.energy.target : null;
+
+    nutHistory.push({
+      date: getDateKey(),
+      weight,
+      bodyFat: bf,
+      bmi,
+      tdee: energy,
+      calorieTarget: state.calorieTarget || 0,
+      proteinGoal: state.proteinGoal || 0,
+      waterGoal: state.waterGoal || 0,
+      goal,
+    });
+
+    // Keep last 365 entries
+    const trimmed = nutHistory.slice(-365);
+    localStorage.setItem("striv_nutrition_snapshots", JSON.stringify(trimmed));
+  } catch (e) { /* non-critical */ }
+}
+
 // ===== EVENT LISTENERS: PROFILE EDITOR =====
 document.getElementById("peClose").addEventListener("click", () => {
   document.getElementById("profileEditorModal").classList.add("is-hidden");
@@ -11335,6 +11349,7 @@ document.getElementById("peSaveBtn").addEventListener("click", () => {
     state.weightGoal.goalType = mapGoalType(state.user.goal);
   }
   saveState();
+  saveNutritionSnapshot();
   document.getElementById("profileEditorModal").classList.add("is-hidden");
   renderProfileAvatar();
   renderHome();
@@ -11628,7 +11643,7 @@ if (setting === "theme") {
           // Auto-backup current data before import
           try {
             const backup = { ...state, waterLog: collectWaterLog(), mealLog: collectMealLog(), learningProgress: loadLearningProgress() };
-            localStorage.setItem("ironlog_pre_import_backup", JSON.stringify(backup));
+            localStorage.setItem("striv_pre_import_backup", JSON.stringify(backup));
           } catch {}
           // Whitelist allowed keys and validate types
           const allowedKeys = new Set(["sessions", "plan", "customExercises", "user", "weightLog", "goals", "recoveryLog", "bodyGoal", "calorieTarget", "proteinGoal", "waterGoal", "fatTarget", "planOffset", "restTimer", "weightUnit", "heightUnit", "weightInc", "repInc", "autoRest", "autoNext", "focusMode", "screenAwake", "autoWarmup", "warmupStyle", "warmupReminder", "stretchReminder", "theme", "accent", "fontSize", "compactMode", "weightReminder", "nutritionReminder", "weeklyReview", "recoveryAnalysis", "coolDownDuration", "autoSummary", "autoCooldown", "showTomorrowPreview", "showWorkoutProgress", "workoutStreak", "profileBannerDismissed", "first7Days", "coachActivated", "activatedAt", "onboardingComplete", "onboardingData", "measurements", "photos", "waterLog", "mealLog", "learningProgress"]);
@@ -11656,7 +11671,7 @@ if (setting === "theme") {
           }
           // Restore learning progress
           if (data.learningProgress && typeof data.learningProgress === "object") {
-            try { localStorage.setItem("ironlog_learning_progress", JSON.stringify(data.learningProgress)); } catch {}
+            try { localStorage.setItem("striv_learning_progress", JSON.stringify(data.learningProgress)); } catch {}
           }
           render();
           renderHome();
@@ -11671,13 +11686,34 @@ if (setting === "theme") {
     input.click();
     return;
   }
-  if (setting === "delete-all") {
+  if (setting === "delete-all" || setting === "delete-data") {
     document.getElementById("deleteDataModal").classList.remove("is-hidden");
+    return;
+  }
+  if (setting === "email") {
+    showToast("Email settings coming soon.");
+    return;
+  }
+  if (setting === "help") {
+    showToast("Help center coming soon.");
+    return;
+  }
+  if (setting === "privacy-health" || setting === "notifications") {
+    showToast("This feature is coming soon.");
+    return;
+  }
+  if (setting === "workout-view") {
+    const opts = ["Standard", "Compact", "Detailed"];
+    var curView = state.workoutView || "Standard";
+    var nextView = opts[(opts.indexOf(curView) + 1) % opts.length];
+    state.workoutView = nextView;
+    saveState();
+    renderSettings();
     return;
   }
 
   if (setting === "restore-backup") {
-    const raw = localStorage.getItem("ironlog_pre_import_backup");
+    const raw = localStorage.getItem("striv_pre_import_backup");
     if (!raw) {
       alert("No pre-import backup found.");
       return;
@@ -11695,7 +11731,7 @@ if (setting === "theme") {
         }
       }
       if (backup.learningProgress && typeof backup.learningProgress === "object") {
-        try { localStorage.setItem("ironlog_learning_progress", JSON.stringify(backup.learningProgress)); } catch {}
+        try { localStorage.setItem("striv_learning_progress", JSON.stringify(backup.learningProgress)); } catch {}
       }
       Object.assign(state, backup);
       saveState();
@@ -11718,7 +11754,7 @@ if (setting === "theme") {
     const labels = { "feedback-bug": "bug", "feedback-feature": "feature", "feedback-general": "general" };
     const label = labels[setting] || "general";
     const body = encodeURIComponent(`[${label.toUpperCase()} Feedback]\n\n`);
-    window.open(`mailto:aryanswaroop00@gmail.com?subject=IronLog%20Feedback%20(${label})&body=${body}`, "_blank");
+    window.open(`mailto:aryanswaroop00@gmail.com?subject=Striv%20Feedback%20(${label})&body=${body}`, "_blank");
     return;
   }
 
@@ -11794,7 +11830,7 @@ document.getElementById("ddConfirmBtn")?.addEventListener("click", async () => {
     "wl_bodylog", "wl_exercise_notes", "wl_fav_meals", "wl_recent_foods",
     "wl_fav_exercises", "wl_recent_exercises", "wl_profile", "wl_theme",
     "wl_preferred_unit", "wl_nutrition_mode", "wl_generator_profile", "wt_autosave",
-    "ironlog_learning_progress", "ironlog_goal_center", "ironlog_onboarding", "ironlog_pre_import_backup",
+    "striv_learning_progress", "striv_goal_center", "striv_onboarding", "striv_pre_import_backup",
   ];
   const allKeys = Object.keys(localStorage);
   allKeys.forEach((k) => {
@@ -12621,7 +12657,7 @@ const EXERCISES_TO_AVOID = {
 };
 
 // --- Generator State ---
-let genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null };
+let genState = { step: 1, goal: null, experience: null, days: null, time: null, priority: "none", equipment: "full-gym", limitation: "none", split: null, schedule: null, trainingLocation: null, equipmentLevel: null, duration: null, cardio: null, weakAreas: [], useFullProgram: false };
 
 function randInt(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
 function filterByEquipment(exercises, equipment) {
@@ -13227,8 +13263,27 @@ function gnRenderSummary() {
         <div class="gn-summary-value">${totRecovery}x / week</div>
       </div>
     </div>
+    <div class="gn-toggle-row">
+      <label class="gn-toggle-label">
+        <input type="checkbox" id="gnFullProgramToggle" ${genState.useFullProgram ? "checked" : ""}>
+        <span class="gn-toggle-slider"></span>
+        <span class="gn-toggle-text">
+          <strong>Full 12-Week Program</strong>
+          <span class="gn-toggle-desc">Periodized with progressive overload & deload weeks</span>
+        </span>
+      </label>
+    </div>
     <p class="gn-summary-note">You can adjust or regenerate anytime after creation.</p>
   </div>`;
+
+  setTimeout(() => {
+    const toggle = document.getElementById("gnFullProgramToggle");
+    if (toggle) {
+      toggle.addEventListener("change", function() {
+        genState.useFullProgram = this.checked;
+      });
+    }
+  }, 0);
 }
 
 // --- Wizard Navigation ---
@@ -13311,6 +13366,7 @@ function openGenerateWorkout() {
     limitation: (Array.isArray(u?.injuries) && u.injuries.length > 0) ? u.injuries.filter(i => injuryLimits[i]).map(i => injuryLimits[i]) : [],
     split: null,
     schedule: null,
+    useFullProgram: false,
   };
   document.getElementById("generateModal").classList.remove("is-hidden");
   showGmOverlay(null);
@@ -13333,6 +13389,99 @@ function saveGeneratedProgram() {
 
   // --- LOADING ---
   showGmOverlay("loading");
+
+  // Handle Full 12-Week Program via ProgramGenerator
+  if (genState.useFullProgram && typeof ProgramGenerator !== "undefined") {
+    try {
+      const expNameMap = { "Beginner": "beginner", "Intermediate": "intermediate", "Advanced": "advanced" };
+      const goalNameMap = { "Muscle Gain": "build-muscle", "Fat Loss": "lose-fat", "Strength": "strength", "General Fitness": "general-fitness", "Recomp": "general-fitness", "Endurance": "general-fitness", "Athletic": "athletic" };
+      const equipNameMap = { "full-gym": "gym", "dumbbells-only": "minimal", "bodyweight-only": "home", "home-gym": "home" };
+      const splitNameMap = { "Push Pull Legs": "push-pull-legs", "Upper Lower": "upper-lower", "Full Body": "full-body", "Arnold": "arnold", "Bro Split": "bro-split", "Custom": "push-pull-legs" };
+
+      const pgParams = {
+        goal: goalNameMap[genState.goal] || "general-fitness",
+        experience: expNameMap[genState.experience] || "beginner",
+        days: genState.days || 3,
+        equipment: equipNameMap[genState.equipment] || "gym",
+        duration: genState.duration || 45,
+        split: splitNameMap[genState.split] || null,
+        age: (state.user && state.user.age) || 25,
+        weight: (state.user && state.user.weight) || 70,
+      };
+
+      const fullProgram = ProgramGenerator.generateWorkoutPlan(pgParams);
+      if (!fullProgram || !fullProgram.weeks || !fullProgram.weeks.length) {
+        showGmOverlay("failure", "Program generation failed. Please try different settings.");
+        return;
+      }
+
+      const programId = crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+      const programName = `12-Week ${genState.split || "Split"} (${genState.goal || "General Fitness"})`;
+
+      let activePlan = [];
+      try {
+        const existing = loadCustomProgram();
+        if (Array.isArray(existing)) activePlan = existing;
+      } catch (e) { activePlan = []; }
+
+      const dayNames = ["Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday", "Sunday"];
+
+      fullProgram.weeks.forEach(function(week) {
+        week.days.forEach(function(day, dIdx) {
+          const workout = {
+            id: crypto.randomUUID ? crypto.randomUUID() : Date.now().toString(36) + Math.random().toString(36).slice(2, 6),
+            name: "Week " + week.weekNumber + " - " + day.name,
+            programId: programId,
+            programName: programName,
+            programSort: (week.weekNumber - 1) * fullProgram.weeks[0].days.length + dIdx,
+            weekNumber: week.weekNumber,
+            phase: week.name,
+            isDeload: week.weekNumber % 4 === 0,
+            exercises: (day.exercises || []).map(function(ex) {
+              return {
+                name: ex.name || "Unknown",
+                sets: typeof ex.sets === "number" ? ex.sets : 3,
+                reps: typeof ex.maxReps === "number" ? ex.maxReps : (ex.reps || 10),
+                repTarget: ex.repTarget || (ex.minReps ? ex.minReps + "-" + ex.maxReps : "8-12"),
+                weight: ex.suggestedWeight ? String(ex.suggestedWeight) : "",
+                restSeconds: ex.restSeconds || 90,
+                notes: ex.notes || "",
+              };
+            }),
+            estimatedMinutes: day.estimatedMinutes || 45,
+          };
+          activePlan.push(workout);
+        });
+      });
+
+      try {
+        localStorage.setItem("wl_custom_program", JSON.stringify(activePlan));
+      } catch (e) {
+        showGmOverlay("failure", "Storage write failed: " + e.message);
+        return;
+      }
+      try {
+        state.plan = activePlan;
+        saveState();
+      } catch (e) {
+        showGmOverlay("failure", "State save failed: " + e.message);
+        return;
+      }
+
+      const totalWorkouts = activePlan.length;
+      window._lastGenProgramName = programName;
+      window._lastGenWorkoutCount = totalWorkouts;
+      window._lastGenFirstDay = "Week 1";
+
+      const elapsed = Date.now() - startTime;
+      const remaining = Math.max(0, 800 - elapsed);
+      setTimeout(function() { showGmOverlay("success"); }, remaining);
+      return;
+    } catch (e) {
+      showGmOverlay("failure", "Program generation failed: " + e.message);
+      return;
+    }
+  }
 
   const schedule = genState.schedule;
   if (!schedule) {

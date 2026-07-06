@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG COACH SYSTEM V1.45 — The Coach Operating System
+// STRIV COACH SYSTEM — The Coach Operating System
 // ============================================================
 // This is the foundation layer for all Coach features.
 // Coach NEVER owns data — it reads from existing systems.
@@ -200,6 +200,41 @@ const CoachSystem = (() => {
       const dl = state.dailyLogs || {};
       const entry = dl[dateKey || getDateKey()];
       return entry ? (entry.protein || 0) : 0;
+    },
+
+    getProgramStatus() {
+      const plan = (() => {
+        const p = state.plan || null;
+        if (p && p.length > 0) return p;
+        try {
+          const custom = JSON.parse(localStorage.getItem("wl_custom_program"));
+          if (custom && custom.length > 0) return custom;
+        } catch (e) { /* ignore */ }
+        return null;
+      })();
+      if (!plan) return null;
+
+      const sessions = Data.getSessions();
+      const totalDays = plan.length;
+      const completedDays = sessions.filter(function(s) {
+        return plan.some(function(w) { return w.id === s.workoutId; });
+      }).length;
+      const lastSession = sessions.length > 0 ? sessions.slice().sort(function(a, b) {
+        return b.dateKey.localeCompare(a.dateKey);
+      })[0] : null;
+
+      const daysSinceLast = lastSession ? (() => {
+        const diff = new Date() - new Date(lastSession.dateKey);
+        return Math.floor(diff / 86400000);
+      })() : null;
+
+      return {
+        plan: plan,
+        totalDays: totalDays,
+        completedDays: completedDays,
+        lastSessionDaysAgo: daysSinceLast,
+        lastWorkoutName: lastSession ? lastSession.workoutName || (plan.find(function(w) { return w.id === lastSession.workoutId; }) || {}).name : null,
+      };
     },
   };
 
@@ -477,6 +512,42 @@ const CoachSystem = (() => {
     html += Components.statBox(weekVolume >= 1000 ? (weekVolume / 1000).toFixed(1) + "k" : weekVolume, "Volume", { className: "co-stat-wide" });
     html += Components.statBox(weight ? (weight.weight || weight) + "kg" : "—", "Weight");
     html += '</div>';
+
+    // Program Status Card
+    const programStatus = Data.getProgramStatus();
+    if (programStatus) {
+      const daysLeft = programStatus.totalDays - programStatus.completedDays;
+      const pctComplete = Math.min(100, Math.round((programStatus.completedDays / programStatus.totalDays) * 100));
+      const weekLabel = ins && ins.insights ? ins.insights.find(function(i) { return i.text && i.text.indexOf("week") > -1; }) : null;
+      html += '<div class="co-duo">';
+      html += Components.card(
+        '<div class="co-program-mini">' +
+        '<div class="co-program-header">' +
+        '<span class="co-program-label">Program Progress</span>' +
+        Components.progressBar(pctComplete) +
+        '</div>' +
+        '<div class="co-program-stats">' +
+        '<div class="co-program-stat"><span class="co-program-stat-value">' + programStatus.completedDays + '</span><span class="co-program-stat-label">done</span></div>' +
+        '<div class="co-program-stat"><span class="co-program-stat-value">' + daysLeft + '</span><span class="co-program-stat-label">left</span></div>' +
+        '<div class="co-program-stat"><span class="co-program-stat-value">' + pctComplete + '%</span><span class="co-program-stat-label">complete</span></div>' +
+        '</div>' +
+        (programStatus.lastWorkoutName ? '<div class="co-program-last">Last: ' + programStatus.lastWorkoutName + '</div>' : '') +
+        '<button class="co-card-action" data-co-route="workout">View Program →</button>' +
+        '</div>',
+        { className: "co-card-program" }
+      );
+      html += Components.card(
+        '<div class="co-program-mini">' +
+        '<div class="co-program-label">' + (weekLabel ? weekLabel.text : 'Active Program') + '</div>' +
+        '<div class="co-program-next">' +
+        '<div class="co-program-next-label">Tap to start today\u2019s workout</div>' +
+        '<button class="co-card-action" data-co-action="startWorkout">Start →</button>' +
+        '</div>' +
+        '</div>',
+        { className: "co-card-program-next" }
+      );
+      html += '</div>';
+    }
 
     // Recovery + Goal Progress
     html += '<div class="co-duo">';

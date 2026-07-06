@@ -1,6 +1,6 @@
 /* ============================================================
-   IRONLOG COACH SYSTEM V1.46 — Visual Integration Layer
-   Extends the IronLog Design System. No new design language.
+   STRIV COACH SYSTEM — Visual Integration Layer
+   Extends the Striv Design System. No new design language.
    ============================================================ */
 
 /* ===== PAGE LAYOUT ===== */
@@ -287,6 +287,23 @@
   border-radius: 999px;
   transition: width 0.5s ease;
 }
+
+/* ===== PROGRAM STATUS CARD ===== */
+.co-card-program,
+.co-card-program-next { cursor: pointer; }
+.co-card-program:active,
+.co-card-program-next:active { background: var(--surface-2); }
+
+.co-program-mini { display: flex; flex-direction: column; gap: 0.5rem; }
+.co-program-header { display: flex; flex-direction: column; gap: 0.35rem; }
+.co-program-label { font-size: 0.72rem; font-weight: 700; color: var(--accent); text-transform: uppercase; letter-spacing: 0.04em; }
+.co-program-stats { display: flex; gap: 0.75rem; }
+.co-program-stat { display: flex; flex-direction: column; align-items: center; gap: 0.05rem; }
+.co-program-stat-value { font-size: 1.1rem; font-weight: 800; color: var(--text); line-height: 1.1; }
+.co-program-stat-label { font-size: 0.58rem; font-weight: 600; color: var(--text-secondary); text-transform: uppercase; letter-spacing: 0.03em; }
+.co-program-last { font-size: 0.72rem; color: var(--text-secondary); }
+.co-program-next { display: flex; flex-direction: column; gap: 0.5rem; }
+.co-program-next-label { font-size: 0.72rem; color: var(--text-secondary); }
 
 /* ===== HOME HERO ===== */
 .co-home-hero {

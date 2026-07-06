@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG ADAPTIVE COACHING ENGINE V1
+// STRIV ADAPTIVE COACHING ENGINE
 // Continuous monitoring, risk detection, personalization,
 // behavioral coaching & adaptive recommendations.
 // ============================================================
@@ -414,7 +414,7 @@ const AdaptiveEngine = (() => {
   }
 
   function loadRecoveryHistory() {
-    try { return JSON.parse(localStorage.getItem("ironlog_recovery_history")) || {}; }
+    try { return JSON.parse(localStorage.getItem("striv_recovery_history")) || {}; }
     catch { return {}; }
   }
 
@@ -477,7 +477,7 @@ const AdaptiveEngine = (() => {
     return count;
   }
   function getSearchHistory() {
-    try { return JSON.parse(localStorage.getItem("ironlog_search_history")) || []; }
+    try { return JSON.parse(localStorage.getItem("striv_search_history")) || []; }
     catch { return []; }
   }
   function getDateKey(date) {
@@ -495,7 +495,7 @@ const AdaptiveEngine = (() => {
     return Math.round((today - lastDate) / 86400000);
   }
   function getLearningProgress() {
-    try { return JSON.parse(localStorage.getItem("ironlog_learning_progress")) || { completed: [] }; }
+    try { return JSON.parse(localStorage.getItem("striv_learning_progress")) || { completed: [] }; }
     catch { return { completed: [] }; }
   }
 
@@ -505,7 +505,7 @@ const AdaptiveEngine = (() => {
     return state;
   }
 
-  const PROFILE_STORAGE_KEY = "ironlog_fitness_profile";
+  const PROFILE_STORAGE_KEY = "striv_fitness_profile";
   function loadFitnessProfileState() {
     try {
       const raw = localStorage.getItem(PROFILE_STORAGE_KEY);

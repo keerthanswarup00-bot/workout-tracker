@@ -1,5 +1,5 @@
 // ============================================================
-// IRONLOG COACH ENGINE V1
+// STRIV COACH ENGINE
 // Each engine is independent and returns structured JSON.
 // The UI layer consumes engine output — no UI strings in engines.
 // ============================================================
@@ -78,6 +78,125 @@ const CoachEngine = (() => {
     const startWeight = user.startWeight || curWeight;
     if (!startWeight || !targetWeight || !curWeight) return null;
     return Math.min(100, Math.max(0, ((startWeight - curWeight) / (startWeight - targetWeight)) * 100));
+  }
+
+  function getProgramPlan() {
+    const p = state.plan || null;
+    if (p && p.length > 0) return p;
+    try {
+      const custom = JSON.parse(localStorage.getItem("wl_custom_program"));
+      if (custom && custom.length > 0) return custom;
+    } catch (e) { /* ignore */ }
+    return null;
+  }
+
+  function getProgramWeek() {
+    const plan = getProgramPlan();
+    if (!plan) return null;
+    const sessions = (state.sessions || []).filter(function(s) { return s.finishedAt && s.dateKey; });
+    if (!sessions.length) return 1;
+    const sorted = sessions.slice().sort(function(a, b) { return a.dateKey.localeCompare(b.dateKey); });
+    const firstDate = new Date(sorted[0].dateKey);
+    const now = new Date();
+    const daysSince = Math.floor((now - firstDate) / 86400000);
+    const week = Math.max(1, Math.min(12, Math.ceil((daysSince + 1) / 7)));
+    return week;
+  }
+
+  function getExercisePlateaus(days) {
+    days = days || 21;
+    const plan = getProgramPlan();
+    if (!plan) return [];
+    const cutoff = new Date();
+    cutoff.setDate(cutoff.getDate() - days);
+    const recentSessions = (state.sessions || []).filter(function(s) {
+      return s.finishedAt && s.dateKey && new Date(s.dateKey) >= cutoff;
+    }).sort(function(a, b) { return a.dateKey.localeCompare(b.dateKey); });
+    if (recentSessions.length < 2) return [];
+
+    const plateaus = [];
+    var exerciseWeights = {};
+    recentSessions.forEach(function(session) {
+      (session.exercises || []).forEach(function(ex) {
+        var doneSets = (ex.sets || []).filter(function(s) { return s.done && Number(s.weight) > 0; });
+        if (!doneSets.length) return;
+        var best = doneSets.reduce(function(max, s) { return Math.max(max, Number(s.weight) || 0); }, 0);
+        if (!exerciseWeights[ex.name]) {
+          exerciseWeights[ex.name] = [];
+        }
+        exerciseWeights[ex.name].push({ weight: best, date: session.dateKey });
+      });
+    });
+
+    Object.keys(exerciseWeights).forEach(function(name) {
+      var entries = exerciseWeights[name];
+      if (entries.length < 3) return;
+      var first = entries[0].weight;
+      var last = entries[entries.length - 1].weight;
+      var allSame = entries.every(function(e) { return e.weight === entries[0].weight; });
+      if (allSame && first > 0 && entries.length >= 3) {
+        plateaus.push({ name: name, weight: first, sessions: entries.length });
+      }
+    });
+
+    return plateaus.slice(0, 3);
+  }
+
+  function getVolumeChange() {
+    var sessions = (state.sessions || []).filter(function(s) { return s.finishedAt && s.dateKey; });
+    if (sessions.length < 4) return null;
+    var sorted = sessions.slice().sort(function(a, b) { return a.dateKey.localeCompare(b.dateKey); });
+    var now = new Date();
+    var recentCut = new Date(now.getTime() - 7 * 86400000);
+    var prevCut = new Date(now.getTime() - 21 * 86400000);
+    var prevEnd = new Date(now.getTime() - 14 * 86400000);
+
+    var recent = sorted.filter(function(s) { return new Date(s.dateKey) >= recentCut; });
+    var previous = sorted.filter(function(s) {
+      var d = new Date(s.dateKey);
+      return d >= prevCut && d < prevEnd;
+    });
+
+    function calcVolume(sessions) {
+      return sessions.reduce(function(sum, s) {
+        return sum + (s.exercises || []).reduce(function(es, ex) {
+          return es + (ex.sets || []).reduce(function(ss, set) {
+            return ss + (set.done && Number(set.weight) > 0 ? Number(set.weight) * (Number(set.reps) || 0) : 0);
+          }, 0);
+        }, 0);
+      }, 0);
+    }
+
+    var recentVol = calcVolume(recent);
+    var prevVol = calcVolume(previous);
+    if (!prevVol || !recentVol) return null;
+    var pctChange = Math.round(((recentVol - prevVol) / prevVol) * 100);
+    return pctChange;
+  }
+
+  function getDeloadRecommendation() {
+    var week = getProgramWeek();
+    if (!week) return null;
+    if (week > 1 && week % 4 === 0) {
+      return { isDeloadWeek: true, week: week };
+    }
+    var consecutiveWeeks = 0;
+    var sessions = (state.sessions || []).filter(function(s) { return s.finishedAt && s.dateKey; });
+    if (sessions.length < 8) return null;
+    var sorted = sessions.slice().sort(function(a, b) { return b.dateKey.localeCompare(a.dateKey); });
+    if (sorted.length >= 4) {
+      var fatigueSigns = sorted.slice(0, Math.min(10, sorted.length)).filter(function(s) {
+        return (s.exercises || []).some(function(ex) {
+          return (ex.sets || []).some(function(set) {
+            return set.done && set.failed === true;
+          });
+        });
+      });
+      if (fatigueSigns.length >= 3) {
+        return { isDeloadWeek: false, fatigueSigns: fatigueSigns.length, recommended: true };
+      }
+    }
+    return null;
   }
 
   // ============================================================
@@ -338,6 +457,59 @@ const CoachEngine = (() => {
       insights.push({ text: `${streak}-day streak building — keep the momentum going.`, type: "positive" });
     }
 
+    // Program-aware insights
+    const plan = getProgramPlan();
+    if (plan && plan.length > 0) {
+      const programWeek = getProgramWeek();
+      const planDays = plan.length;
+
+      if (programWeek) {
+        insights.push({ text: `You're in week ${programWeek} of your ${planDays}-day program.`, type: "info" });
+      }
+
+      // Deload recommendation
+      const deload = getDeloadRecommendation();
+      if (deload && deload.isDeloadWeek) {
+        insights.push({ text: `Week ${deload.week} is a deload week — reduce volume by 40-50% for recovery.`, type: "warning" });
+      } else if (deload && deload.recommended) {
+        insights.push({ text: `You've shown signs of fatigue across ${deload.fatigueSigns} recent sessions. Consider a deload week.`, type: "warning" });
+      }
+
+      // Program adherence
+      const planWorkoutIds = plan.map(function(w) { return w.id; });
+      const planSessionsThisWeek = getWeekSessions().filter(function(s) {
+        return planWorkoutIds.includes(s.workoutId) || s.planId || true;
+      }).length;
+      if (planSessionsThisWeek === 0 && weekCount > 0) {
+        insights.push({ text: "This week's workouts are off-program. Following your plan ensures balanced progress.", type: "warning" });
+      }
+
+      // Volume trend
+      const volChange = getVolumeChange();
+      if (volChange !== null) {
+        if (volChange > 20) {
+          insights.push({ text: `Volume jumped ${volChange}% — watch for excessive fatigue.`, type: "warning" });
+        } else if (volChange < -30) {
+          insights.push({ text: `Volume dropped ${volChange}% from previous period. Try to maintain consistency.`, type: "warning" });
+        } else if (Math.abs(volChange) <= 10) {
+          insights.push({ text: `Volume is stable week over week — good for steady progress.`, type: "positive" });
+        }
+      }
+
+      // Exercise plateaus
+      const plateaus = getExercisePlateaus();
+      if (plateaus.length > 0) {
+        plateaus.forEach(function(p) {
+          insights.push({ text: `${p.name} hasn't progressed in ${p.sessions} sessions at ${p.weight}kg. Try adding 1 rep or 1 set.`, type: "warning" });
+        });
+      }
+    } else {
+      // No program — suggest creating one
+      if (weekCount >= 3) {
+        insights.push({ text: "You're training consistently! A structured program would accelerate your results.", type: "info" });
+      }
+    }
+
     return { insights };
   }
 
@@ -564,7 +736,7 @@ const CoachEngine = (() => {
   }
 
   // ---- Recovery History (internal) ----
-  const RECOVERY_HISTORY_KEY = "ironlog_recovery_history";
+  const RECOVERY_HISTORY_KEY = "striv_recovery_history";
   function loadRecoveryHistory() {
     try { return JSON.parse(localStorage.getItem(RECOVERY_HISTORY_KEY)) || {}; }
     catch { return {}; }
