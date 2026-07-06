@@ -46,6 +46,9 @@ const ProgramGenerator = (() => {
       if (equip === "minimal") {
         return ["dumbbell", "bodyweight", "band"].includes(eq);
       }
+      if (equip === "none" || equip === "bodyweight-only") {
+        return ["bodyweight", "calisthenics", "core"].includes(eq);
+      }
       return true;
     });
   }
@@ -134,8 +137,32 @@ const ProgramGenerator = (() => {
     return result;
   }
 
-  function selectExercisesForDay(focusMuscles, allExercises, goal, experience, duration, equipment) {
-    const available = filterByEquipment(allExercises, equipment);
+  function filterByInjuries(exercises, injuries) {
+    if (!injuries || !injuries.length) return exercises;
+    const injuryMuscleMap = {
+      "lower-back": ["Lower Back", "Core"],
+      "knee": ["Quads", "Hamstrings", "Glutes", "Calves"],
+      "shoulder": ["Front Delts", "Side Delts", "Rear Delts", "Chest"],
+      "wrist": ["Forearms"],
+      "elbow": ["Biceps", "Triceps", "Forearms"],
+      "hip": ["Glutes", "Quads", "Hamstrings"],
+      "neck": ["Neck", "Traps"],
+      "ankle": ["Calves"],
+    };
+    const restricted = new Set();
+    injuries.forEach(function(inj) {
+      var mapped = injuryMuscleMap[inj.toLowerCase().trim()];
+      if (mapped) mapped.forEach(function(m) { restricted.add(m.toLowerCase()); });
+    });
+    if (restricted.size === 0) return exercises;
+    return exercises.filter(function(ex) {
+      var muscles = [ex.primaryMuscle, ...(ex.secondaryMuscles || [])].map(function(m) { return (m || "").toLowerCase(); });
+      return !muscles.some(function(m) { return restricted.has(m); });
+    });
+  }
+
+  function selectExercisesForDay(focusMuscles, allExercises, goal, experience, duration, equipment, injuries) {
+    const available = filterByInjuries(filterByEquipment(allExercises, equipment), injuries);
     const repRanges = {
       compound: R.getRepRange ? R.getRepRange(goal, true, experience) : { min: 6, max: 12 },
       isolation: R.getRepRange ? R.getRepRange(goal, false, experience) : { min: 8, max: 15 },
@@ -226,7 +253,7 @@ const ProgramGenerator = (() => {
     const program = splitDays.map((day, idx) => {
       const focus = day.muscles || [];
       const priority = priorityMuscles.length > 0 ? [...priorityMuscles, ...focus] : focus;
-      const exercises = selectExercisesForDay(priority, allExercises, goal, experience, duration, equipment);
+      const exercises = selectExercisesForDay(priority, allExercises, goal, experience, duration, equipment, injuries);
 
       const estDuration = exercises.reduce((sum, ex) => {
         const setTime = ex.restSeconds + 30;

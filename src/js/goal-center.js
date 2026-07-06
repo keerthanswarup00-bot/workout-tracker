@@ -529,7 +529,7 @@ const GoalCenter = (() => {
         "muscle-gain": "build-muscle",
         "strength": "strength",
         "general-fitness": "general",
-        "endurance": "athletic"
+        "endurance": "endurance"
       };
       const mappedGoal = goalTypeMap[profile.goalType] || "general";
       state.user = state.user || {};
@@ -559,7 +559,7 @@ const GoalCenter = (() => {
         "muscle-gain": "build-muscle",
         "strength": "strength",
         "general-fitness": "general",
-        "endurance": "athletic"
+        "endurance": "endurance"
       };
       const mappedGoal = goalTypeMap[profile.goalType] || "general";
       state.user = state.user || {};
@@ -613,7 +613,7 @@ const GoalCenter = (() => {
         "muscle-gain": "build-muscle",
         "strength": "strength",
         "general-fitness": "general",
-        "endurance": "athletic"
+        "endurance": "endurance"
       };
       return map[profile.goalType] || "general";
     }
@@ -762,9 +762,9 @@ const GoalCenter = (() => {
     const now = new Date();
     const oldestConsidered = new Date(now);
     oldestConsidered.setDate(oldestConsidered.getDate() - 21);
-    const window = recent.filter(e => new Date(e.date) >= oldestConsidered);
-    if (window.length < 3) return { isPlateau: false, daysUnchanged: null };
-    const sorted = window.slice().sort((a, b) => a.date.localeCompare(b.date));
+    const windowData = recent.filter(e => new Date(e.date) >= oldestConsidered);
+    if (windowData.length < 3) return { isPlateau: false, daysUnchanged: null };
+    const sorted = windowData.slice().sort((a, b) => a.date.localeCompare(b.date));
     const firstWeight = sorted[0].weight;
     const lastWeight = sorted[sorted.length - 1].weight;
     const change = Math.abs(lastWeight - firstWeight);

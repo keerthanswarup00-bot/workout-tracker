@@ -830,7 +830,7 @@ const CoachSystem = (() => {
           html += Components.sectionHeader("Fatigue Factors", { icon: "⚠️" });
           html += '<div class="co-fatigue-list">';
           readiness.fatigueFlags.forEach(function(flag) {
-            html += '<div class="co-fatigue-item"><span class="co-fatigue-icon">⚠️</span><span>' + flag + '</span></div>';
+            html += '<div class="co-fatigue-item"><span class="co-fatigue-icon">⚠️</span><span>' + (typeof flag === "string" ? flag : flag.text || flag.type || "") + '</span></div>';
           });
           html += '</div>';
         }
@@ -1014,8 +1014,8 @@ const CoachSystem = (() => {
           '<div class="co-progress-grid">' +
           (coach.progress.status ? '<div class="co-prog-item">Status: <strong>' + coach.progress.status + '</strong></div>' : '') +
           (coach.progress.weeklyVolume !== undefined ? '<div class="co-prog-item">Weekly Volume: <strong>' + (coach.progress.weeklyVolume >= 1000 ? (coach.progress.weeklyVolume / 1000).toFixed(1) + "k" : coach.progress.weeklyVolume) + ' kg</strong></div>' : '') +
-          (coach.progress.consistency !== undefined ? '<div class="co-prog-item">Consistency: <strong>' + Math.round(coach.progress.consistency) + '%</strong></div>' : '') +
-          (coach.progress.monthlyPRs !== undefined ? '<div class="co-prog-item">Monthly PRs: <strong>' + coach.progress.monthlyPRs + '</strong></div>' : '') +
+          (coach.progress.weekly && coach.progress.weekly.consistency !== undefined ? '<div class="co-prog-item">Consistency: <strong>' + Math.round(coach.progress.weekly.consistency) + '%</strong></div>' : '') +
+          (coach.progress.monthly && coach.progress.monthly.prs !== undefined ? '<div class="co-prog-item">Monthly PRs: <strong>' + coach.progress.monthly.prs + '</strong></div>' : '') +
           (coach.progress.projectedDate ? '<div class="co-prog-item">Projected: <strong>' + coach.progress.projectedDate + '</strong></div>' : '') +
           '</div>',
           { className: "co-card-progress" }

@@ -8,9 +8,6 @@
   --text-secondary: #8a8a8a;
   --text-tertiary: #525252;
   --accent: #00d26a;
-  --accent-hover: #00b95d;
-  --accent-10: rgba(0,210,106,0.10);
-  --accent-20: rgba(0,210,106,0.20);
   --orange: #ff9f0a;
   --blue: #3b82f6;
   --red: #ef4444;
@@ -18,35 +15,29 @@
   --protein: #00d26a;
   --carbs: #3b82f6;
   --fat: #ff9f0a;
+  --error: #ef4444;
   --radius: 12px;
   --radius-sm: 8px;
-  --radius-xs: 6px;
-  --radius-full: 9999px;
   --sidebar-w: 220px;
-  --bmi-underweight: #3b82f6;
-  --bmi-normal: #00d26a;
-  --bmi-overweight: #ff9f0a;
-  --bmi-obese: #ef4444;
-  --error: #ef4444;
-  --space-xs: 4px;
-  --space-sm: 8px;
-  --space-md: 12px;
-  --space-lg: 16px;
-  --space-xl: 20px;
-  --space-2xl: 24px;
-  --space-3xl: 32px;
-  --text-display: 36px;
-  --text-hero: 28px;
   --text-heading: 22px;
   --text-title: 20px;
   --text-card: 16px;
   --text-body: 14px;
   --text-caption: 12px;
   --text-small: 11px;
-  --btn-height: 50px;
-  --btn-radius: 12px;
   --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Display", "Helvetica Neue", Helvetica, Arial, sans-serif;
-  --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+  /* Semantic z-index layers */
+  --z-base: 0;
+  --z-sticky: 10;
+  --z-nav: 100;
+  --z-overlay: 50;
+  --z-sidebar: 50;
+  --z-dropdown: 55;
+  --z-timer: 90;
+  --z-modal: 200;
+  --z-toast: 350;
+  --z-sheet: 1000;
+  --z-tooltip: 2000;
 }
 
 * { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; touch-action: manipulation; }
@@ -102,7 +93,7 @@ input:focus, textarea:focus { outline: none; }
   padding: 1.5rem 0.75rem;
   position: fixed;
   top: 0; left: 0; bottom: 0;
-  z-index: 50;
+  z-index: var(--z-sidebar);
   flex-direction: column;
 }
 
@@ -257,7 +248,7 @@ input:focus, textarea:focus { outline: none; }
   border-radius: 999px;
   padding: 6px;
   border: 1px solid var(--border);
-  z-index: 100;
+  z-index: var(--z-nav);
   width: min(360px, calc(100vw - 32px));
 }
 
@@ -723,7 +714,7 @@ input:focus, textarea:focus { outline: none; }
   top: 1rem;
   left: 50%;
   transform: translateX(-50%);
-  z-index: 350;
+  z-index: var(--z-toast);
   padding: 0.65rem 1rem;
   background: var(--surface);
   border: 1px solid var(--orange);
@@ -1502,7 +1493,7 @@ input:focus, textarea:focus { outline: none; }
 .modal-overlay {
   position: fixed;
   inset: 0;
-  z-index: 200;
+  z-index: var(--z-modal);
   display: grid;
   place-items: center;
   padding: 1rem;
@@ -3446,7 +3437,7 @@ input:focus, textarea:focus { outline: none; }
 .ea-history-stat { color: var(--text); font-weight: 600; }
 
 /* ===== SESSION SUMMARY ===== */
-.ss-overlay { position: fixed; inset: 0; z-index: 300; background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease; }
+.ss-overlay { position: fixed; inset: 0; z-index: var(--z-modal); background: rgba(0,0,0,0.7); display: flex; align-items: center; justify-content: center; padding: 1rem; animation: fadeIn 0.2s ease; }
 .ss-card { background: var(--surface); border: 1px solid var(--border); border-radius: var(--radius); padding: 1.25rem; max-width: 360px; width: 100%; max-height: 90vh; overflow-y: auto; animation: scaleIn 0.25s ease; }
 .ss-title { font-size: 1.2rem; font-weight: 800; text-align: center; margin-bottom: 0.25rem; }
 .ss-subtitle { font-size: 0.78rem; color: var(--text-secondary); text-align: center; margin-bottom: 1rem; }
