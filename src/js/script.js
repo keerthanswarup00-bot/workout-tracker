@@ -10134,7 +10134,7 @@ function obBindEvents(stepId, idx) {
     document.getElementById("obNextBtn")?.addEventListener("click", function() {
       if (!obData.goalType) return;
       Object.assign(state.onboardingData, obData); saveState();
-      obGoToStep(6);
+    obGoToStep(7);
     });
     return;
   }
