@@ -8,6 +8,7 @@
   "theme_color": "#0a0a0a",
   "orientation": "portrait-primary",
   "categories": ["fitness", "health", "lifestyle"],
+  "launch_handler": {"client_mode": "focus-existing"},
   "icons": [
     {
       "src": "assets/icons/favicon.svg",
@@ -16,7 +17,7 @@
       "purpose": "any"
     },
     {
-      "src": "assets/icons/favicon.svg",
+      "src": "assets/icons/logo.svg",
       "sizes": "any",
       "type": "image/svg+xml",
       "purpose": "maskable"

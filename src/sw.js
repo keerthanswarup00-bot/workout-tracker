@@ -1,10 +1,11 @@
-const CACHE = "striv-v1";
+const CACHE = "striv-v2";
 const ASSETS = [
   "/",
   "/index.html",
   "/css/styles.css",
+  "/css/coach.css",
   "/js/script.js",
-  "/js/data/prs.js",
+  "/js/coach-system.js",
   "/js/problem-database.js",
   "/js/lesson-database.js",
   "/js/goal-center.js",
@@ -12,7 +13,16 @@ const ASSETS = [
   "/js/adaptive-engine.js",
   "/js/coach-engine.js",
   "/js/program-review-engine.js",
+  "/core/engine-calculators.js",
+  "/core/engine-coach.js",
+  "/core/engine-nutrition.js",
+  "/core/engine-program-generator.js",
+  "/core/engine-rules.js",
+  "/core/engine-types.js",
+  "/core/engine-validator.js",
   "/assets/icons/favicon.svg",
+  "/assets/icons/logo.svg",
+  "/assets/icons/logo-accent.svg",
   "/manifest.json",
   "https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js",
 ];

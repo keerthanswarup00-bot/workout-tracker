@@ -60,21 +60,6 @@ function detectPR(exerciseName, weight, reps, sessionId, dateKey) {
   return results.length > 0 ? results : null;
 }
 
-function storePR(exerciseName, type, value, weight, reps, sessionId, dateKey) {
-  if (!state.prs) state.prs = {};
-  if (!state.prs[exerciseName]) {
-    state.prs[exerciseName] = { weightPR: null, repPR: null, volumePR: null, est1RM: null, history: [] };
-  }
-  const current = state.prs[exerciseName];
-  const vol = weight * reps;
-  const now = new Date().toISOString();
-  const entry = { type, value, weight, reps, volume: vol, sessionId, date: dateKey, exerciseName, createdAt: now };
-  if (type === "weight") current.weightPR = { value, reps, date: dateKey, sessionId };
-  if (type === "reps") current.repPR = { value, weight, date: dateKey, sessionId };
-  if (type === "volume") current.volumePR = { value, weight, reps, date: dateKey, sessionId };
-  current.history.push(entry);
-}
-
 function getPRsForExercise(exerciseName) {
   const data = getExercisePRs(exerciseName);
   return {
@@ -89,20 +74,6 @@ function getPRsForExercise(exerciseName) {
 function getAllPRs() {
   if (!state.prs) return {};
   return state.prs;
-}
-
-function getRecentPRs(n) {
-  if (!state.prs) return [];
-  const all = [];
-  for (const [exName, data] of Object.entries(state.prs)) {
-    (data.history || []).forEach((h) => all.push({ ...h, exerciseName: exName }));
-  }
-  return all
-    .sort((a, b) => {
-      if (a.date !== b.date) return b.date.localeCompare(a.date);
-      return (b.createdAt || "").localeCompare(a.createdAt || "");
-    })
-    .slice(0, n);
 }
 
 function getTodayPRs(dateKey) {
@@ -150,36 +121,4 @@ function showSinglePRToast(msg) {
   }, 3000);
 }
 
-function migrateLegacyPRs() {
-  try {
-    const old = JSON.parse(localStorage.getItem("wl_prs"));
-    if (!old || typeof old !== "object") return false;
-    if (state.prs && Object.keys(state.prs).length > 0) return false;
-    let migrated = false;
-    for (const [exName, data] of Object.entries(old)) {
-      if (!data.weight && !data.reps) continue;
-      const current = getExercisePRs(exName);
-      if (data.weight) {
-        current.weightPR = { value: data.weight, reps: data.reps || 0, date: data.date || "", sessionId: "" };
-        current.history.push({
-          type: "weight", value: data.weight, weight: data.weight, reps: data.reps || 0,
-          volume: data.weight * (data.reps || 0), sessionId: "", date: data.date || "",
-          exerciseName: exName, createdAt: "",
-        });
-        migrated = true;
-      }
-      if (data.bestSetVol) {
-        current.volumePR = { value: data.bestSetVol, weight: data.weight || 0, reps: data.reps || 0, date: data.bestSetDate || data.date || "", sessionId: "" };
-      }
-      if (data.est1RM) {
-        current.est1RM = { value: data.est1RM, weight: data.weight || 0, reps: data.reps || 0, date: data.est1RMDate || data.date || "", sessionId: "" };
-      }
-      setExercisePRs(exName, current);
-    }
-    if (migrated) {
-      localStorage.removeItem("wl_prs");
-      saveState();
-    }
-    return migrated;
-  } catch { return false; }
-}
+

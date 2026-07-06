@@ -1751,12 +1751,6 @@ function getTodayWater() {
   return loadWater(getDateKey());
 }
 
-function addWater(ml) {
-  const today = getDateKey();
-  const current = loadWater(today);
-  saveWater(today, current + ml);
-}
-
 function renderMealLogger() {
   const today = getDateKey();
   const meals = loadMeals(today);
@@ -3723,49 +3717,6 @@ function renderProfileScreen() {
 
   document.getElementById("profileContent").innerHTML = html;
   renderProfileAchievements();
-}
-
-function attachProfileListeners() {
-  // Section toggle
-  document.querySelectorAll("[data-toggle-section]").forEach(btn => {
-    btn.addEventListener("click", function() {
-      const id = this.dataset.toggleSection;
-      const el = this.closest(".profile-section");
-      el.classList.toggle("is-open");
-    });
-  });
-  // Health item clicks
-  document.querySelectorAll("[data-health-section]").forEach(btn => {
-    btn.addEventListener("click", function() {
-      const section = this.dataset.healthSection;
-      const target = document.querySelector(`[data-section="${section}"]`);
-      if (target) {
-        target.classList.add("is-open");
-        target.scrollIntoView({ behavior: "smooth", block: "center" });
-      }
-    });
-  });
-  // Edit section buttons
-  document.querySelectorAll("[data-edit-section]").forEach(btn => {
-    btn.addEventListener("click", function(e) {
-      e.stopPropagation();
-      const section = this.dataset.editSection;
-      openProfileSectionEditor(section);
-    });
-  });
-  // Edit button in header — opens full onboarding pre-seeded
-  document.getElementById("profileEditBtn")?.addEventListener("click", function() {
-    openProfileSectionEditor("personal");
-  });
-  // Back button — handled globally at init to avoid duplicate listeners
-  // Muscle search
-  document.getElementById("muscleSearch")?.addEventListener("input", (e) => {
-    const q = e.target.value.toLowerCase();
-    document.querySelectorAll(".bm-muscle-row").forEach((row) => {
-      const name = row.querySelector(".bm-muscle-name")?.textContent?.toLowerCase() || "";
-      row.style.display = name.includes(q) ? "" : "none";
-    });
-  });
 }
 
 // ===== NUTRITION & WATER WIDGETS =====
@@ -12818,8 +12769,8 @@ function selectExercisesForDay(goal, experience, splitDay, usedInCycle, equipmen
       finalSets = sets + 2;
     }
     var repVal = getRepTarget(goal, s.exercise.name);
-    if (typeof finalSets !== "number" || isNaN(finalSets)) finalSets = sets;
-    if (typeof repVal !== "number" || isNaN(repVal)) repVal = 10;
+    if (typeof finalSets !== "number" || Number.isNaN(finalSets)) finalSets = sets;
+    if (typeof repVal !== "number" || Number.isNaN(repVal)) repVal = 10;
     return {
       name: s.exercise.name,
       sets: finalSets,
@@ -13529,8 +13480,8 @@ function saveGeneratedProgram() {
         programSort: idx,
         exercises: exList.map(ex => ({
           name: ex.name || "Unknown",
-          sets: typeof ex.sets === "number" && !isNaN(ex.sets) ? ex.sets : 3,
-          reps: typeof ex.reps === "number" && !isNaN(ex.reps) ? ex.reps : 10,
+          sets: typeof ex.sets === "number" && !Number.isNaN(ex.sets) ? ex.sets : 3,
+          reps: typeof ex.reps === "number" && !Number.isNaN(ex.reps) ? ex.reps : 10,
           weight: "", notes: "",
         })),
       };
