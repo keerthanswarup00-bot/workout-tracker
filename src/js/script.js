@@ -784,6 +784,21 @@ function isCompoundExercise(exName) {
 
 const state = loadState();
 
+// Restore autosaved workout if no active session in main state
+try {
+  var autoRaw = localStorage.getItem("wt_autosave");
+  if (autoRaw) {
+    var autoData = JSON.parse(autoRaw);
+    if (autoData && autoData.sessions && autoData.sessions.some(function(s) { return !s.finishedAt; })) {
+      if (!state.sessions || !state.sessions.some(function(s) { return !s.finishedAt; })) {
+        state.sessions = autoData.sessions;
+        state.plan = autoData.plan || state.plan;
+      }
+    }
+  }
+} catch (e) { /* ignore stale autosave */ }
+localStorage.removeItem("wt_autosave");
+
 function displayWeight(kg) {
   const n = Number(kg) || 0;
   if (state.weightUnit === "lb") return Math.round(n * 2.20462 * 10) / 10 + " lb";
@@ -1532,7 +1547,8 @@ function getPlannedWorkout() {
 }
 
 function getCompletion(session) {
-  const sets = session.exercises.flatMap((ex) => ex.sets);
+  if (!session || !session.exercises) return { done: 0, total: 0, percent: 0 };
+  const sets = session.exercises.flatMap((ex) => ex.sets || []);
   const done = sets.filter((set) => set.done).length;
   return { done, total: sets.length, percent: sets.length ? Math.round((done / sets.length) * 100) : 0 };
 }
@@ -4090,7 +4106,7 @@ function getGreeting() {
 function renderProgressIndicator() {
   const session = getTodaySession();
   if (!session || state.showWorkoutProgress === false) return "";
-  const total = session.exercises.length;
+  const total = (session.exercises || []).length;
   const done = (session.exercises || []).filter((e) => e.sets?.length && e.sets.every((s) => s.done)).length;
   const pct = total > 0 ? Math.round((done / total) * 100) : 0;
   return `<div class="pr-bar-wrap">
@@ -5949,7 +5965,7 @@ function renderSessionsTab() {
     var todayW = activePlan.find(function(w){
       return !state.sessions.some(function(s){return s.workoutId === w.id && s.finishedAt && s.dateKey === getDateKey()});
     }) || activePlan[0];
-    html += '<div class="log-item" onclick="startWorkout(\'' + (todayW?.id || "") + '\')" style="cursor:pointer"><div><strong>' + (todayW ? escapeHtml(todayW.name) : "Today's Workout") + '</strong><span>' + (todayW ? (todayW.exercises||[]).length + " exercises" : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
+    html += '<div class="log-item" onclick="startOrContinueWorkout(\'' + (todayW?.id || "") + '\')" style="cursor:pointer"><div><strong>' + (todayW ? escapeHtml(todayW.name) : "Today's Workout") + '</strong><span>' + (todayW ? (todayW.exercises||[]).length + " exercises" : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
   } else {
     html += '<div class="empty-card" style="padding:1.25rem 1rem;text-align:center">' +
       '<div style="font-size:2rem;margin-bottom:0.5rem">🏋️</div>' +
@@ -5957,8 +5973,7 @@ function renderSessionsTab() {
       '<div class="empty-state-text" style="margin-bottom:0.75rem">Create your first program or generate one with AI.</div>' +
       '<div style="display:flex;gap:0.5rem;justify-content:center;flex-wrap:wrap">' +
         '<button class="btn-primary" onclick="openGenerateWorkout()">Generate Workout</button>' +
-        '<button class="btn-secondary" onclick="openNewWorkout()">Create My Own</button>' +
-        '<button class="btn-secondary" onclick="openLoadProgram()">Import Template</button>' +
+        '<button class="btn-secondary" onclick="showNewWorkoutBuilder()">Create My Own</button>' +
       '</div>' +
     '</div>';
   }
@@ -5969,7 +5984,7 @@ function renderSessionsTab() {
     html += '<div class="card-content">';
     activePlan.slice(0, 3).forEach(function(w, i) {
       var lastSesh = state.sessions.filter(function(s){return s.finishedAt && s.workoutId === w.id}).sort(function(a,b){return b.dateKey.localeCompare(a.dateKey)})[0];
-      html += '<div class="log-item" onclick="startWorkout(\'' + (w.id || "") + '\')" style="cursor:pointer"><div><strong>' + escapeHtml(w.name || "Workout " + (i+1)) + '</strong><span>' + (w.exercises||[]).length + " exercises" + (lastSesh ? " · Last: " + formatReadableDate(parseDateKey(lastSesh.dateKey)) : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
+      html += '<div class="log-item" onclick="startOrContinueWorkout(\'' + (w.id || "") + '\')" style="cursor:pointer"><div><strong>' + escapeHtml(w.name || "Workout " + (i+1)) + '</strong><span>' + (w.exercises||[]).length + " exercises" + (lastSesh ? " · Last: " + formatReadableDate(parseDateKey(lastSesh.dateKey)) : "") + '</span></div><span style="color:var(--accent)">Start →</span></div>';
     });
     if (activePlan.length > 3) {
       html += '<div style="text-align:center;padding:0.4rem;font-size:0.72rem;color:var(--text-secondary)">+' + (activePlan.length - 3) + ' more workouts</div>';
@@ -6022,9 +6037,9 @@ function renderSessionsTab() {
   html += '<div class="section-label ml-gap-lg">Quick Actions</div>' +
     '<div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0.4rem;margin-bottom:2rem">' +
       '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openGenerateWorkout()">🤖 Generate Program</button>' +
-      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openNewWorkout()">✏️ Create Workout</button>' +
-      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openLoadProgram()">📂 Import Template</button>' +
-      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="window.openWorkoutReport ? toggleHistoryView() : null">📊 View History</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="showNewWorkoutBuilder()">✏️ Create Workout</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="openGenerateWorkout()">📂 Generate Program</button>' +
+      '<button class="btn-secondary" style="padding:0.65rem;text-align:center;font-size:0.78rem;border-radius:12px" onclick="renderReportHistory()">📊 View History</button>' +
     '</div>';
 
   container.innerHTML = html;
@@ -12712,6 +12727,7 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("beforeunload", (e) => {
     const hasActive = state.sessions && state.sessions.some(s => !s.finishedAt);
     if (hasActive) {
+      saveState();
       e.preventDefault();
       e.returnValue = "";
     }
@@ -12730,7 +12746,6 @@ document.addEventListener("DOMContentLoaded", () => {
   window.addEventListener("popstate", (e) => {
     const hasActive = state.sessions && state.sessions.some(s => !s.finishedAt);
     if (hasActive) {
-      e.preventDefault();
       if (!confirm("You have an active workout. Are you sure you want to leave?")) {
         history.pushState(null, "", location.href);
       }
@@ -12779,9 +12794,12 @@ document.addEventListener("click", (e) => {
 });
 function updateWeightDisplay() {
   const input = document.getElementById("wlSheetWeight");
+  if (!input) return;
   const val = Number(input.value) || 0;
-  document.getElementById("wlDisplay").textContent = val > 0 ? val + " kg" : "—";
-  document.getElementById("wlSave").disabled = !(val > 0);
+  var display = document.getElementById("wlDisplay");
+  var saveBtn = document.getElementById("wlSave");
+  if (display) display.textContent = val > 0 ? val + " kg" : "—";
+  if (saveBtn) saveBtn.disabled = !(val > 0);
 }
 
 document.getElementById("wlOverlay")?.addEventListener("click", () => {

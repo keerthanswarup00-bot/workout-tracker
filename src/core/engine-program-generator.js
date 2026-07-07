@@ -117,6 +117,7 @@ const ProgramGenerator = (() => {
   };
 
   function getRecommendedSplit(goal, days, experience) {
+    if (goal === "endurance") return "Full Body";
     if (days <= 3) return "Full Body";
     if (days === 4) return "Upper Lower";
     if (days >= 5) {
